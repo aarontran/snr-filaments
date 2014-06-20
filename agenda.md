@@ -65,4 +65,16 @@ THINGS LOOK OKAY.
 Check that file hierarchy is sane.  Move whatever files need to be moved
 (update scripts in time... make notes here in the agenda).
 
+Profile fit to dos:
+-------------------
+2. Twiddle with fit, test robustness, try other parameters/models?
+3. Calculate FWHMs and errors on FWHMs (how does this stretch thing work)
+4. Consider other approaches to estimate FWHM.  Try eyeball approach, try
+   spline.  Ensure calculated FWHMs fall within est. error of our model FWHM.
+   (Rob mentioned spline/interpolation/similar had been mentioned before
+   not sure why not used? but fit to be consistent with prev. paper)
 
+Compile questions for Satoru Katsuda (former postdoc..)
+
+run regions-good-4.  Twiddle the regions with an eye towards getting more
+counts and getting cleaner profiles (while maintaining spectrum cleanliness)

@@ -1,0 +1,38 @@
+A few notes on git workflow
+===========================
+(pulled and modified from Astro 121 repo)
+
+http://rogerdudler.github.io/git-guide/
+http://blog.osteele.com/posts/2008/05/my-git-workflow
+
+## Initial setup
+
+git config --global user.name "Aaron Tran"
+git config --global user.email "aaron.tran@brk"
+
+git init
+vim README.md
+git add [whatever]
+git commit -m "whatever"
+
+
+# Working and committing
+
+git add [whatever] / git add *
+git diff
+git status
+git checkout -- [whatever] # To get file from last commit
+git commit -m "whatever"
+
+
+## Github
+
+# For github usage (won't use for now)
+git remote add origin https://github.com/aarontran/ay121.git
+git push -u origin master
+
+# Pushing changes
+git push origin master
+
+# Get updated commit
+git pull
