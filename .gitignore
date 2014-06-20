@@ -1,0 +1,49 @@
+# .gitignore for snr-research/
+
+# Because these files are big
+# and downloadable elsewhere
+chandra
+
+# Various exclusions from
+# github.com/github/gitignore
+#############################
+
+# Python byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+
+# iPython
+.ipynb_checkpoints
+
+# Core latex/pdflatex auxiliary files:
+*.aux
+*.lof
+*.log
+*.lot
+*.fls
+*.out
+*.toc
+
+# Build tool auxiliary files:
+*.fdb_latexmk
+*.synctex.gz
+*.synctex.gz(busy)
+*.pdfsync
+
+# Vim swap files etc.
+[._]*.s[a-w][a-z]
+[._]s[a-w][a-z]
+*.un~
+Session.vim
+.netrwhist
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+

@@ -1,0 +1,15 @@
+# Region file format: DS9 version 4.1
+global color=green dashlist=8 3 width=1 font="helvetica 10 normal roman" select=1 highlite=1 dash=0 fixed=0 edit=1 move=1 delete=1 include=1 source=1
+physical
+# projection(4617.4971,4005.0059,4681.9918,4000.0187,21.561179) width=2 text={1}
+# projection(4638.9969,4094.0056,4686.9946,4100.5012,26.140244) width=2 text={3}
+# projection(4626.9965,4157.4904,4675.5041,4166.505,21.208943) width=2 text={5}
+# projection(4503.9936,4363.5078,4539.0033,4404.0081,57.468699) width=2 text={9}
+# projection(4080.9898,4586.4936,4068.2459,4612.9991,41.74248) width=2 text={11}
+# projection(4026.249,4559.0051,4009.4964,4597.5076,23.14065) width=2 text={12}
+# projection(4513.7533,3735.4974,4567.2538,3699.0082,32.044715) width=2 text={32}
+# projection(4567.7434,3798.2577,4612.5013,3771.7401,26.053455) width=2 text={34}
+# projection(4591.5048,3873.0095,4649.7562,3853.7489,31.219309) width=2 text={36}
+# projection(4616.2546,3902.99,4662.5052,3889.0077,24.05061) width=2 text={37}
+# projection(4621.4958,3929.8735,4667.5008,3915.9934,21.49878) width=2 text={38}
+# projection(4630.0054,3988.5138,4679.7438,3986.0081,13.406789) width=2 text={40}
