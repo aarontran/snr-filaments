@@ -966,3 +966,29 @@ holy shit I have a lot of knobs to twiddle.
 I'm starting with the two-exponential model, with a shared `x_0` and letting
 `A_u` be constrained by the other parameters.  But this is having trouble
 converging consistently; it's very sensitive to twiddling...
+
+Zeroth approach: one step fit for everything all at once.  Using the original
+region 3 data (without additional data in the back / twiddling some regions).
+This is the material I brought in to show Rob in the morning.
+
+First approach: two step fit.  Freeze the location of the split `x_s`, allow
+parameters x0, wu, Ad, wd, Cu, Cd to vary (6 free params).
+Then, unfreeze `x_s` and try another fit.
+
+Intervention:
+1. introduce allback regions
+2. smooth data and apply cut to fit domain
+
+Second approach: as above, but also freeze the constants Cu, Cd on the first
+fit attempt.  Didn't make things too much better, but less blowup.
+
+Third approach: let Au be a fitting parameter instead of Ad.  Freeze xs, Cu, Cd
+on the first runthrough.  Allow all to vary the second time.
+
+This didn't seem to do a lot (Au either goes to zero, kills the fit, or blows
+up and kills the fit, or nails it).
+
+Fourth approach: freeze x0, xs, Cu, Cd on the first run.  Then allow all to
+vary (kind of like Cd -- x0 tends to run very negative and blow up fits)
+
+THIS MAKES A BIG IMPACT!!!!!
