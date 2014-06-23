@@ -17,6 +17,8 @@ import re
 
 import xspec as xs
 
+import regparse
+
 def main():
     """Main method"""
     # argparse boilerplate
@@ -37,13 +39,13 @@ def main():
     verbose = args.verbose
 
     # Get number of spectra to update (count grouped spectrum files)
-    n = get_nspec(specroot)
+    n = regparse.count_files_regexp(specroot + r'_src[0-9]+_grp\.pi')
     if verbose:
         print '\n{} spectra to process'.format(n)
 
     # Check plot output directory, create if needed
-    check_dir(pltroot, verbose)
-    check_dir(fitproot, verbose)
+    regparse.check_dir(pltroot, verbose)
+    regparse.check_dir(fitproot, verbose)
 
     # Set up XSPEC
     init_xspec(verbose)
@@ -146,31 +148,6 @@ def init_xspec(verbose=False):
     else:
         xs.Xset.chatter = 5
     xs.Xset.logChatter = 0
-
-
-# ===========================
-# Utility methods for spectra
-# ===========================
-
-def check_dir(stem, verbose):
-    """Check if stem directory exists and create if needed"""
-    stemdir = os.path.dirname(stem)
-    if not os.path.isdir(stemdir) and stemdir != '':
-        if verbose:
-            print 'stem {} in nonexistent directory'.format(stem)
-            print 'Creating directory {}'.format(stemdir)
-        os.makedirs(stemdir)
-
-
-def get_nspec(stem):
-    """Number of grouped spectra with given directory stem"""
-    pattern = os.path.basename(stem) + r'_src[0-9]+_grp\.pi'
-    if os.path.dirname(stem) == '':
-        files = [f for f in os.listdir('.') if re.match(pattern,f)]
-    else:
-        files = [f for f in os.listdir(os.path.dirname(stem))
-                 if re.match(pattern, f)]
-    return len(files)
 
 
 if __name__ == '__main__':

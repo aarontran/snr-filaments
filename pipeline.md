@@ -82,7 +82,25 @@ Make plots of radial profiles and save profiles to plaintext
         ../plots/good-2/plt \
         -d ../data/profiles/good-2/prf
 
-Apply fit model to spectra...
+Here's the newer version now optimized (not really) for an arbitrary number of
+energy bands... first generate data files for everything, then output n-band
+plots using the same script.
+
+    python ../code/ds9projplotter.py -v regions-good-3-allback.reg profiles/good-3-allback/prf -p profiles/good-3-allback/plt-all -b 0.7-1kev_mosaic.fits 1-2kev_mosaic.fits 2-3kev_mosaic.fits 2-4kev_mosaic.fits 2-7kev_mosaic.fits 3-4p5kev_mosaic.fits 4-7kev_mosaic.fits 4p5-7kev_mosaic.fits -l '0.7-1kev' '1-2kev' '2-3kev' '2-4kev' '2-7kev' '3-4p5kev' '4-7kev' '4p5-7kev'
+    
+	# For overlaid plots
+    python ../code/ds9projplotter.py -v regions-good-3-allback.reg profiles/good-3-allback/prf -p profiles/good-3-allback/plt-3band -l '0.7-1kev' '1-2kev' '2-7kev'
+    python ../code/ds9projplotter.py -v regions-good-3-allback.reg profiles/good-3-allback/prf -p profiles/good-3-allback/plt-4band -l '0.7-1kev' '1-2kev' '2-4kev' '4-7kev'
+    python ../code/ds9projplotter.py -v regions-good-3-allback.reg profiles/good-3-allback/prf -p profiles/good-3-allback/plt-5band -l '0.7-1kev' '1-2kev' '2-3kev' '3-4p5kev' '4p5-7kev'
+	
+	# For subplots
+	python ../code/ds9projplotter.py -sv regions-good-3-allback.reg profiles/good-3-allback/prf -p profiles/good-3-allback/plt-3band-sp -l '0.7-1kev' '1-2kev' '2-7kev'
+	python ../code/ds9projplotter.py -sv regions-good-3-allback.reg profiles/good-3-allback/prf -p profiles/good-3-allback/plt-4band-sp -l '0.7-1kev' '1-2kev' '2-4kev' '4-7kev'
+	python ../code/ds9projplotter.py -sv regions-good-3-allback.reg profiles/good-3-allback/prf -p profiles/good-3-allback/plt-5band-sp -l '0.7-1kev' '1-2kev' '2-3kev' '3-4p5kev' '4p5-7kev'
+
+Geez.
+
+Apply fit model to spectra using `profile_fits.ipynb` (under development).
 
 
 Example bash commands for pipeline

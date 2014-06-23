@@ -1077,7 +1077,7 @@ Summary
 -------
 * Updated good-3 spectra to link to background-2 spectra
 * Added adjustments to XSPEC fitting (excise or fit silicon line)
-* 
+* Updated `ds9projplotter.py` to parse arbitrary bands/labels/data/etc
 
 
 More fitting stuff:
@@ -1094,3 +1094,10 @@ Quantifying Si line emission: one way is to give an "equivalent width"
 Splines -- yeah, fitting is better.  But you can try...
 
 
+New energy band mosaics
+-----------------------
+(from Brian, today)
+Solely breaking up 2-7 keV band
+
+2-4, 4-7 keV
+2-3, 3-4.5, 4.5-7 keV
