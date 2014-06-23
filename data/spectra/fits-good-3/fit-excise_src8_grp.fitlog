@@ -1,0 +1,33 @@
+Spectrum 1  Spectral Data File: reg_src8_grp.pi
+Net count rate (cts/s) for Spectrum:1  2.117e-02 +/- 3.677e-04 (91.0 % total)
+ Assigned to Data Group 1 and Plot Group 1
+  Noticed Channels:  4-68,90-168
+  Telescope: CHANDRA Instrument: ACIS  Channel Type: PI
+  Exposure Time: 1.734e+05 sec
+ Using fit statistic: chi
+ Using test statistic: chi
+ Using Background File                ../bkg-2/bkg_src14.pi
+  Background Exposure Time: 1.734e+05 sec
+ Using Response (RMF) File            reg_src8.rmf for Source 1
+ Using Auxiliary Response (ARF) File  reg_src8.arf
+
+ Spectral data counts: 4034
+ Model predicted rate: 2.03053E-02
+
+
+========================================================================
+Model phabs<1>*powerlaw<2> Source No.: 1   Active/On
+Model Model Component  Parameter  Unit     Value
+ par  comp
+   1    1   phabs      nH         10^22    0.656981     +/-  3.92353E-02  
+   2    2   powerlaw   PhoIndex            2.78157      +/-  7.20921E-02  
+   3    2   powerlaw   norm                1.99950E-04  +/-  1.61360E-05  
+________________________________________________________________________
+
+
+Fit statistic : Chi-Squared =         150.32 using 144 PHA bins.
+
+Test statistic : Chi-Squared =         150.32 using 144 PHA bins.
+ Reduced chi-squared =         1.0661 for    141 degrees of freedom 
+ Null hypothesis probability =   2.799650e-01
+ Weighting method: standard

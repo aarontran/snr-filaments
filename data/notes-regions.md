@@ -1,6 +1,6 @@
 Notes on handpicked regions for Tycho SNR profiles
 ==================================================
-(last modified: 2014 Jun 13)
+(last modified: 2014 Jun 20)
 
 Procedure, notes, output
 ------------------------
@@ -369,3 +369,28 @@ Saved new set of regions as `regions-good-3.reg`
 Began the processing chain anew, regions look pretty good.
 
 
+
+Regions (good-3-allback)
+------------------------
+
+
+Generating "addback" regions (vs. cutback...)
+May introduce slight rotation to improve fit quality =/...
+
+Regions could stand to be twiddled a little more?
+(numbers using regions-all numbering)
+* Region 3 could be extended /drawn farther, and moved up a tiny bit
+* Region 9 (4) could be split into two, narrowed up, twiddled with.
+  It also benefits from a bit of rotation (try 47.15 degrees)
+* Region 11 (5) is crap.  Twiddle that... but I don't know how to get around
+  the faintness and multiple emission lines.  Maybe look at the spectra around
+  there...
+* Region 32 (7) is kinda iffy in red... hard to get a FWHM out.
+  Same problem of mushiness, just a pile of mess.
+  Speculatively, I wonder if messing with the energy bands would help...
+* Region 37 (10) is also super ratty.  I have twiddled it alot in this addback
+  iteration... copy this over to `regions-4-good` and twiddle more...
+
+At least region 38 (11) is pretty nice...
+
+Need to generate regions good-4 soon.

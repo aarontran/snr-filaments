@@ -2,7 +2,7 @@
 Script to link region spectra with nearest backgrounds
 Aaron Tran
 June 12, 2014
-(last modified: June 16, 2014)
+(last modified: June 23, 2014)
 
 Initialize CIAO before running this script!
 """
@@ -31,11 +31,13 @@ def main():
     parser.add_argument('bkgroot', help='Directory stem for bkg spectra')
     parser.add_argument('-v', '--verbose', action='store_true',
                         help='verbose mode')
+    parser.add_argument('-d', '--debug', action='store_true',
+                        help='debug mode (no files modified)')
 
     args = parser.parse_args()
     regfile, bkgfile = args.regfile, args.bkgfile
     regroot, bkgroot = args.regroot, args.bkgroot
-    verbose = args.verbose
+    verbose, debug = args.verbose, args.debug
     
     if verbose:
         print 'Regions and backgrounds from files:'
@@ -67,13 +69,13 @@ def main():
     if verbose:
         print '\nUpdating file headers...'
     for r in rb_dict.keys():
-        set_bkg(r, rb_dict[r], regroot, bkgroot, verbose)
+        set_bkg(r, rb_dict[r], regroot, bkgroot, verbose, debug)
 
     if verbose:
         print '\nDone!'
 
 
-def set_bkg(rnum, bnum, r_rt, b_rt, verbose=False):
+def set_bkg(rnum, bnum, r_rt, b_rt, verbose=False, debug=False):
     """Execute CIAO dmhedit to link spectra to backgrounds
     Check that r_rt and b_rt point to actual files
     (but I don't check that they are actual FITS files with spectra)
@@ -114,10 +116,13 @@ def set_bkg(rnum, bnum, r_rt, b_rt, verbose=False):
     # Execute dmhedit on each spectrum
     for spec in [reg_path, reggrp_path]:
         dmhedit.infile = spec
-        if verbose:
-            print dmhedit()
+        if not debug:
+            if verbose:
+                print dmhedit()
+            else:
+                dmhedit()
         else:
-            dmhedit()
+            print 'A call to dmhedit would occur here'
 
 
 def get_centers(fname, verbose=False):

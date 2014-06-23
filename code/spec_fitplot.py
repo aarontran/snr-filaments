@@ -3,7 +3,7 @@ Perform phabs*powerlaw XSPEC fit to spectra and output
 plots and fit parameters
 Aaron Tran
 2014 June 17
-(last modified: 2014 June 17)
+(last modified: 2014 June 23)
 
 Initialize HEASOFT (`heainit`) before running this script!
 Run script with 32-bit python (use `arch -i386 python ...`)
@@ -21,14 +21,19 @@ def main():
     """Main method"""
     # argparse boilerplate
     parser = argparse.ArgumentParser(description=
-             'Apply XSPEC model fits and make plots for set of spectra')
+             ('Apply XSPEC model fits and make plots for set of spectra. '
+              'Script must be run from spectra-containing directory, '
+              'so that XSPEC can find response/background files.'))
     parser.add_argument('specroot', help='Directory stem for spectra')
+    parser.add_argument('fittype', help='Type of fit to apply', type=int)
     parser.add_argument('plotroot', help='Output stem for plots')
+    parser.add_argument('fitproot', help='Output stem for fit logs')
     parser.add_argument('-v', '--verbose', action='store_true',
                         help='verbose mode')
 
     args = parser.parse_args()
-    specroot, pltroot = args.specroot, args.plotroot
+    specroot, pltroot, fitproot = args.specroot, args.plotroot, args.fitproot
+    ftype = args.fittype
     verbose = args.verbose
 
     # Get number of spectra to update (count grouped spectrum files)
@@ -37,7 +42,8 @@ def main():
         print '\n{} spectra to process'.format(n)
 
     # Check plot output directory, create if needed
-    check_dir(pltroot)
+    check_dir(pltroot, verbose)
+    check_dir(fitproot, verbose)
 
     # Set up XSPEC
     init_xspec(verbose)
@@ -48,7 +54,7 @@ def main():
         # Check that grouped spectrum exists
         grp_path = '{}_src{:d}_grp.pi'.format(specroot, num+1)
         plt_path = '{}_src{:d}_grp.ps'.format(pltroot, num+1)
-        log_path = grp_path[:-3] + '.fitlog'
+        log_path = '{}_src{:d}_grp.fitlog'.format(fitproot, num+1)
         if not os.path.isfile(grp_path):
             print 'Bad path: {}'.format(grp_path)
             raise Exception('ERROR: file does not exist!')
@@ -56,7 +62,7 @@ def main():
             print '\nProcessing file: {}'.format(grp_path)
             print 'Output plot: {}'.format(plt_path)
 
-        process_spectrum_file(grp_path, plt_path, log_path)
+        process_spectrum_file(grp_path, plt_path, log_path, ftype)
 
     if verbose:
         print '\nDone!'
@@ -66,7 +72,7 @@ def main():
 # Methods to control XSPEC
 # ========================
 
-def process_spectrum_file(fname, pltname, logname):
+def process_spectrum_file(fname, pltname, logname, ftype=0):
     """Applies desired processing steps to specified spectrum and XSPEC model
 
     Input
@@ -93,6 +99,21 @@ def process_spectrum_file(fname, pltname, logname):
     # Fit model
     xs.Fit.nIterations = 200
     xs.Fit.perform()
+
+    if ftype == 1:  # Excise the silicon line
+        s.ignore('1.7-2.0')
+        xs.Fit.perform()
+    elif ftype == 2:  # Attempt to fit the silicon line
+        model = xs.Model('phabs*(powerlaw + gaussian)')
+        plist = [m.values[0] for m in [model(1), model(2), model(3)]]
+        plist.extend([1.85, 5e-2, 5e-6]) # LineE, Sigma, norm
+        model.setPars(*plist)
+        model.gaussian.LineE.frozen=True
+        xs.Fit.perform()  # Fit with frozen LineE
+        model.gaussian.LineE.values = [1.85, 0.001, 1.7, 1.8, 1.9, 2.0]
+        model.gaussian.LineE.frozen=False
+        xs.Fit.perform()  # Now fit with unfrozen LineE
+
     
     # Print out a color postscript plot
     xs.Plot.device = pltname + '/cps'
@@ -131,12 +152,13 @@ def init_xspec(verbose=False):
 # Utility methods for spectra
 # ===========================
 
-def check_dir(stem):
+def check_dir(stem, verbose):
     """Check if stem directory exists and create if needed"""
     stemdir = os.path.dirname(stem)
     if not os.path.isdir(stemdir) and stemdir != '':
-        print 'stem {} in nonexistent directory'.format(stem)
-        print 'Creating directory {}'.format(stemdir)
+        if verbose:
+            print 'stem {} in nonexistent directory'.format(stem)
+            print 'Creating directory {}'.format(stemdir)
         os.makedirs(stemdir)
 
 

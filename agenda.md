@@ -39,6 +39,8 @@ and moving in.
 
 (remember that we get THREE projection plots out, one for each band...)
 
+Problem: we also have to consider spectra when optimizing
+
 THING in TYCHO
 --------------
 Look at spectra of the THING...
@@ -49,8 +51,6 @@ different pieces, see if it looks different.
 
 Agenda for code/analysis/regions
 --------------------------------
-
-Version control all this stuff (wait until transferred to imac)
 
 4. Inspect regions + spectra/model/residuals...  Rinse and repeat
 
@@ -67,6 +67,7 @@ Check that file hierarchy is sane.  Move whatever files need to be moved
 
 Profile fit to dos:
 -------------------
+Damnit, come back on Sunday and work.
 2. Twiddle with fit, test robustness, try other parameters/models?
 3. Calculate FWHMs and errors on FWHMs (how does this stretch thing work)
 4. Consider other approaches to estimate FWHM.  Try eyeball approach, try

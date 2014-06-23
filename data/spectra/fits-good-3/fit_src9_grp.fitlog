@@ -1,33 +1,33 @@
 Spectrum 1  Spectral Data File: reg_src9_grp.pi
-Net count rate (cts/s) for Spectrum:1  4.115e-02 +/- 5.184e-04 (89.0 % total)
+Net count rate (cts/s) for Spectrum:1  4.209e-02 +/- 5.190e-04 (91.0 % total)
  Assigned to Data Group 1 and Plot Group 1
   Noticed Channels:  6-210
   Telescope: CHANDRA Instrument: ACIS  Channel Type: PI
   Exposure Time: 1.734e+05 sec
  Using fit statistic: chi
  Using test statistic: chi
- Using Background File                ../bkg/bkg_src14.pi
+ Using Background File                ../bkg-2/bkg_src15.pi
   Background Exposure Time: 1.734e+05 sec
  Using Response (RMF) File            reg_src9.rmf for Source 1
  Using Auxiliary Response (ARF) File  reg_src9.arf
 
  Spectral data counts: 8015
- Model predicted rate: 3.97532E-02
+ Model predicted rate: 4.06094E-02
 
 
 ========================================================================
 Model phabs<1>*powerlaw<2> Source No.: 1   Active/On
 Model Model Component  Parameter  Unit     Value
  par  comp
-   1    1   phabs      nH         10^22    0.692518     +/-  2.90656E-02  
-   2    2   powerlaw   PhoIndex            2.85443      +/-  5.34537E-02  
-   3    2   powerlaw   norm                3.63040E-04  +/-  2.10418E-05  
+   1    1   phabs      nH         10^22    0.696385     +/-  2.86214E-02  
+   2    2   powerlaw   PhoIndex            2.86318      +/-  5.25978E-02  
+   3    2   powerlaw   norm                3.74139E-04  +/-  2.13192E-05  
 ________________________________________________________________________
 
 
-Fit statistic : Chi-Squared =         223.38 using 205 PHA bins.
+Fit statistic : Chi-Squared =         237.58 using 205 PHA bins.
 
-Test statistic : Chi-Squared =         223.38 using 205 PHA bins.
- Reduced chi-squared =         1.1058 for    202 degrees of freedom 
- Null hypothesis probability =   1.443032e-01
+Test statistic : Chi-Squared =         237.58 using 205 PHA bins.
+ Reduced chi-squared =         1.1761 for    202 degrees of freedom 
+ Null hypothesis probability =   4.376692e-02
  Weighting method: standard

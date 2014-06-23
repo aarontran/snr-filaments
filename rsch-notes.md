@@ -937,58 +937,160 @@ Friday 2014 June 20
 Summary
 -------
 * More twiddling with profile fits
+* Meeting with Rob, discussed profile fitting
+* Twiddled profile fits and tidied profile fitting script
 
 
-Generating "addback" regions (vs. cutback...)
-May introduce slight rotation to improve fit quality =/...
+Profile fitting
+---------------
 
-Regions could stand to be twiddled a little more?
-(numbers using regions-all numbering)
-* Region 3 could be extended /drawn farther, and moved up a tiny bit
-* Region 9 (4) could be split into two, narrowed up, twiddled with.
-  It also benefits from a bit of rotation (try 47.15 degrees)
-* Region 11 (5) is crap.  Twiddle that... but I don't know how to get around
-  the faintness and multiple emission lines.  Maybe look at the spectra around
-  there...
-* Region 32 (7) is kinda iffy in red... hard to get a FWHM out.
-  Same problem of mushiness, just a pile of mess.
-  Speculatively, I wonder if messing with the energy bands would help...
-* Region 37 (10) is also super ratty.  I have twiddled it alot in this addback
-  iteration... copy this over to `regions-4-good` and twiddle more...
+Start with a two-exponential model:
 
-At least region 38 (11) is pretty nice...
+    h_{\mathrm{up}}(x) &= A_u \exp \left(\frac{x_0-x}{w_u}\right) + C_u \\
+    h_{\mathrm{down}}(x) &= A_d \exp \left(\frac{x - x_0}{w_d}\right) + C_d
+
+The upstream/downstream split occurs at `x=x_s`, and I use `x_s` as a fit
+parameter instead of `A_d`.  (we can chose to remove either `A_d` or `A_u` from
+the fit).  For sanity, the parameters are:
+
+    xs, x0, Cu, Cd, wu, wd, Au, Ad
+
+and only seven of these parameters are free, because we demand continuity.
+Here I list some approaches/settings that I've used:
+
+0. Single step fit for everything, with decent initial guesses.  I used
+   original regions-good-3 data (i.e., no thermal upswing in the back).
+   This is the data / fit I brough to show Rob in the morning:
+
+1. Two-step fit.  Freeze the split location xs, and fit.  Then unfreeze xs and
+   try another fit.  This seems to work pretty well.
+
+2. Introduce data with thermal counts in the back (good-3-allback).
+   Now, in addition to two-step fit: smooth data and find local minimum nearest
+   to the synchrotron peak.  Use this to bound the fitting domain.
+
+3. As above, but also fit background terms Cu, Cd on first fit attempt.
+   Didn't make things too much better, but less blowup.
+
+4. Let Au be a fitting parameter instead of Ad -- rationale was that, since we
+   have more consistent upstream data, it should be easier to fit Au and solve
+   for Ad.  Still freeze xs, Cu, Cd on first fit, allow all to vary in the
+   second fit.
+
+This didn't seem to do a lot (Au goes to zero, blows up, or nails it).
+
+5. Add x0 to the list of frozen parameters (freeze: x0, xs, Cu, Cd) in first
+   fit.  Again, let all go free in second fit.
+
+THIS WORKS WELL!
+
+6. Now remove Cu,Cd from first fit freeze.  So only freeze x0, xs.
+   This is okay.  For reference, let me note the initial guesses here
+
+    # Freeze: xs, x0
+    xs_fr = x_of_max + 0.5  # Smoothing shifts peak slightly left
+    x0_fr = xs_fr + 0.5  # xs left of x0 in good fit (empirically speaking)
+
+    # Free parameters: wu, Au, wd
+    Cu_g = np.mean(y_fit[-3:])  # The obvious guess
+    Cd_g = np.mean(y_fit[:3]) / 2.  # Usually shoots under trough
+    wu_g = 0.5  # Upstream width
+    wd_g = 2.5  # Downstream width
+    Au_g = np.amax(y_fit)/2.  # Upstream amplitude
+    init_guess = [Cu_g, Cd_g, wu_g, wd_g, Au_g]
+
+Now, I want to improve some of the rattier fits.  So far this procedure isn't
+too reproducible / well-documented, I'm just playing it by ear here.
+
+Pushing the frozen value of xs forward, helps improve red fits slightly.
+Only a few red regions are going NaN on me now.
+
+    # Freeze: xs, x0
+    xs_fr = x_of_max + 1.5  # Smoothing shifts peak slightly left
+    x0_fr = xs_fr + 0.5  # xs left of x0 in good fit (empirically speaking)
+
+    # Free parameters: wu, Au, wd
+    Cu_g = np.mean(y_fit[-3:])  # The obvious guess
+    Cd_g = np.mean(y_fit[:3]) / 2.  # Usually shoots under trough
+    wu_g = 0.5  # Upstream width
+    wd_g = 2.5  # Downstream width
+    Au_g = np.amax(y_fit)/3.  # Upstream amplitude
+    init_guess = [Cu_g, Cd_g, wu_g, wd_g, Au_g]
+
+I think we are hitting diminishing marginal returns.  I'm very uncomfortable
+with the instability of the fits.  It's probably time to consider another
+fitting procedure...
 
 
+Sunday 2014 June 22
+===================
 
-Some remarks on function fitting:
-holy shit I have a lot of knobs to twiddle.
+Summary
+-------
+* Further fitting fiddling
 
-I'm starting with the two-exponential model, with a shared `x_0` and letting
-`A_u` be constrained by the other parameters.  But this is having trouble
-converging consistently; it's very sensitive to twiddling...
 
-Zeroth approach: one step fit for everything all at once.  Using the original
-region 3 data (without additional data in the back / twiddling some regions).
-This is the material I brought in to show Rob in the morning.
+Summary of work on profile fitting should probably be moved to its own log
+file, soon.
 
-First approach: two step fit.  Freeze the location of the split `x_s`, allow
-parameters x0, wu, Ad, wd, Cu, Cd to vary (6 free params).
-Then, unfreeze `x_s` and try another fit.
+Anyways, to continue....
 
-Intervention:
-1. introduce allback regions
-2. smooth data and apply cut to fit domain
+1. Try a two exponential model, but add one more parameter -- change x0 to xu
+   and xd.  Try letting both go free, first.
 
-Second approach: as above, but also freeze the constants Cu, Cd on the first
-fit attempt.  Didn't make things too much better, but less blowup.
+   Holy smokes that really sucked.  Okay, if I do this, the approach would have
+   to be -- freeze split, fit both sides, get a chi2.  Step split location
+   until I find a minimum in chi2 space.
 
-Third approach: let Au be a fitting parameter instead of Ad.  Freeze xs, Cu, Cd
-on the first runthrough.  Allow all to vary the second time.
+2. Implement a stepping approach for the decoupled two exponential model.
+   Ahh, but this is difficult because the continuity requirement
+   still forces them to be linked.
 
-This didn't seem to do a lot (Au either goes to zero, kills the fit, or blows
-up and kills the fit, or nails it).
+   Anyways I try this -- step xs over a range of numbers, getting the best fit.
+   Then, unfreeze xs and let it run free too -- but in practice this doesn't
+   do anything, because we've already let it run free.
 
-Fourth approach: freeze x0, xs, Cu, Cd on the first run.  Then allow all to
-vary (kind of like Cd -- x0 tends to run very negative and blow up fits)
+   It looks, honestly, terrible.
+   In chi^2 space, it tracks out a parabola like shape.
+   But on rare occasion, it will jump to a better trajectory
+   and give a much better fit.
 
-THIS MAKES A BIG IMPACT!!!!!
+   But we don't have a systematic way to reach said trajectory!  Here's an
+   example of a good fit from the better trajectory (the best one in this test)
+
+    red fit (xs frozen): xs = 22.04, xu =  21.5, xd = -235.1,
+    Cu = 0.3992, Cd = 1.598, wu = 0.981, wd = 1.492, Au = 8.589
+    chi2 =  35.7, chi2red =  0.51
+
+   It looks like the "coupled" 2-exponential model still does better, actually,
+   with good initial guesses (chi2red = 0.50 instead).  And, it doesn't crash
+   and burn on everything else.
+
+So, let's give up on this decoupled model.  Adding another free parameter is
+just making things worse.
+
+
+Monday 2014 June 23
+===================
+
+Summary
+-------
+* Updated good-3 spectra to link to background-2 spectra
+* Added adjustments to XSPEC fitting (excise or fit silicon line)
+* 
+
+
+More fitting stuff:
+Calculate FWHM for those peaks where the data indicate a FWHM may be estimated
+We need to revise the regions and the fit routine.
+
+Guess: the error from overshooting the peak location, will be kind of large.
+Possibly larger than that from shifting the profile around.
+
+
+Quantifying Si line emission: one way is to give an "equivalent width"
+(e.g. as in Winkler 2014).
+
+Splines -- yeah, fitting is better.  But you can try...
+
+
