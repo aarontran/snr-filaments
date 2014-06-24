@@ -58,10 +58,6 @@ Note (June 18): I have been neglecting A LOT of parameters in XSPEC, CIAO.
 Mainly in fits (e.g. fit statistic, chi vs. cstat), CIAO I haven't been
 thinking about wmap, energy levels, etc... need to read more `@_@`.
 
-
-MADE NEW BACKGROUND SPECTRA -- BUT, NEED TO RELINK SPECTRA AND CHECK THAT
-THINGS LOOK OKAY.
-
 Check that file hierarchy is sane.  Move whatever files need to be moved
 (update scripts in time... make notes here in the agenda).
 
@@ -75,7 +71,22 @@ Damnit, come back on Sunday and work.
    (Rob mentioned spline/interpolation/similar had been mentioned before
    not sure why not used? but fit to be consistent with prev. paper)
 
-Compile questions for Satoru Katsuda (former postdoc..)
 
 run regions-good-4.  Twiddle the regions with an eye towards getting more
 counts and getting cleaner profiles (while maintaining spectrum cleanliness)
+
+
+1. Get code to extract FWHMs in n-bands
+(Rob -- we will settle on a set of bands, depending on the error bars)
+(so right now just play around, see how far we can go)
+
+2. Get FWHM uncertainties
+3. Try more functions (Ressler et al., splines/eyeball fit)
+4. Verify that other functions give results within error bars
+5. Try reproducing the stuff in QDP (for, e.g., one region) (Rob)
+
+Brian: generate a set of best possible regions in 3, 4, 5 bands.  We'll go
+through and see what we can do.
+
+Generate regions-good-4, without as much in the front (they unduly weight the
+fits...)

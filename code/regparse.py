@@ -60,7 +60,7 @@ def load_ds9reg(fname):
 # Region parsing
 ################
 
-def parse_regstr(regstr):
+def regparse(regstr):
     """Break a region specification into pieces.
     Returns three items: rtype (str), rnums (list of floats), rprops (str)"""
     rtype, rnums, rprops = re.split('[\(\)]', regstr)  # This assumes there are no other parentheses floating around...

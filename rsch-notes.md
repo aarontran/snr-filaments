@@ -1101,3 +1101,41 @@ Solely breaking up 2-7 keV band
 
 2-4, 4-7 keV
 2-3, 3-4.5, 4.5-7 keV
+
+
+Tuesday 2014 June 24
+====================
+
+Summary
+-------
+* Twiddled profile fitting notebook to work on arbitrary bands/labels/data
+* Tested further fit functions...
+* Implemented (ugly, ugly code!) FWHM uncertainty estimation
+
+
+More profile fitting antics
+---------------------------
+
+Try a two exponential function with split at x = x0, discard free parameter xs.
+Now fiddle with initial guesses.  It looks possibly workable!  But, would need
+to twiddle with the fits...
+
+Try the Ressler function (With the split at x = x0).  This is going nuts.
+It is having a hard time converging (even with 4x default max iterations
+[maxfev], 8000 instead of 2000)
+
+Revelation: the fits for simple cases (two exponential, two exponential
+simplified) spewing out 'inf's are due to having errors of ZERO which kills
+everything!  Ad hoc solution.
+
+
+FWHM uncertainties
+------------------
+
+Trying to decode what Satoru did.
+The scaling function goes bonkers for large positive xi, and goes bonkers for
+negative xi (except, really small negative xi)
+
+Using 50 arcsec. instead of 200 arcsec.
+A tolerable range of xi to check seems to be [-1,0] and [0, 10]
+But this depends on the region -- some are much stiffer than others.

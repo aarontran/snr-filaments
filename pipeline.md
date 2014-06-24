@@ -98,7 +98,10 @@ plots using the same script.
 	python ../code/ds9projplotter.py -sv regions-good-3-allback.reg profiles/good-3-allback/prf -p profiles/good-3-allback/plt-4band-sp -l '0.7-1kev' '1-2kev' '2-4kev' '4-7kev'
 	python ../code/ds9projplotter.py -sv regions-good-3-allback.reg profiles/good-3-allback/prf -p profiles/good-3-allback/plt-5band-sp -l '0.7-1kev' '1-2kev' '2-3kev' '3-4p5kev' '4p5-7kev'
 
-Geez.
+Geez.  To get 3/4/5 band subplot images for only one region, run:
+`open plt-*band-sp_02.png` (replacing 02 with number of region of choice).
+And it will make it super easy to compare regions in multiple bands.
+
 
 Apply fit model to spectra using `profile_fits.ipynb` (under development).
 
