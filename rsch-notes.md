@@ -1111,6 +1111,8 @@ Summary
 * Twiddled profile fitting notebook to work on arbitrary bands/labels/data
 * Tested further fit functions...
 * Implemented (ugly, ugly code!) FWHM uncertainty estimation
+* Calculated FWHM uncertainties.  But, not tested/debugged (and I know it is
+  buggy)
 
 
 More profile fitting antics
@@ -1139,3 +1141,5 @@ negative xi (except, really small negative xi)
 Using 50 arcsec. instead of 200 arcsec.
 A tolerable range of xi to check seems to be [-1,0] and [0, 10]
 But this depends on the region -- some are much stiffer than others.
+
+Okay, kind of working now.

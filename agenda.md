@@ -76,12 +76,14 @@ run regions-good-4.  Twiddle the regions with an eye towards getting more
 counts and getting cleaner profiles (while maintaining spectrum cleanliness)
 
 
-1. Get code to extract FWHMs in n-bands
+1. Get code to extract FWHMs in n-bands (done)
 (Rob -- we will settle on a set of bands, depending on the error bars)
 (so right now just play around, see how far we can go)
 
-2. Get FWHM uncertainties
-3. Try more functions (Ressler et al., splines/eyeball fit)
+2. Get FWHM uncertainties (kinda done)
+2.3 DEBUG UNCERTAINTY CALCULATIONS!!!!!
+2.5 REFACTOR FRIGGIN CODE
+3. Try more functions (Ressler et al., splines/eyeball fit) (kinda done)
 4. Verify that other functions give results within error bars
 5. Try reproducing the stuff in QDP (for, e.g., one region) (Rob)
 
