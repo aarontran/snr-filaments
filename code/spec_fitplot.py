@@ -27,7 +27,10 @@ def main():
               'Script must be run from spectra-containing directory, '
               'so that XSPEC can find response/background files.'))
     parser.add_argument('specroot', help='Directory stem for spectra')
-    parser.add_argument('fittype', help='Type of fit to apply', type=int)
+    parser.add_argument('fittype', help=('Type of fit to apply; '
+                                         '0=phabs*po, '
+                                         '1=excise Si line, '
+                                         '2=fit Si line'), type=int)
     parser.add_argument('plotroot', help='Output stem for plots')
     parser.add_argument('fitproot', help='Output stem for fit logs')
     parser.add_argument('-v', '--verbose', action='store_true',
@@ -102,17 +105,20 @@ def process_spectrum_file(fname, pltname, logname, ftype=0):
     xs.Fit.nIterations = 200
     xs.Fit.perform()
 
-    if ftype == 1:  # Excise the silicon line
+    # Deal with the silicon line if desired
+    if ftype == 1:  # Excise line
         s.ignore('1.7-2.0')
         xs.Fit.perform()
-    elif ftype == 2:  # Attempt to fit the silicon line
+    elif ftype == 2:  # Fit line
         model = xs.Model('phabs*(powerlaw + gaussian)')
         plist = [m.values[0] for m in [model(1), model(2), model(3)]]
         plist.extend([1.85, 5e-2, 5e-6]) # LineE, Sigma, norm
         model.setPars(*plist)
+        # Set soft/hard limits on Si line gaussian Sigma/LineE
+        model.gaussian.Sigma.values = [5e-2, 1e-4, 1e-4, 2e-3, 0.07, 0.1]
         model.gaussian.LineE.frozen=True
         xs.Fit.perform()  # Fit with frozen LineE
-        model.gaussian.LineE.values = [1.85, 0.001, 1.7, 1.8, 1.9, 2.0]
+        model.gaussian.LineE.values = [1.85, 0.001, 1.75, 1.8, 1.9, 1.95]
         model.gaussian.LineE.frozen=False
         xs.Fit.perform()  # Now fit with unfrozen LineE
 
@@ -126,6 +132,8 @@ def process_spectrum_file(fname, pltname, logname, ftype=0):
     s.show()
     model.show()
     xs.Fit.show()
+    if ftype == 2:  # Fitting line
+        xs.AllModels.eqwidth(3)
     xs.Xset.logChatter = 0
 
     # Clean up

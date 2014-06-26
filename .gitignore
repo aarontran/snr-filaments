@@ -4,6 +4,9 @@
 # and downloadable elsewhere
 chandra
 
+# Because this thing is 3 friggin gigabytes
+merged_evt.fits
+
 # Various exclusions from
 # github.com/github/gitignore
 #############################

@@ -941,8 +941,27 @@ Summary
 * Twiddled profile fits and tidied profile fitting script
 
 
-Profile fitting
----------------
+Profile fitting uncertainties
+-----------------------------
+After talking to Rob in the morning, I estimate the uncertainties as follows.
+Go into the unbinned mosaics, look at background noise.  The numbers seem to
+appear in roughly discrete units.  Estimate the smallest discrete unit (of
+course there is slight variation), and take that to be one count.  Do this for
+all three bands.
+
+I use this to convert flux/intensity to counts in the profile fitting notebook.
+The values are:
+
+    0.7-1 keV: 8e-9 intensity units
+    1-2 keV: 2.8e-9 intensity units
+    2-7 keV: 5e-9 intensity units
+
+I'm very perplexed by the 0.7-1 keV units (although, truthfully, it does seem
+to be in line with the amount of noise/spread of signal).
+
+
+Profile fitting functions
+-------------------------
 
 Start with a two-exponential model:
 
@@ -1075,9 +1094,11 @@ Monday 2014 June 23
 
 Summary
 -------
+* Morning meeting with Rob, Brian, Nina (will make a regular thing)
 * Updated good-3 spectra to link to background-2 spectra
 * Added adjustments to XSPEC fitting (excise or fit silicon line)
 * Updated `ds9projplotter.py` to parse arbitrary bands/labels/data/etc
+* Generated new plots of 
 
 
 More fitting stuff:
@@ -1087,11 +1108,10 @@ We need to revise the regions and the fit routine.
 Guess: the error from overshooting the peak location, will be kind of large.
 Possibly larger than that from shifting the profile around.
 
-
-Quantifying Si line emission: one way is to give an "equivalent width"
+Brian short discussion:
+* Quantifying Si line emission: one way is to give an "equivalent width"
 (e.g. as in Winkler 2014).
-
-Splines -- yeah, fitting is better.  But you can try...
+* Splines -- yeah, fitting is better.  But you can try...
 
 
 New energy band mosaics
@@ -1101,6 +1121,14 @@ Solely breaking up 2-7 keV band
 
 2-4, 4-7 keV
 2-3, 3-4.5, 4.5-7 keV
+
+Ad hoc flux-count conversions, for new bands
+--------------------------------------------
+* (2-3 keV) count <--> 4.5e-9 units
+* (2-4 keV) count <--> 4.5e-9 units
+* (3-4.5 keV) count <--> 4e-9 units
+* (4-7 keV) count <--> 6e-9 units
+* (4.5-7 keV) count <--> 6.5e-9 units
 
 
 Tuesday 2014 June 24
@@ -1143,3 +1171,128 @@ A tolerable range of xi to check seems to be [-1,0] and [0, 10]
 But this depends on the region -- some are much stiffer than others.
 
 Okay, kind of working now.
+
+
+Wednesday 2014 June 25
+======================
+
+Summary
+-------
+* FWHM testing, and further work on the stretching function (to 1. verify FWHM
+  values, and 2. understand behavior/effects of parameters)
+* FWHM values and uncertainties, I think, are now reliable.
+
+
+Profile uncertainties
+---------------------
+Satoru's uncertainty calculation: generate a new energy-band image (NOT
+corrected for vignetting or exposure time) and count the number of photons in
+each area.
+
+Brian: will look for count mosaics, or generate new ones
+
+
+Stretching function
+-------------------
+On one hand, this is almost as simple as you can get -- it's just a parabolic
+stretch, instead of a linear one.  On the other hand, bad behavior occurs
+easily when the stretch is extended too far.
+
+With ad-hoc flux estimates for 0.7-1 keV band, the FWHM uncertainty in the
+0.7-1 keV band is enormous!  In fact, if we didn't have the distortion that
+occurs at large xi, the uncertainty would be even higher -- so we are
+underestimating the uncertainty.
+
+
+Thursday 2014 June 26
+=====================
+
+Summary
+-------
+* Generate count images + profile data from `merged_evt.fits`
+* Compute uncertainties from photon count images instead of my flux-to-count
+  estimates (not much difference)
+* Slight tweaks to XSPEC fitting (constrain Si line fit, more reproducible and
+  physically meaningful/relevant)
+
+
+Count files
+-----------
+List of commands (just for record-keeping)
+(also changing all instances of `4p5` to `4.5` for consistency...)
+
+    dmcopy "merged_evt.fits[EVENTS][energy=700:1000][bin x=3300:4900:1,y=3300:4900:1]" 0.7-1kev_counts.fits
+    dmcopy "merged_evt.fits[EVENTS][energy=1000:2000][bin x=3300:4900:1,y=3300:4900:1]" 1-2kev_counts.fits
+    dmcopy "merged_evt.fits[EVENTS][energy=2000:7000][bin x=3300:4900:1,y=3300:4900:1]" 2-7kev_counts.fits
+    dmcopy "merged_evt.fits[EVENTS][energy=2000:3000][bin x=3300:4900:1,y=3300:4900:1]" 2-3kev_counts.fits
+    dmcopy "merged_evt.fits[EVENTS][energy=2000:4000][bin x=3300:4900:1,y=3300:4900:1]" 2-4kev_counts.fits
+    dmcopy "merged_evt.fits[EVENTS][energy=3000:4500][bin x=3300:4900:1,y=3300:4900:1]" 3-4.5kev_counts.fits
+    dmcopy "merged_evt.fits[EVENTS][energy=4000:7000][bin x=3300:4900:1,y=3300:4900:1]" 4-7kev_counts.fits
+    dmcopy "merged_evt.fits[EVENTS][energy=4500:7000][bin x=3300:4900:1,y=3300:4900:1]" 4.5-7kev_counts.fits
+
+From these, generate profile data with COUNTS only and extract the relative
+errors (remember to account for integration length)
+
+Spectrum processing
+-------------------
+Brian: to bound the linewidth, think about e.g., a Doppler broadening of
+~10000 km/s.  In two directions that's 20000 km/s ~ 0.07c.  Energy 1.85 keV *
+0.07 is 0.13 for a FWHM = 2.35 sigma, so sigma ~ 0.05 keV is as broad as you'll
+get.
+
+See the code in `spec_fitplot.py`, I have changed soft/hard limits on Si line
+fit energies and sigmas (LineE strictly in [1.75,1.95] keV, sigma strictly less
+than 0.1 keV).  This seems to constrain the lines very well.  No attempt to
+fit the sulfur line at this time.
+
+XSPEC equivalent width: value range is ~0.02 keV to 0.2 keV (typically 0.02 to
+0.1 keV, only one case of 0.2 keV).
+
+More region selection
+---------------------
+So far, the procedure has been to alternate between selecting regions, and
+building up the region processing pipeline -- using information from the
+pipeline to go back and improve region picks.
+
+Now with profile fits + eqwidth calculations, we can give more quantitative
+discriminants for region selection:
+
+1. Can the FWHM be resolved in 0.7-1 keV band?
+   Looking at `good-3-allback` -- this is the ONLY band in which the FWHM is
+   NOT consistently resolved!
+
+2. How many counts are there in 0.7-1 keV, or 4.5-7 keV?
+   Fewer counts increases uncertainties on FWHM values.
+
+3. How much spectral contamination is present?
+   The current set of regions is not too bad
+
+2. counts in 0.7-1 keV band, or 4.5-7 keV band -- are uncertainties too large?
+   (which thereby limits our ability to discern energy dependence/etc)
+3. spectral contamination?  Chec
+
+
+Procedure: using these criteria, go through and identify troublesome regions.
+Adjust these regions as much as you can.
+Regenerate profiles/spectra.
+
+
+Some practical priorities:
+--------------------------
+1. don't pull regions too far ahead of shock, it will skew the FWHM fits
+   (in fact, having less of these data points will help shrink FWHM uncert --
+   the effect of a bad peak fit will be better discriminated, not hidden by the
+   extra flatline data [which is relatively insensitive to peak stretching])
+
+2. we need two sets of regions, one w/ thermal uptick in the back, one without.
+   they should otherwise be the same (to do this, extend the region
+   forward/backward by hand while keeping angle as close as possible to
+   original value).
+
+3. Keep regions that look bad in 0.7-1 keV, but look okay in other bands.
+   We might be able to throw these 
+
+4. Brian said to try getting regions that look good in 3, 4, 5 bands.  But I
+   think the point is moot because if it looks good in 3 bands, it will look
+   pretty good in 5 bands too.  So I'll neglect this for now.
+

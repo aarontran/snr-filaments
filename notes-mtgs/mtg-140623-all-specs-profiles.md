@@ -22,3 +22,6 @@ Monday 2014 June 23 (9:30-11a)
     # 0.001 is change in value
     # 1.8, 1.9 are soft limits
     # 1.7, 2.0 are hard limits
+
+[addendum from short drop-ins with Rob/Brian on Monday/Tuesday:
+XSPEC has equivalent width calculation functionality, just use that!)

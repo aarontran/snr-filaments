@@ -12,19 +12,19 @@ Net count rate (cts/s) for Spectrum:1  1.999e-02 +/- 3.614e-04 (88.9 % total)
  Using Auxiliary Response (ARF) File  reg_src10.arf
 
  Spectral data counts: 3896
- Model predicted rate: 1.90468E-02
+ Model predicted rate: 1.90469E-02
 
 
 ========================================================================
 Model phabs<1>(powerlaw<2> + gaussian<3>) Source No.: 1   Active/On
 Model Model Component  Parameter  Unit     Value
  par  comp
-   1    1   phabs      nH         10^22    0.729923     +/-  4.71794E-02  
-   2    2   powerlaw   PhoIndex            2.81267      +/-  8.10583E-02  
-   3    2   powerlaw   norm                1.73024E-04  +/-  1.59567E-05  
-   4    3   gaussian   LineE      keV      1.84688      +/-  2.09658E-02  
-   5    3   gaussian   Sigma      keV      4.53866E-03  +/-  6.38923E-02  
-   6    3   gaussian   norm                1.89217E-06  +/-  1.37041E-06  
+   1    1   phabs      nH         10^22    0.729913     +/-  4.71799E-02  
+   2    2   powerlaw   PhoIndex            2.81266      +/-  8.10610E-02  
+   3    2   powerlaw   norm                1.73020E-04  +/-  1.59565E-05  
+   4    3   gaussian   LineE      keV      1.84690      +/-  2.09038E-02  
+   5    3   gaussian   Sigma      keV      4.61841E-03  +/-  6.36294E-02  
+   6    3   gaussian   norm                1.88963E-06  +/-  1.35611E-06  
 ________________________________________________________________________
 
 
@@ -32,5 +32,8 @@ Fit statistic : Chi-Squared =         159.99 using 151 PHA bins.
 
 Test statistic : Chi-Squared =         159.99 using 151 PHA bins.
  Reduced chi-squared =         1.1033 for    145 degrees of freedom 
- Null hypothesis probability =   1.866750e-01
+ Null hypothesis probability =   1.866770e-01
  Weighting method: standard
+
+Data group number: 1
+Additive group equiv width for Component 3:  0.0601443 keV

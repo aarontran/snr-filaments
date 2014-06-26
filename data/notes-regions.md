@@ -1,6 +1,6 @@
 Notes on handpicked regions for Tycho SNR profiles
 ==================================================
-(last modified: 2014 Jun 20)
+(last modified: 2014 Jun 26)
 
 Procedure, notes, output
 ------------------------
@@ -394,3 +394,13 @@ Regions could stand to be twiddled a little more?
 At least region 38 (11) is pretty nice...
 
 Need to generate regions good-4 soon.
+
+
+
+Regions 4
+
+Feedback from regions good-3-allback:
+with a 5 band split...
+* Region 1 is good, but could use more counts in 0.7-1kev band
+* Region 2, FWHM is not resolved in red
+* Region 3, FWHM is BARELY resolved in red.  Passable.

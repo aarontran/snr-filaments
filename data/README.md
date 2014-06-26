@@ -1,20 +1,33 @@
-
 README for SNR data (regions, etc)
 ==================================
 Aaron Tran
 2014 June 11
 
+(last modified: 2014 June 26, but still rather out of date)
+
 Data/images
 -----------
-These are Brian's mosaics of all ~750 ks of the Hughes 2009 observation.
+Brian's mosaics of the ~750 ks Hughes observation, 2009.
 
     0.7-1kev_mosaic.fits
-    0.7-1kev_mosaic_unbin.fits
+    0.7-1kev_mosaic_bin.fits
     1-2kev_mosaic.fits
-    1-2kev_mosaic_unbin.fits
+    1-2kev_mosaic_bin.fits
     2-7kev_mosaic.fits
-    2-7kev_mosaic_unbin.fits
+    2-7kev_mosaic_bin.fits
     2009_3to7kev.fits
+
+Additional energy bands (breaking 2-7 keV apart)
+
+    2-3kev_mosaic.fits
+    2-4kev_mosaic.fits
+    3-4p5kev_mosaic.fits
+    4-7kev_mosaic.fits
+    4p5-7kev_mosaic.fits
+
+Single, 3 GB file with all event counts
+
+    merged_evt.fits
 
 Raw observations, downloaded from the CXC Webchaser interface.
 

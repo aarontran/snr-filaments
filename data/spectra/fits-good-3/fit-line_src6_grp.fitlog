@@ -12,25 +12,28 @@ Net count rate (cts/s) for Spectrum:1  1.713e-02 +/- 3.272e-04 (92.7 % total)
  Using Auxiliary Response (ARF) File  reg_src6.arf
 
  Spectral data counts: 3202
- Model predicted rate: 1.62171E-02
+ Model predicted rate: 1.62093E-02
 
 
 ========================================================================
 Model phabs<1>(powerlaw<2> + gaussian<3>) Source No.: 1   Active/On
 Model Model Component  Parameter  Unit     Value
  par  comp
-   1    1   phabs      nH         10^22    0.432759     +/-  8.92072E-02  
-   2    2   powerlaw   PhoIndex            2.56703      +/-  0.186243     
-   3    2   powerlaw   norm                8.94891E-05  +/-  2.56764E-05  
-   4    3   gaussian   LineE      keV      1.90355      +/-  0.371504     
-   5    3   gaussian   Sigma      keV      0.569992     +/-  0.250864     
-   6    3   gaussian   norm                8.09670E-06  +/-  6.41183E-06  
+   1    1   phabs      nH         10^22    0.530684     +/-  4.29158E-02  
+   2    2   powerlaw   PhoIndex            2.69349      +/-  8.40053E-02  
+   3    2   powerlaw   norm                1.18112E-04  +/-  1.09675E-05  
+   4    3   gaussian   LineE      keV      1.81487      +/-  0.150294     
+   5    3   gaussian   Sigma      keV      1.99771E-03  +/-  0.428078     
+   6    3   gaussian   norm                1.25378E-06  +/-  4.35654E-07  
 ________________________________________________________________________
 
 
-Fit statistic : Chi-Squared =         152.07 using 135 PHA bins.
+Fit statistic : Chi-Squared =         156.14 using 135 PHA bins.
 
-Test statistic : Chi-Squared =         152.07 using 135 PHA bins.
- Reduced chi-squared =         1.1788 for    129 degrees of freedom 
- Null hypothesis probability =   8.084997e-02
+Test statistic : Chi-Squared =         156.14 using 135 PHA bins.
+ Reduced chi-squared =         1.2104 for    129 degrees of freedom 
+ Null hypothesis probability =   5.209892e-02
  Weighting method: standard
+
+Data group number: 1
+Additive group equiv width for Component 3:  0.0532647 keV

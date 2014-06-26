@@ -1,5 +1,10 @@
 snr-research agenda
 ===================
+Aaron Tran
+Summer 2014
+
+N.B. this is not an archival document, but rather replaces post-it notes and
+other ephemeral pieces of paper.
 
 LEARNING (2nd priority for now...)
 ----------------------------------
@@ -49,6 +54,14 @@ Use a circle, for background use annulus of nearby stuff.
 Disappointing.  Looks the same as the rest!  Try breaking it apart into
 different pieces, see if it looks different.
 
+About this: see Hwang and Laming (2012, ApJ 746(2)), 3rd paragraph of
+introduction:
+
+> The X-ray-emitting Si ejecta show a bipolar structure with jet-like features
+> (Hwang et al. 2004; Vink 2004; Laming et al. 2006) similar to that seen in
+> optical (Fesen 2001 and references therein) and infrared emission (Hines et
+> al. 2004).
+
 Agenda for code/analysis/regions
 --------------------------------
 
@@ -59,36 +72,29 @@ Mainly in fits (e.g. fit statistic, chi vs. cstat), CIAO I haven't been
 thinking about wmap, energy levels, etc... need to read more `@_@`.
 
 Check that file hierarchy is sane.  Move whatever files need to be moved
-(update scripts in time... make notes here in the agenda).
+(update scripts in time... add one or two bash scripts to pull everything into
+an easy to use thing (i.e., single shot from DS9 region to output plots,
+spectra, spectral fits, profile fits, figures)).
 
 Profile fit to dos:
 -------------------
-Damnit, come back on Sunday and work.
-2. Twiddle with fit, test robustness, try other parameters/models?
-3. Calculate FWHMs and errors on FWHMs (how does this stretch thing work)
-4. Consider other approaches to estimate FWHM.  Try eyeball approach, try
-   spline.  Ensure calculated FWHMs fall within est. error of our model FWHM.
-   (Rob mentioned spline/interpolation/similar had been mentioned before
-   not sure why not used? but fit to be consistent with prev. paper)
 
+2. Get new / better regions for n bands.
 
-run regions-good-4.  Twiddle the regions with an eye towards getting more
-counts and getting cleaner profiles (while maintaining spectrum cleanliness)
+3. Verify that other functions give results within error bars
+   (at least, spline / eyeball fit of sorts)
+   (Idea -- Gaussian and a ramp function)
+   (this is a major concern -- many cases of peaks overshooting or
+   undershooting the actual data)
 
+4. Calculate / estimate the energy dependence of things, following Ressler
 
-1. Get code to extract FWHMs in n-bands (done)
-(Rob -- we will settle on a set of bands, depending on the error bars)
-(so right now just play around, see how far we can go)
+4. Generate count images for 1-1.7 keV instead of 1-2 keV.
+   Look at the profiles and estimate how many counts are lost.
+   If that's workable, we can just use that band and ignore the Si issues.
 
-2. Get FWHM uncertainties (kinda done)
-2.3 DEBUG UNCERTAINTY CALCULATIONS!!!!!
-2.5 REFACTOR FRIGGIN CODE
-3. Try more functions (Ressler et al., splines/eyeball fit) (kinda done)
-4. Verify that other functions give results within error bars
 5. Try reproducing the stuff in QDP (for, e.g., one region) (Rob)
 
-Brian: generate a set of best possible regions in 3, 4, 5 bands.  We'll go
-through and see what we can do.
+6. Twiddle with fits / robustness / etc more??!???
 
-Generate regions-good-4, without as much in the front (they unduly weight the
-fits...)
+
