@@ -98,3 +98,6 @@ Profile fit to dos:
 6. Twiddle with fits / robustness / etc more??!???
 
 
+7. Somewhere -- script to parse out FIT parameters / eqwidth calculations and
+   make a nice formatted list to make life easier...
+

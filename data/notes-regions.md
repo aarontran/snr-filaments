@@ -2,8 +2,15 @@ Notes on handpicked regions for Tycho SNR profiles
 ==================================================
 (last modified: 2014 Jun 26)
 
+This is generally an append-only log, to record what was done for region
+selection (what regions were added/discarded and on what grounds).
+
+It's messy but should give a general idea.  In general, work with
+regions-all, then cut that down to a given set of regions (version 1,2,3,4,
+whatever).
+
 Procedure, notes, output
-------------------------
+========================
 Start by issuing shell command:
 
     ds9 -rgb \
@@ -40,7 +47,7 @@ Direction of "thickness" is determined by ordering of two stored points,
 so region's shape and orientation are fully specified.
 
 Region numbering and comments
------------------------------
+=============================
 
 Starting from the westernmost (lowest RA, rightmost in ds9) rim of the shell,   
 I move counterclockwise about the shell, hand-selecting regions and making
@@ -205,7 +212,7 @@ to be usable still.
 
 
 Region classification
----------------------
+=====================
 
 After picking out my band of 40, I need to pare them down...
 
@@ -285,7 +292,7 @@ and knots
 Generate this in `profiles_all_2.reg` or something similarly named
 
 Region selection, round 2
--------------------------
+=========================
 
 Start working on `profiles_all_2.reg`.
 1. Throw away bad spectra -- we can return to `profiles_all.reg`.
@@ -299,6 +306,8 @@ Region in between 11-12, looks very bad in RED band -- split into two
 filaments, lots of mush.
 
 32,33 are just MUSH in red.  I let them overlap a bit, to test them out.
+
+(edit [jun 26] -- these are derived from / modified from `regions-all`)
 
 Region evaluation (of round 2 picks)
 ------------------------------------
@@ -349,7 +358,7 @@ Region 17(40) in particular has a more visible sulfur line.
 
 
 Regions (good-3)
-----------------
+================
 
 Discarded regions 7 (18), 8 (19), 9 (21), 13 (35)
 Twiddled with the following regions.  Again looking at RED band profiles.
@@ -369,13 +378,12 @@ Saved new set of regions as `regions-good-3.reg`
 Began the processing chain anew, regions look pretty good.
 
 
-
 Regions (good-3-allback)
-------------------------
+========================
 
-
-Generating "addback" regions (vs. cutback...)
-May introduce slight rotation to improve fit quality =/...
+Generating "addback" regions (vs. cutback...).  This is to give additional
+downstream data for the profile fitting.  May introduce slight rotation to
+improve fit quality =/...
 
 Regions could stand to be twiddled a little more?
 (numbers using regions-all numbering)
@@ -393,14 +401,131 @@ Regions could stand to be twiddled a little more?
 
 At least region 38 (11) is pretty nice...
 
-Need to generate regions good-4 soon.
+
+Regions (good-4-ext) (2014 June 26-27)
+======================================
+
+## Priorities
+1. Per Brian's suggestion, keep regions that look bad in 0.7-1 keV if they
+   look okay in other bands (check 1-2 keV for shape, 4.5-7 keV for counts).
+2. Don't extend regions too far ahead of shock; it will skew FWHM fits.
+   Fewer data points will 1) improve fit of FWHM peak, 2) help shrink FWHM
+   uncertainty (stretching of peak will affect chi-squared more)
+3. Choose regions WITH thermal uptick in back.  Verify that they may be fit
+   with FWHMs, then generate regions WITHOUT thermal uptick.  Then, further
+   remove regions with contamination.
+   (note -- to generate regions with/without upticks, do it by hand -- just
+   try to keep the angle constant)
+
+## Some ways to discriminate good/bad regions
+With profile fits + eqwidth calculations, we can give more quantitative
+discriminants for region selection:
+
+1. Can the FWHM be resolved in 0.7-1 keV band?
+   Looking at `good-3-allback` -- this is the ONLY band in which the FWHM is
+   NOT consistently resolved.  All other bands have clear FWHMs.
+2. How many counts are there in 0.7-1 keV, or 4.5-7 keV?
+   Need more counts to decrease FWHM uncertainty, and hence better constrain
+   energy dependence of filament widths
+3. What's the estimated equivalent width of the Si line?
+   Generally, 0.1 keV or less is good. Current set of regions is okay....
+
+Protip: disable the y-axis gridlines, to better gauge the relative difference
+between peak and trough
+
+## Region "good-4-ext" selection
+
+I review good-3-allback according to the above criteria (FWHM quality and
+uncertainty, number of counts, Si line width; all using 5-band split), and
+adjust the regions to create "good-4-ext" ("ext" = "allback" != "cutback").
+No new regions added.
 
 
+* Region 1 (1) FWHM good in all bands
+               want more counts in 0.7-1 keV / 4.5-7 keV
+               eqwidth = 0.12 keV
+               ADJUSTMENT: lengthened towards north.  Narrowing didn't help the
+               contamination issue anyways, it might be due to the thermal knot
+               to the south.  Rotated slightly.
+* Region 2 (3) FWHM NOT resolved in 0.7-1 keV, close to limit in 1-2 keV
+               eqwidth = 0.10 keV
+               ADJUSTMENT: narrowed, improving 1-2 keV peak (FWHM definitely
+               measurable, still near limit) (0.7-1keV still bad).
+               Rotated slightly and moved down a bit.
+* Region 3 (5) FWHM is BARELY resolved in 0.7-1 keV.  Passable.
+               eqwidth = 0.12 keV
+               try to lengthen integration along rim (notes on good-3-allback)
+               ADJUSTMENT: moved slightly south to get more counts
+               (barely improve ability to resolve 0.7-1 keV rim)
 
-Regions 4
+* Region 4 (9) FWHM good in all bands
+               consider splitting into two regions
+               eqwidth = 0.05 keV
+               ADJUSTMENT: split into two regions.  Narrower regions okay due
+               to high count rate.  Also helps improve peak shape (since there
+               are two interacting filaments, but we're neglecting the dim one
+               -- it's ~1 order of magnitude less intense).  The slightly
+               distorted front of the peak may mess with the fit and hence FWHM
+               estimate, slightly.  Need to check this in the finer bands.
 
-Feedback from regions good-3-allback:
-with a 5 band split...
-* Region 1 is good, but could use more counts in 0.7-1kev band
-* Region 2, FWHM is not resolved in red
-* Region 3, FWHM is BARELY resolved in red.  Passable.
+                (added region 9.5 here)
+
+* Region 5 (11) FWHM barely resolved in 0.7-1 keV (okay in others)
+                want more counts in 0.7-1 keV / 4.5-7 keV
+                eqwidth = 0.2 keV (!!!!!)
+                This region also has a noticeable sulfur line
+                ADJUSTMENT: widened integration length, moved slightly south of
+                the bright knot (maybe that's source of contamination).
+                Not usable for 0.7-1 keV, period.
+* Region 6 (12) FWHM good in all but 0.7-1 keV
+                eqwidth = 0.05 keV
+                ADJUSTMENT: widened and moved to get more counts.  Still pretty
+                bad in 0.7-1 keV, but hopefully can get a FWHM.
+
+* Region 7 (32) FWHM very bad in 0.7-1 keV.  Peak shapes are broad.
+                needs more counts in 4.5-7 keV.
+                eqwidth = 0.07 keV
+                ADJUSTMENT: widened to get more counts.  Peak shape is bad, but
+                the shape is consistently weird.  0.7-1 keV is very difficult
+                to improve, here I GIVE UP and this will only be usable above
+                1 keV energy.
+* Region 8 (34) FWHM not resolved in 0.7-1, close to limit in 1-2 keV.
+                want more counts in 4.5-7 keV.
+                eqwidth = 0.10 keV
+                ADJUSTMENT: widened to get more counts.  Still very hard to get
+                FWHM in 0.7-1, 1-2 keV bands.  Shape is funny but at least
+                consistently so.
+* Region 9 (36) FWHM contaminated in 0.7-1 keV, but good otherwise
+                eqwidth = 0.05 keV
+                ADJUSTMENT: widened very little, to get more counts.  Yes,
+                0.7-1 keV FWHM is hard to resolve still.
+* Region 10 (37) FWHM barely resolved in 0.7-1 keV
+                 want more counts in 4.5-7 keV, but workable
+                 eqwidth = 0.06 keV
+                 ADJUSTMENT: widened where possible on either side... though
+                 quality of 0.7-1keV is of course still iffy.
+* Region 11 (38) FWHM well resolved in all bands
+                 eqwidth = 0.09 keV
+                 ADJUSTMENT: widened slightly towards north and south, just to
+                 get more counts...
+* Region 12 (40) FWHM well resolved in all bands
+                 eqwidth = 0.02 keV (very good)
+                 ADJUSTMENT: widened slightly towards north/south (by ~1 pixel)
+                 to get more counts.
+
+Basically, 0.7-1 keV looks bad.  Several regions need more counts (mainly to
+help 4.5-7 keV).
+
+For all regions, I shortened the upstream (ahead of shock) length.
+
+
+Next set of ALL regions
+=======================
+
+how to review all regions?...  e.g. region 21 is terrible in 0.7-1 keV, but
+actually usable at 1-2, 2-7 keV.
+
+   plan: merge regions-good-4 with discarded regions from regions-good-2, and
+   remaining regions in regions-all.  Create regions-all-5.
+   This is ad hoc as hell... I guess as long as I list the specific
+   criteria/goals I aim to hit with the regions.

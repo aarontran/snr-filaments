@@ -1214,6 +1214,8 @@ Summary
   estimates (not much difference)
 * Slight tweaks to XSPEC fitting (constrain Si line fit, more reproducible and
   physically meaningful/relevant)
+* Evaluate regions using profile + spectrum fits, and adjust to create
+  "good-4-ext" set of regions.  No new regions added yet.
 
 
 Count files
@@ -1223,6 +1225,7 @@ List of commands (just for record-keeping)
 
     dmcopy "merged_evt.fits[EVENTS][energy=700:1000][bin x=3300:4900:1,y=3300:4900:1]" 0.7-1kev_counts.fits
     dmcopy "merged_evt.fits[EVENTS][energy=1000:2000][bin x=3300:4900:1,y=3300:4900:1]" 1-2kev_counts.fits
+    dmcopy "merged_evt.fits[EVENTS][energy=1000:1700][bin x=3300:4900:1,y=3300:4900:1]" 1-1.7kev_counts.fits
     dmcopy "merged_evt.fits[EVENTS][energy=2000:7000][bin x=3300:4900:1,y=3300:4900:1]" 2-7kev_counts.fits
     dmcopy "merged_evt.fits[EVENTS][energy=2000:3000][bin x=3300:4900:1,y=3300:4900:1]" 2-3kev_counts.fits
     dmcopy "merged_evt.fits[EVENTS][energy=2000:4000][bin x=3300:4900:1,y=3300:4900:1]" 2-4kev_counts.fits
@@ -1248,51 +1251,28 @@ fit the sulfur line at this time.
 XSPEC equivalent width: value range is ~0.02 keV to 0.2 keV (typically 0.02 to
 0.1 keV, only one case of 0.2 keV).
 
-More region selection
----------------------
-So far, the procedure has been to alternate between selecting regions, and
-building up the region processing pipeline -- using information from the
-pipeline to go back and improve region picks.
+Region selection
+----------------
+See entry for `good-4-ext` in `data/notes-regions.md` to explain how new regions
+are picked.
 
-Now with profile fits + eqwidth calculations, we can give more quantitative
-discriminants for region selection:
-
-1. Can the FWHM be resolved in 0.7-1 keV band?
-   Looking at `good-3-allback` -- this is the ONLY band in which the FWHM is
-   NOT consistently resolved!
-
-2. How many counts are there in 0.7-1 keV, or 4.5-7 keV?
-   Fewer counts increases uncertainties on FWHM values.
-
-3. How much spectral contamination is present?
-   The current set of regions is not too bad
-
-2. counts in 0.7-1 keV band, or 4.5-7 keV band -- are uncertainties too large?
-   (which thereby limits our ability to discern energy dependence/etc)
-3. spectral contamination?  Chec
+About 2/3ths of way through adjusting regions I accidentally hit ctrl-w one too
+many times and killed my DS9 window.  So time to redo it...
 
 
-Procedure: using these criteria, go through and identify troublesome regions.
-Adjust these regions as much as you can.
-Regenerate profiles/spectra.
+Friday 2014 June 27
+===================
+
+Summary
+-------
+* Finish generating `good-ext-4` regions.  Generate profile data, and `good-4`
+  without the thermal upticks
 
 
-Some practical priorities:
---------------------------
-1. don't pull regions too far ahead of shock, it will skew the FWHM fits
-   (in fact, having less of these data points will help shrink FWHM uncert --
-   the effect of a bad peak fit will be better discriminated, not hidden by the
-   extra flatline data [which is relatively insensitive to peak stretching])
 
-2. we need two sets of regions, one w/ thermal uptick in the back, one without.
-   they should otherwise be the same (to do this, extend the region
-   forward/backward by hand while keeping angle as close as possible to
-   original value).
+QUALITATIVELY: using 1-1.7keV counts instead of 1-2 keV counts doesn't appear
+to make much difference.
 
-3. Keep regions that look bad in 0.7-1 keV, but look okay in other bands.
-   We might be able to throw these 
-
-4. Brian said to try getting regions that look good in 3, 4, 5 bands.  But I
-   think the point is moot because if it looks good in 3 bands, it will look
-   pretty good in 5 bands too.  So I'll neglect this for now.
+Uncertainties are still very large on FWHMs -- uncerts are comparable to those
+for SN 1006, but the FWHMs are so much smaller...
 
