@@ -1267,8 +1267,11 @@ Summary
 -------
 * Finish generating `good-ext-4` regions.  Generate profile data, and `good-4`
   without the thermal upticks
-
-
+* Compute power-law exponents for each region (no averaging), estimate
+  uncertainties in quadrature
+* Test other profile fits -- smoothed (not-)interpolating spline, Gaussian +
+  ramp function.
+* Refactored profile fitting code for my sanity
 
 QUALITATIVELY: using 1-1.7keV counts instead of 1-2 keV counts doesn't appear
 to make much difference.
@@ -1276,3 +1279,155 @@ to make much difference.
 Uncertainties are still very large on FWHMs -- uncerts are comparable to those
 for SN 1006, but the FWHMs are so much smaller...
 
+
+Short meeting with Brian
+------------------------
+Went to Brian to discuss (1) how the exponents (`m_e`) were calculated in the
+Ressler paper.  New regions, but basically almost the same as before.
+
+Salient issues:
+1. HUGE range of FWHM values being averaged together, to give a FWHM value,
+   with small uncertainties (comparable to adding together / adding in
+   quadrature) in the Ressler paper.
+2. Relatively large uncertainties on computed FWHMs for Tycho (order 10-100%),
+   vs order 1-10% for SN 1006.
+
+Therefore, 
+
+1. Test different profiles and see what happens (profiles need to hit the peak
+   points, should not undershoot)
+2. Go through output, see how many regions have positive/negative/flat trends
+   in FWHMs.
+3. Email Satoru and Sean, ask for some profiles to test our fitting routine
+   on.  Should check that we get similar results, and similar uncertainties.
+   This would confirm that the analysis is sensible.
+
+So be prepared to bring this all in on Monday for discussion.
+
+Profile fitting experiments
+---------------------------
+
+Verdict on Gaussian + ramp: doesn't work.  Has trouble accounting for steep
+fall-offs and undershoots the maximum data values often.  But, it fits easily
+and is not terrible.
+
+How can I document / keep track of all these good/bad/middling fits?
+So, the regions I'm keeping the region files to recreate them.
+For the fits -- I need to refactor the code, and be able to regenerate them on
+the fly.  So that's okay.  It would be good to record some comparative FWHMs /
+uncertainties / chi-squares...
+
+
+Monday 2014 June 30
+===================
+
+Summary
+-------
+
+
+Catalog of regions
+------------------
+
+How many show a downward, flat/upward trend?  Within error.
+Looking at the simplified, two exponential fits + errors on FWHMs
+Looking at 4-band split (0.7-1keV, 1-1.7 keV, 2-4 keV, 4-7 keV)
+* Downwards: 1, 2?, 3?, 5?, 6?, 7?, 8, 9, 10, 11?, 12
+* Flat: 4? except for 0.7-1kev, 13
+
+Cases where at least two pts could be flat even:
+1, 2, 3, 4, 5, 6, 10, 11, 13
+i.e., most regions.
+
+As noted before, the exponential fits have a risk of over/undershooting the
+data peak.  So the FWHMs may not be reliable; I have marked those that may be
+affected with a question mark (strictly by eyeballing).
+
+In general, only a few have latitude for a FLAT trend; the rest may have 2 data
+points side-by-side or so, but usually there is a decrease somewhere.  A few
+cases (those without question marks) are unequivocal decreases.
+
+
+Fitting checks (morning meeting)
+--------------------------------
+
+Main issue is uncertainties on FWHMs, now
+
+* 1st: check SN 1006 regions.  Could also ask Satoru to try doing his fit
+  routine on my profiles, but if I get consistent results for SN 1006 it'll
+  probably be the same if he does it.
+* 2nd: don't split regions anymore.  Try combining them, adding profiles
+  together.  Suspicion (from lots of experience fitting stuff) is that even
+  adding 2-3 regions, for a sqrt(3) improvement (i.e., factor of 2), will
+  really help the error bars.  Just widen the regions as much as possible.
+
+* Check against Chandra point spread function -- this is limited by the X-ray
+  optics.  Use MAXI for this (will have to read documentation).  Line response
+  function may be relevant?  Just to be sure...
+* Check fits with total vs. average counts.  What I should do is save some fit
+  numbers, w/ some default settings or whatever.
+* Other papers on Tycho rims, who else has looked at this?
+
+Some other things
+
+* Give FWHM + uncerts, quantify difference between using 1-2 keV / 1-1.7 keV
+  (eyeballing isn't enough `-__-`).  To show that it doesn't matter, and that
+  the addition/subtration of Si photons doesn't change profile shapes.
+
+
+Fitting Satoru's SN1006 profiles
+--------------------------------
+
+Observations:
+* Satoru seems to have moved the peaks to all lie at ~50 arcsec
+* The fit domain lengths are quite variable, though all strictly less than
+  200 arcsec, it seems.  All the files he sent are 200 arcsec long,
+  but the fit domains were cut appropriately in the paper
+
+            0.7-1 kev band       1-2 kev band        2-7 kev band
+------------------------------------------------------------------
+Region 08   23.8 +2.0/-1.5      20.9 +1.0/-0.8      15.9 +0.8/-0.9
+Region 10   33.4 +1.5/-1.3      30.7 +0.5/-0.5      26.8 +0.7/-0.6
+Region 16   74.0 +5.2/-5.1      63.6 +2.1/-2.0      46.3 +2.3/-2.3
+
+### Fitting using my procedure (as follows)
+
+Procedure:
+* I set the fit domain by eyeballing, to try to match the Ressler paper
+* To work with my fit routines, I rotate regions 8, 10 (multiply by -1, and add
+  100) to get them to work.
+
+My uncertainty calculation will differ from Satoru's, because of the way I'm
+moving the data around (not setting peak to one location, all facing same way,
+et cetera).  If the uncertainties disagree, then these details may matter.
+
+To follow my procedure, I translate/flip all profiles to start at ~0 with the
+downstream side (closer to SNR) having smaller radial position.
+
+Verdict: errors ~1 order of magnitude larger than what Satoru gets (!!!). WAT.
+Absolute values of FWHMS are okay, although there is some disagreement.
+
+            0.7-1 kev band       1-2 kev band        2-7 kev band
+------------------------------------------------------------------
+Region 08   28.4  +23/-12       25.0  +11/-8.3      22.8  +21/-13
+Region 10   33.4  +5.6/-11      29.6 +4.5/-6.5      25.2 +6.4/-8.2
+Region 16   73.4  +20/-54       63.4  +18/-28       44.9  +23/-25
+
+Let's nail down what's going on.
+
+
+### Sinking realization
+
+The `$\Delta \chi^2 = 2.7$` applies to the regular chi-squared, NOT reduced
+chi-squared!!!!!
+
+Now, the table (from above, using my procedure) looks like:
+
+            0.7-1 kev band       1-2 kev band        2-7 kev band
+------------------------------------------------------------------
+Region 08   28.4 +1.4/-1.4      25.0 +0.8/-0.9      22.8 +1.3/-1.5
+Region 10   33.4 +0.9/-1.1      29.6 +0.6/-0.9      25.2 +0.9/-1.1
+Region 16   73.4 +4.1/-4.3      63.4 +2.2/-2.2      44.9 +2.9/-2.5
+
+
+Rob: the region sizes are probably okay, remember the point is to just get
+enough signal...

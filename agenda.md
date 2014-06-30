@@ -71,6 +71,9 @@ Note (June 18): I have been neglecting A LOT of parameters in XSPEC, CIAO.
 Mainly in fits (e.g. fit statistic, chi vs. cstat), CIAO I haven't been
 thinking about wmap, energy levels, etc... need to read more `@_@`.
 
+But, doesn't matter that much because we are just checking for no thermal
+contamination, not actually using spectra in results.
+
 Check that file hierarchy is sane.  Move whatever files need to be moved
 (update scripts in time... add one or two bash scripts to pull everything into
 an easy to use thing (i.e., single shot from DS9 region to output plots,
@@ -79,25 +82,36 @@ spectra, spectral fits, profile fits, figures)).
 Profile fit to dos:
 -------------------
 
-2. Get new / better regions for n bands.
-
 3. Verify that other functions give results within error bars
    (at least, spline / eyeball fit of sorts)
-   (Idea -- Gaussian and a ramp function)
    (this is a major concern -- many cases of peaks overshooting or
    undershooting the actual data)
-
-4. Calculate / estimate the energy dependence of things, following Ressler
 
 4. Generate count images for 1-1.7 keV instead of 1-2 keV.
    Look at the profiles and estimate how many counts are lost.
    If that's workable, we can just use that band and ignore the Si issues.
-
-5. Try reproducing the stuff in QDP (for, e.g., one region) (Rob)
+   (can you quantify this, give some numbers?)
 
 6. Twiddle with fits / robustness / etc more??!???
 
-
 7. Somewhere -- script to parse out FIT parameters / eqwidth calculations and
-   make a nice formatted list to make life easier...
+   make a nice formatted list to make life easier... (FOR SPECTRA)
 
+Idea
+----
+What if we try the binned data -- will that help the uncertainties???
+
+Spline fourier filtering: http://bigwww.epfl.ch/publications/unser9301.pdf
+
+Issue
+-----
+Really, really need to address this issue of overshooting/undershooting the
+peak, because it will add more uncertainty, than the stretching procedure will.
+
+Now that the uncertainties are suddenly nailed down -- this brings us to a host
+of other problems, namely the 1. questionable fitting procedure, 2. ignorance
+of the effect of varying peak height (stretch up/down)
+
+Some possible approaches
+1. make your damn fitting routine better
+2. do the stretch thing, but in the y-axis now.
