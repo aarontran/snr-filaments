@@ -1494,6 +1494,7 @@ Summary
   calculation, for fit functions that overshoot data maxima)
 * Calculating FWHMs for several function fits gives sizeable spread
 * Reviewed list of possible improvements/functions (immediately above)
+* Downloaded Kepler observations
 
 
 Status of fitting calculations
@@ -1521,5 +1522,11 @@ Questions/concerns on `$m_e$` calculation and interpretation
   done before on nonthermal x-ray emission / filaments from SNRs)
 * (keep an eye on the number of weeks left...)
 
+sean's motivation for doing band-to-band fits instead of a 3 point power law
+fit?
 
+What went down in SN 1006?  Was there a lot of variability in each region,
+before it got averaged out?
+
+* For thoroughness, subtract the front background maybe?...
 

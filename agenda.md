@@ -84,6 +84,13 @@ spectra, spectral fits, profile fits, figures)).
 Profile fit to dos:
 -------------------
 
+GLOBAL FIT to get a single value of `m_E`, see how that looks?
+Piecewise fit?  Just play around, how to do this.
+
+(did sean have a reason for doing the band-to-band estimate of `m_E`, instead
+of just fitting 3 points to a powerlaw? (although that is barely
+underdetermined)
+
 7. Somewhere -- script to parse out FIT parameters / eqwidth calculations and
    make a nice formatted list to make life easier... (FOR SPECTRA)
 9. get spectra for regions-4-ext
@@ -110,3 +117,7 @@ next, a lot of it due simply to fitting uncertainty...
 This gets at the issue discussed with Brian -- why the hell did they average
 such disparate FWHM values, and then back out an average `$m_E$` for the
 filament?
+
+For later: 
+----------
+iPython notebook is getting slow....

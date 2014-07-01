@@ -1,0 +1,71 @@
+research:
+    make an annotated bibliography
+    take notes on all the historical SNRs
+    learn about synchrotron emission, radiation, bremsstrahlung, whatnot
+    learn about ejecta knots, SNR processes, morphology
+    
+    questions to answer: point spread functions, aperture photometry, light curve definition, spectral index, lots of terminology to learn.  What's an ejecta knot?
+
+
+
+
+
+
+When thinking about region sizes/counts:
+* SN 1006 has diameter 0.5 deg., vs. ~0.14 deg. for SN 1572
+* But count rates are much higher for SN 1572
+
+Diameters
+SN 1006: 0.5 degrees
+SN 1572: 0.14 degrees (= 8.4') [Tycho]
+SN 1604: 0.07 degrees (= 4') [Kepler]
+SN 1680: 0.08 degrees (= 5') [Cas A]
+
+ACIS-I gives 16.9' x 16.9'
+But for small sources, may as well use one chip:
+ACIS-S3 gives best spectral resolution, 8.3' x 8.3'
+so Kepler, Cas A can be nicely imaged
+
+Crab (SN 1054): the SNR is difficult to see.  It's thought that the remnant is in an ISM cavity. [Seward, Gorenstein, Smith (2006) in x-ray] [Hester 2008 ARAA]
+
+    Two more synchrotron-dominated shell SNRs were discovered in the late 1990s:
+    RX J1713.7-3946 (Koyama et al. 1997, Slane et al. 1999) (also known as
+    G347.3-0.5) and G266.2-1.2 (Vela Jr.) (Aschenbach 1998, Slane et al. 2001).
+    Synchrotron components were inferred to be present in thin ﬁlaments at the
+    edges of historical remnants Tycho (Hwang et al. 2002, Warren et al. 2005),
+    Kepler (Cassam-Chena¨ı et al. 2004a), and Cas A (Bleeker et al. 2001,
+    Gotthelf et al. 2001), and a synchrotron continuum added to thermal emission
+    satisfactorily explained apparently very weak lines in RCW 86 (Rho et al.
+    2002, Vink et al. 2006).
+    
+    (Reynolds ARAA 2008 46:89--126; SNRs at high energy)
+
+Some others to look at:
+
+G1.9+0.3 (Reynolds et al. 2008b)
+G347.3-0.5 (RX/GX J1713.7-3946) (Slane et al., 1999) (possibly, SN 393)
+    Fine-structure in nonthermal X-ray emission, Chandra
+        Uchiyama, Aharonian, Takahashi (2003)
+    Non-thermal X-rays from NW shell
+        Koyama et al. (1997), PASJ, ASCA data
+G266.2-1.2 (Vela Jr.) (Aschenbach 1998, Slane et al. 2001)
+    Non-thermal X-ray emission, NW rim of SNR
+        Pannuti et al., 2010 ApJ
+        
+        Holy shit that thing is huge.  ~2 degrees in diameter!
+        They kinda do the same thing, extract a bunch of profiles.
+        but, they mainly apply results to cosmic ray acceleration from
+        spectral analysis.
+
+RCW 86 (possibly, SN 185)
+    ~40' diameter
+    Chandra view of non-thermal emission in NW of RCW 86
+        Castro et al. (2013), ApJ
+
+http://www.physics.umanitoba.ca/snr/SNRcat/ may be useful
+
+Now, how do I read the literature wisely?  Build an annotated bibliography again, of course.
+
+Cosmic-ray acceleration, mechanism: diffusive shock acceleration (magnetic mirroring and bouncing back and forth)
+    Blandford and Ostriker, 1978, ApJ (10.1086/182658)
+    Blandford and Eichler, 1987, Phys. Reports [a review journal]
