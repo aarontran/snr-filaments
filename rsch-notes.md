@@ -1323,14 +1323,20 @@ Monday 2014 June 30
 
 Summary
 -------
-
+* Checked SN 1006 profile fits from Satoru
+* Fixed FWHM uncertainty calculation (after SN 1006 fits)
+* List other ways to fit rim widths (functional models, + check literature)
+* Calculate FWHMs from splines and manual-capping of max, to compare values
+* Further refactor/clean up code
 
 Catalog of regions
 ------------------
+(n.b. gauged using old, large uncertainties -- now less relevant...)
 
 How many show a downward, flat/upward trend?  Within error.
-Looking at the simplified, two exponential fits + errors on FWHMs
-Looking at 4-band split (0.7-1keV, 1-1.7 keV, 2-4 keV, 4-7 keV)
+Looking at simplified, two exponential fits + errors on FWHMs; 4 band split
+(0.7-1keV, 1-1.7 keV, 2-4 keV, 4-7 keV).
+
 * Downwards: 1, 2?, 3?, 5?, 6?, 7?, 8, 9, 10, 11?, 12
 * Flat: 4? except for 0.7-1kev, 13
 
@@ -1349,30 +1355,7 @@ cases (those without question marks) are unequivocal decreases.
 
 Fitting checks (morning meeting)
 --------------------------------
-
-Main issue is uncertainties on FWHMs, now
-
-* 1st: check SN 1006 regions.  Could also ask Satoru to try doing his fit
-  routine on my profiles, but if I get consistent results for SN 1006 it'll
-  probably be the same if he does it.
-* 2nd: don't split regions anymore.  Try combining them, adding profiles
-  together.  Suspicion (from lots of experience fitting stuff) is that even
-  adding 2-3 regions, for a sqrt(3) improvement (i.e., factor of 2), will
-  really help the error bars.  Just widen the regions as much as possible.
-
-* Check against Chandra point spread function -- this is limited by the X-ray
-  optics.  Use MAXI for this (will have to read documentation).  Line response
-  function may be relevant?  Just to be sure...
-* Check fits with total vs. average counts.  What I should do is save some fit
-  numbers, w/ some default settings or whatever.
-* Other papers on Tycho rims, who else has looked at this?
-
-Some other things
-
-* Give FWHM + uncerts, quantify difference between using 1-2 keV / 1-1.7 keV
-  (eyeballing isn't enough `-__-`).  To show that it doesn't matter, and that
-  the addition/subtration of Si photons doesn't change profile shapes.
-
+Main issue is uncertainties on FWHMs, now.  See meeting notes
 
 Fitting Satoru's SN1006 profiles
 --------------------------------
@@ -1415,10 +1398,14 @@ Region 16   73.4  +20/-54       63.4  +18/-28       44.9  +23/-25
 Let's nail down what's going on.
 
 
-### Sinking realization
+Uncertainty calculation fix
+---------------------------
+(determined after looking at chi-squared criterion in paper, and looking at how
+XSPEC does its chi-squared error estimation)
 
 The `$\Delta \chi^2 = 2.7$` applies to the regular chi-squared, NOT reduced
-chi-squared!!!!!
+chi-squared!!!!!  Please refer to Section 14.5 of Numerical Recipes (1st ed.)
+(Section 15.6 of 3rd ed.).  So that makes things much better.
 
 Now, the table (from above, using my procedure) looks like:
 
@@ -1429,5 +1416,110 @@ Region 10   33.4 +0.9/-1.1      29.6 +0.6/-0.9      25.2 +0.9/-1.1
 Region 16   73.4 +4.1/-4.3      63.4 +2.2/-2.2      44.9 +2.9/-2.5
 
 
-Rob: the region sizes are probably okay, remember the point is to just get
+Rob: and that's why we do this, and beat our heads against the wall.
+The region sizes are probably okay, remember the point is to just get
 enough signal...
+
+
+Fitting routine improvements
+----------------------------
+Goals:
+1. Improve fitting to avoid overshooting on rim peaks.  Ideally, different fits
+   should give comparable FWHMs and energy dependence.
+2. Better characterize uncertainty
+
+The exponential best captures the steep rims, just tends to overshoot too much.
+
+### Improvements
+* Pin FWHM calculation -- fix the maximum at the maximum observed data point,
+  then calculate the FWHMs from that
+
+> done: this makes for a helpful comparison
+
+* Stretch in y-direction, see how that affects uncertainties?
+  Could also allow stretch in both x,y directions.  Then uncertainties are
+  determined by ellipse in parameter space, marking Delta-chi-squared ~ 4.71
+
+> not done: likely won't do this; stretching in x-coord would have biggest
+> effect on FWHM already, to 1st order, y-coord stretch will not change FWHM
+
+### Possible functions
+* Convolve 2-exponential model w/ some Gaussian or smoothing kernel
+  How to fit something like this?
+
+> Briefly tested -- convolving may work w/ fit, but makes it hard to solve for
+> FWHM values since discrete convolution gives discrete data
+
+* Some kind of penalty function
+
+> Tested: cap on profile fit height kinda helps, although I suspect this
+> worsens the fit and the height limit has no real grounding
+
+* Hand fitting with two exponentials, manipulating/stepping parameters
+  to get something that looks nice (no justification)
+* Hand fitting with Ressler model, manipulating Gaussian to get good peak
+* Fit a Fourier series
+* Fourier filter a spline function (same vein as above)
+  [example?](http://bigwww.epfl.ch/publications/unser9301.pdf)
+* Cusp function (e.g., `$y = x^{2/3}$`), may not be steep enough
+* Lorentzian? (likely not steep enough)
+* Analytic, physical function (e.g., Berezhko and Voelk, 2004)
+
+### Literature
+* Araya et al.(2010) -- Gaussian fit to Cas A filaments
+* Ballet (2006) -- no fits, no data
+* Vink/Laming (2003) -- no fits, just eyeballed
+* Parizot et al. (2006) -- fit exponential to downstream side, then use
+characteristic lengthscale `R` to compute width as `w \approx 4.6 R`.
+* Berezhko/Voelk (2004) -- analytically compute a long function (can try this?)
+* Rettig/Pohl (2012) -- nab characteristic values from other papers!
+* Bamba et al. (2003) -- SN 1006, two-exponential model (almost the same!)
+  doi:10.1086/374687
+* Bamba et al. (2005) -- multiple SNRs, two-exponential model
+  doi:10.1086/427620
+
+Experimenter bias: different fits will give very different FWHMs.  So it is
+tempting to choose the fit function that, qualitatively or quantitatively,
+gives the best/most consistent TREND in energy dependence.
+But, there isn't really a good justification/confirmation for anything.
+
+
+Tuesday 2014 July 01
+====================
+
+Summary
+-------
+* Fixed manual implementation of cap on fit function height
+  (now verified to match calculation of FWHM, from imposing fixed "max" on FWHM
+  calculation, for fit functions that overshoot data maxima)
+* Calculating FWHMs for several function fits gives sizeable spread
+* Reviewed list of possible improvements/functions (immediately above)
+
+
+Status of fitting calculations
+------------------------------
+Now calculating FWHMs by pinning either FWHM max or function to top of data.
+Definite spread in FWHM values.
+
+I favor two exponential model, simplified, over the two exponential model with
+a free split.
+Two exponential model with split usually gives FWHMs almost identical to
+that of simplified 2-exp model.  In cases where FWHMs differ (model w/ split
+gives smaller FWHM), the model w/ split has higher reduced-chi-squared -- at
+least just looking at regions 2, 3 of regions "good-ext-4".
+
+
+Questions/concerns on `$m_e$` calculation and interpretation
+------------------------------------------------------------
+
+* Which model do we favor, now?  Given the spread, especially when considering
+  or ignoring the position of the data maximum.
+  (and, I am thinking that constant offsets matter -- subtract background?)
+* What to do about the spread in `m_e`?  How to average numbers for Sean's
+  model?
+* (to self -- continue to get an idea of the literature, and read what has been
+  done before on nonthermal x-ray emission / filaments from SNRs)
+* (keep an eye on the number of weeks left...)
+
+
+

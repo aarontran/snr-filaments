@@ -1,0 +1,121 @@
+Effect of using 1-1.7kev band vs 1-2kev band
+============================================
+
+Goal is to verify that excising photons, which may be contaminated
+by the Silicon line, does not change our results (show it didn't
+even matter anyways, to remove them).
+
+Using regions-good-4-ext, with simplified two exponential model fit
+
+Conclusion: noticeable difference in counts, some difference in FWHM
+calculations but no obvious/apparent trends, just from eyeballing.
+
+
+Quantify the change in FWHMs
+============================
+
+In the following data, I eyeball and just say I don't think there's an
+obvious trend, which I could probably test and verify.
+
+2exp_simp fit
+> mean delta FWHM:		-0.004
+> stdev of delta FWHM:	+0.34
+> mean delta stderr:  +/-0.10
+
+2exp_simp with cap on fit amplitude
+> mean delta FWHM:		+0.11
+> stdev of delta FWHM:	+0.50
+> mean delta stderr:  +/-0.14
+
+2exp_simp with FWHM calculated from max data value, not max function value
+> mean delta FWHM:		+0.13
+> stdev of delta FWHM:	+0.41
+> mean delta stderr:  +/-0.11
+
+Numbers computed using the following iPython cell,
+within the notebook `profile_process.ipynb`.
+To reproduce this, just change the fit models and load the data yourself.
+
+	if '1-2kev' in labels and '1-1.7kev' in labels:
+    
+	    fwhms_less_cts = []
+	    fwhms_more_cts = []
+    
+	    for n in regions.keys():
+			# Change to fwhm/fwhmc/fwhms/fwhm_fitc as desired
+	        fwhms_less_cts.append(regions[n]['1-1.7kev']['fwhmc'])
+	        fwhms_more_cts.append(regions[n]['1-2kev']['fwhmc'])
+	    diff = np.array(fwhms_more_cts) - np.array(fwhms_less_cts)
+    
+	    plt.plot(regions.keys(), fwhms_less_cts, 'bo')
+	    plt.plot(regions.keys(), fwhms_more_cts, 'ro')
+	    plt.show()
+    
+	    plt.plot(regions.keys(), diff, 'bo')
+	    plt.show()
+    
+	    print np.mean(diff), np.std(diff)  # ddof = 0, "biased"
+	    print np.std(diff)/np.sqrt(len(diff)))  # ddof = 0, "biased"
+
+
+Using 1 to 1.7 counts
+=====================
+
+Region 1, FWHM 2.51092847879, errors -0.06029, +0.07453
+Region 2, FWHM 4.481346057, errors -0.1389, +0.1307
+Region 3, FWHM 2.54269247046, errors -0.05306, +0.05058
+Region 4, FWHM 2.08434715761, errors -0.03743, +0.02687
+Region 5, FWHM 1.71511763888, errors -0.02978, +0.02514
+Region 6, FWHM 5.1365443507, errors -0.1387, +0.129
+Region 7, FWHM 2.33654756992, errors -0.0517, +0.04789
+Region 8, FWHM 8.74354030562, errors -0.1809, +0.1617
+Region 9, FWHM 3.48401186057, errors -0.08741, +0.04923
+Region 10, FWHM 5.04550736035, errors -0.09044, +0.08964
+Region 11, FWHM 3.14822191091, errors -0.06613, +0.06904
+Region 12, FWHM 2.48414979052, errors -0.04851, +0.04162
+Region 13, FWHM 2.9376654864, errors -0.07667, +0.07777
+
+Region 1, max counts in 1-1.7kev: 29.275862069
+Region 2, max counts in 1-1.7kev: 23.0454545455
+Region 3, max counts in 1-1.7kev: 30.8518518519
+Region 4, max counts in 1-1.7kev: 52.65
+Region 5, max counts in 1-1.7kev: 64.36
+Region 6, max counts in 1-1.7kev: 14.7021276596
+Region 7, max counts in 1-1.7kev: 27.2692307692
+Region 8, max counts in 1-1.7kev: 12.7021276596
+Region 9, max counts in 1-1.7kev: 30.96875
+Region 10, max counts in 1-1.7kev: 33.3225806452
+Region 11, max counts in 1-1.7kev: 33.1333333333
+Region 12, max counts in 1-1.7kev: 37.1212121212
+Region 13, max counts in 1-1.7kev: 43.375
+
+Using 1 to 2 counts
+===================
+
+Region 1, FWHM 2.26139699173, errors -0.05097, +0.04624
+Region 2, FWHM 4.67676406964, errors -0.1299, +0.1185
+Region 3, FWHM 2.85330940326, errors -0.05659, +0.04869
+Region 4, FWHM 2.04688752339, errors -0.03181, +0.02607
+Region 5, FWHM 1.70467520879, errors -0.02689, +0.02217
+Region 6, FWHM 4.95539884131, errors -0.123, +0.1209
+Region 7, FWHM 2.14460585897, errors -0.04692, +0.03145
+Region 8, FWHM 9.44808389849, errors -0.175, +0.1533
+Region 9, FWHM 2.80813303278, errors -0.05714, +0.04903
+Region 10, FWHM 5.02207065924, errors -0.0809, +0.08115
+Region 11, FWHM 3.55227270257, errors -0.07218, +0.06179
+Region 12, FWHM 2.58409256599, errors -0.046, +0.03718
+Region 13, FWHM 2.54709470551, errors -0.06291, +0.04421
+
+Region 1, max counts in 1-2kev: 39.6551724138
+Region 2, max counts in 1-2kev: 31.6363636364
+Region 3, max counts in 1-2kev: 39.962962963
+Region 4, max counts in 1-2kev: 68.15
+Region 5, max counts in 1-2kev: 84.72
+Region 6, max counts in 1-2kev: 19.0425531915
+Region 7, max counts in 1-2kev: 35.0769230769
+Region 8, max counts in 1-2kev: 16.9361702128
+Region 9, max counts in 1-2kev: 39.75
+Region 10, max counts in 1-2kev: 43.8064516129
+Region 11, max counts in 1-2kev: 44.5
+Region 12, max counts in 1-2kev: 47.8181818182
+Region 13, max counts in 1-2kev: 59.3125

@@ -24,6 +24,10 @@ Get an intro level astrophysics textbook `w__w`.
 About radiative lines (XSPEC stuff):
 [atomdb](http://www.atomdb.org/Physics/units.php)
 
+Q: why is the amplification higher than expected -- what sets the expected amt
+of amplification? (MHD fun?)
+
+
 Optimization of region selection
 --------------------------------
 
@@ -41,8 +45,6 @@ Supply initial guess regions, then rotate them about their centers (?) until
 the filament peak width is minimized.  You should generate the projections in a
 consistent way (just for ease of use/manipulation), e.g. starting from outside
 and moving in.
-
-(remember that we get THREE projection plots out, one for each band...)
 
 Problem: we also have to consider spectra when optimizing
 
@@ -82,26 +84,13 @@ spectra, spectral fits, profile fits, figures)).
 Profile fit to dos:
 -------------------
 
-3. Verify that other functions give results within error bars
-   (at least, spline / eyeball fit of sorts)
-   (this is a major concern -- many cases of peaks overshooting or
-   undershooting the actual data)
-
-4. Generate count images for 1-1.7 keV instead of 1-2 keV.
-   Look at the profiles and estimate how many counts are lost.
-   If that's workable, we can just use that band and ignore the Si issues.
-   (can you quantify this, give some numbers?)
-
-6. Twiddle with fits / robustness / etc more??!???
-
 7. Somewhere -- script to parse out FIT parameters / eqwidth calculations and
    make a nice formatted list to make life easier... (FOR SPECTRA)
-
-Idea
-----
-What if we try the binned data -- will that help the uncertainties???
-
-Spline fourier filtering: http://bigwww.epfl.ch/publications/unser9301.pdf
+9. get spectra for regions-4-ext
+10. make regions-5 with more regions
+11. Think about Tycho -- has anyone else estimated B field amplification?
+    Should the electrons be loss-limited, or what (magnetic field damping
+    instead)?  Make sure our result -- decreasing filament widths -- is sane.
 
 Issue
 -----
@@ -112,6 +101,12 @@ Now that the uncertainties are suddenly nailed down -- this brings us to a host
 of other problems, namely the 1. questionable fitting procedure, 2. ignorance
 of the effect of varying peak height (stretch up/down)
 
-Some possible approaches
-1. make your damn fitting routine better
-2. do the stretch thing, but in the y-axis now.
+Other issue
+-----------
+Even if we nail the undershoot/overshoot issue consistently -- we still have
+the problem that our values of `$m_e$` will vary wildly from one region to the
+next, a lot of it due simply to fitting uncertainty...
+
+This gets at the issue discussed with Brian -- why the hell did they average
+such disparate FWHM values, and then back out an average `$m_E$` for the
+filament?
