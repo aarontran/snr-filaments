@@ -1,0 +1,17 @@
+Email dated Tuesday, 2014 July 1
+================================
+
+Attached is main program (FullEfflength.f), which prompts the user for an input
+of B_0, eta_2 (the Diffusion Coefficient in terms of the Bohm value at 2keV,
+and mu.  It produces several files which contain radial profiles at different
+photon energies, the FWHM at each photon energy, and a diagnostic file of the
+electron distribution.  It requires fglists.dat to run. There are several
+modifications you can make in terms of output.
+
+I hope you know Fortran 77!  Unfortunately that's what my advisor knew at the
+time and it's what everything is written in.  If you don't have a compiler
+already, gfortran seems to works fine.
+
+I'm sure you will have lots of questions as the code was written originally in
+several bits and pieces and I wasn't expecting anyone else to have to use it,
+so as soon as you have them, ask away!

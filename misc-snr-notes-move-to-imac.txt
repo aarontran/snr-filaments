@@ -64,8 +64,6 @@ RCW 86 (possibly, SN 185)
 
 http://www.physics.umanitoba.ca/snr/SNRcat/ may be useful
 
-Now, how do I read the literature wisely?  Build an annotated bibliography again, of course.
-
 Cosmic-ray acceleration, mechanism: diffusive shock acceleration (magnetic mirroring and bouncing back and forth)
     Blandford and Ostriker, 1978, ApJ (10.1086/182658)
     Blandford and Eichler, 1987, Phys. Reports [a review journal]

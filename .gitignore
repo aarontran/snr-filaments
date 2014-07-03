@@ -2,7 +2,12 @@
 
 # Because these files are big
 # and downloadable elsewhere
-chandra
+chandra/**
+!chandra/README*
+
+# Same principle (doesn't really need version control)
+# (but, BibTeX files and similar should be tracked)
+papers
 
 # Because this thing is 3 friggin gigabytes
 merged_evt.fits

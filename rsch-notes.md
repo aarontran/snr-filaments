@@ -1495,6 +1495,7 @@ Summary
 * Calculating FWHMs for several function fits gives sizeable spread
 * Reviewed list of possible improvements/functions (immediately above)
 * Downloaded Kepler observations
+* Quick calculation of power law fits to all band data to get `m_E`
 
 
 Status of fitting calculations
@@ -1528,5 +1529,40 @@ fit?
 What went down in SN 1006?  Was there a lot of variability in each region,
 before it got averaged out?
 
-* For thoroughness, subtract the front background maybe?...
+
+
+Wednesday 2014 July 02
+======================
+
+Summary
+-------
+* Polished up code for global fits to all data, for `m_E` calculation
+* Started FORTRAN 77 tutorial
+* Careful reading of Ressler paper, to understand variables/calculations in
+  Sean's code (needs a few more careful readings).
+* Push code/material to Github
+
+
+For now... figure out what Sean's doing with the FWHMs.
+Estimate mE for SN1006.
+Figure out what the model code is doing.
+
+Need to make small fixes to region picks and all that stuff!!
+
+Lots of things to address by next Monday.
+
+
+
+TESTING SEAN'S CODE:
+
+with default resolution, B0=113, eta2=1.1, mu=1
+it runs in fit mode pretty fast!
+tring in plot mode, it didn't finish for about 16 minutes and I ctrl-c'd it.
+So trying again while I run to get dinner, to see what it does.
+
+Left it to run for about 1hr 20 minutes, nothing happened -- it was still just
+spewing stuff onto the screen.
+
+So plot mode looks like it does what it says -- calculate a ton of crap for
+plots (I don't know what yet).
 

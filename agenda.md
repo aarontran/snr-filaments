@@ -25,7 +25,8 @@ About radiative lines (XSPEC stuff):
 [atomdb](http://www.atomdb.org/Physics/units.php)
 
 Q: why is the amplification higher than expected -- what sets the expected amt
-of amplification? (MHD fun?)
+of amplification?  (ressler mentioned expected value of 4x for unmodified,
+strong shock -- where did that come from?)
 
 
 Optimization of region selection
@@ -84,9 +85,6 @@ spectra, spectral fits, profile fits, figures)).
 Profile fit to dos:
 -------------------
 
-GLOBAL FIT to get a single value of `m_E`, see how that looks?
-Piecewise fit?  Just play around, how to do this.
-
 (did sean have a reason for doing the band-to-band estimate of `m_E`, instead
 of just fitting 3 points to a powerlaw? (although that is barely
 underdetermined)
@@ -95,18 +93,9 @@ underdetermined)
    make a nice formatted list to make life easier... (FOR SPECTRA)
 9. get spectra for regions-4-ext
 10. make regions-5 with more regions
-11. Think about Tycho -- has anyone else estimated B field amplification?
+11. Think about Tycho -- who else estimated B field amplification?
     Should the electrons be loss-limited, or what (magnetic field damping
     instead)?  Make sure our result -- decreasing filament widths -- is sane.
-
-Issue
------
-Really, really need to address this issue of overshooting/undershooting the
-peak, because it will add more uncertainty, than the stretching procedure will.
-
-Now that the uncertainties are suddenly nailed down -- this brings us to a host
-of other problems, namely the 1. questionable fitting procedure, 2. ignorance
-of the effect of varying peak height (stretch up/down)
 
 Other issue
 -----------
@@ -121,3 +110,6 @@ filament?
 For later: 
 ----------
 iPython notebook is getting slow....
+takes ~2 minutes to run everything / get set-up.  Need to refactor and split
+pieces of code out.
+
