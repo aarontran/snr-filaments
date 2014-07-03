@@ -1,8 +1,8 @@
-README for snr-research scripts
-===============================
+README, code
+============
 
 Aaron Tran
-(last updated: 2014 June 18)
+(last updated: 2014 July 3)
 
 Spectrum manipulation
 ---------------------
@@ -55,13 +55,16 @@ into CIAO rotboxes.
 (currently, it will only convert projections, and anything else that DS9
 already knows how to convert)
 
+`regparse.py`
 
-Plotting (from my homebrewed software utilities)
-------------------------------------------------
+Module with useful region parsing methods
+
+Plotting
+--------
 
 `fplot.py` and `matplotlibrc`
 
 For nice and reproducible plots.  Ideally publication ready, although
-in reality you probably have to twiddel plots individually.
+in reality you probably have to twiddle plots individually.
 
 

@@ -4,7 +4,7 @@ Aaron Tran
 Summer 2014
 
 N.B. this may not be fully up to date -- see `rsch-notes.md`, and talk to me
-(aaron.tran@berkeley.edu / aaron.tran@nasa.gov) before using pipeline.
+before using pipeline.
 
 The hope is that it's straightforward enough to make sense out of
 (see code documentation / command-line help).

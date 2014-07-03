@@ -1,5 +1,5 @@
-README for SNR data (regions, etc)
-==================================
+README for data (mosaics, regions, etc)
+=======================================
 Aaron Tran
 2014 June 11
 
@@ -28,6 +28,11 @@ Additional energy bands (breaking 2-7 keV apart)
 Single, 3 GB file with all event counts
 
     merged_evt.fits
+
+Count files for all mosaics (no exposure/vignetting correction), generated from
+`merged_evt.fits`.
+
+    *_counts.fits
 
 Raw observations, downloaded from the CXC Webchaser interface.
 

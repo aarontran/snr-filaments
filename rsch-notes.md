@@ -201,6 +201,8 @@ thus blueshifted stuff has freq. ~6.4e17 Hz --> 2.6 keV.
 
 Coooooooooool. But I don't know how to find further information, yet.
 
+[update: now I feel rather silly -- it's probably just ejecta]
+
 Next steps in region processing
 -------------------------------
 

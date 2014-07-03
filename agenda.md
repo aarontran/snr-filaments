@@ -13,7 +13,7 @@ Basically an evolving to-do list.
 * [snr spectra](http://www.phy.duke.edu/~kolena/snrspectra.html)
 * [x-ray lines](http://www.phy.duke.edu/~kolena/strongxlines.html)
 
-Get an intro level astrophysics textbook `w__w`.
+Get an intro level astrophysics textbook
 1. basic radiative processes (thermal, nonthermal emission)
 2. supernova physics (temperatures, radiation/spectra during evolution)
 3. physics of Tycho -- interpretation of the fluff.  ISM gradient.
@@ -72,7 +72,7 @@ Agenda for code/analysis/regions
 
 Note (June 18): I have been neglecting A LOT of parameters in XSPEC, CIAO.
 Mainly in fits (e.g. fit statistic, chi vs. cstat), CIAO I haven't been
-thinking about wmap, energy levels, etc... need to read more `@_@`.
+thinking about wmap, energy levels, etc... need to read more.
 
 But, doesn't matter that much because we are just checking for no thermal
 contamination, not actually using spectra in results.

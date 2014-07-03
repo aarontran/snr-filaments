@@ -322,25 +322,25 @@ Remember Brian's suggestions: nH 0.4 to 0.8, index 2 to 3, chi2 < ~1.5.
 
 New numbering, old numbering, profile/RGB image quality, spectrum quality
 
-1. (1) [GOOD]       (nH = 0.71, index = 2.86; chi2 = 1.05)  (small line)
-2. (3) [okay?]      (nH = 0.67, index = 2.57; chi2 = 1.08)  (clean)
-3. (5) [okay?]      (nH = 0.58, index = 2.69; chi2 = 1.08)  (clean)
-4. (9) [GOOD]       (nH = 0.56, index = 2.80; chi2 = 1.14)  (AMAZING)
-5. (11) [okay?]     (nH = 0.53, index = 2.79; chi2 = 1.32)  (small line)
-6. (12) [okay?]     (nH = 0.59, index = 2.75; chi2 = 1.15)  (clean)
+1. (1) GOOD       (nH = 0.71, index = 2.86; chi2 = 1.05)  (small line)
+2. (3) okay?      (nH = 0.67, index = 2.57; chi2 = 1.08)  (clean)
+3. (5) okay?      (nH = 0.58, index = 2.69; chi2 = 1.08)  (clean)
+4. (9) GOOD       (nH = 0.56, index = 2.80; chi2 = 1.14)  (AMAZING)
+5. (11) okay?     (nH = 0.53, index = 2.79; chi2 = 1.32)  (small line)
+6. (12) okay?     (nH = 0.59, index = 2.75; chi2 = 1.15)  (clean)
 
-7. (18) [contam]    (nH = 0.52, index = 2.86; chi2 = 3.63)  (VISIBLE LINES)
-8. (19) [contam]    (nH = 0.45, index = 2.54; chi2 = 2.49)  (VISIBLE LINES)
-9. (21) [contam]    (nH = 0.68, index = 2.82; chi2 = 2.21)  (VISIBLE LINES)
-10. (32) [mushy]    (nH = 0.9 , index = 2.98; chi2 = 1.13)  (clean)
-11. (33) [mushy]    (nH = 0.8 , index = 2.91; chi2 = 1.15)  (clean, sparse)
+7. (18) contam    (nH = 0.52, index = 2.86; chi2 = 3.63)  (VISIBLE LINES)
+8. (19) contam    (nH = 0.45, index = 2.54; chi2 = 2.49)  (VISIBLE LINES)
+9. (21) contam    (nH = 0.68, index = 2.82; chi2 = 2.21)  (VISIBLE LINES)
+10. (32) mushy    (nH = 0.9 , index = 2.98; chi2 = 1.13)  (clean)
+11. (33) mushy    (nH = 0.8 , index = 2.91; chi2 = 1.15)  (clean, sparse)
 
-12. (34) [okay?]    (nH = 0.68, index = 2.78; chi2 = 0.97)  (small line)
-13. (35) [mushy]    (nH = 0.67, index = 3.00; chi2 = 3.40)  (VISIBLE LINES)
-14. (36) [okay?]    (nH = 0.69, index = 2.85; chi2 = 1.11)  (clean)
-15. (37) [okay?]    (nH = 0.76, index = 2.85; chi2 = 1.06)  (clean)
-16. (38) [GOOD]     (nH = 0.72, index = 2.91; chi2 = 1.11)  (very small Si ln)
-17. (40) [GOOD]     (nH = 0.72, index = 2.79; chi2 = 1.22)  (very small S line)
+12. (34) okay?    (nH = 0.68, index = 2.78; chi2 = 0.97)  (small line)
+13. (35) mushy    (nH = 0.67, index = 3.00; chi2 = 3.40)  (VISIBLE LINES)
+14. (36) okay?    (nH = 0.69, index = 2.85; chi2 = 1.11)  (clean)
+15. (37) okay?    (nH = 0.76, index = 2.85; chi2 = 1.06)  (clean)
+16. (38) GOOD     (nH = 0.72, index = 2.91; chi2 = 1.11)  (very small Si ln)
+17. (40) GOOD     (nH = 0.72, index = 2.79; chi2 = 1.22)  (very small S line)
 
 Results: fiddle with 1,5,12,16,17.  Discard 11.  Reject 7,8,9,13.
 This leaves us: 1,2,3,4,5,6,10,12,14,15,16,17 -- 12 distinct regions, from
