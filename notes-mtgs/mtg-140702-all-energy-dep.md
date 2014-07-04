@@ -1,6 +1,7 @@
 Meeting to review some results
 ==============================
 
+Looked over:
 1. multiple FWHM calculations (as discussed with Brian)
 2. global fit results for exponent `m_E` (using constant in power law vs. not?)
 (holy shit it's 5th week)

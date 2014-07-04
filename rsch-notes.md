@@ -1580,7 +1580,12 @@ Summary
 * Finished bits of FORTRAN tutorial
 * Walked through and cleaned up Sean's model code (`FullEfflength_mod.f`)
   (reformatted spacing, added many comments)
+* Started debugging process (intensity profile output looks incorrect, from
+  Sean's unmodified code)
+* Sean/Steve/Brian/Rob email chain on model calculations
 
+NB notes not cleaned up yet (do that soon).  See agenda for more up to date
+todos, list of everything...
 
 Today:
 1. a little more time on FORTRAN and playing with Sean's code.
@@ -1605,4 +1610,24 @@ I need to knife this thing with implicit nones everywhere.  Or just port it to
 Python, or something.  For now, I just want to get it working so I can get some
 numbers out.
 
+Approach -- walk through code and comment EVERYTHING, then dive in with a knife
+to fix selected pieces (e.g. the box length error bug).  Then slowly add
+improvements.  Not all at once.
 
+
+Goal: for the FWHMs/`m_E` values reported for SN1006, be able to reproduce all
+of Sean's calculated eta/B0 values.
+
+
+B0 = 110d-6
+eta2 = 0.1
+mu = 1
+using fit mode (so, inu=2 and I set rminarc=100d0)
+default resolutions, as suggested
+(spews out numbers)
+
+But this gives patently strange results
+The intensity profile output monotonically decreases with increasing radius, from whatever the scaled radius us (here, 0.88 to 1); the 2nd column (presumably 2 keV) is all NaNs.
+
+
+Use python code, get it up by monday. so have some numbers for monday meeting.

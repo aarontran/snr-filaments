@@ -27,7 +27,7 @@
 ! ----------------------------------------------------------------------
 
       program Fullefflength
-          ! implicit none  ! YUP -- lots of implicit assignment goin' on
+          ! implicit none
           double precision cm, ecut
           double precision B0, v0, rs, rsarc, alpha
           double precision nu0, nu, nukev, emis1
@@ -106,7 +106,7 @@
           eta =  eta2 * (2d0*nukev/(cm*Bfield))**(-(mu-1d0)/2d0)
 
           if (icut.eq.1) then
-              ! Equation (19), but disagrees slightly w/paper?
+              ! TODO: Equation (19), but disagrees w/paper? check!
               ecut = (8.3d0*(Bfield/(100d-6))**(-1d0/2d0)*(v0*4d0/1d8)*
      &            1.6021773d0)**(2d0/(1d0+mu))*
      &            (1d0/eta)**(1d0/(mu+1d0))
@@ -126,10 +126,12 @@
           close(9)
 
 ! Set up from optional parameters (fit/plot)
+! TODO: there's another parameter here to be twiddled
+! Place with other parameters, or maybe prompt user
           if (ifit.eq.1) then
               nu0 = nukev
               inumax = 2
-              rminarc = 30d0  ! close to FWHM being fitted?
+              rminarc = 60d0  ! close to FWHM being fitted?  SET THIS!!
           endif
 
           if (iplot.eq.1) then
@@ -138,7 +140,8 @@
               rminarc = 110d0
           endif
 
-          rmin =1d0 - rminarc/rsarc
+          ! rmin = fraction of SNR r (900arcsec) to go in, range [0,1]
+          rmin = 1d0 - rminarc/rsarc  ! The only place rminarc is used
           nu = nu0
        
 ! Big pile of do loops coming up
@@ -686,10 +689,9 @@
           double precision gammaplat(40), gammapeak(40), fac
           integer iplat(100), ixmax(100), ixmin(100), imu
 
-          imax = 1  ! This looks to be IMPLICITLY initialized (TODO: FIX)
+          ! Initialize variables reused for each energy band
+          imax = 1
           halfint =0d0
-
-          ! Initialize onedint w/zeros -- one per radial coord points
           do i = 1, irmax
             onedint(i) = 0d0
           enddo
@@ -697,40 +699,53 @@
           ! Compute FWHM for each energy band
           do inu = 1, inumax
 
-            ! Copy intensitygraph to onedint, for current energy band
+            ! Copy intensitygraph to onedint
             do i = 1, irmax
               onedint(i) = intensitygraph(inu,i)
             enddo
 
+            ! Is this initialization necessary?
+            ! YES: if xmax/xmin are not found
             xmax = 0d0
             xmin = 0d0
 
-            ! Find peak intensity and position
+            ! Find peak intensity, position (index), and halfmax
             maxintensity = 0d0  ! Does this line do anything?
             maxintensity = maxval(onedint)
             do i = 1, irmax
               if (onedint(i).eq.maxintensity) imax=i
             enddo
-
             halfint = .5d0*maxintensity
 
-            do j = 1, imax-1
+            print *, 'DEBUG: imax=',imax,'irmax=',irmax
+            ! Something is terribly wrong, it's not getting the right
+            ! profiles...
+
+            ! Search points to left of max
+            ! Start from i = imax-1, and move left (downhill)
+            ! (I think the labeling of xmax/xmin is backwards?)
+            do j = 1, imax-1  ! Could decrement i instead of using j
               i = imax-j
               if (onedint(i).lt.halfint) then
-                xmax = 1d0+real(i+1)*delr(inu)
-                ixmax(inu) = imax-i
-                goto 993
+                xmax = 1d0+real(i+1)*delr(inu)  ! 1.0 + (imax-j+1)*delr
+                ! This computation seems fishy
+                ixmax(inu) = imax-i  ! I think this should be just `i`
+                goto 993  ! break out of the loop
               endif
             enddo
-
+            ! Edge case, if no xmax is found
             if (xmax.eq.0d0) xmax = 1d0
   993       continue
 
+            ! Search points to right of max
+            ! Start from i = imax, and move right (downhill)
             do i = imax, irmax
               if (onedint(i).lt.halfint) then
-                xmin = 1d0+real((i-1))*delr(inu)
+                xmin = 1d0+real(i-1)*delr(inu)
+                print *, 'DEBUG, xmin=', xmin  ! THIS IS NEVER REACHED
+                ! This computation also seems fishy
                 ixmin(inu) = i
-                goto 994
+                goto 994  ! break out of the loop
               endif
             enddo
     
@@ -760,27 +775,28 @@
 !             fluxpeak(inu) = fluxpeak(inu) + 
 !    &          (intensitygraph(inu,i,imu)+intensitygraph(inu,i-1,imu))/2d0
 !           enddo
-!         
+
 !           do i = ixmin(ifix)+1, iplat(ifix)
 !             fluxplat(inu) = fluxplat(inu) +  
 !    &          (intensitygraph(inu,i,imu)+intensitygraph(inu,i-1,imu))/2d0
 !           enddo
 !         enddo
-!
+
 !         fac = 2d0
-!         
+
 !         do inu = 1, inumax-1
 !           if (inu.eq.1) then
 !             gammapeak(inu) =-1d0*
 !    &          dlog(fluxpeak(inu+1)/fluxpeak(inu)/fac)/dlog(fac)
 !             gammaplat(inu) = -1d0*
 !    &          dlog(fluxplat(inu+1)/fluxplat(inu)/fac)/dlog(fac)
-!
+
 !           elseif (inu.eq.inumax) then
 !             gammapeak(inu) =-1d0*
 !    &          dlog(fluxpeak(inu)/fluxpeak(inu-1)/fac)/dlog(fac)
 !             gammaplat(inu) = -1d0*
 !    &          dlog(fluxplat(inu)/fluxplat(inu-1)/fac)/dlog(fac)
+
 !           else
 !             gammapeak(inu) =-1d0*
 !    &          dlog(fluxpeak(inu+1)/fluxpeak(inu-1)/fac**2d0)/dlog(fac**2d0)
