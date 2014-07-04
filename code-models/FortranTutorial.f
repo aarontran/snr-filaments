@@ -10,9 +10,9 @@ c ===================
 
 c Another good reference: http://www.star.le.ac.uk/~cgp/prof77.html
 
-c Column layout in FORTRAN
+c Column layout in FORTRAN (fixed format for FORTRAN 77)
 c Col. 1    : blank
-c Col. 1-5  : statement label (optional) (what is this?)
+c Col. 1-5  : statement label (optional)
 c Col. 6    : continuation character (anything, prefer [+&0-9])
 c Col. 7-72 : statements
 c Col. 73-80: sequence number (optional, rarely used)
@@ -25,7 +25,12 @@ c Special characters are: + (plus), - (minus), * (asterisk), / (slash)
 c   (blank), = (equals), ( (left paren), ) (right paren), . (decimal pt)
 c , (comma), ' (apostrophe), : (colon), $ (currency symbol)
 
-c Inline comments with exclamation marks (!) are not FORTRAN standard
+c Inline comments with exclamation marks (!) are not FORTRAN 77 standard
+
+c FORTRAN 90 standard
+c 1. Free form layout (up to 132 char)
+c 2. Variable names up to 31 char (with underscores)
+c 3. implicit none, ! comments, more...
 
 c ============
 c Main program
@@ -155,4 +160,61 @@ c ==============
 c FORTRAN arrays
 c ==============
 
-c Coming soon!
+      subroutine arrfnc(m,n)
+          implicit none
+          integer i, j, m, n
+          real mat(m, n)
+
+          do 30 j = 1, n      ! Inner-most loop should iterate over row
+              do 40 i = 1, m  ! index, more efficient memory access
+                  mat(i,j) = i*j
+   40         continue
+   30    continue
+         write(*,*) 'Array element at 2,2 is:', mat(2,2)
+
+         return
+      end
+
+c FORTRAN 77 does not allocate memory dynamically, so preallocate arrays
+c larger than needed.  Arrays are stored in column-major order (i.e.,
+c elements ordered (1,1), (2,1), (3,1), ... (m,1), (1,2), ...
+c So allocate more columns than needed, but not more rows
+
+c In subroutines, all but the last matrix dimension MUST be specified
+c e.g., declare `real mat(m, n, *)` and not `mat(*,*,*)`.
+c However, typically arrays should be declared in the main program and
+c passed to subroutines to modify.
+
+
+c Common blocks and more
+
+c Avoid common blocks (basically, global), but the syntax is pretty
+c simple.  data statement for initializing variables/arrays isn't that
+c useful?
+
+c ========
+c File I/O
+c ========
+
+      subroutine fileio(fname)
+          implicit none
+          character(len=*) fname
+
+          open(unit=1, file=fname)  ! unit specifies the file...
+          ! open(1, file=fname)     ! works as well
+
+          read(1,*) n
+          write(1,*) 'lalalala'
+
+          ! Formatting statements
+
+          write(1, 100) 100, 2.71828
+          write(*, 200) 'Wrote', 100, 2.71828
+  100     format(I4, F8.3)
+  200     format(A, I4, F8.3)
+
+          close(1)
+
+          return
+      end
+

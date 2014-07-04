@@ -1568,3 +1568,41 @@ spewing stuff onto the screen.
 So plot mode looks like it does what it says -- calculate a ton of crap for
 plots (I don't know what yet).
 
+
+Thursday 2014 July 03
+=====================
+
+Summary
+-------
+* Discussion with Brian about Sean's email, paper calculations, next
+  deliverables, questions, lots of misc. things
+* Set up network printers on iMac!
+* Finished bits of FORTRAN tutorial
+* Walked through and cleaned up Sean's model code (`FullEfflength_mod.f`)
+  (reformatted spacing, added many comments)
+
+
+Today:
+1. a little more time on FORTRAN and playing with Sean's code.
+2. twiddle fit stuff, make spectra, etc.  Multiple small patches
+    (a) in here -- run sean's analytic code, cuz that's really simple and
+    straightforward.  Maybe do it manually, just to get some numbers
+    that Sean/Steve/Brian/Rob can interpret/discuss!
+    (b) new regions, new things, blah blah blah.
+3. Make figures of regions, spectra in a multi-page pdf and send around to
+   Brian, Rob, Sean, Steve, (Satoru?)
+3. tabulate things, explain/write up things in LaTeX file
+4. send things to brian/rob
+
+
+
+Ah, so the output from the fortran thing (both mine, and Sean's original)
+suggests there's an error in the FWHM calculation ("box length error")
+Add comma to variable declarations in FWHM subroutine?
+(between xmax/xmin)
+
+I need to knife this thing with implicit nones everywhere.  Or just port it to
+Python, or something.  For now, I just want to get it working so I can get some
+numbers out.
+
+

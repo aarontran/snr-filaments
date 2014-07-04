@@ -28,6 +28,11 @@ Q: why is the amplification higher than expected -- what sets the expected amt
 of amplification?  (ressler mentioned expected value of 4x for unmodified,
 strong shock -- where did that come from?)
 
+(Rankine-Hugoniot conditions for strong adiabatic shock?..)
+
+Possibly useful link on most recent galactic SNR
+[here](http://chandra.harvard.edu/photo/2008/g19/media/)
+
 
 Optimization of region selection
 --------------------------------
@@ -113,3 +118,7 @@ iPython notebook is getting slow....
 takes ~2 minutes to run everything / get set-up.  Need to refactor and split
 pieces of code out.
 
+
+Calculate individual mE values from SN 1006 to get an idea of the variability
+
+EMAIL SEAN/STEVE WITH STUFF/QUESTIONS ON mE AND THINGS!
