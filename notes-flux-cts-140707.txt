@@ -1,0 +1,87 @@
+FWHM for bands 0.7-1, 1-1.7, 2-3, 3-4.5, 4.5-7 keV
+ordered by region number, for regions-good-4-ext.reg
+Values of 0.00 denote NaN for FWHMs (i.e., could not find)
+and are removed in subsequent calculations.
+
+Calculated from profiles of COUNT units:
+3.29  2.51  2.13  1.95  1.97
+0.00  4.48  3.51  2.44  2.64
+5.86  2.54  2.91  2.05  1.88
+2.86  2.08  2.06  2.03  1.96
+1.76  1.72  1.62  1.50  1.49
+0.00  5.14  3.49  3.39  2.37
+4.77  2.34  2.05  1.74  1.93
+0.00  8.74  6.79  6.38  6.95
+0.00  3.48  2.91  2.88  2.35
+7.18  5.05  3.85  3.96  2.91
+0.93  3.15  3.42  2.67  2.04
+3.99  2.48  2.45  1.96  1.84
+3.00  2.94  2.56  2.25  2.85
+
+Calculated from profiles of FLUX units:
+2.78  2.25  2.27  1.92  1.95
+0.00  4.42  2.32  2.41  2.47
+3.83  2.62  2.51  2.11  1.94
+2.64  2.18  2.14  2.13  2.21
+1.69  1.75  1.57  1.52  1.42
+0.00  5.03  3.69  3.21  2.07
+5.49  2.36  2.15  1.73  1.78
+0.00  9.03  7.03  7.64  5.87
+2.11  3.35  2.09  2.88  2.55
+6.28  4.37  3.90  4.44  3.07
+6.06  3.05  3.08  2.81  1.94
+3.55  2.44  2.91  2.00  2.06
+2.84  2.40  2.47  2.23  2.41
+
+Now, assess how much the FWHMs change, using count vs. flux units
+
+    import numpy as np
+    flx = np.loadtxt('mE-flux.txt')  # Save to text file and load
+    cts = np.loadtxt('mE-ncts.txt')  # Save to text file and load
+    flx[flx==0] = float('nan')
+    cts[cts==0] = float('nan')
+
+    delta = flx-cts
+
+    m = np.nanmean(delta, axis=0)
+    std = np.nanstd(delta, axis=0)
+    lens = [len(x[np.isfinite(x)]) for x in cts.T]  # Column lengths excluding NaNs
+    stderr = np.nanstd(delta, axis=0) / np.sqrt(lens)
+
+    print delta
+    print ''
+    print m
+    print std
+    print stderr
+
+Output is:
+
+    [[-0.51 -0.26  0.14 -0.03 -0.02]
+     [  nan -0.06 -1.19 -0.03 -0.17]
+     [-2.03  0.08 -0.4   0.06  0.06]
+     [-0.22  0.1   0.08  0.1   0.25]
+     [-0.07  0.03 -0.05  0.02 -0.07]
+     [  nan -0.11  0.2  -0.18 -0.3 ]
+     [ 0.72  0.02  0.1  -0.01 -0.15]
+     [  nan  0.29  0.24  1.26 -1.08]
+     [  nan -0.13 -0.82  0.    0.2 ]
+     [-0.9  -0.68  0.05  0.48  0.16]
+     [ 5.13 -0.1  -0.34  0.14 -0.1 ]
+     [-0.44 -0.04  0.46  0.04  0.22]
+     [-0.16 -0.54 -0.09 -0.02 -0.44]]
+
+    [ 0.16888889 -0.10769231 -0.12461538  0.14076923 -0.11076923]
+    [ 1.88685773  0.25066539  0.44032532  0.35412865  0.34387971]
+    [ 0.62895258  0.06952207  0.12212427  0.09821762  0.09537507]
+
+Unfortunately, in all bands except 0.7-1 keV (where variability is huge),
+there seems to be a slight, substantial shift in FWHMs.
+
+However, I argue that the values are very close to the std. errors, and
+the standard deviations are pretty large.  And, it is not a consistent negative
+or positive shift.
+
+Finally, we should be using flux units anyways, as they incorporate
+exposure and vignetting corrections.  So even if there is a shift in FWHMs,
+we must favor the intensity flux units.  This is just a sanity check
+that using counts/intensity does not differ too much -- which holds true!

@@ -6,9 +6,20 @@ Summer 2014
 
 This is a running log of thoughts, actions -- a lazy man's lab notebook.
 
+Table of contents?
+==================
 
-Monday, 2014 June 2
-===================
+* Week 1 - DS9 region selection and first look at profiles
+* Week 2 - CIAO/HEASOFT setup, specextract to check thermal emission in regions
+* Week 3 - iMac setup, PyXspec script, start profile fitting
+* Week 4 - profile fitting expts, new energy bands
+* Week 5 - fix profile fit errors, FWHM and `m_E` calculation, Sean's code
+* Week 6 - TBD
+
+
+
+(Week 1) Monday, 2014 June 2
+============================
 
 * Morning NASA orientation
 * Meeting with Rob Petre until about 1-2p?
@@ -359,8 +370,8 @@ plots of radial intensity profiles, pictures of strange pulsar-like object.
 
 
 
-Monday, 2014 June 9
-===================
+(Week 2) Monday, 2014 June 9
+============================
 
 Summary
 -------
@@ -801,8 +812,8 @@ See `pipeline.md` for details.
     data/spectra/good-2
 
 
-Monday 2014 June 16
-===================
+(Week 3) Monday 2014 June 16
+============================
 
 Summary
 -------
@@ -1091,8 +1102,8 @@ So, let's give up on this decoupled model.  Adding another free parameter is
 just making things worse.
 
 
-Monday 2014 June 23
-===================
+(Week 4) Monday 2014 June 23
+============================
 
 Summary
 -------
@@ -1320,8 +1331,8 @@ the fly.  So that's okay.  It would be good to record some comparative FWHMs /
 uncertainties / chi-squares...
 
 
-Monday 2014 June 30
-===================
+(Week 5) Monday 2014 June 30
+============================
 
 Summary
 -------
@@ -1584,9 +1595,6 @@ Summary
   Sean's unmodified code)
 * Sean/Steve/Brian/Rob email chain on model calculations
 
-NB notes not cleaned up yet (do that soon).  See agenda for more up to date
-todos, list of everything...
-
 Today:
 1. a little more time on FORTRAN and playing with Sean's code.
 2. twiddle fit stuff, make spectra, etc.  Multiple small patches
@@ -1599,35 +1607,162 @@ Today:
 3. tabulate things, explain/write up things in LaTeX file
 4. send things to brian/rob
 
-
+Debugging notes
+---------------
 
 Ah, so the output from the fortran thing (both mine, and Sean's original)
 suggests there's an error in the FWHM calculation ("box length error")
-Add comma to variable declarations in FWHM subroutine?
-(between xmax/xmin)
+Add comma to variable declarations in FWHM subroutine? (between xmax/xmin)
 
 I need to knife this thing with implicit nones everywhere.  Or just port it to
 Python, or something.  For now, I just want to get it working so I can get some
-numbers out.
-
-Approach -- walk through code and comment EVERYTHING, then dive in with a knife
-to fix selected pieces (e.g. the box length error bug).  Then slowly add
+numbers out.  Approach -- walk through code and comment EVERYTHING, then dive 
+in to fix selected pieces (e.g. the box length error bug).  Then slowly add
 improvements.  Not all at once.
-
 
 Goal: for the FWHMs/`m_E` values reported for SN1006, be able to reproduce all
 of Sean's calculated eta/B0 values.
 
+I am getting strange results on the following inputs:
+* B0 = 110d-6
+* eta2 = 0.1
+* mu = 1
+* using fit mode (inu=2 and I set rminarc=100d0)
+* default resolutions, as suggested
 
-B0 = 110d-6
-eta2 = 0.1
-mu = 1
-using fit mode (so, inu=2 and I set rminarc=100d0)
-default resolutions, as suggested
-(spews out numbers)
-
-But this gives patently strange results
-The intensity profile output monotonically decreases with increasing radius, from whatever the scaled radius us (here, 0.88 to 1); the 2nd column (presumably 2 keV) is all NaNs.
+The code spews out numbers (something is going wrong), and the output is quite
+strange.  Intensity profile output monotonically decreases with increasing
+radius, from whatever the scaled radius is (here, 0.88 to 1); the 2nd column
+(presumably 2 keV band) is all NaNs.  The FWHM calculations are being forced
+all the way to the edge (i.e., it can't find a half-max!) -- and thus the FWHM
+error, but really the error seems to be in whatever is generating the profiles.
 
 
-Use python code, get it up by monday. so have some numbers for monday meeting.
+(Week 6) Monday 2014 July 07
+============================
+
+Summary
+-------
+* Checked `m_E` calculations for SN 1006
+* Sanity checks on `m_E` averaging, intensity vs. count unit usage
+* Further clean-up to profile fitting notebook (separated FWHM computation
+  and FWHM analysis/fitting)
+* Began reimplementing / testing Sean's code for fitting equation (6)
+  (catastrophic dump transport equation)
+
+
+SN 1006 `m_E` values
+--------------------
+See notebook.  Verdict -- huge variability in `m_E` values as well, but
+averaging FWHMs and computing `m_E`, or averaging `m_E` values, seems to be
+reasonably consistent!
+
+Computation of average `m_E`
+----------------------------
+A quick calculation: averaging the FWHMs then calculating `m_E` gives:
+
+    m_E = \frac{1}{\log\left(E_2/E_1\right)} \log\left(
+        \frac{ \sum_{i=1}^n \mathrm{FWHM}_{i,2} }
+             { \sum_{i=1}^n \mathrm{FWHM}_{i,1} } \right)
+
+I.e., we compute `m_E` using an _arithmetic_ average of the FWHM values.
+Here we have `n` distinct regions; the 2nd subscript in 1, 2 denotes lower or
+higher energy band respectively (equivalent to primed/unprimed variables, in
+Sean's paper).
+
+If we calculate `m_E` for each region separately, then average the exponents:
+
+    m_E = \frac{1}{\log\left(E_2/E_1\right)} \log\left[ \left(
+        \frac{ \prod_{i=1}^n \mathrm{FWHM}_{i,2} }
+             { \prod_{i=1}^n \mathrm{FWHM}_{i,1} } \right)^{1/n} \right]
+
+I.e., we compute `m_E` using a _geometric_ average of the FWHM values, this
+time.
+
+I'm not sure if that's helpful, but maybe something to keep in mind -- which
+one would better capture the energy scaling?  Ultimately we want the best proxy
+for the real physics, what's really going on, as independent of measurement
+variation as we can get.
+
+Looking at [Wikipedia](http://en.wikipedia.org/wiki/Geometric_mean#Properties)
+and the relevant reference [Comm. ACM](http://dx.doi.org/10.1145/5666.5673),
+I do think the geometric mean is appropriate.
+
+Another intuitive/sketch argument: if we are averaging together small/large
+numbers, random variation/uncertainty in large FWHMs could easily hide or smear
+out the effects of variation in small FWHMs, when we know that the quantity of
+interest is the _"normalized" variation_ between FWHMs, which should be
+consistently calculable, to comparable uncertainties regardless of the size of
+the FWHMs.
+
+Filament 1 of SN 1006 shows this best (regions 1-4, not including 6).
+The `m_E` calculated from the geometric mean is -0.39, vs. -0.16 from the
+arithmetic mean (between 0.7-1, 1-2 keV).  Here region 2 shows a sharp drop in
+rim width, but the FWHM values are quite small.  So when averaged, the larger
+FWHM values predominate; as they show a smaller change in width with energy, so
+the magnitude of `m_E` is smaller.  But, the geometric mean recovers the
+scaling of region 2 -- weighting it equally, in a sense.
+
+(note, we haven't considered errors/uncertainties here -- this also matters).
+
+
+Calculating `m_E` with intensity units
+--------------------------------------
+
+Using total counts vs. intensity flux units, gives very different values for
+`m_E` point to point, and some variation in FWHM calculation.  To check this, I
+compute FWHM values from count units and flux units, and compare the FWHM
+changes in different energy bands (similar to what was done for 1-1.7 keV vs.
+1-2 keV).
+
+Result: it seems like there could be a small shift in FWHM value.  But, the
+FWHM shifts are distributed about zero, both positive and negative, and the std
+deviation is much larger than the mean.  So I think we can neglect this, and
+say that it doesn't matter much.  Besides, we should use intensity units rather
+than count units (because of the exposure/vignetting correction).
+
+
+iPython notebook cleanup
+------------------------
+Damnit this is always cringe-inducing to stare at.
+
+* Moved fit functions to a separate module (but, fit routines which supply
+  initial guesses, run multiple fits with frozen parameters, etc are kept
+  within main notebook).
+* Moved main functionality out into separate method, to minimize global
+  namespace pollution...  now, just run ONE cell and it will populate
+  the region dictionary with information (fits, fwhms, etc)
+* Brian on software maintenance vs. research time: something we all deal with,
+  right?  Remember to think about cost-benefit analysis, how much time it's
+  gonna take.  Put in the time necessary to make it work for you.
+  And, will you reuse it many times, or is it a one-off thing?
+
+Main change: moved FWHM fitting functionality (all calculation of `m_E` and
+similar) to new notebook.  Profile fitting notebook now outputs plaintext and
+serialized objects (Python pickles) storing information about regions.
+
+
+Plot of region profiles and spectra
+-----------------------------------
+Basically, mimicking Figure 8 of Ressler et al.
+Some remarks from quick drop-in with Brian, today.
+* Plot spectra and fits out to 0.5 keV, to show minimal oxygen line emission.
+  Steve (Reynolds) has been worried about thermal emission, need to show that
+  spectra are clean.
+  Oxygen line is at about 0.56 keV.  Expect Tycho to have relatively little
+  oxygen (a fraction of a solar mass).
+* No need to do the two spectra as for SN 1006.  We don't have enough room
+  behind the rim to get clean (nonthermal) spectra, and what they tried to show
+  in SN 1006 (that rims do thin with increasing energy), is somewhat redundant.
+  (and, not quantitative anyways, without spectral indices)
+* Yes, go ahead and make a nice multiple panel plot now -- do once and be done
+  with it
+
+
+Sean's analytic model fitting (equation (6))
+--------------------------------------------
+Migrated Sean's code to iPython notebook to parse FWHM-energy values.
+Slight cosmetic changes / moved things around, but otherwise should be the same
+(need to provide a version of code that validates this).
+
+

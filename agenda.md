@@ -103,53 +103,83 @@ Profile fit to dos:
 
 Other issue
 -----------
-Even if we nail the undershoot/overshoot issue consistently -- we still have
-the problem that our values of `$m_e$` will vary wildly from one region to the
-next, a lot of it due simply to fitting uncertainty...
+On the matter of `m_E` computation:
 
-This gets at the issue discussed with Brian -- why the hell did they average
-such disparate FWHM values, and then back out an average `$m_E$` for the
-filament?
+My current train of thought -- keep calm and fit FWHMs.  Else, use
+point-to-point geometric means (i.e., average `m_E` values, not FWHM values).
 
-My current train of thought -- don't even worry about it!  Just fit FWHMs.  We
-can get `m_E` from point to point measurements (acknowledging yes there's a lot
+We can get `m_E` from point to point measurements (acknowledging yes there's a lot
 of spread) later, but I think it's also worth doing the backtracking -- the
 values of `m_E` will be more robust that way. (e.g., as seen in the
 not-necessarily-meaningful global fits -- values are pretty consistent).
 
-
-Calculate individual mE values from SN 1006 to get an idea of the variability
+And, if anyone disputes the calculations of `m_E`, they can always try
+reproducing it, or suggesting an alternate calculation.  Best we can do is
+perform and present a simple, sensible (i.e. what-you-would-expect)
+calculation.
 
 
 To-dos
 ------
-* Tabulate the results, like what Sean did in LaTeX -- put all the FWHM numbers
-  together, with point-to-point `m_e` calculations and global fit `m_e`
-* Send all the relevant files, plots, numbers, documentation.  Explain the
-  procedure, how everything was done (for whatever paper in works).
 
-* Profiles -- need to generate fits using intensity mosaics, because those have
-  exposure and vignetting corrections.  Should make little difference though.
+Before leaving today (monday jul 7) -- I need to have
+1. manual fits to approximate model, to get some numbers (part done)
+   (compare/contrast using different FWHMs for this computation)
+2. rederive mE following sean's email, and email to follow up!!!! NOT DONE
+
+Aim to send stuff to Brian tomorrow!  As I have said.
+Stop hacking at the code.  Generate spectra for the regions I'm using RIGHT
+NOW (forget about making new regions just yet -- maybe Sean/Steve will have
+thoughts, too!)
+Notate which ones can't be used with 0.7-1keV, figure out a way of doing that.
+
+
+* Demonstrate that I get the same results as Sean's original `Widthfun.py`.
+  This should get a cell/section to itself.
+
+* CREATE a test case for lmfit, to verify it is doing a least squares fit as I
+  would expect (just check against scipy curve fit).
+  During this test -- verify that when I freeze a parameter, chi2red is
+  calculated correctly with one less DOF (if it spits out a chi2red)
+  This should get a cell/section.
+* At some point, verify all of sean's calculated constants
+  This should get a cell/section.
+
+TUESDAY JULY 8
+--------------
+* See Brian's email: generate a handout of region pictures (zoomed in),
+  spectra with fits and numbers, profile fit figures.  Need to send to Sean and
+  Steve so they can see what we're doing.
+
+  0.5 keV to 7 keV to verify that there is no oxygen line
+
 * Add more regions -- can we get the highest 2 energy bands, if the 2-3 keV
   band is going bad due to the sulfur line?
+* GENERATE SET OF REGIONS WITH GOOD 0.7-1 keV FWHM, AND SET OF REGIONS WITH BAD
+  0.7-1 keV FWHM -- as discussed previously.
+
+* In some cases, a 0.7-1 keV FWHM is found even though it's obviously a mess /
+  not possible.  I need to identify and remove these regions.
+  (i.e., push these to set of regions with BAD 0.7-1 keV FWHM)
+
+* Incorporate Tycho's variable shock speed into results (Williams et al., 2013)
+
+AFTERWARDS
+----------
+
+* Tabulate the results, like what Sean did in LaTeX -- put all the FWHM numbers
+  together, with point-to-point `m_e` calculations and global fit `m_e`.
+  Send plots, numbers, documentation -- explain procedure, how everything was
+  done.
+* Eventually, generate a flowchart of what calculations were done, what
+  equations were used (where used), etc... kind of what we're retracing now
+  going through the Ressler paper.
+
 
 * Model code -- test it out first, before automating / wasting time scripting
   stuff up.  Parameter space could be weird, so might have trouble converging
 
 * Kepler -- use CIAO `merge_obs`
 
-Brian -- would be good to have a writeup, flow-chart like thing of what we
-calculated, what we did, what equations were used where -- kind of what we're
-retracing right now going through the Ressler paper.
-
-SHOCK SPEEDS IN TYCHO ARE VARIABLE.  ACCOUNT FOR THIS IN FITS/CALCULATIONS.
-
-* Incorporate Tycho's variable shock speed into results
-* Eventually, generate a flowchart of what calculations were done, what
-  equations were used, etc...
-* See Brian's email: generate a handout of region pictures (zoomed in),
-  spectra with fits and numbers, profile fit figures.  Need to send to Sean and
-  Steve so they can see what we're doing.
-
-
-
+* sanity check that when I run CIAO `merge_obs`, I get the same files that
+  Brian has been sending me...
