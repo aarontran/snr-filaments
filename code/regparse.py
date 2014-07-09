@@ -9,6 +9,8 @@ Aaron Tran
 import os
 import re
 
+import ds9
+
 
 def main():
     print 'Nothing to see here...'
@@ -41,8 +43,11 @@ def check_dir(stem, verbose=False):
         os.makedirs(stemdir)
 
 
-def load_ds9reg(fname):
-    """Returns list of region strings for ds9 region, with headers checked for correctness"""
+def load_ds9reg(fname, aux=False):
+    """List of region strings from ds9 region file;
+    headers checked for correct filetype (does not check coordsys)
+    Trailing newlines are preserved
+    """
     with open(fname, 'r') as f:
         header = f.readline()
         settings = f.readline()
@@ -50,10 +55,40 @@ def load_ds9reg(fname):
         if 'DS9 version 4.1' not in header:
             print 'WARNING: potentially invalid region file'
             print 'First line was: {}'.format(header)
-        if 'physical' not in coordsys:
-            raise Exception('Invalid coordinate system: {}'.format(coordsys))
         regstrs = list(f)
+
+    if aux:
+        return regstrs, (header, settings, coordsys)
     return regstrs
+
+
+def write_ds9reg(fname, regstrs, headers):
+    """Inverse operation for load_ds9reg(..., aux=True)
+    Does not check if file exists.
+    """
+    with open(fname, 'w') as f:
+        for h in headers:
+            f.write(h)
+        for r in regstrs:
+            f.write(r)
+
+
+def conv_fk5_to_phys(f_in, f_img, f_out):
+    """f_in (str) input ds9 region file, fk5 coords
+    f_img (str) input FITS file on which regions are defined
+    f_out (str) output ds9 region file, phys coords
+
+    Warning: does NOT check for overwriting!
+    """
+    d = ds9.ds9()
+    d.set('file ' + f_img)
+    d.set('regions load ' + f_in)
+    d.set('regions system physical')
+    d.set('regions save ' + f_out)
+    d.set('frame clear')  # In case of un-deletable regions
+    d.set('exit')
+    reload(ds9)  # Ad hoc fix
+
 
 
 ################
@@ -62,7 +97,8 @@ def load_ds9reg(fname):
 
 def regparse(regstr):
     """Break a region specification into pieces.
-    Returns three items: rtype (str), rnums (list of floats), rprops (str)"""
+    Returns three items: rtype (str), rnums (list of floats), rprops (str)
+    Preserves trailing newlines"""
     rtype, rnums, rprops = re.split('[\(\)]', regstr)  # This assumes there are no other parentheses floating around...
     rnums = [float(x) for x in re.split('\s*,\s*', rnums)]   # Could improve by only matching first set of parentheses
     return rtype, rnums, rprops

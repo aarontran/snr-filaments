@@ -30,6 +30,13 @@ strong shock -- where did that come from?)
 
 (Rankine-Hugoniot conditions for strong adiabatic shock?..)
 
+turbulent B field amplification (nonlinear plasma physics):
+doi:10.1038/nphys2978 (in a lab! this is really cool)
+[ppt](http://fermi.gsfc.nasa.gov/science/mtgs/symposia/2007/p4/P4.1_Ellison.pdf)
+[AR Bell](http://mnras.oxfordjournals.org/content/353/2/550.full.pdf) (highly
+cited paper on this stuff)
+
+
 Possibly useful link on most recent galactic SNR
 [here](http://chandra.harvard.edu/photo/2008/g19/media/)
 
@@ -119,31 +126,6 @@ perform and present a simple, sensible (i.e. what-you-would-expect)
 calculation.
 
 
-To-dos
-------
-
-Before leaving today (monday jul 7) -- I need to have
-1. manual fits to approximate model, to get some numbers (part done)
-   (compare/contrast using different FWHMs for this computation)
-2. rederive mE following sean's email, and email to follow up!!!! NOT DONE
-
-Aim to send stuff to Brian tomorrow!  As I have said.
-Stop hacking at the code.  Generate spectra for the regions I'm using RIGHT
-NOW (forget about making new regions just yet -- maybe Sean/Steve will have
-thoughts, too!)
-Notate which ones can't be used with 0.7-1keV, figure out a way of doing that.
-
-
-* Demonstrate that I get the same results as Sean's original `Widthfun.py`.
-  This should get a cell/section to itself.
-
-* CREATE a test case for lmfit, to verify it is doing a least squares fit as I
-  would expect (just check against scipy curve fit).
-  During this test -- verify that when I freeze a parameter, chi2red is
-  calculated correctly with one less DOF (if it spits out a chi2red)
-  This should get a cell/section.
-* At some point, verify all of sean's calculated constants
-  This should get a cell/section.
 
 TUESDAY JULY 8
 --------------
@@ -151,7 +133,10 @@ TUESDAY JULY 8
   spectra with fits and numbers, profile fit figures.  Need to send to Sean and
   Steve so they can see what we're doing.
 
-  0.5 keV to 7 keV to verify that there is no oxygen line
+  Notate which ones can't be used with 0.7-1keV for email/pdf.
+  Need to make a blacklist and add to pipeline.
+
+  USE 0.5 keV to 7 keV to verify that there is no oxygen line
 
 * Add more regions -- can we get the highest 2 energy bands, if the 2-3 keV
   band is going bad due to the sulfur line?
@@ -162,7 +147,25 @@ TUESDAY JULY 8
   not possible.  I need to identify and remove these regions.
   (i.e., push these to set of regions with BAD 0.7-1 keV FWHM)
 
+Model stuff
+-----------
+2. rederive mE following sean's email, and email to follow up!!!! NOT DONE
+
+* CREATE a test case for lmfit, to verify it is doing a least squares fit as I
+  would expect (just check against scipy curve fit).
+  During this test -- verify that when I freeze a parameter, chi2red is
+  calculated correctly with one less DOF (if it spits out a chi2red)
+  This should get a cell/section.
+* At some point, verify all of sean's calculated constants
+  This should get a cell/section.
+
+* Demonstrate that I get the same results as Sean's original `Widthfun.py`.
+  This should get a cell/section to itself.
+
 * Incorporate Tycho's variable shock speed into results (Williams et al., 2013)
+
+* USE 3 kpc instead of 2.3 kpc, and will need to investigate this effect soon
+  (2.3 to 4 kpc range).  Brian's paper actually favored a larger distance.
 
 AFTERWARDS
 ----------
@@ -175,11 +178,20 @@ AFTERWARDS
   equations were used (where used), etc... kind of what we're retracing now
   going through the Ressler paper.
 
-
 * Model code -- test it out first, before automating / wasting time scripting
   stuff up.  Parameter space could be weird, so might have trouble converging
 
 * Kepler -- use CIAO `merge_obs`
-
 * sanity check that when I run CIAO `merge_obs`, I get the same files that
   Brian has been sending me...
+
+Later -- integrate region names/labels into workflow?
+
+On using different calculations of the FWHM: how do I show the effect of these
+different procedures?  Some kind of normalization? (Figure 10 of Ressler).
+Quantify effects on calculation of `m_E`, B0, eta2.
+
+After sending spectra to brian, then look at spatial dependence of B field,
+robustness of numbers.  Brian asked -- does B field scale with stronger energy
+dependence?  Should verify this.
+Need to have discussion/commentary on what affects what.

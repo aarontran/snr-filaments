@@ -16,34 +16,83 @@ thawed / whatever.
 
 Region creation, cataloging
 ---------------------------
-
 Open an RGB image of the Tycho data.
 
     ./ds9-tycho-rgb.sh
 
 Select the regions of interest and backgrounds by hand.  Add text labels
 (they will not show up in the CIAO regions).  Color code regions.
-File organization:
 
     data/regions-all.reg
-    data/regions-good-2.reg
-    data/backgrounds.reg
+    data/regions-n/regions-n.reg
+    data/bkg-n/bkg-n.reg
 
 In general -- pick regions either (1) with a bit of thermal uptick in the back,
 for fitting, or (2) stringently avoiding said thermal emission.  You need both,
 at the end.
 
 
+Generate radial profiles from regions
+-------------------------------------
+
+Make plots of radial profiles and save profiles to plaintext.  Do this twice --
+once for profiles in intensity units (with exposure/vignetting corrections),
+once for profiles in count units.  E.g., as follows
+
+First generate data files and plots
+
+    python ../../code/ds9projplotter.py -v \
+        regions-n.reg profiles/prf \
+        --pltroot profiles/plots/plt \
+        --bands 0.7-1kev_mosaic.fits 1-1.7kev_mosaic.fits [...] \
+        --labels '0.7-1kev' '1-1.7kev' [...]
+
+Now generate data files for counts (no plots)
+
+    python ../../code/ds9projplotter.py -v \
+        regions-n.reg profiles/prf-cts \
+        --bands 0.7-1kev_counts.fits 1-1.7kev_counts.fits [...] \
+        --labels '0.7-1kev' '1-1.7kev' [...]
+
+You can also generate, e.g. 3 band images, or subplot figures to better
+compare various bands.  If data is already generated, you can omit --bands
+argument so long as labels and profile root match filenames.
+
+    python ../../code/ds9projplotter.py -v \
+        regions-n.reg profiles/prf \
+        --pltroot profiles/plots/plt-3band \
+        --labels '0.7-1kev' '1-2kev' '2-7kev'
+
+Subplots:
+
+    python ../../code/ds9projplotter.py -v -s \
+        regions-n.reg profiles/prf \
+        --pltroot profiles/plots/plt-3band-sp \
+        --labels '0.7-1kev' '1-2kev' '2-7kev'
+
+
+Fit radial profiles and obtain FWHMs
+------------------------------------
+Use iPython notebook (at shell: `ipython notebook`)
+`code-profiles/profile_process.ipynb`.  Supply a few configuration arguments
+(e.g., labels to fit/store together, same labels given to `ds9projplotter.py`)
+and notebook will output various files (pkl, txt) containing fit information.
+
+This information is needed to then investigate FWHM-energy dependence (and
+hence B field amplification / diffusion models), as well as generate XSPEC
+spectra to check for thermal contamination (fit domains and FWHMs delineate
+where to obtain spectra).
+
+
 Region manipulation (spectra)
 -----------------------------
+Commands executed from data/regions-n/
 
 Convert ds9 region files to CIAO region files
 (for both regions of interest and backgrounds)
 
-    python ds9proj2box.py -v \
-        ../data/2-7kev_mosaic.fits \
-        ../data/profiles_good_cutback.reg \
-        ../data/profiles_good_cutback.ciaoreg
+    python ../../code/ds9proj2ciao.py -v ../2-7kev_mosaic.fits \
+        regions-n.reg regions-n.ciaoreg
 
 Now run a script to make spectra for them all, WITHOUT backgrounds.
 Run the script 1x on the selected background regions too.
@@ -58,10 +107,13 @@ Run the script 1x on the selected background regions too.
     pset specextract verbose=1
     specextract mode=h
 
-    # Not implemented yet
+    # Not implemented
     ciao
     python ciaoreg2spec.py -v 'regions.ciaoreg' 'spectra/reg'
     python ciaoreg2spec.py -v 'bkgs.ciaoreg' 'spectra/bkg'
+
+    # Not implemented
+    python update_spec_names_with_region_labels.py -v 'spectra/reg'
 
 Link spectra to background regions. (must have CIAO initialized)
 
@@ -85,46 +137,11 @@ File organization:
     data/spectra/good-2/reg_ ...
     data/spectra/test-2/reg_ ...
 
-Region manipulation (radial profiles)
--------------------------------------
-
-Make plots of radial profiles and save profiles to plaintext
-
-    python ds9projplotter.py -v \
-        ../data/regions-good-2.reg \
-        ../plots/good-2/plt \
-        -d ../data/profiles/good-2/prf
-
-Here's the newer version now optimized (not really) for an arbitrary number of
-energy bands... first generate data files for everything, then output n-band
-plots using the same script.
-
-    python ../code/ds9projplotter.py -v regions-good-3-allback.reg profiles/good-3-allback/prf -p profiles/good-3-allback/plt-all -b 0.7-1kev_mosaic.fits 1-2kev_mosaic.fits 2-3kev_mosaic.fits 2-4kev_mosaic.fits 2-7kev_mosaic.fits 3-4.5kev_mosaic.fits 4-7kev_mosaic.fits 4.5-7kev_mosaic.fits -l '0.7-1kev' '1-2kev' '2-3kev' '2-4kev' '2-7kev' '3-4.5kev' '4-7kev' '4.5-7kev'
-    
-	# Just generate data files alone, for counts and fluxes!!!!!
-	python ../code/ds9projplotter.py -v regions-good-3-allback.reg profiles/good-3-allback/prf -b 0.7-1kev_mosaic.fits 1-2kev_mosaic.fits 2-3kev_mosaic.fits 2-4kev_mosaic.fits 2-7kev_mosaic.fits 3-4.5kev_mosaic.fits 4-7kev_mosaic.fits 4.5-7kev_mosaic.fits -l '0.7-1kev' '1-2kev' '2-3kev' '2-4kev' '2-7kev' '3-4.5kev' '4-7kev' '4.5-7kev'
-	python ../code/ds9projplotter.py -v regions-good-3-allback.reg profiles/good-3-allback/prf_cts -b 0.7-1kev_counts.fits 1-2kev_counts.fits 2-3kev_counts.fits 2-4kev_counts.fits 2-7kev_counts.fits 3-4.5kev_counts.fits 4-7kev_counts.fits 4.5-7kev_counts.fits -l '0.7-1kev' '1-2kev' '2-3kev' '2-4kev' '2-7kev' '3-4.5kev' '4-7kev' '4.5-7kev'
-	
-	# For overlaid plots
-    python ../code/ds9projplotter.py -v regions-good-3-allback.reg profiles/good-3-allback/prf -p profiles/good-3-allback/plt-3band -l '0.7-1kev' '1-2kev' '2-7kev'
-    python ../code/ds9projplotter.py -v regions-good-3-allback.reg profiles/good-3-allback/prf -p profiles/good-3-allback/plt-4band -l '0.7-1kev' '1-2kev' '2-4kev' '4-7kev'
-    python ../code/ds9projplotter.py -v regions-good-3-allback.reg profiles/good-3-allback/prf -p profiles/good-3-allback/plt-5band -l '0.7-1kev' '1-2kev' '2-3kev' '3-4p5kev' '4p5-7kev'
-	
-	# For subplots
-	python ../code/ds9projplotter.py -sv regions-good-3-allback.reg profiles/good-3-allback/prf -p profiles/good-3-allback/plt-3band-sp -l '0.7-1kev' '1-2kev' '2-7kev'
-	python ../code/ds9projplotter.py -sv regions-good-3-allback.reg profiles/good-3-allback/prf -p profiles/good-3-allback/plt-4band-sp -l '0.7-1kev' '1-2kev' '2-4kev' '4-7kev'
-	python ../code/ds9projplotter.py -sv regions-good-3-allback.reg profiles/good-3-allback/prf -p profiles/good-3-allback/plt-5band-sp -l '0.7-1kev' '1-2kev' '2-3kev' '3-4p5kev' '4p5-7kev'
-
-Geez.  To get 3/4/5 band subplot images for only one region, run:
-`open plt-*band-sp_02.png` (replacing 02 with number of region of choice).
-And it will make it super easy to compare regions in multiple bands.
-
-
-Apply fit model to spectra using `profile_fits.ipynb` (under development).
 
 
 Example bash commands for pipeline
 ==================================
+(out of date, at least as of regions-4-ext, or around early July 2014)
 
 Some verbatim code for processing `regions-good-3`.
 The relevant input and output files are:

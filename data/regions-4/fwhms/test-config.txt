@@ -1,0 +1,15 @@
+Config log (local/system time: 2014-07-08 21:28:10.692049)
+
+Inputs:
+physreg = ../data/regions-4/regions-good-4-ext.physreg
+inroot = ../data/regions-4/profiles/prf
+ctroot = ../data/regions-4/profiles/prf-cts
+outroot = ../data/regions-4/fwhms/test
+labels = ['0.7-1kev', '1-1.7kev', '2-3kev', '3-4.5kev', '4.5-7kev']
+px2arcsec = 0.492
+wlen = 21
+wtype = hanning
+
+Outputs:
+../data/regions-4/fwhms/test.pkl (Python pickle/serialization)
+../data/regions-4/fwhms/test.txt (plaintext regions and FWHM measurements)

@@ -1766,3 +1766,129 @@ Slight cosmetic changes / moved things around, but otherwise should be the same
 (need to provide a version of code that validates this).
 
 
+Tuesday 2014 July 08
+====================
+
+Summary
+-------
+* Generated preliminary Tycho numbers from Sean's approx/analytic fitting code
+* Rearranged directory structure for clarity (hopefully)
+* Updates to profile fitting code
+* Set-up script to split regions into pieces and generate spectra
+* (DOING) set-up profile and spectrum plotting code, for paper figure.
+
+
+Fits to equation 6
+------------------
+Some brief remarks.
+
+1. I'm seeing fields of order 100 to 1000 microGauss, which seems really big
+2. If I use "capped" FWHM measurements, and/or change the distance estimate
+   from 2.3 kpc to ~4 kpc, I get slightly smaller numbers -- but I haven't
+   quantified this, just eyeballing.  I cannot tell whether fits are better
+   with capped FWHM measurements or not.
+   Fits in general are not very good -- large residuals abound.
+3. Concern from yesterday -- errors, as computed for confidence intervals by
+   varying parameters (exploring chi-squared space), are quite large!
+   Especially compared to 1-sigma from the parameter standard deviations.
+
+At least, qualitatively, the numbers are consistent with what Parizot et al.
+(2006) give (~250 to 500 microgauss)
+
+
+Directory re-organization
+-------------------------
+To more easily track where files are located, and to allow for easier
+experimentation/extension to the pipeline structure.
+Pipline organization idea borrowed from Software Carpentry lecture on data
+management: [link](http://software-carpentry.org/v4/data/mgmt.html).
+
+Warning: this will break links between spectrum files.
+
+Anyway, my proposed directory layout follows.  It will likely be updated,
+changed in time (because that always happens) but I hope the general structure
+can be the same/consistent
+
+    data/ *.fits
+          README.md
+          notes-regions.md  # Describe how regions are selected
+
+          region-ID/ README.md  # Describe how spectra/profiles are derived
+                     *.reg      # from region files (scripts, dates, cmds)
+                     *.ciaoreg
+                     *.physreg
+                     *.jpg  # Images of regions on SNR, etc
+                     *.pdf  # Multipanel plot of spectra/profile
+
+                     spectra/ *.pi  # IF multiple sets, push to folders
+                              *.rmf
+                              *.arf
+                              plots/ *.pdf   # Plots of spectra/fits
+                                     *.ps
+                              fits/ *.txt  # Fitting information
+                                    *.qdp  # from XSPEC, etc.
+
+                     profiles/ *.dat  # If multiple sets, push to folders
+
+                               plots/ *.pdf
+                                      *.png
+                               fwhms/ *.pkl
+                                      *.txt
+                                      plots/ *.pdf  # e.g. Fig. 10 of Ressler
+                                      model/ *.txt  # Modeling results?
+
+          background-ID/ README.md  # as for regions
+                         *.reg
+                         *.ciaoreg
+                         spectra/ *.pi
+                                  *.rmf
+                                  *.arf
+
+    code/ regions/
+          spec/
+          profiles/
+          models/
+
+Or something like this.  Exact arrangement of profiles/fwhms stuff TBD.
+
+
+Spectra generation
+------------------
+Spectra locations will be set by FWHM and profile fit locations.
+After computing FWHMs and profile fit domains (smoothed local minimum cut),
+notebook/script saves cut and FWHM locations to pickle/text files.
+
+A script should read the cut/FWHM locations for all regions,
+generate TWO new region files -- one with fronts, one with backs,
+then use ds9proj2box.py to convert to CIAOREG, then feed through specextract
+chain.
+
+Updates to profile fitting
+--------------------------
+* Added additional floor operation to parse DS9 region dimensions to better
+  match DS9 sampling behavior for projections.
+* Define magic constants (smoothing parameters, labels) in main "configuration
+  cell" and output config log to document code inputs/outputs.
+* Serialize fit function as SOURCE CODE, instead of function object, for
+  interoperability (else pickle file requires access to function's
+  containing module).  Also opens opportunity to use JSON for data exchange.
+* Improved output for spectra generation and FWHM processing farther along the
+  pipeline.  Note that the Python pickle (serialization) also includes the
+  fitting function and best fit parameters, so that does document the fit used.
+
+
+ds9projsplitter.py
+------------------
+
+Lalala working on it.
+Good progress so far.  I'll stop, take a frisbee break, grab dinner, and come
+back to finish this (and send plots TONIGHT).
+
+made a number of updates to ds9proj2ciao.py as well.
+
+Plots are your deliverable for the night.
+
+
+Running into issues with multiple copies of ds9 opening, again...
+STUPID SOLUTION -- reload(ds9)...
+

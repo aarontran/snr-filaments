@@ -2,7 +2,7 @@ README, code
 ============
 
 Aaron Tran
-(last updated: 2014 July 3)
+(last updated: 2014 July 8)
 
 Spectrum manipulation
 ---------------------
@@ -44,16 +44,17 @@ execute specextract from command line.
 
 `ds9projplotter.py`
 
-Takes a ds9 region file containing projections, generates output plots of the
-projections.  Uses RGB data from Tycho, specifically.
+Takes a ds9 region file containing projections, generates one or both of
+(1) plots of projection profiles, (2) plaintext projection data.
+Operates on an arbitrary number of fits files (bands).  Labels identify output
+files to corresponding bands (but must be manually input at this time).
 
 `ds9proj2box.py`
 
-Converts ds9 region file with projections into CIAO file, turning projections
-into CIAO rotboxes.
-(ideally, can be extended to convert more DS9 regions to CIAO equivalents)
-(currently, it will only convert projections, and anything else that DS9
-already knows how to convert)
+Converts ds9 region file with projections into CIAO file with rotboxes instead
+of projections.  Other regions are converted to CIAO regions automatically
+(i.e., some will convert as intended by DS9, others will drop out).
+(ideally, extend script to convert more DS9 regions to CIAO equivalents)
 
 `regparse.py`
 

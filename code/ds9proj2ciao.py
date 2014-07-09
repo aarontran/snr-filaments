@@ -1,14 +1,16 @@
 """
-Script to convert ds9 region files to CIAO region files
-Aaron Tran
-June 10, 2014
-(last modified: June 19, 2014)
+Convert ds9 region files to CIAO format (specifically convert projections)
 
-CIAO doesn't recognize boxes, so we must do the following:
+Aaron Tran
+2014 June 10
+(last modified: 2014 July 8)
+
+CIAO doesn't recognize projections, so we must do the following:
 
 1. read in DS9 file containing some projection regions
 2. re-save DS9 file in physical coords
 3. process physical coord DS9 file, and convert projection regions to boxes
+   (coordinate calculations must be done in physical coordinates)
 4. load newly reprocessed DS9 file, then save as CIAO file
 5. clean intermediate files (unless flagged otherwise)
 
@@ -26,6 +28,8 @@ import os
 import re
 
 import ds9
+
+import regparse
 
 
 def main():
@@ -58,19 +62,11 @@ def main():
     fname_physproc = fname_phys + '.proc'
     if verbose:
         print 'Verbose mode enabled'
-        print 'Intermediate files:\n\t{0}\n\t{1}'.format(fname_phys, fname_physproc)
+        print 'Intermediate files:\n\t{0}\n\t{1}'.format(fname_phys,
+                                                         fname_physproc)
     
     # Convert ds9 file to physical coordinates
-    d = ds9.ds9()  # I'm not sure why I'm getting the error
-    # An instance of ds9 was found to be running before we could start the
-    # 'xpans' name server.
-    # It seems to work okay anyways.  Alternatively we can just stick to the
-    # iPYthon notebook
-    d.set('file ' + f_img)
-    d.set('regions load ' + fname_in)
-    d.set('regions system physical')
-    d.set('regions save ' + fname_phys)
-    d.set('frame clear')  # In case of un-deletable regions
+    regparse.conv_fk5_to_phys(fname_in, f_img, fname_phys)
     
     # Parse file in physical coordinates, write new ds9 region file
     with open(fname_phys, 'r') as f:
@@ -99,7 +95,8 @@ def main():
             print 'Finished writing to {}'.format(fname_physproc)
         
     # Load processed region file
-    d.set('file ../data/2-7kev_mosaic.fits')
+    d = ds9.ds9()
+    d.set('file ' + f_img)
     d.set('regions load ' + fname_physproc)
     # Save to CIAO format
     d.set('regions system physical')
@@ -121,8 +118,8 @@ def main():
 
 def proj2box(r):
     """Changes projection string (r) to box string.  No error checking"""
-    rtype, rnums, rprops = re.split('[\(\)]', r)
-    x1, y1, x2, y2, t = [float(x) for x in re.split(',', rnums)]
+    rtype, rnums, rprops = regparse.regparse(r)
+    x1, y1, x2, y2, t = rnums
 
     # Calculate various box parameters
     w = np.sqrt((x2-x1)**2 + (y2-y1)**2)
