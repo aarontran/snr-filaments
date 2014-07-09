@@ -1,0 +1,35 @@
+{
+  "fitstat": [
+    "chi", 
+    95.85075982857362
+  ], 
+  "pars": {
+    "nH": {
+      "value": 0.6899134739981243, 
+      "error": [
+        0.0, 
+        0.0, 
+        "FFFFFFFFF"
+      ]
+    }, 
+    "PhoIndex": {
+      "value": 2.7078541416550177, 
+      "error": [
+        0.0, 
+        0.0, 
+        "FFFFFFFFF"
+      ]
+    }, 
+    "norm": {
+      "value": 9.100658055177358e-05, 
+      "error": [
+        0.0, 
+        0.0, 
+        "FFFFFFFFF"
+      ]
+    }
+  }, 
+  "ftype": 0, 
+  "dof": 94, 
+  "fname": "reg_src13_grp.pi"
+}

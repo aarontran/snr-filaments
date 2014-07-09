@@ -1772,9 +1772,9 @@ Tuesday 2014 July 08
 Summary
 -------
 * Generated preliminary Tycho numbers from Sean's approx/analytic fitting code
-* Rearranged directory structure for clarity (hopefully)
+* Rearranged directory structure for clarity
 * Updates to profile fitting code
-* Set-up script to split regions into pieces and generate spectra
+* Added/tested script to split regions at FWHMs/fit edges, for spectra
 * (DOING) set-up profile and spectrum plotting code, for paper figure.
 
 
@@ -1782,7 +1782,7 @@ Fits to equation 6
 ------------------
 Some brief remarks.
 
-1. I'm seeing fields of order 100 to 1000 microGauss, which seems really big
+1. I'm seeing fields of order 0.1 to 1 mG (mostly 0.1 to 0.5)
 2. If I use "capped" FWHM measurements, and/or change the distance estimate
    from 2.3 kpc to ~4 kpc, I get slightly smaller numbers -- but I haven't
    quantified this, just eyeballing.  I cannot tell whether fits are better
@@ -1803,11 +1803,10 @@ experimentation/extension to the pipeline structure.
 Pipline organization idea borrowed from Software Carpentry lecture on data
 management: [link](http://software-carpentry.org/v4/data/mgmt.html).
 
-Warning: this will break links between spectrum files.
+WARNING: this breaks links between spectrum files.
 
-Anyway, my proposed directory layout follows.  It will likely be updated,
-changed in time (because that always happens) but I hope the general structure
-can be the same/consistent
+My proposed directory layout follows.  It will likely be updated (because
+that always happens) but I hope the general structure can be consistent.
 
     data/ *.fits
           README.md
@@ -1849,7 +1848,19 @@ can be the same/consistent
           profiles/
           models/
 
-Or something like this.  Exact arrangement of profiles/fwhms stuff TBD.
+Or something similar.  Exact arrangement of profiles/fwhms stuff TBD.
+
+
+Updates to profile fitting
+--------------------------
+* Define some magic constants (smoothing parameters, labels) in "configuration
+  cell" and output config log to document code inputs/outputs.
+* Serialize fit function as SOURCE CODE, instead of function object, for
+  interoperability (else pickle file requires access to function's
+  containing module).  Also opens opportunity to use JSON for data exchange.
+* Improved output for spectra generation and FWHM processing farther along the
+  pipeline.  Note that the Python pickle (serialization) also includes the
+  fitting function and best fit parameters, so that does document the fit used.
 
 
 Spectra generation
@@ -1862,19 +1873,6 @@ A script should read the cut/FWHM locations for all regions,
 generate TWO new region files -- one with fronts, one with backs,
 then use ds9proj2box.py to convert to CIAOREG, then feed through specextract
 chain.
-
-Updates to profile fitting
---------------------------
-* Added additional floor operation to parse DS9 region dimensions to better
-  match DS9 sampling behavior for projections.
-* Define magic constants (smoothing parameters, labels) in main "configuration
-  cell" and output config log to document code inputs/outputs.
-* Serialize fit function as SOURCE CODE, instead of function object, for
-  interoperability (else pickle file requires access to function's
-  containing module).  Also opens opportunity to use JSON for data exchange.
-* Improved output for spectra generation and FWHM processing farther along the
-  pipeline.  Note that the Python pickle (serialization) also includes the
-  fitting function and best fit parameters, so that does document the fit used.
 
 
 ds9projsplitter.py
@@ -1891,4 +1889,62 @@ Plots are your deliverable for the night.
 
 Running into issues with multiple copies of ds9 opening, again...
 STUPID SOLUTION -- reload(ds9)...
+
+
+Added blacklist to code
+Blacklisting guideline -- if 1) FWHM could not be calculated from 2exp fit, or
+2) the spline/capped fits could not get a FWHM (i.e., without overshooting we
+could not get a FWHM)
+
+Generating specextract spectra for up/down splits of regions 4.
+
+Shifted cut location determination over to profile process, instead of script.
+Becuase we want to store the cut locations for plotting, later
+
+Updated PyXspec fitting script to fit 0.5 keV to 7 keV, to confirm no oxygen
+line present (as requested by Brian)
+
+
+
+Wednesday 2014 July 9
+=====================
+
+Summary
+-------
+
+Twiddling PyXspec script to print out
+1. fit parameters and errors (get the 90% confidence limits or similar)
+2. energies + bin sizes, counts + uncertainties, folded model values
+
+matplotlib pyplot is not working on 32 bit python, need to get matplotlib to
+build from universal libpng/freetype libraries.
+
+
+Deciphering the values output from pyxspec -- trying to get spectrum
+information
+
+pyxspec gives counts/cm^2/sec/channel, XSPEC prints counts/sec/keV
+
+After much finagling -- use Plot object attributes.
+spectrum/model attributes give raw-er data, calculated by channel and not
+correctly adjusted to energy scaling.
+
+    # where s,m are spectrum, model objects
+    s.noticed, s.energies, s.values, s.variance, m.folded(1)
+
+`spec_fit.py` now dumps useful output to json and npz files.  Also dumps full
+fit log of XSPEC output for reference.
+json file contains fit parameters, chi-squared, etc
+npz file contains data with errors, and folded model
+
+Executed spectra and fits for upstream/downstream spectra.
+Result: yes, rims are very clean.  Downstream not so much, often lots of
+silicon is visible.
+
+
+AHHHHH IN PYXSPEC -- I THINK I NEED TO NORMALIZE BY AREA...
+
+Question: do xspec, or pyxspec, normalize spectra by area? -- according to a
+tutorial, they divide by EFFAREA in response file -- but, this is usually 1.
+The plot is NOT corrected for detector effective area.
 

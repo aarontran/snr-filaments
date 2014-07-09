@@ -1,0 +1,52 @@
+{
+  "dof": 77, 
+  "fitstat": [
+    "chi", 
+    107.13785038436022
+  ], 
+  "ftype": 2, 
+  "pars": {
+    "nH": {
+      "value": 0.5182515207030155, 
+      "error": [
+        0.0, 
+        0.0, 
+        "FFFFFFFFF"
+      ]
+    }, 
+    "PhoIndex": {
+      "value": 2.8785809450767603, 
+      "error": [
+        0.0, 
+        0.0, 
+        "FFFFFFFFF"
+      ]
+    }, 
+    "LineE": {
+      "value": 1.8648322492981217, 
+      "error": [
+        0.0, 
+        0.0, 
+        "FFFFFFFFF"
+      ]
+    }, 
+    "Sigma": {
+      "value": 0.0008016383356421197, 
+      "error": [
+        0.0, 
+        0.0, 
+        "FFFFFFFFF"
+      ]
+    }, 
+    "norm": {
+      "value": 4.326030314445721e-06, 
+      "error": [
+        0.0, 
+        0.0, 
+        "FFFFFFFFF"
+      ]
+    }
+  }, 
+  "eqwidth": 0.389172, 
+  "fname": "reg_src3_grp.pi"
+}

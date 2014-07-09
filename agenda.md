@@ -89,43 +89,6 @@ thinking about wmap, energy levels, etc... need to read more.
 But, doesn't matter that much because we are just checking for no thermal
 contamination, not actually using spectra in results.
 
-Check that file hierarchy is sane.  Move whatever files need to be moved
-(update scripts in time... add one or two bash scripts to pull everything into
-an easy to use thing (i.e., single shot from DS9 region to output plots,
-spectra, spectral fits, profile fits, figures)).
-
-
-Profile fit to dos:
--------------------
-
-7. Somewhere -- script to parse out FIT parameters / eqwidth calculations and
-   make a nice formatted list to make life easier... (FOR SPECTRA)
-9. get spectra for regions-4-ext
-10. make regions-5 with more regions
-11. Think about Tycho -- who else estimated B field amplification?
-    Should the electrons be loss-limited, or what (magnetic field damping
-    instead)?  Make sure our result -- decreasing filament widths -- is sane.
-12. iPython notebook is kind of slow.  Refactor / clean up code
-
-
-Other issue
------------
-On the matter of `m_E` computation:
-
-My current train of thought -- keep calm and fit FWHMs.  Else, use
-point-to-point geometric means (i.e., average `m_E` values, not FWHM values).
-
-We can get `m_E` from point to point measurements (acknowledging yes there's a lot
-of spread) later, but I think it's also worth doing the backtracking -- the
-values of `m_E` will be more robust that way. (e.g., as seen in the
-not-necessarily-meaningful global fits -- values are pretty consistent).
-
-And, if anyone disputes the calculations of `m_E`, they can always try
-reproducing it, or suggesting an alternate calculation.  Best we can do is
-perform and present a simple, sensible (i.e. what-you-would-expect)
-calculation.
-
-
 
 TUESDAY JULY 8
 --------------
@@ -133,19 +96,16 @@ TUESDAY JULY 8
   spectra with fits and numbers, profile fit figures.  Need to send to Sean and
   Steve so they can see what we're doing.
 
-  Notate which ones can't be used with 0.7-1keV for email/pdf.
-  Need to make a blacklist and add to pipeline.
-
-  USE 0.5 keV to 7 keV to verify that there is no oxygen line
-
 * Add more regions -- can we get the highest 2 energy bands, if the 2-3 keV
   band is going bad due to the sulfur line?
+
+Shift region numbering to be more logical (instead of 1, 10-13).
+
 * GENERATE SET OF REGIONS WITH GOOD 0.7-1 keV FWHM, AND SET OF REGIONS WITH BAD
   0.7-1 keV FWHM -- as discussed previously.
 
-* In some cases, a 0.7-1 keV FWHM is found even though it's obviously a mess /
-  not possible.  I need to identify and remove these regions.
-  (i.e., push these to set of regions with BAD 0.7-1 keV FWHM)
+At some point, walk through EACH region with ALL people
+and verify that selections are good.
 
 Model stuff
 -----------
@@ -166,6 +126,11 @@ Model stuff
 
 * USE 3 kpc instead of 2.3 kpc, and will need to investigate this effect soon
   (2.3 to 4 kpc range).  Brian's paper actually favored a larger distance.
+
+* QUESTION: on computing `m_E` point-to-point, why use lower energies, instead
+  of say using median energy of band (median energy of photon population -- of
+  course that will be pretty close to lower energy, I guess, esp. in the
+  farther spectrum)
 
 AFTERWARDS
 ----------

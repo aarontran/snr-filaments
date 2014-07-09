@@ -14,30 +14,106 @@ A lot of tweaking goes into 1. FWHM fitting, and 2. spectrum fitting.  So you
 need to look at the code for that to see what numbers are being set / frozen /
 thawed / whatever.
 
-Region creation, cataloging
----------------------------
-Open an RGB image of the Tycho data.
+Below I give an abbreviated version of the pipeline, for quick reference and to
+see where files go / what code does what.
+
+Pipeline 1: radial profiles and fits
+==================================
+
+## Prerequisites
+Generate energy band images, in both intensity flux units and in uncorrected
+counts (no exposure/vignetting correction).  These will be used throughout.
+
+## Region creation, cataloging
+Open RGB image of the Tycho data.
 
     ./ds9-tycho-rgb.sh
 
-Select the regions of interest and backgrounds by hand.  Add text labels
+Select regions of interest and backgrounds by hand.  Add text labels
 (they will not show up in the CIAO regions).  Color code regions.
+Pick regions with slight thermal uptick in back.  Save copies in fk5 and in
+physical coordinates.
 
-    data/regions-all.reg
-    data/regions-n/regions-n.reg
-    data/bkg-n/bkg-n.reg
+Output: `regions-n.reg`, `regions-n.physreg`
 
-In general -- pick regions either (1) with a bit of thermal uptick in the back,
-for fitting, or (2) stringently avoiding said thermal emission.  You need both,
-at the end.
+## Generate radial profiles from regions
+
+Code:   `../code/ds9projplotter.py`
+Input:  `regions-n.reg`
+Output: `profiles/prf_[...].dat`, `profiles/prf-cts_[...].dat`
+
+## Fit radial profiles and obtain FWHMs
+
+Code:   `../code-profiles/profile_process.ipynb`
+Input:  `regions-n.reg`, `regions-n.physreg`
+Output: `fwhms/fwhm-fits.[txt, pkl, log]`
+
+Pipeline 2: extract and fit spectra
+=================================
+Prerequisite: 1
+
+## Prep/split regions based on profile fits
+
+Code:   `../code/ds9projsplitter.py`
+Input:  `fwhms/fwhm-fits.pkl`, `regions-n.reg`
+Output: `regions-n-[up,down].reg`
+
+Code:   `../code/ds9proj2ciao.py`
+Input:  `regions-n-[up,down].reg`
+Output: `regions-n-[up,down].ciaoreg`
+
+## Extract spectra
+
+Code:   CIAO specextract (Python wrapper `ciaoreg2spec.py` tbd)
+Input:  `regions-n-[up,down].ciaoreg`
+Output: `spectra/[up,down]/*.[pi,rmf,arf]`
+
+*Repeat procedure to obtain background spectra, before continuing*
+
+Code:   `../code/spec_linkbg.py`
+Input:  `regions-n.ciaoreg`, `backgrounds-n.ciaoreg`
+Output: N/A (modifies spectra in place)
+
+## Fit spectra to absorbed powerlaw with Si line
+Run with 32 bit python (`arch -i386 python`), `heainit` (not in same window as
+CIAO), and run in same directory as spectra files (to resolve links)
+
+Code:   `../code/spec_fit.py`
+Input:  `spectra/[up,down]/*.[pi,rmf,arf]`
+Output: `spectra/[up,down]/plots/plt_*.ps`,
+        `spectra/[up,down]/fits/fit_*.[log,npz,json]`
+
+Code:   `../code/spec_plot2pdf.sh`
+Input:  `spectra/[up,down]/plots/plt_*.ps`
+Output: `spectra/[up,down]/plots/plt_*.pdf`
 
 
-Generate radial profiles from regions
--------------------------------------
+Pipeline 3: fit FWHM data to filament models
+============================================
+Prerequisite: 1
 
-Make plots of radial profiles and save profiles to plaintext.  Do this twice --
-once for profiles in intensity units (with exposure/vignetting corrections),
-once for profiles in count units.  E.g., as follows
+## Fit to catastrophic dump transport model
+Equation (6) of Ressler paper
+
+Code:   `../code-models/fwhms_process.ipynb`
+
+Still in development
+
+
+Pipeline 4: generate plots for paper?
+=====================================
+Prerequisite: 1, 2 (so far)
+
+## Plot spectra and profiles
+
+
+
+
+
+Example commands
+================
+Give a full pipeline thing when done (a single shell script would be nice).
+For now this is a melange of text, not useful yet.
 
 First generate data files and plots
 
@@ -70,29 +146,7 @@ Subplots:
         --pltroot profiles/plots/plt-3band-sp \
         --labels '0.7-1kev' '1-2kev' '2-7kev'
 
-
-Fit radial profiles and obtain FWHMs
-------------------------------------
-Use iPython notebook (at shell: `ipython notebook`)
-`code-profiles/profile_process.ipynb`.  Supply a few configuration arguments
-(e.g., labels to fit/store together, same labels given to `ds9projplotter.py`)
-and notebook will output various files (pkl, txt) containing fit information.
-
-This information is needed to then investigate FWHM-energy dependence (and
-hence B field amplification / diffusion models), as well as generate XSPEC
-spectra to check for thermal contamination (fit domains and FWHMs delineate
-where to obtain spectra).
-
-
-Region manipulation (spectra)
------------------------------
-Commands executed from data/regions-n/
-
-Convert ds9 region files to CIAO region files
-(for both regions of interest and backgrounds)
-
-    python ../../code/ds9proj2ciao.py -v ../2-7kev_mosaic.fits \
-        regions-n.reg regions-n.ciaoreg
+.... break in continuity here
 
 Now run a script to make spectra for them all, WITHOUT backgrounds.
 Run the script 1x on the selected background regions too.
@@ -120,22 +174,6 @@ Link spectra to background regions. (must have CIAO initialized)
     ciao # if not initialized
     python spec_linkbg.py 'regions.ciaoreg' 'bkgs.ciaoreg' \
         'spectra/reg' 'spectra/bkg'
-
-Plot spectra with fits to absorbed powerlaw (`phabs*powerlaw`), and output
-fit parameters to same folder as spectra (can change later).
-1. Must run with 32 bit Python
-2. Don't run in same window as CIAO for now (conflict not addressed)
-3. must run in same directory as spectra files
-
-    heainit
-    arch -i386 python ../code/spec_fitplot.py \
-                      spectra/good-2/reg spectra/plots-good-2/plt
-
-File organization:
-
-    data/spectra/bkg/bkg_src*[_grp].[pi,arf,rmf]
-    data/spectra/good-2/reg_ ...
-    data/spectra/test-2/reg_ ...
 
 
 

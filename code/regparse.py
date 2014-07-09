@@ -4,6 +4,7 @@ and assorted useful file IO (common to multiple scripts)
 
 Aaron Tran
 2014 June 23
+(last modified: 2014 July 8)
 """
 
 import os
@@ -13,12 +14,12 @@ import ds9
 
 
 def main():
-    print 'Nothing to see here...'
+    pass
 
 
-#################
-# Region file I/O
-#################
+######################
+# Handy path functions
+######################
 
 def count_files_regexp(stem):
     """Number of grouped files with given directory stem, where
@@ -42,6 +43,10 @@ def check_dir(stem, verbose=False):
             print 'Creating directory {}'.format(stemdir)
         os.makedirs(stemdir)
 
+
+#################
+# Region file I/O
+#################
 
 def load_ds9reg(fname, aux=False):
     """List of region strings from ds9 region file;

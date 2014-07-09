@@ -51,26 +51,32 @@ def main():
 
     if f_oreg is None:
         f_oreg = os.path.splitext(f_reg)[0]
-        if verbose:
-            print 'Output root is {}'.format(f_oreg)
+    if verbose:
+        print 'Output root is {}'.format(f_oreg)
 
     with open(f_pkl, 'r') as f:
         regions = pickle.load(f)
 
-    # Manipulate DS9 region specs in PHYSICAL coordinates
+    # Convert input region file to physical coordinates
+    if verbose:
+        print 'Converting input to physical coordinates'
     f_reg_phys = f_reg + '.tmpphys'
     regparse.conv_fk5_to_phys(f_reg, f_img, f_reg_phys)
     rspecs, headers = regparse.load_ds9reg(f_reg_phys, aux=True)
-    os.remove(f_reg_phys)
+    os.remove(f_reg_phys)  # Clean-up
 
     rspecs_down = []
     rspecs_up = []
-    
-    # Numbering should match order of region file
+
+    # Go through each region, extract correct cuts
+    # and save new subsetted regions
+
+    # Ordering/numbering of regions must match!  This is NOT ENFORCED.
+    if verbose:
+        print 'Applying FWHM/fit cuts from {}'.format(f_pkl)
     for rspec, n in zip(rspecs, regions.keys()):
         reg = regions[n]
-        x1, x2, x3 = get_cuts(reg)
-        x1, x2, x3 = scale_cuts([x1,x2,x3], reg)
+        x1, x2, x3 = scale_cuts(reg['info']['spec_cuts'], reg)
 
         rspecs_down.append(subset_proj(rspec, x1, x2))
         rspecs_up.append(subset_proj(rspec, x2, x3))
@@ -78,8 +84,8 @@ def main():
     # Save to new files
     regparse.write_ds9reg('{}-down.physreg'.format(f_oreg), rspecs_down, headers)
     regparse.write_ds9reg('{}-up.physreg'.format(f_oreg), rspecs_up, headers)
-
     if verbose:
+        print 'Wrote output files {}-down.physreg, {}-up.physreg'.format(f_oreg, f_oreg)
         print 'Done!'
 
 
@@ -89,27 +95,6 @@ def scale_cuts(x, reg):
     px2as = reg['info']['px2arcsec']
     length = reg['info']['length']  # Pixels, not floored
     return x/(px2as*length)
-
-
-def get_cuts(reg):
-    """Cut locations for spectra in arcsec, parsed from region dictionary"""
-    labels = reg.keys()
-    labels.remove('info')
-
-    # Problem: what about bad FWHMs? -- need to manually blacklist
-    x_btw = np.nanmin([reg[lab]['meas']['fwhm-lims'][0] for lab in labels])
-    x_max = np.nanmax([reg[lab]['meas']['fwhm-lims'][1] for lab in labels])
-
-    x_min = -1
-    for lab in labels:
-        # Only use cuts where FWHM could be fitted
-        if np.isfinite(reg[lab]['meas']['fwhm']):
-            ind = reg[lab]['cut']
-            x_cut = reg[lab]['data'][0][ind]
-            if x_min > x_cut or x_min == -1:
-                x_min = x_cut
-    
-    return x_min, x_btw, x_max
 
 
 def subset_proj(rstr, a, b):
