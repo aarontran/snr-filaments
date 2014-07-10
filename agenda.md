@@ -9,20 +9,16 @@ other ephemeral pieces of paper.
 LEARNING (2nd priority for now...)
 ----------------------------------
 
-Basically an evolving to-do list.
-* [snr spectra](http://www.phy.duke.edu/~kolena/snrspectra.html)
-* [x-ray lines](http://www.phy.duke.edu/~kolena/strongxlines.html)
-
 Get an intro level astrophysics textbook
 1. basic radiative processes (thermal, nonthermal emission)
 2. supernova physics (temperatures, radiation/spectra during evolution)
 3. physics of Tycho -- interpretation of the fluff.  ISM gradient.
-4. Ressler et al. (in press, ApJ)
+4. X-ray telescopes.  Resolution, operation, limitations
 
-5. X-ray telescopes.  Resolution, operation, limitations
-
-About radiative lines (XSPEC stuff):
-[atomdb](http://www.atomdb.org/Physics/units.php)
+About thermal emission lines:
+* [atomdb](http://www.atomdb.org/Physics/units.php)
+* [snr spectra](http://www.phy.duke.edu/~kolena/snrspectra.html)
+* [x-ray lines](http://www.phy.duke.edu/~kolena/strongxlines.html)
 
 Q: why is the amplification higher than expected -- what sets the expected amt
 of amplification?  (ressler mentioned expected value of 4x for unmodified,
@@ -36,9 +32,10 @@ doi:10.1038/nphys2978 (in a lab! this is really cool)
 [AR Bell](http://mnras.oxfordjournals.org/content/353/2/550.full.pdf) (highly
 cited paper on this stuff)
 
-
 Possibly useful link on most recent galactic SNR
 [here](http://chandra.harvard.edu/photo/2008/g19/media/)
+
+Organize literature collection/review eventually...
 
 
 Optimization of region selection
@@ -59,15 +56,12 @@ the filament peak width is minimized.  You should generate the projections in a
 consistent way (just for ease of use/manipulation), e.g. starting from outside
 and moving in.
 
-Problem: we also have to consider spectra when optimizing
+Problem: we have to consider spectra + results in 5 bands
 
 THING in TYCHO
 --------------
-Look at spectra of the THING...
-Use a circle, for background use annulus of nearby stuff.
 
-Disappointing.  Looks the same as the rest!  Try breaking it apart into
-different pieces, see if it looks different.
+Try breaking it apart into different pieces, see if it looks different.
 
 About this: see Hwang and Laming (2012, ApJ 746(2)), 3rd paragraph of
 introduction:
@@ -77,17 +71,8 @@ introduction:
 > optical (Fesen 2001 and references therein) and infrared emission (Hines et
 > al. 2004).
 
-Agenda for code/analysis/regions
---------------------------------
 
-4. Inspect regions + spectra/model/residuals...  Rinse and repeat
 
-Note (June 18): I have been neglecting A LOT of parameters in XSPEC, CIAO.
-Mainly in fits (e.g. fit statistic, chi vs. cstat), CIAO I haven't been
-thinking about wmap, energy levels, etc... need to read more.
-
-But, doesn't matter that much because we are just checking for no thermal
-contamination, not actually using spectra in results.
 
 Stuff to send around
 --------------------
@@ -101,6 +86,7 @@ Stuff to send around
 * Make tickmarks readable, fiddle with formatting/sizing
 * Calculate spectra with all 750 ks of data.  Ask Nina for her modified copy
   of Brian's script, which she got to work on a mac.
+* FWHM comparison figure?
 * Add tables of FWHM values, for people to see.  Eventually it will have to be
   in LaTeX.
 

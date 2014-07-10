@@ -3,7 +3,7 @@
 # Because these files are big
 # and downloadable elsewhere
 chandra/**
-!chandra/README*
+!chandra/*.*
 
 # Same principle (doesn't really need version control)
 # (but, BibTeX files and similar should be tracked)

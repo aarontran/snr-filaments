@@ -27,6 +27,7 @@ Things to adjust, presentation
 * Remove "capped-FWHM" lines (done)
 * we can put the plots on a website instead, doesn't have to be a PDF doc.
   Something for collaborators only, or what have you.  nbviewer looks okay.
+  Google Pages is what they've used before?  Pretty simple.
 * For spectra -- plot both rims + downstream areas with absorbed power law fits
   alone, no Gaussian lines.  Want to show that fits are worse for downstream
   region without fitting for thermal lines. (done)
@@ -39,5 +40,7 @@ Things to add / next steps
 * Make tickmarks readable, fiddle with formatting/sizing
 * Calculate spectra with all 750 ks of data.  Ask Nina for her modified copy
   of Brian's script, which she got to work on a mac.
+* Yes, a graphic for the FWHM comparison would be good -- just try and see how
+  it looks.
 * Add tables of FWHM values, for people to see.  Eventually it will have to be
   in LaTeX.

@@ -1953,3 +1953,24 @@ My default matplotlibrc (fontsize 9 everywhere) is good for pdf output,
 hopefully for publication ready figures.  But, it is not so good for viewing
 output within a notebook.  So that needs tweaking, depending on how we present
 this.
+
+
+Thursday 2014 July 10
+=====================
+
+Summary
+-------
+* Tried generating plots of FWHM dependence for multiple regions together
+* Walkthrough of script for generating spectra from all 750ks of Chandra data
+
+
+Region + Tycho images
+---------------------
+Need to use box regions, to get rid of dashed lines (projections).
+
+1. convert to ciaoreg
+2. apply format changes (save as -img.reg)
+3. crop RGB tycho image
+(center on RA, dec = 6.325 deg, 64.15 deg) (00h25m18s, 64d09' 00")
+(8 arcmin = 0.133... deg, just use 0.15 deg)
+
