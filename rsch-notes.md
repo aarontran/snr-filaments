@@ -1962,6 +1962,7 @@ Summary
 -------
 * Tried generating plots of FWHM dependence for multiple regions together
 * Walkthrough of script for generating spectra from all 750ks of Chandra data
+* Added rich images/text etc to profile/spectrum plotting notebook
 
 
 Region + Tycho images
@@ -1969,8 +1970,11 @@ Region + Tycho images
 Need to use box regions, to get rid of dashed lines (projections).
 
 1. convert to ciaoreg
-2. apply format changes (save as -img.reg)
+2. apply format changes (save as -img.reg, with text regions)
 3. crop RGB tycho image
-(center on RA, dec = 6.325 deg, 64.15 deg) (00h25m18s, 64d09' 00")
-(8 arcmin = 0.133... deg, just use 0.15 deg)
+(center on RA, dec = 6.334 deg, 64.137 deg; size 0.17 x 0.17 deg)
+
+Try: 6.324, 64.143 (ra, dec in deg)
+0.165 deg square
+
 
