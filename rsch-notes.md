@@ -1775,7 +1775,6 @@ Summary
 * Rearranged directory structure for clarity
 * Updates to profile fitting code
 * Added/tested script to split regions at FWHMs/fit edges, for spectra
-* (DOING) set-up profile and spectrum plotting code, for paper figure.
 
 
 Fits to equation 6
@@ -1875,35 +1874,28 @@ then use ds9proj2box.py to convert to CIAOREG, then feed through specextract
 chain.
 
 
-ds9projsplitter.py
-------------------
+ds9projsplitter.py + pipeline updates
+-------------------------------------
 
-Lalala working on it.
-Good progress so far.  I'll stop, take a frisbee break, grab dinner, and come
-back to finish this (and send plots TONIGHT).
+Got script `ds9projsplitter.py` working.  After discussion with Brian, we
+decided to plot spectra from two regions, kind of following what Satoru did in
+Sean's paper.  Updated `ds9proj2ciao.py` as well.  Some misc. notes follow:
 
-made a number of updates to ds9proj2ciao.py as well.
+* Running into issues with multiple copies of ds9 opening, again.  Once ds9 has
+  been opened/closed in a Python session, it won't open again (can't find the
+  ds9 instance).
+  STUPID SOLUTION: reload the ds9 module (`reload(ds9)`).
+* Added blacklist to profile fit code (convert FWHMs to NaNs if blacklisted)
+  Blacklisting guideline: if FWHM could not be calculated from 2exp fit, or
+  the spline/capped fits could not get a FWHM (i.e., without overshooting we
+  could not get a FWHM), add to blacklist.  Kind of adhoc and subject to bias,
+  but good enough.
+* Cut locations are determined in profile fit code, so they can be saved to
+  region dictionary for plotting later on.
+* Updated XSPEC fitting script to fit 0.5-7 keV as requested by Brian (confirm
+  no oxygen line at 0.56 keV).
 
-Plots are your deliverable for the night.
-
-
-Running into issues with multiple copies of ds9 opening, again...
-STUPID SOLUTION -- reload(ds9)...
-
-
-Added blacklist to code
-Blacklisting guideline -- if 1) FWHM could not be calculated from 2exp fit, or
-2) the spline/capped fits could not get a FWHM (i.e., without overshooting we
-could not get a FWHM)
-
-Generating specextract spectra for up/down splits of regions 4.
-
-Shifted cut location determination over to profile process, instead of script.
-Becuase we want to store the cut locations for plotting, later
-
-Updated PyXspec fitting script to fit 0.5 keV to 7 keV, to confirm no oxygen
-line present (as requested by Brian)
-
+Also ran specextract on the upstream(rim) / downstream regions.
 
 
 Wednesday 2014 July 9
@@ -1911,40 +1903,53 @@ Wednesday 2014 July 9
 
 Summary
 -------
-
-Twiddling PyXspec script to print out
-1. fit parameters and errors (get the 90% confidence limits or similar)
-2. energies + bin sizes, counts + uncertainties, folded model values
-
-matplotlib pyplot is not working on 32 bit python, need to get matplotlib to
-build from universal libpng/freetype libraries.
+* Improved XSPEC fits + fit output
+* Plotted spectra from upstream/downstream split on regions-4
+* Generated first iteration(s) of multipanel plots for distribution
 
 
-Deciphering the values output from pyxspec -- trying to get spectrum
-information
+XSPEC fitting output
+--------------------
+Script now generates:
+1. plain XSPEC log file as before (with equiv. width + 90% conf. errors)
+2. json file with fit parameters, errors, fit statistic
+3. npz file with spectrum data+errors, folded model, and background
 
-pyxspec gives counts/cm^2/sec/channel, XSPEC prints counts/sec/keV
+Also added option to generate 90% conf. errors, as it is time intensive + error
+prone + may require user input.
 
-After much finagling -- use Plot object attributes.
-spectrum/model attributes give raw-er data, calculated by channel and not
-correctly adjusted to energy scaling.
+Some notes from debugging/etc:
+* matplotlib.pyplot doesn't work with 32 bit python -- need to reinstall
+  matplotlib and build from --universal installs of libpng, freetype libraries
+* After much finagling -- to get spectrum data, use xspec.Plot object
+  attributes (which returns the values used for plotting).
+  Spectrum, model attributes give raw data for channels, not energy bins.
 
-    # where s,m are spectrum, model objects
-    s.noticed, s.energies, s.values, s.variance, m.folded(1)
+Result of upstream/downstream divide
+------------------------------------
 
-`spec_fit.py` now dumps useful output to json and npz files.  Also dumps full
-fit log of XSPEC output for reference.
-json file contains fit parameters, chi-squared, etc
-npz file contains data with errors, and folded model
+From regions-4, it looks like the rims are pretty clear of thermal emission.
+Downstream of the rims is fairly contaminated -- silicon line is usually
+visible, often sulfur as well, and some other lines.
 
-Executed spectra and fits for upstream/downstream spectra.
-Result: yes, rims are very clean.  Downstream not so much, often lots of
-silicon is visible.
+The plots don't seem to be scaled by area -- units are "normalized counts per
+second, per keV".  Satoru's plots (Figure 8) have units "cts/s /keV /cm^2".
+How do you do that in XSPEC??  One link about this normalization issue:
+[link](http://heasarc.gsfc.nasa.gov/xanadu/xspec/manual/XspecWalkthrough.html).
+Not very helpful.  In PyXspec, spectrum object attribute `areaScale` is 1.0,
+which I suppose is the EFFAREA keyword discussed (ctrl-f on "normalization").
 
+It seems like we must scale by detector effective area -- how do we do this?
 
-AHHHHH IN PYXSPEC -- I THINK I NEED TO NORMALIZE BY AREA...
+Downstream regions, with contamination, can't get 90% confidence errors.
+The reduced chi-squared values are too large, so XSPEC errors out.
 
-Question: do xspec, or pyxspec, normalize spectra by area? -- according to a
-tutorial, they divide by EFFAREA in response file -- but, this is usually 1.
-The plot is NOT corrected for detector effective area.
+Plotting
+--------
+Usual spiel -- play with opacity, color, plot markers.  I think it looks pretty
+nice.
 
+My default matplotlibrc (fontsize 9 everywhere) is good for pdf output,
+hopefully for publication ready figures.  But, it is not so good for viewing
+output within a notebook.  So that needs tweaking, depending on how we present
+this.

@@ -1,52 +1,20 @@
 {
-  "dof": 77, 
   "fitstat": [
     "chi", 
-    107.13785038436022
+    173.87950562237958
   ], 
-  "ftype": 2, 
   "pars": {
     "nH": {
-      "value": 0.5182515207030155, 
-      "error": [
-        0.0, 
-        0.0, 
-        "FFFFFFFFF"
-      ]
+      "value": 0.5985943215280569
     }, 
     "PhoIndex": {
-      "value": 2.8785809450767603, 
-      "error": [
-        0.0, 
-        0.0, 
-        "FFFFFFFFF"
-      ]
-    }, 
-    "LineE": {
-      "value": 1.8648322492981217, 
-      "error": [
-        0.0, 
-        0.0, 
-        "FFFFFFFFF"
-      ]
-    }, 
-    "Sigma": {
-      "value": 0.0008016383356421197, 
-      "error": [
-        0.0, 
-        0.0, 
-        "FFFFFFFFF"
-      ]
+      "value": 2.9876444717355537
     }, 
     "norm": {
-      "value": 4.326030314445721e-06, 
-      "error": [
-        0.0, 
-        0.0, 
-        "FFFFFFFFF"
-      ]
+      "value": 8.066746259845052e-05
     }
   }, 
-  "eqwidth": 0.389172, 
+  "ftype": 0, 
+  "dof": 80, 
   "fname": "reg_src3_grp.pi"
 }

@@ -17,6 +17,11 @@ merged_evt.fits
 *.arf
 *.rmf
 
+# Exclude some derived data products... and pdfs (plots etc)
+*.npz
+*.json
+*.pkl
+*.pdf
 
 
 # Various exclusions from

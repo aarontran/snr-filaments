@@ -37,16 +37,22 @@ def main():
     parser.add_argument('fitproot', help='Output stem for fit logs, data')
     parser.add_argument('-v', '--verbose', action='store_true',
                         help='verbose mode')
+    parser.add_argument('-e', '--error', action='store_true',
+                        help=('Compute/output errors from 90% confidence lims'
+                              ' (may need user input / take extra time).'))
 
     args = parser.parse_args()
     specroot, pltroot, fitproot = args.specroot, args.plotroot, args.fitproot
     ftype = args.fittype
     verbose = args.verbose
+    wanterr = args.error
 
     # Get number of spectra to fit (count grouped spectrum files)
     n = regparse.count_files_regexp(specroot + r'_src[0-9]+_grp\.pi')
     if verbose:
         print '\n{} spectra to process'.format(n)
+        if wanterr:
+            print 'Computing errors from 90% confidence limits'
 
     # Check plot output directory, create if needed
     regparse.check_dir(pltroot, verbose)
@@ -70,7 +76,7 @@ def main():
 
         # All XSPEC interaction here
         spec, model = perform_fit(grp_path, ftype)
-        output_fit(spec, model, plt_path, log_root, ftype)
+        output_fit(spec, model, plt_path, log_root, ftype, wanterr)
 
     if verbose:
         print '\nDone!'
@@ -80,7 +86,7 @@ def main():
 # Subroutines to control XSPEC
 # ============================
 
-def output_fit(s, m, pltname, logroot, ftype):
+def output_fit(s, m, pltname, logroot, ftype, wanterr):
     """Plot and print results of fit.  Also computes errors."""
 
     # Print color postscript plot
@@ -95,7 +101,8 @@ def output_fit(s, m, pltname, logroot, ftype):
     xs.Fit.show()
     if ftype == 2:  # Fitting line
         xs.AllModels.eqwidth(3)
-    #xs.Fit.error('1-{}'.format(m.nParameters))  # 90% conf. limit errors
+    if wanterr:
+        xs.Fit.error('1-{}'.format(m.nParameters))  # 90% conf. limit errors
     xs.Xset.logChatter = 0
 
     # Save fit information to JSON file
@@ -111,7 +118,8 @@ def output_fit(s, m, pltname, logroot, ftype):
         p = m(i+1)  # xs.Parameter object
         pardict = fdict['pars'][p.name] = {}
         pardict['value'] = p.values[0]
-        pardict['error'] = p.error
+        if wanterr:
+            pardict['error'] = p.error
     
     with open(logroot+'.json','w') as fj:
         json.dump(fdict, fj, indent=2)  # Pretty print

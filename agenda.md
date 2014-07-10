@@ -89,23 +89,30 @@ thinking about wmap, energy levels, etc... need to read more.
 But, doesn't matter that much because we are just checking for no thermal
 contamination, not actually using spectra in results.
 
+Stuff to send around
+--------------------
 
-TUESDAY JULY 8
---------------
-* See Brian's email: generate a handout of region pictures (zoomed in),
-  spectra with fits and numbers, profile fit figures.  Need to send to Sean and
-  Steve so they can see what we're doing.
+* NEED IMAGES OF TYCHO WITH REGIONS (zoomed in and labeled)
+
+* we can put the plots on a website instead, doesn't have to be a PDF doc.
+  Something for collaborators only, or what have you.  nbviewer looks okay.
+
+* Yes, go ahead and make your region changes / whatnot before sending.
+* Make tickmarks readable, fiddle with formatting/sizing
+* Calculate spectra with all 750 ks of data.  Ask Nina for her modified copy
+  of Brian's script, which she got to work on a mac.
+* Add tables of FWHM values, for people to see.  Eventually it will have to be
+  in LaTeX.
 
 * Add more regions -- can we get the highest 2 energy bands, if the 2-3 keV
   band is going bad due to the sulfur line?
-
-Shift region numbering to be more logical (instead of 1, 10-13).
-
 * GENERATE SET OF REGIONS WITH GOOD 0.7-1 keV FWHM, AND SET OF REGIONS WITH BAD
   0.7-1 keV FWHM -- as discussed previously.
+* Shift region numbering to be more logical (instead of 1, 10-13).
 
 At some point, walk through EACH region with ALL people
 and verify that selections are good.
+
 
 Model stuff
 -----------

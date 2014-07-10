@@ -4,10 +4,8 @@ Aaron Tran
 Summer 2014
 
 N.B. this may not be fully up to date -- see `rsch-notes.md`, and talk to me
-before using pipeline.
-
-The hope is that it's straightforward enough to make sense out of
-(see code documentation / command-line help).
+before using pipeline.  The hope is that it's straightforward enough to make
+sense of, at least (see code documentation / command-line help).
 
 The most fuzzy/hand-wavy part is region selection, see notes in data/ for that.
 A lot of tweaking goes into 1. FWHM fitting, and 2. spectrum fitting.  So you
@@ -16,6 +14,11 @@ thawed / whatever.
 
 Below I give an abbreviated version of the pipeline, for quick reference and to
 see where files go / what code does what.
+
+WARNING: the scripts aren't super robust -- they make assumptions about
+filenames, numbers/ordering, etc..., which generally hold if you follow the
+pipeline.  Manually moving files a lot is not the best idea (best to rerun the
+pipeline).  Numbering/ordering follows region file order, starting from 1.
 
 Pipeline 1: radial profiles and fits
 ==================================
@@ -46,7 +49,7 @@ Output: `profiles/prf_[...].dat`, `profiles/prf-cts_[...].dat`
 
 Code:   `../code-profiles/profile_process.ipynb`
 Input:  `regions-n.reg`, `regions-n.physreg`
-Output: `fwhms/fwhm-fits.[txt, pkl, log]`
+Output: `fwhms/fwhms.[txt, pkl, log]`
 
 Pipeline 2: extract and fit spectra
 =================================
@@ -55,7 +58,7 @@ Prerequisite: 1
 ## Prep/split regions based on profile fits
 
 Code:   `../code/ds9projsplitter.py`
-Input:  `fwhms/fwhm-fits.pkl`, `regions-n.reg`
+Input:  `fwhms/fwhms.pkl`, `regions-n.reg`
 Output: `regions-n-[up,down].reg`
 
 Code:   `../code/ds9proj2ciao.py`
@@ -80,12 +83,12 @@ CIAO), and run in same directory as spectra files (to resolve links)
 
 Code:   `../code/spec_fit.py`
 Input:  `spectra/[up,down]/*.[pi,rmf,arf]`
-Output: `spectra/[up,down]/plots/plt_*.ps`,
-        `spectra/[up,down]/fits/fit_*.[log,npz,json]`
+Output: `spectra/[up,down]/plot/plt_*.ps`,
+        `spectra/[up,down]/fit/fit_*.[log,npz,json]`
 
 Code:   `../code/spec_plot2pdf.sh`
-Input:  `spectra/[up,down]/plots/plt_*.ps`
-Output: `spectra/[up,down]/plots/plt_*.pdf`
+Input:  `spectra/[up,down]/plot/plt_*.ps`
+Output: `spectra/[up,down]/plot/plt_*.pdf`
 
 
 Pipeline 3: fit FWHM data to filament models
@@ -100,11 +103,15 @@ Code:   `../code-models/fwhms_process.ipynb`
 Still in development
 
 
-Pipeline 4: generate plots for paper?
-=====================================
+Pipeline 4: plotting (for paper/review/disc/etc)
+================================================
 Prerequisite: 1, 2 (so far)
 
 ## Plot spectra and profiles
+
+Code:   `../code-models/plotter_prfs_specs.ipynb`
+Input:  `fwhms/fwhms.pkl`, `spectra/[up,down]/fit/fit_*.[log,npz,json]`
+
 
 
 
