@@ -1978,3 +1978,84 @@ Try: 6.324, 64.143 (ra, dec in deg)
 0.165 deg square
 
 
+Plotting notebook
+-----------------
+Add plots of FWHM dependence, nice images of Tycho regions, tables of FWHMs
+(using snippets of HTML).
+
+
+
+
+Friday 2014 July 11
+===================
+
+Summary
+-------
+
+Plotting notebook updates
+-------------------------
+Fixed tickmarks and stuff
+Discussion with Brian about FWHM presentation
+
+Hide cells / reformat output?  If it takes ~half an hour sure but not if it
+takes a half a day.
+
+
+Specextract scripts
+-------------------
+Twiddle paths/setup to work
+
+Acting on regions-4-up and regions-4-down,
+the script took about 1 hr, 50 minutes for each set.
+So, in total, expect ~4 hr (including set-up time).
+Don't let the computer sleep while running.
+
+Plotting notebook changes
+-------------------------
+Many changes -- Discussion with Brian yesterday and today)
+Simple way to think about it -- we have a 3-D space with the axes:
+* region / filament number (i.e., arbitrary ordering whatever)
+* FWHM measurement
+* energy / energy band
+
+
+More SNR data (Kepler, Cas A)
+-----------------------------
+Redownloaded one of the ObsIDs and finished reprocessing everything.
+Now, testing out `merge_obs` using:
+
+    merge_obs "6714/repro,6715/repro,6716/repro,6717/repro,6718/repro,7366/repro" out/ bands="csc" verbose=3
+
+I don't know what energies to pick, to evaluate the exposure map...
+Started at 8:41pm, Friday July 11, computer set to not sleep.
+Finished at 8:57pm?  Dang, that was actually pretty fast
+
+Pretty images!... man.  But they're too small.
+
+FOOL.  You forgot to set the bin size to 1, no wonder!...  Try again at 9:18p
+Finished 22:34 (so, ~1.5 hr. okay, not terrible).
+
+Download Cas A meanwhile.
+
+Saturday 2014 July 12
+=====================
+
+Using grppha with group min 15 on the total spectra...
+Ran the rest of the pipeline on the spectra, twiddled scripts.
+
+Profile plotting notebook now has full spectra + fixes suggested by Brian from
+Friday.  I have a super, super hacky workaround for the website issue --
+just use
+
+    ipython nbconvert --to html plotter_prfs_specs.ipynb
+
+Then go in and search for `<div>` cells like:
+
+    <div class="text_cell_render border-box-sizing rendered_html">
+
+    <div class="cell border-box-sizing text_cell rendered">
+    <div class="cell border-box-sizing code_cell rendered">
+
+I'm very perplexed because the `</div>` tags seem to be crazy mismatched.
+
+Okay need to clean up these notes soon but I think I'm done for today.

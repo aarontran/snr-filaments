@@ -34,18 +34,22 @@ def show_mplrc_settings():
     print 'Figure size: %s, dpi: %g' % (r['figure.figsize'], r['figure.dpi'])
 
 
-def fplot(xlab, ylab, axargs='tight', scales=('linear','linear')):
+def fplot(xlab, ylab, ax=None, axargs=None, scales=None):
     """Convenience method to set x/y labels, axis limits in one cmd
     xlab: xlabel string
     ylab: ylabel string
-    axargs: limits [xmin, xmax, ymin, ymax] or other string arg
+    axargs: limits [xmin, xmax, ymin, ymax] or other string arg (e.g., 'tight')
     scales: [xscale, yscale] (see plt.xscale(...))
     """
-    plt.xscale(scales[0])
-    plt.yscale(scales[1])
-    plt.xlabel(xlab)
-    plt.ylabel(ylab)
-    plt.axis(axargs)
+    if ax is None:
+        ax = plt.gca()
+    if scales is not None:  # Could allow to accept only one arg
+        ax.set_xscale(scales[0])
+        ax.set_yscale(scales[1])
+    ax.set_xlabel(xlab)
+    ax.set_ylabel(ylab)
+    if axargs is not None:
+        ax.axis(axargs)
     # plt.ticklabel_format(useOffset=False, axis='x')
     # plt.ticklabel_format(useOffset=False, axis='y')
 

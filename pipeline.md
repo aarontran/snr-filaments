@@ -63,9 +63,9 @@ Output: `regions-n-[up,down].reg`
 
 Code:   `../code/ds9proj2ciao.py`
 Input:  `regions-n-[up,down].reg`
-Output: `regions-n-[up,down].ciaoreg`
+Output: `regions-n-[up,down].ciaoreg`  # oh
 
-## Extract spectra
+## Extract spectra (from single ObsID)
 
 Code:   CIAO specextract (Python wrapper `ciaoreg2spec.py` tbd)
 Input:  `regions-n-[up,down].ciaoreg`
@@ -73,8 +73,16 @@ Output: `spectra/[up,down]/*.[pi,rmf,arf]`
 
 *Repeat procedure to obtain background spectra, before continuing*
 
+## Extract spectra (from multiple ObsIDs)
+
+Code:   `../code-specs/[newregion,newspectrum,mergespectra].sh`
+Input:  `regions-n-[up,down].ciaoreg` (WCS fk5 coords)
+Output: `spectra/[up,down]/*.[pi,rmf,arf]`
+
+## Link spectra to 
+
 Code:   `../code/spec_linkbg.py`
-Input:  `regions-n.ciaoreg`, `backgrounds-n.ciaoreg`
+Input:  spectra, `regions-n.ciaoreg`, `backgrounds-n.ciaoreg`
 Output: N/A (modifies spectra in place)
 
 ## Fit spectra to absorbed powerlaw with Si line

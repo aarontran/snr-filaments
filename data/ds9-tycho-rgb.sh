@@ -1,6 +1,6 @@
 #!/bin/bash
 echo "Region file to load?"
-read reg
+read -e reg
 
 ds9 -view layout vertical \
     -colorbar orientation vertical \

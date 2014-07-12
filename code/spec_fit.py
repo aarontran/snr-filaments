@@ -3,7 +3,7 @@ Perform phabs*powerlaw XSPEC fit to spectra and output
 plots and fit parameters
 Aaron Tran
 2014 June 17
-(last modified: 2014 July 9)
+(last modified: 2014 July 12)
 
 Initialize HEASOFT (`heainit`) before running this script!
 Run script with 32-bit python (use `arch -i386 python ...`)
@@ -38,7 +38,7 @@ def main():
     parser.add_argument('-v', '--verbose', action='store_true',
                         help='verbose mode')
     parser.add_argument('-e', '--error', action='store_true',
-                        help=('Compute/output errors from 90% confidence lims'
+                        help=('Compute/output errors from 90pct confidence lims'
                               ' (may need user input / take extra time).'))
 
     args = parser.parse_args()

@@ -2,10 +2,10 @@
 
 # Short script to batch convert ps2pdf and remove intermediate .ps files
 # Aaron Tran, 2014 June 17
-# Modified 2014 June 23 (gracefully exit on finding 0 files)
+# Modified 2014 July 12 (add -e flag to read)
 
 echo "Enter file stem (e.g., stem for ./plots/plt_src1_grp.ps is /plots/plt):"
-read stem
+read -e stem
 
 nfiles=`ls -l ${stem}_src*_grp.ps | wc -l`
 echo "${nfiles} .ps files identified"

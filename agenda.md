@@ -35,28 +35,11 @@ cited paper on this stuff)
 Possibly useful link on most recent galactic SNR
 [here](http://chandra.harvard.edu/photo/2008/g19/media/)
 
+The arc in the SE -- see doi:10.1088/0004-637X/732/1/11 (evidence for
+progenitor of the type Ia SN...)
+
 Organize literature collection/review eventually...
 
-
-Optimization of region selection
---------------------------------
-
-2nd order stuff (nice but less important)
-* Optimization
-* Calculate *expected* curvature based on width of regions
-  (idea, could quantify how wide these may be. But, multiple filaments likely
-  to be a larger confounding effect)
-
-Idea: try testing projections for minimum peak width, e.g. using pyds9.
-Could find when peak height is maximized, when trough behind peak is minimized
-(ratio of trough/peak height), estimate peak width, etc...
-
-Supply initial guess regions, then rotate them about their centers (?) until
-the filament peak width is minimized.  You should generate the projections in a
-consistent way (just for ease of use/manipulation), e.g. starting from outside
-and moving in.
-
-Problem: we have to consider spectra + results in 5 bands
 
 THING in TYCHO
 --------------
@@ -73,22 +56,27 @@ introduction:
 
 
 
+Main agenda
+===========
 
-Stuff to send around
---------------------
+*Question/issues for discussion, Monday July 14:*
 
-* NEED IMAGES OF TYCHO WITH REGIONS (zoomed in and labeled)
+* On computing `m_E` point-to-point, why use lower energies, instead of, say,
+  using median energy of band (median energy of photon population -- of
+  course that will be pretty close to lower energy, I guess, esp. in the
+  farther spectrum)
+* grppha -- how do you select bin size (just eyeball, guesstimate?  specextract
+  looks to be doing something more sophisticated, trying to equalize bin widths
+  or something.  Seems like multiple criteria we could use)
+* merge\_obs -- what energy to do exposure map at, for the bands?
 
-* we can put the plots on a website instead, doesn't have to be a PDF doc.
-  Something for collaborators only, or what have you.  nbviewer looks okay.
+*Work/pipeline/asap*
 
-* Yes, go ahead and make your region changes / whatnot before sending.
-* Make tickmarks readable, fiddle with formatting/sizing
-* Calculate spectra with all 750 ks of data.  Ask Nina for her modified copy
-  of Brian's script, which she got to work on a mac.
-* FWHM comparison figure?
-* Add tables of FWHM values, for people to see.  Eventually it will have to be
-  in LaTeX.
+* Ah dammit.  I think I've been using inconsistent coordinate systems etc all
+  this time... so my background links, spectra, regions, etc may all be
+  slightly off.  Argh.
+
+* Update pipeline documentation ...
 
 * Add more regions -- can we get the highest 2 energy bands, if the 2-3 keV
   band is going bad due to the sulfur line?
@@ -96,39 +84,42 @@ Stuff to send around
   0.7-1 keV FWHM -- as discussed previously.
 * Shift region numbering to be more logical (instead of 1, 10-13).
 
-At some point, walk through EACH region with ALL people
-and verify that selections are good.
-
+* Eventually: run whole pipeline on one set of ALL regions, sampled all around
+  SNR, save the output.  Use this to argue/show why regions are good/bad.
 
 Model stuff
 -----------
-2. rederive mE following sean's email, and email to follow up!!!! NOT DONE
+
+### Python lmfit, approx equation
 
 * CREATE a test case for lmfit, to verify it is doing a least squares fit as I
   would expect (just check against scipy curve fit).
   During this test -- verify that when I freeze a parameter, chi2red is
   calculated correctly with one less DOF (if it spits out a chi2red)
-  This should get a cell/section.
 * At some point, verify all of sean's calculated constants
-  This should get a cell/section.
-
 * Demonstrate that I get the same results as Sean's original `Widthfun.py`.
-  This should get a cell/section to itself.
 
+### All models
 * Incorporate Tycho's variable shock speed into results (Williams et al., 2013)
-
 * USE 3 kpc instead of 2.3 kpc, and will need to investigate this effect soon
   (2.3 to 4 kpc range).  Brian's paper actually favored a larger distance.
 
-* QUESTION: on computing `m_E` point-to-point, why use lower energies, instead
-  of say using median energy of band (median energy of photon population -- of
-  course that will be pretty close to lower energy, I guess, esp. in the
-  farther spectrum)
+* Model code -- test it out first, before automating / wasting time scripting
+  stuff up.  Parameter space could be weird, so might have trouble converging
 
-AFTERWARDS
-----------
+Then look at spatial dependence of B field, robustness of numbers from approx
+python model. Brian asked, does B field scale with stronger energy dependence
+Should verify this. Need to have discussion/commentary on what affects what.
 
-* Tabulate the results, like what Sean did in LaTeX -- put all the FWHM numbers
+On using different calculations of the FWHM: how do I show the effect of these
+different procedures?  Some kind of normalization? (Figure 10 of Ressler).
+Quantify effects on calculation of `m_E`, B0, eta2.
+
+
+Documentation/poster/paper
+--------------------------
+
+* Tabulate the results in LaTeX -- put all the FWHM numbers
   together, with point-to-point `m_e` calculations and global fit `m_e`.
   Send plots, numbers, documentation -- explain procedure, how everything was
   done.
@@ -136,20 +127,14 @@ AFTERWARDS
   equations were used (where used), etc... kind of what we're retracing now
   going through the Ressler paper.
 
-* Model code -- test it out first, before automating / wasting time scripting
-  stuff up.  Parameter space could be weird, so might have trouble converging
+More supernova remnants
+-----------------------
 
 * Kepler -- use CIAO `merge_obs`
 * sanity check that when I run CIAO `merge_obs`, I get the same files that
-  Brian has been sending me...
+  Brian has been sending me... (so, verify that it works right with Tycho, then
+  test on kepler???)
+* Question: looks like `reproject_obs` will give evt file (which can then be
+  partitioned by `dmcopy`, is that good enough....
 
-Later -- integrate region names/labels into workflow?
-
-On using different calculations of the FWHM: how do I show the effect of these
-different procedures?  Some kind of normalization? (Figure 10 of Ressler).
-Quantify effects on calculation of `m_E`, B0, eta2.
-
-After sending spectra to brian, then look at spatial dependence of B field,
-robustness of numbers.  Brian asked -- does B field scale with stronger energy
-dependence?  Should verify this.
-Need to have discussion/commentary on what affects what.
+Read `merge_obs` documentation, play with outputs

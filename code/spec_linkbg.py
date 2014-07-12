@@ -1,8 +1,8 @@
 """
 Script to link region spectra with nearest backgrounds
 Aaron Tran
-June 12, 2014
-(last modified: June 23, 2014)
+2014 July 12
+(last modified: 2014 July 12)
 
 Initialize CIAO before running this script!
 """
@@ -20,7 +20,7 @@ def main():
     """
     parser = argparse.ArgumentParser(description=
              ('Link spectra to closest background spectra (modifies FITS '
-             'header keywords). Example usage: '
+             'header keywords). Acts on orig + grouped files. Example usage: '
              'python spec_linkbg.py -v ../data/profiles_good_2.ciaoreg '
              '../data/profiles_bg.ciaoreg ../data/spectra/good-2/reg '
              '../data/spectra/bkg/bkg'))
