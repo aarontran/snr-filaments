@@ -2057,5 +2057,17 @@ Then go in and search for `<div>` cells like:
     <div class="cell border-box-sizing code_cell rendered">
 
 I'm very perplexed because the `</div>` tags seem to be crazy mismatched.
+(and, I can't believe that pandoc is just embedding images inline...)
 
 Okay need to clean up these notes soon but I think I'm done for today.
+
+
+Monday 2014 July 14
+===================
+
+Continuing issue - how to best deal with FWHM presentation?
+* Normalize averaged values, or average normalized values
+* Error calculation -- Sean's procedure, or std. err of mean
+
+Brian suggests using Sean's procedure for now for consistency, discuss with
+Rob/Steve/Sean/Satoru what to do.
