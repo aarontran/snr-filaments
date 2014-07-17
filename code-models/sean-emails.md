@@ -91,6 +91,42 @@ numerical solution best-fit values for eta (diffusion coefficient) and B0
 > the dependence of `m_E` on E, but with 4-5 bands in Tycho this information
 > could be very useful
 
+Wednesday 2014 July 16
+======================
+
+I emailed a few questions:
+
+* You are using Simpson's rule to integrate along lines-of-sight
+  (yielding intensity profiles)?
+* To confirm, the normalization of synchrotron emissivity doesn't matter?
+  Just curious as I saw a factor sqrt(nu * B) which looks like it doesn't
+  affect the FWHM as well, maybe needed for magnetic damping / plots.
+  (rederiving, I got prefactor `$c_3 / (4 * \sqrt{c_1})$` )
+* The guide you sent mentioned that there was some code for the magnetic
+  damping model.  I'm wondering if that was included? as I couldn't see any
+  code with a spatially varying B field.
+* Do you think it's worth porting the code to Python?  I'm hope it would ease
+  the addition of a fitting algorithm; the main issue I could see is slower
+  run times (maybe okay with f2py, cython, or similar).  Just wondering if
+  there are other issues you may foresee, given that this is your code!
+
+Sean's replies:
+
+1. Yep!
+2. Also yes. I think I just stopped adding constants halfway through and never
+   went back to delete them. Though there is a factor that does matter which is
+   multiplied by one of the electron distributions to make sure the two
+   versions are consistently normalized, so if you remove any constants you
+   will also have to change that number appropriately.
+3. Yeah, that's a second version of the code that I can send you tomorrow.
+4. I do.  That is actually how I tried to add the fitting algorithm in the
+   first place (using f2py), but it didn't work immediately and I didn't have
+   time to debug at the time.  The porting worked, but unfortunately I'm not
+   sure if I still have the remnants of it...I will check. Also, I did this
+   with an older version of the code, so it might just be easier to redo it on
+   your end if your familiar with f2py.
+
+
 
 Further emails regarding the model/etc go here
 (possibly from Steve Reynolds as well)

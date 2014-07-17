@@ -2134,3 +2134,20 @@ yet.  And I haven't run any timing tests.
 
 Started looking into the synchrotron spectrum numbers and stuff...
 Checked out Shu, Shu, and Pacholczyk
+
+
+Thursday 2014 July 17
+=====================
+
+
+Updated simpson's rule implementation (changed coefficients to be more
+consistent with, e.g., wikipedia article)
+Results for test case (B0=100d-6, eta2=1, mu=1):
+33.75" at 1.00 keV, 27.00" at 2.00 keV, with m\_E = -0.32 at 2 keV.
+Okay, looks good, just a small change.  Also added middle pt to integration
+(divide by two).
+
+Checking electron distribution functions - change of variables (check the math
+and check the behavior at singularities -- some ad hoc fixes seem hardcoded.
+
+(then, afterwards, walk through synchrotron derivations and constants)

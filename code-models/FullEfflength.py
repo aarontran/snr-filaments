@@ -51,9 +51,18 @@ def main(Bfield, eta2, mu):
         disttab = tabulate_e_distr(...)  # 2-D np.array in particle energy, r
         jnu = emisx(...)  # either a function or a table over radial pos x
 
-def emisx(r, nu, B, emis1, radtab, disttab, imu):
+def emisx(r, nu, B, radtab, disttab):
     """Numerically integrate 1-particle synchrotron emissivity (emis1) over
-    electron distribution to obtain full emissivity j_\nu"""
+    electron distribution to obtain full emissivity j_\nu
+    Inputs:
+        r: radial coordinate (TODO: scaled, arcsec, ??)
+        nu: radiation frequency in Hz
+        radtab: table of radial coords, on which electron distr is sampled
+                (set by iradmax; compare irmax for intensity tables)
+        disttab: electron distribution function, gridded as:
+                 xex(j) (particle energy / radiation frequency), radial coord
+    Output: j_\nu(r), r = radial dist, j_\nu a scalar (float)
+    """
     pass
 
 # utilities

@@ -292,6 +292,7 @@ TBD...
 
 Mainly for documentation / reference.
 
+% Diffusion coeff
 \subsection*{Scaled diffusion coefficient $\eta_2$}
 
 The diffusion coefficient is defined as $D(E) = \eta D_B(E_h) (E/E_h)^\mu$
@@ -342,6 +343,7 @@ this, but I don't think it's obvious that $\eta$ depends on the choice of
 fiducial energy $E_h$ (Sean mentions this as a ``degeneracy'' in the choice of
 $\eta$ and $E_h$).
 
+% Emissivity calculation / integration
 \subsection*{Synchrotron emissivity integration (equation (20))}
 
 Equation (20) is best evaluated as an integral over scaled frequency
@@ -375,6 +377,29 @@ Some caveats:
 
 I will follow this up by reading Pacholczyk and Rybicki \& Lightman, which will
 hopefully explain some of the notation.
+
+
+% Electron distribution integrals
+\subsection*{Electron distribution calculations}
+
+For $\mu < 1$, we have equation (15) implemented with... (for the general case)
+Define $n = 1 - t^2$, as a change of variables ($dn$ to $dt$).
+\[
+    \text{argexp} = \frac{n^{1/(1-\mu)} E}{E_{\mt{cut}}}
+    + \frac{(1 - \mu)
+        \left[ l_{\mt{ad}}/\alpha \left(1 - n^{1/(1-\mu)}\right) - x \right]^2}
+        {4 l_{\mt{diff}}^2 (1-n) / \alpha}
+\]
+with integrand:
+\[
+    2 (1 - t^2)^{ (s+\mu-2) / (1-\mu) } \exp(-\text{argexp})
+\]
+and normalization:
+\[
+    \frac{Q_0}
+    {2 \sqrt{ \pi \alpha b B^2 \frac{\eta E_h^{1-\mu} C_d}{B} (1-\mu) }}
+    E^{ -(\mu/2 + 1/2 + s)}
+\]
 
 % ----------
 % Appendix B

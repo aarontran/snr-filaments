@@ -204,7 +204,7 @@
               ! emis1 = emisx(rho ...)
               ! x = x + dx
               emis1 = emisx(1d0, nu,B0,radtab,disttab) ! j_nu(r)
-              integral = emis1*dx/3d0
+              integral = emis1*dx ! /3d0  ! Removed division by 3
               x = dsqrt(1d0-r**2)+dx
 
               ! Integration to find intensity
@@ -213,17 +213,22 @@
                 emis1 = emisx(rho, nu,B0,radtab,disttab)
 
                 if (mod(ix,2).eq.0) then
-                  integrand =2d0*emis1     
+                  integrand =4d0*emis1  ! Changed to 4 from 2
                 else
-                  integrand =4d0*emis1 
+                  integrand =2d0*emis1  ! Changed to 2 from 4
                 endif
 
                 integral = integral + integrand*dx
                 x = x+dx
               enddo
 
+              ! Endpoint - middle
+              rho = dsqrt(x**2 + r**2)  ! Should be just r
+              emis1 = emisx(rho, nu,B0,radtab,disttab)
+              integral = integral + emis1*dx / 2d0  ! No double count
+
               intensity = integral
-              ! TODO: this if check shouldn't be necessary
+              ! as dx < 0, this check is necessary...
               if (intensity.lt.0d0) intensity = -1d0*intensity
               intensitygraph(inu,i) = intensity
   
@@ -295,14 +300,6 @@
 ! j_nu(r, nu, B, radtab, disttab) is a function of radial coordinate r
 ! noting that r != x ... set by e- dist. functions in terms of r, not x
 
-! TODO: what happened to factor $c_3 * 1/sqrt{c_1} * 1/4$ ???
-! Maybe overall normalization doesn't matter...
-! If overall normalization doesn't affect FWHMs, why include sqrt(nu*B)?
-! It could matter for B = B(x) in magnetically damped model.
-! nu would not matter for FWHM at all, except to get comparative
-! normalization right for plots of multiple filaments.
-! Well, that makes sense too.
-
       function emisx(r, nu, B, radtab, disttab)
           implicit none
 
@@ -356,7 +353,7 @@
             intgdold = intgd
           enddo
 
-          emisx = trpsum*dsqrt(nu*B)  ! Why this normalization?
+          emisx = trpsum*dsqrt(nu*B)  ! Constant prefactors skipped
           return
       end
 
@@ -364,49 +361,77 @@
 ! ------------------------------------------------
 ! Electron distribution function, for mu < 1
 ! Equation (15), from Lerche & Schlickeiser (1980)
+!
+! E = particle energy, B = magnetic field
+! ecut = cut-off energy of injected electrons
+! s = spectral index of injected electrons
+! r = radial position
+! eta = \eta*(E_h)^(1-\mu), from the paper
+! mu = diffusion coefficient exponent
+! rs, v = shock radius, plasma velocity
 ! ------------------------------------------------
 
+!disttab(j,irad) = distrmlt1(en,B0, ecut,rad,eta,mu, rs, v0,s)
+
+! Removed constant k0=1d0, which was only used in one location
+
       function distrmlt1(E,B, Ecut,r, eta,mu, rs, v,s)
-          double precision v, tau, E, Ecut
-          double precision distrmlt1, vs
-          double precision D0, B, a, b0, alpha
-          double precision k0, s, integrand
-          double precision x, n, argexp,pi, dn, rs, r
-          double precision integral, rsc, dr
-          double precision oldintegrand, nmin, dy
-          double precision y,q,t, dt, dellog, dE
-          double precision tmax, integrandmax
-          double precision tmin, lad, ldiff
-          double precision epsmax, epsmin, eps
-          double precision en0, efinv, ef,  Xi
-          double precision br, bt
-          double precision  mu, muvector(1:5)
-          double precision Bfield, eta, eh
-          integer imu
+          implicit none
+          !double precision v, tau, E, Ecut
+          !double precision distrmlt1, vs
+          !double precision D0, B, a, b0, alpha
+          !double precision k0, s, integrand
+          !double precision x, n, argexp,pi, dn, rs, r
+          !double precision integral, rsc, dr
+          !double precision oldintegrand, nmin, dy
+          !double precision y,q,t, dt, dellog, dE
+          !double precision tmax, integrandmax
+          !double precision tmin, lad, ldiff
+          !double precision epsmax, epsmin, eps
+          !double precision en0, efinv, ef,  Xi
+          !double precision br, bt
+          !double precision  mu, muvector(1:5)
+          !double precision Bfield, eta, eh
+          !integer imu
 
-          D0 = eta*2.083d19/B  ! eta*C_d/B0
-          a = 1.57d-3
-          k0 = 1d0
+          double precision E, r  ! Variables to grid over
+          double precision B, mu, rs, v, s  ! Input/constants
+          double precision Ecut, eta ! Derived from program inputs
 
-          b0 = a*B**2d0
-          alpha = 1d0
-          pi = 4d0*datan(1d0)
+          ! Various constants
+          double precision D0, a, b0, alpha, pi
+          double precision tau, lad, ldiff, x
+          double precision tmin, tmax
 
-          tau = 1d0/b0/E
-          lad = v*tau
-          ldiff = dsqrt(D0*E**mu*tau)
+          double precision distrmlt1
 
-          x = (rs-r*rs)/alpha
+          ! Caught by implicit none
+          integer it, itmax ! Array variables
 
+          D0 = eta*2.083d19/B  ! eta (E_h)^(1-mu) * C_d / B0
+          a = 1.57d-3  ! This is b in the paper
+          k0 = 1d0  ! Normalization constant Q_0
+          b0 = a*B**2d0  ! b * B^2 in paper
+          alpha = 1d0  ! TODO: not sure what this is, scaling factor?
+          pi = 4d0*datan(1d0)  ! Just pi
+
+          tau = 1d0/b0/E  ! Synchrotron cooling time
+          lad = v*tau  ! Advective lengthscale
+          ldiff = dsqrt(D0*E**mu*tau)  ! Diffusive lengthscale
+
+          x = (rs-r*rs)/alpha  ! Convert radial coord to x
+
+          ! ???
           tmin = 0d0
           tmax = 1d0
 
+          !If lad >> ldiff, compute easy solution and skip to end
           if (lad/ldiff.gt.30d0) then  !If lad<<ldiff the solution is easy
             efinv = a/v*B**2d0*(rs-r*rs)
             ef =1d0/efinv
             en0 = E/(1d0-E/ef)
             argexp = en0/ecut
-            Xi = 1d0-E/ef
+            Xi = 1d0-E/ef 
         
             if (Xi.gt.0d0) then
               integral = 1./en0**s*(en0/E)**2/dexp(argexp)*8d-9
@@ -427,8 +452,8 @@
             n = 1d0-t**2d0
 
             argexp = n**(-1d0/(1d0-mu))*E/Ecut+
-     &               (lad/alpha*(1d0-n**(1d0/(1d0-mu)))-x)**2d0/
-     &               (4d0*ldiff**2d0*(1d0-n)/alpha)*(1d0-mu)
+     &               ( lad/alpha*(1d0-n**(1d0/(1d0-mu)))-x )**2d0 /
+     &               (4d0*ldiff**2d0*(1d0-n)/alpha) * (1d0-mu)
 
             if (n.eq.1d0) argexp = 1d35
 
@@ -445,6 +470,7 @@
      &               E**(-1d0*(mu/2d0+1d0/2d0+s))*integral
           distrmlt1 = integral
 
+          ! Exit point for lad >> ldiff case
   444     continue
 
           distrmlt1 = integral
