@@ -24,7 +24,7 @@ Q: why is the amplification higher than expected -- what sets the expected amt
 of amplification?  (ressler mentioned expected value of 4x for unmodified,
 strong shock -- where did that come from?)
 
-(Rankine-Hugoniot conditions for strong adiabatic shock?..)
+(Rankine-Hugoniot conditions for strong adiabatic shock?.. go read Shu)
 
 turbulent B field amplification (nonlinear plasma physics):
 doi:10.1038/nphys2978 (in a lab! this is really cool)
@@ -59,22 +59,26 @@ introduction:
 Main agenda
 ===========
 
-*Question/issues for discussion, Monday July 14:*
-
-* On computing `m_E` point-to-point, why use lower energies, instead of, say,
-  using median energy of band (median energy of photon population -- of
-  course that will be pretty close to lower energy, I guess, esp. in the
-  farther spectrum)
-* grppha -- how do you select bin size (just eyeball, guesstimate?  specextract
-  looks to be doing something more sophisticated, trying to equalize bin widths
-  or something.  Seems like multiple criteria we could use)
-* merge\_obs -- what energy to do exposure map at, for the bands?
-
 *Work/pipeline/asap*
+
+So need to
+1. overhaul specextract pipeline (handle region coordinates correctly, test and
+   ensure it works correctly with my adjustments)
+2. rehaul data structuring for FWHMs because it's a pain in the ass to plot /
+   organize
+3. include switches to test different measurements/procedures, for
+   reproducibility.
+4. proper config files / cmd line arguments for fitting/FWHM analysis scripts?
+5. clean up rsch notes document... keep track of what changes/etc I've been
+   making
+
+
+* overhaul pipeline for profile fit / FWHM processing again -- it's just so
+  messy, and feels hard to work with
 
 * Ah dammit.  I think I've been using inconsistent coordinate systems etc all
   this time... so my background links, spectra, regions, etc may all be
-  slightly off.  Argh.
+  slightly off.  Argh. Need to fix this.
 
 * Update pipeline documentation ...
 
@@ -89,6 +93,35 @@ Main agenda
 
 Model stuff
 -----------
+
+One major issue -- appropriate electron distribution parameters for TYCHO!
+Cut-off energy, spectrum index, etc.  Where did he get value 2.2 for SN 1006?
+
+One big question -- what are the qualitative differences between the models --
+this seems somewhat addressed by the discussion of electron cut-off energy.
+
+Why should the cut-off energy be set by equating loss times and acceleration
+times?  Is that to say that, the electrons radiate faster than they can be
+accelerated?  But that seems weird -- because I thought the acceleration is
+what gives rise to the radiation.  Please read rettig/pohl carefully, take
+notes, rederive things.
+
+How the hell to get such strong B field values?!
+
+Another issue -- when converting from particle energy E to radiated frequency
+nu, doesn't the use of `$\nu_m = c_m E^2 B$` implicitly invoke the
+delta-function approximation for synchrotron radiation?  I have no idea how
+you'd do it otherwise though -- the diffusion coefficient is set by a singular
+electron energy, which corresponds to some distribution of synchrotron
+radiation.  But, perhaps, for an individual electron this is not a bad
+approximation?  I don't understand the physics of the derivation of synchrotron
+stuff (MUST REVIEW ALL OF THIS...).
+
+Further clarification with Sean -- after having rederived `m_E` and all, I am
+convinced that the output from `Widthfun.py` should allow us to use equation
+(23) to compute `m_E`.  I think, Sean misread my question / my question was
+unclear, and so that is important in attempting to describe `m_E` using the
+FULL numerical code (the full power of this orbiting ........)
 
 ### Python lmfit, approx equation
 

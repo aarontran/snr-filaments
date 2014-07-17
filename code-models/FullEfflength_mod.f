@@ -4,26 +4,14 @@
 ! B0 = magnetic field, eta2 = scaled diffusion coefficient at 2 keV
 ! mu = spectral index of diffusion coefficient power law dependence
 !
-! Reference: Ressler et al., ApJ, in press
+! Reference: Ressler et al., 2014, ApJ
 !
 ! UPDATED by Aaron Tran for application to Tycho's SNR
 ! Summer 2014
 !
-! Major changes (so far, if documented):
-! Retab, edit spacing/comments for readability
-!
-! There are number of FORTRAN extensions/etc in use, I think.
-! so I'll walk through the file and try to clean things up.
-! I am not being entirely consistent on enforcing line lengths etc
-! though I'm trying to use 4-space indentation throughout
-! and generally be fixed width compliant.
-!
 ! Statement labels right aligned from column 5
 ! Continuation ampersands on column 6
 ! Exclamation points for all comments (even though not FORTRAN 77)
-!
-! continue/goto structures in electron distribution calculations
-! need to be cleaned
 ! ----------------------------------------------------------------------
 
       program Fullefflength
@@ -47,6 +35,14 @@
           double precision disttab(100, 1000), radtab(1000)
           double precision distgraph(1000)
           double precision eta, mu, eta2
+
+          ! ADDITION: explicit variable declarations
+          ! to avoid type mismatch (and bugs and things)
+          ! BUT I think variables E, B are wrong anyways...
+          double precision E, B, s
+          double precision emisx  ! function
+          double precision Distgraphr  ! function
+          integer ir
 
           integer icut, ifit, iplot
 
@@ -87,8 +83,9 @@
 
           open(242, file = 'widthcut2.dat')
           open(243, file = 'distint.dat')
-          open(119, file = 'disttab.dat')
-          open(225, file='FLUX.dat')  ! Doesn't appear to be in use, as
+          ! open(119, file = 'disttab.dat')  ! Doesn't seem to be in use?
+                                             ! No other references to 119
+          open(225, file='FLUX.dat')  ! Doesn't seem to be in use, as
                                       ! lines are commented out below
                                       ! Superseded by widthcut2.dat?
 
@@ -115,19 +112,19 @@
           endif
 
 ! Read frequency-dep. synchrotron emissivity table to common block
+! variables xex, fex
           open(9, file='fglists.dat', status='old')
-          
           do 90 ir = 1, 300
-              read(9,*) xex(ir), fex(ir)  ! Read columns into
-              if (xex(ir).eq.0.) go to 91 ! arrays xex, fex??
+              read(9,*) xex(ir), fex(ir)
+              if (xex(ir).eq.0.) go to 91  ! Break at end of file
    90     continue
    91     continue
-          ir = ir-1  ! ir = number of lines read?
+          ir = ir-1  ! Set ir = number of lines read
           close(9)
 
 ! Set up from optional parameters (fit/plot)
-! TODO: there's another parameter here to be twiddled
-! Place with other parameters, or maybe prompt user
+! TODO: twiddle-able rminarc, should be placed with other params
+! (more generally -- port to Python to vary nu more readily)
           if (ifit.eq.1) then
               nu0 = nukev
               inumax = 2
@@ -143,63 +140,78 @@
           ! rmin = fraction of SNR r (900arcsec) to go in, range [0,1]
           rmin = 1d0 - rminarc/rsarc  ! The only place rminarc is used
           nu = nu0
-       
-! Big pile of do loops coming up
-! Here I drop indentation to two spaces for sanity
-! I have no idea what's going on here
 
-          ! Loop over all possible values of nu?
-          ! (set by energy bands of analysis?
+! Perform all numerical integrals and calculate intensity profiles
+! in each observation band (iterate over nu, which is incremented at
+! bottom of the loop).
           do inu = 1, inumax
             B0 = Bfield
-            nugraph(inu) = nu
+            nugraph(inu) = nu  ! Store nu in array
 
-            ! Get e- distribution over grid of radial coord, energy?
-            do j = 1, ir
+            ! Tabulate electron distribution for fixed nu
+            ! generating 2-D grid as function of energy, radial position
+
+            ! Step over particle energies from Pacholczyk table
+            do j = 1, ir  ! ir = number of entries in Pacholczyk
+              ! Step from r=rmin to r=1 (IRADMAX resolution)
               delrad = (1d0-rmin)/dble(iradmax-1)
               rad = rmin
-              ! Tabulate the electron distribution
-              do irad = 1, iradmax  
-                en = dsqrt(nu/c1/B0/xex(j))
-                ! Equations (14), (15), (16)
+              do irad = 1, iradmax
+                en = dsqrt(nu/c1/B0/xex(j))  ! e- energy for xex(j)
+                ! TODO: B->B0 or Bfield?
+                ! TODO: dive into details of distribution functions
                 if (mu.lt.1d0) then
-                  disttab(j,irad) = distrmlt1(E,B, Ecut,r,
+                  disttab(j,irad) = distrmlt1(en,B0, ecut,rad,
      &                                        eta,mu, rs, v0,s)
                 elseif (mu.gt.1d0) then
-                  disttab(j,irad) = distrmgt1(E,B, Ecut,r,
+                  disttab(j,irad) = distrmgt1(en,B0, ecut,rad,
      &                                        eta,mu, rs, v0,s)
                 else
-                  disttab(j,irad) = distrpohl(E,B, Ecut,r,
+                  disttab(j,irad) = distrpohl(en,B0, ecut,rad,
      &                                        eta,mu, rs, v0,s)
                 endif
-                radtab(irad) = rad
-                rad = rad + delrad
+                radtab(irad) = rad  ! Store/increment radial coord
+                rad = rad + delrad  ! rmin to 1.0 (scaled coord)
               enddo
             enddo
 
-            delr(inu) = -(1d0-rmin)/real(irmax)
-            r = 1d0
 
-            ! Setup to loop over i
-            ! and compute multiple line of sight integrals???
-            ! x = line of sight variable
+            ! For each radial position in intensity profile
+            ! Integrate over line of sight to get I_\nu(r)
+            ! At each step of line-of-sight integration,
+            ! Compute synchrotron emissivity at radial coord
+            ! rho = s**2 + r**2 (r = "viewer's" radial coord)
+            ! (integrates over particle energy via emisx)
 
-            ! Somewhere in here we convolve disttab with
-            ! the emissivity (xex/fex) from fglists.dat
+            ! Step from r=1 to r=rmin (IRMAX resolution)
+            delr(inu) = -(1d0-rmin)/real(irmax)  ! Could depend on inu,
+            r = 1d0                              ! but currently doesn't
             do i = 1, irmax
-              integrand = 0d0
-              integral = 0d0
+
+              ! TODO: Are we using Simpson's rule?????
+              ! if so, need to 1. divide by 3.0 in loop, and 
+              ! 2. handle edge case at ix = ixmax-1
+
+              ! Initialize integral at s=sqrt(1 - r**2) to s=0
+              ! argument of j_nu ranges (r to rs), flipped wrt paper
+              ! emis1 = j_nu, emisx integrates disttab against G(y) dy
               dx = -(dsqrt(1d0-r**2))/real(ixmax)
-              call emisx(r,nu,B0,emis1, radtab, disttab, imu)
-              x = dsqrt(1-r**2)+dx
-              integral = emis1*dx/3d0     
+
+              ! originally called emisx(r,...), changed to emisx(1, ...)
+              ! SHOULD BE
+              ! x = dsqrt(1d0-r**2)
+              ! rho = dsqrt(x**2 + r**2)  ! Simply 1d0
+              ! emis1 = emisx(rho ...)
+              ! x = x + dx
+              emis1 = emisx(1d0, nu,B0,radtab,disttab) ! j_nu(r)
+              integral = emis1*dx/3d0
+              x = dsqrt(1d0-r**2)+dx
 
               ! Integration to find intensity
               do ix = 2,ixmax-1
                 rho = dsqrt(x**2+r**2)
-                call emisx(rho, nu,B0, emis1, radtab, disttab, imu)
-                rgraph(i, inu) = r
-    
+                emis1 = emisx(rho, nu,B0,radtab,disttab)
+
                 if (mod(ix,2).eq.0) then
                   integrand =2d0*emis1     
                 else
@@ -210,16 +222,22 @@
                 x = x+dx
               enddo
 
-              intensity = integral    
+              intensity = integral
+              ! TODO: this if check shouldn't be necessary
               if (intensity.lt.0d0) intensity = -1d0*intensity
               intensitygraph(inu,i) = intensity
   
-              call Distgraphr(r, B0, radtab, disttab, distgraph(i))
+              ! Plots, remember i indexes "viewer's" radial coord
+              rgraph(i, inu) = r
+              distgraph(i) = Distgraphr(r, radtab, disttab)
   
-              r = r+delr(inu)
+              r = r+delr(inu)  ! Increment radial pos for next loop
             enddo
-            ! Finished all integrals over lines of sight?
+            ! Finished computing integrals for intensity profile
 
+
+            ! Update value of nu for next loop
+            ! TODO: change this for Tycho, or other SNRs
             if (ifit.eq.1) then
               nu = 2d0*nu
             endif
@@ -231,11 +249,8 @@
             print *, 'rmin is: ', rmin
             print *, 'ecut is: ', ecut
           enddo
+          ! DONE computing stuff for all energy bands!
 
-! This is the END of the giant pile of DO loops
-
-          close (999)  ! I can't find any reference to record with u=999?
-    
           Call FWHM(intensitygraph,inumax,irmax,delr,nugraph,
      &              width, fluxpeak, fluxplat, gammapeak, gammaplat,imu)
 
@@ -245,7 +260,7 @@
             print 124, nugraph(n)/nukev, 'keV',
      &        width(n)*rsarc, 'arcseconds',
      &        log10(width(n)/width(n-1))/log10(nugraph(n)/nugraph(n-1)),
-     &        'mnu'
+     &        'mnu'  ! TODO: this doesn't work for n=1
   124       format (F5.2,2x, A3, 2x, F6.2, 2x,A10, 2x, F4.2, 2x, A3)
 
 !           write(225,*) nugraph(n)/nukev, fluxpeak(n), fluxplat(n), 
@@ -258,81 +273,90 @@
             norms = maxval(intensitygraph, dim = 2)
             write (111,*) rgraph(i,1), (intensitygraph(j,i)/norms(j)
      &                    , j = 1, inumax)
-            write (243,*) rgraph(i,1), distgraph(i)
+            write (243,*) rgraph(i,1), distgraph(i)  ! distint.tab
           enddo
 
-          close(111) 
-          close(225)
-          close(242)
-          close(243)
+          close(111)  ! Intensity.dat (opened just above)
+          close(225)  ! FLUX.dat (not currently in use)
+          close(242)  ! widthcut2.tab
+          close(243)  ! distint.tab
 
           stop
       end
 
 
-! --------------------------------------------------
-! Electron synchrotron emissivity something or other
-! --------------------------------------------------
+! ----------------------------------------------------------------
+! Integrate 1-particle emissivity with particle distribution over
+! radiation frequency (change dE to dy) to get emissivity j_\nu(r)
+!
+! Cleaned 2014 July 16
+! ----------------------------------------------------------------
 
-      subroutine emisx(r, nu, B, emis1, radtab, disttab, imu)
-          double precision en, en0, dist, argexp, oldsum
-          double precision r,xold, xint1, x, rho, nu, ef
-          double precision v, ecut,a, c1,cm
-          double precision efinv,rs, Xi, sum, B, ab
-          double precision Bfield, Bmin, const, z
-          double precision fex(100), xex(100)
-          double precision  br, bt, slopebr
-          double precision slopebt, int, integrand
-          double precision xprime, dxprime, oldintegrand
+! j_nu(r, nu, B, radtab, disttab) is a function of radial coordinate r
+! noting that r != x ... set by e- dist. functions in terms of r, not x
+
+! TODO: what happened to factor $c_3 * 1/sqrt{c_1} * 1/4$ ???
+! Maybe overall normalization doesn't matter...
+! If overall normalization doesn't affect FWHMs, why include sqrt(nu*B)?
+! It could matter for B = B(x) in magnetically damped model.
+! nu would not matter for FWHM at all, except to get comparative
+! normalization right for plots of multiple filaments.
+! Well, that makes sense too.
+
+      function emisx(r, nu, B, radtab, disttab)
+          implicit none
+
+          double precision r, nu, B
           double precision radtab(1000), disttab(100,1000)
-          double precision slopedist
+          double precision fex(100), xex(100)
+          integer ir
 
-          double precision emis1
-          integer imu
+          ! Variables to perform integration
+          double precision dist, slopedist
+          double precision x, xold, intgdold, intgd, trpsum, emisx
+          integer j, ix
 
-          common/xrays/xex, fex, ir
+          common /xrays/ xex, fex, ir
  
-          ! Linearly interpolate the electron distribution
-          do 14 j = 2, 1000
-              if (r.gt.radtab(j)) go to 14  ! Next step in loop?
-
+          do 14 j = 2, 1000  ! Interpolate e- distr., at position r
+              if (r.gt.radtab(j)) go to 14  ! Increment radtab(j)
               slopedist = (disttab(1,j) - disttab(1,j-1))/
      &                    (radtab(j) - radtab(j-1))
               dist = disttab(1,j-1) + (r - radtab(j-1))*slopedist
+              go to 15  ! Break out of loop
+   14     continue
+   15     continue
 
-              go to 15  ! Break out of loop?
-   14     continue  ! TODO: rewrite goto / continue structure
-   15     continue  ! for clarity, mainly
-    
-          ! Set up trap. rule integration for emissivity
-          xint1 = 0.
-          x = xex(1)         
-          oldsum1 = (fex(1))*dist/x**1.5d0
+          ! TODO: catch edge case when r = 1.0
+          ! Because I think I'm seeing cases of j=1001
+          if (j.eq.1001) then
+              print *, 'DEBUG emisx: r=',r,
+     &                 ', radtab(1000)=',radtab(1000),
+     &                 ', radtab(1)=',radtab(1)
+          endif
+
+          ! Initialize trapezoidal sum
+          x = xex(1)
+          intgdold = (fex(1))*dist/(x**1.5d0)
           xold = x
+          trpsum = 0.
 
-          ! Integration:
-          do 10 ix = 2, ir
+          ! Integrate over y-values (e- energies) in Pacholczyk
+          do ix = 2, ir
+            ! Compute G(y) for new y = xex(ix); j is same as before!
+            slopedist = (disttab(ix,j) - disttab(ix,j-1))/
+     &                  (radtab(j) - radtab(j-1))
+            dist = disttab(ix,j-1) + (r - radtab(j-1))*slopedist
+
+            ! Increment trapezoidal sum
             x = xex(ix)
-            do 17 j = 2, 1000  ! This construct is almost same as above
-              if (r.gt.radtab(j)) go to 17
-
-              slopedist = (disttab(ix,j) - disttab(ix,j-1))/
-     &                    (radtab(j) - radtab(j-1))
-              dist = disttab(ix,j-1) + (r - radtab(j-1))*slopedist
-
-              go to 18
-   17       continue
-   18       continue
-
-            sum1 = fex(ix)*dist/(x)**1.5d0
-            xint1 = xint1 + (sum1 + oldsum1)*(x - xold)
-            oldsum1 = sum1
+            intgd = fex(ix)*dist/(x**1.5d0)
+            trpsum = trpsum + (intgd + intgdold)*(x - xold)
             xold = x
+            intgdold = intgd
+          enddo
 
-   10     continue  ! This is just an enddo
-          ! End of integration
-
-          emis1 = xint1*dsqrt(nu*B)
+          emisx = trpsum*dsqrt(nu*B)  ! Why this normalization?
           return
       end
 
@@ -356,12 +380,11 @@
           double precision epsmax, epsmin, eps
           double precision en0, efinv, ef,  Xi
           double precision br, bt
-          double precision xprime, rprime, dxprime, slobebr
           double precision  mu, muvector(1:5)
           double precision Bfield, eta, eh
           integer imu
 
-          D0 = eta*2.083d19/B
+          D0 = eta*2.083d19/B  ! eta*C_d/B0
           a = 1.57d-3
           k0 = 1d0
 
@@ -448,7 +471,6 @@
         double precision epsmax, epsmin, eps
         double precision en0, efinv, ef,  Xi
         double precision br, bt
-        double precision xprime, rprime, dxprime, slobebr
         double precision Bfield, eta, mu
 
         D0 = eta*2.083d19/B
@@ -566,7 +588,6 @@
           double precision epsmax, epsmin, eps
           double precision en0, efinv, ef,  Xi
           double precision br, bt
-          double precision xprime, rprime, dxprime, slobebr
           double precision mu
           double precision Bfield, eta
 
@@ -808,28 +829,42 @@
           return 
       end
 
+
 ! ------------------------------------------------------
-! Diagnostic routine to plot the calculated distribution
+! Return linearly interpolated value of
+! electron distribution at position r
+! (Diagnostic routine to plot the calculated distribution)
+!
+! Cleaned 2014 July 16
 ! ------------------------------------------------------
 
-      subroutine Distgraphr(r, B, radtab, disttab, dist)
-          double precision r,dist
-          double precision fex(100), xex(100)
+      function Distgraphr(r, radtab, disttab)
+          implicit none
+
+          double precision r
           double precision radtab(1000), disttab(100,1000)
-          double precision slopedist
-          double precision B
+          double precision fex(100), xex(100)
+          integer ir
+
+          ! Variables to perform interpolation
+          double precision slopedist, Distgraphr
+          integer j
 
           common /xrays/ xex, fex, ir
 
+          ! Originally disttab(30,...) was hardcoded here... why?
+          ! First index of disttab is row # in Pacholczyk table
+          ! Looks like we're just picking an arbitrary energy
+          ! index 30 --> y=5, i.e. 5x crit. frequency
           do 17 j = 2, 1000
-              if (r.gt.radtab(j)) go to 17
+              if (r.gt.radtab(j)) go to 17  ! Increment radtab(j)
               slopedist = (disttab(30,j) - disttab(30,j-1))/
      &                    (radtab(j) - radtab(j-1))
-              dist = disttab(30,j-1) + (r - radtab(j-1))*slopedist
-              go to 18
+              Distgraphr = disttab(30,j-1) + (r - radtab(j-1))*slopedist
+              go to 18  ! Break out of loop
    17     continue
    18     continue
-        
+
           return
       end
 

@@ -2071,3 +2071,66 @@ Continuing issue - how to best deal with FWHM presentation?
 
 Brian suggests using Sean's procedure for now for consistency, discuss with
 Rob/Steve/Sean/Satoru what to do.
+
+Note -- textmate doesn't properly fold all div tags...??? I'm not sure
+actually, pandoc's nbconvert output is just a mess.
+Add width to notebook-container div tag, to manipulate webpage width (I set it
+to 1240px for now...)
+
+Emailed website to Steve/Sean/Brian/Rob
+
+So need to
+1. overhaul specextract pipeline (handle region coordinates correctly, test and
+   ensure it works correctly with my adjustments)
+2. rehaul data structuring for FWHMs because it's a pain in the ass to plot /
+   organize
+3. include switches to test different measurements/procedures, for
+   reproducibility.
+4. proper config files / cmd line arguments for fitting/FWHM analysis scripts?
+5. clean up rsch notes document... keep track of what changes/etc I've been
+   making
+
+Code -- how to refactor, how to best manage, how to ensure reproducibility?
+Mulled on this a while
+
+Tuesday 2014 July 15
+====================
+
+Summary
+-------
+* AAAAAAAAAAAAAA
+* Code writeup, review of models and physics, sent to Brian
+* Figured out discrepancy with Sean's usage of diffusion coeff eta2 in code
+
+
+Code refactoring -- stared, sighed, and moved on to Sean's model code again
+(which is both more doable and more fun)
+k
+
+Start writeup of code -- finally figured out the weird variables sean uses,
+although it doesn't explain his choice of variables when explaining parameter
+space (but fortunately NO ONE CARES).
+
+
+Wednesday 2014 July 16
+======================
+
+Summary
+-------
+* Reviewed most calculations in Sean's code (e- distribution functions TBD)
+* Debugged Sean's code to a point where it seems to work
+* Emailed Sean with various questions...
+
+Slow hard debugging of emissivity integrals etc...
+Anyways I cleaned up the emissivity code
+Happily, it's now giving sensible numbers!!!
+My test case is B0=0.0001, mu=1, eta2=1
+I get 33.45" at 1.00 keV, 26.85" at 2.00 keV
+with m\_E at 2.00 keV being -0.32
+
+The output intensity plots and electron distributions look very nice!
+For this very simple case.  I don't have a sense of when/how it will blow up,
+yet.  And I haven't run any timing tests.
+
+Started looking into the synchrotron spectrum numbers and stuff...
+Checked out Shu, Shu, and Pacholczyk

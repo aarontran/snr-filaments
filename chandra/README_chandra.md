@@ -29,6 +29,8 @@ relatively small (~5 MB) image files for each observation.  Obtained from Nina
 Coyle, who obtained them from Brian Williams -- used by scripts extracting
 spectra from all ObsIDs and merging them together.
 
+To try reproducing Brian's image mosaics, use xygrid="3300:4900:1,3300:4900:1"
+(see procedure outlined below for Kepler).
 
 Kepler's SNR observation
 ------------------------
@@ -45,27 +47,34 @@ The exposure times are as follows:
 * 6718, 110.0  ks (repro 2014 July 11)
 * 7366,  52.0  ks (repro 2014 July 1)
 
-Reprocessing gives this error sometimes (with variable # of occurrences)
+Reprojected images in `out_kepler/` generated with CIAO 4.6 as:
 
-    # acis_process_events (CIAO 4.6): The following error occurred 3 times:
-    dsAPEPULSEHEIGHTERR -- WARNING: pulse height is less than split threshold when performing serial CTI adjustment.
+    ciao
+    punlearn ardlib
+    punlearn reproject_obs
+    reproject_obs infiles="6714,6715,6716,6717,6718,7366" outroot="kepler_reproj/"
 
-Resolution -- no need to worry.  From CIAO ahelp on `acis_process_events`:
-> When the CTI adjustment is applied to events on the back-illuminated CCDs
-> (ACIS-S1 and S3), sometimes one of the pulse heights in a 3x3 pixel event
-> island can drop below the split threshold if it was above the threshold
-> before the adjustment. In the end, pixels that are below the split threshold
-> are ignored when the total pulse height and energy are computed.
->
-> If the number of times is small, then the warning may be safely ignored.
+> Warning: the merged event file kepler\_reproj/merged\_evt.fits
+>    should not be used to create ARF/RMF/exposure maps because
+>       the RA_NOM keyword varies by 0.00990496859004 (limit is 0.0003)
+>       the DEC_NOM keyword varies by 0.066592311011 (limit is 0.0003)
+>       the ROLL_NOM keyword varies by 176.679053066 (limit is 1.0)
 
-From `merge_obs`:
+Flux images in `kepler/` generated with CIAO 4.6 (manually pick xygrid) as:
 
-> Warning: the merged event file `out_kepler/merged_evt.fits`
-> should not be used to create ARF/RMF/exposure maps because
->   the RA\_NOM keyword varies by 0.00990496859004 (limit is 0.0003)
->   the DEC\_NOM keyword varies by 0.066592311011 (limit is 0.0003)
->   the ROLL\_NOM keyword varies by 176.679053066 (limit is 1.0)
+    punlearn flux_obs
+    pset flux_obs bands="0.7:1:0.85, 1:2:1.5, 2:7:4.5"
+    pset flux_obs xygrid="3640:4540:1,3630:4530:1"
+    flux_obs kepler_reproj/ kepler/
+
+Count images (not created) can be generated as:
+
+    punlearn dmcopy
+    dmcopy "merged_evt.fits[EVENTS][energy=1000:1700][bin x=3640:4540:1,y=3630:4530:1]" \
+           outfile="1-1.7kev_counts.fits"
+
+varying the energy range and outfile appropriately.  This procedure for
+generating count images follows an email from Brian J. Williams.
 
 
 Cassiopeia A observation
@@ -78,12 +87,12 @@ The exposure times are as follows:
 
 * 4634, 148.62 ks (repro 2014 July 12)
 * 4635, 135.04 ks (repro 2014 July 12)
-* 4636, 143.48 ks
-* 4637, 163.5  ks
-* 4638, 164.53 ks
-* 4639,  79.05 ks
-* 5196,  49.52 ks
-* 5319,  42.26 ks
-* 5320,  54.37 ks
+* 4636, 143.48 ks (repro 2014 July 14)
+* 4637, 163.5  ks (repro 2014 July 14)
+* 4638, 164.53 ks (repro 2014 July 14)
+* 4639,  79.05 ks (repro 2014 July 14)
+* 5196,  49.52 ks (repro 2014 July 14)
+* 5319,  42.26 ks (repro 2014 July 14)
+* 5320,  54.37 ks (repro 2014 July 14)
 
 
