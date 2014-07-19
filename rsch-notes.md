@@ -2151,3 +2151,35 @@ Checking electron distribution functions - change of variables (check the math
 and check the behavior at singularities -- some ad hoc fixes seem hardcoded.
 
 (then, afterwards, walk through synchrotron derivations and constants)
+
+
+Friday 2014 July 18
+===================
+
+After spending some time on math this morning, and talking briefly with Brian,
+rederiving/checking equations should be set aside.  Check that equations in
+code agree with equations in text -- but, get code working, get numbers working
+first.  We only have 3 weeks!!!
+
+And -- Steve, Sean have certainly vetted this work.
+
+Main result from math -- Sean gives some long solution to equation (12) without
+diffusion, which should be easy to derive -- it is a 1st order linear
+nonhomogeneous PDE, use method of characteristics.  But I can't remember my
+basic PDE stuff (other than all the 2nd order stuff from electrostatics etc...)
+
+
+Main result from integrals -- term in exponential argument has a factor of $-1$
+which I can't account for.
+
+
+Went through ALL of Sean's original code...
+NOW, check his magnetic damping version of code (which looks a bit newer
+actually) and see if anything needs to be updated fixed...
+Welp I'm done... don't want to go through that and spend 4 hours cleaning it
+up.
+
+need to resolve Ecut issue!
+
+Then... change it up to work with f2py easily.
+Then... try porting it if that doesn't work / runs into trouble...

@@ -8,6 +8,8 @@ Aaron Tran
 2014 July 15
 """
 
+from __future__ import division # Or whatever
+
 import lmfit
 import numpy as np
 import scipy as sp
@@ -64,6 +66,53 @@ def emisx(r, nu, B, radtab, disttab):
     Output: j_\nu(r), r = radial dist, j_\nu a scalar (float)
     """
     pass
+
+# Electron distribution functions
+# throw this into a CLASS or something -- so I can hold CONSTANTS
+# at a class level or whatever...
+
+def distr(E, B, E_cut, r, eta_c, mu, rs, v, s):
+    """Electron distribution, from Rettig & Pohl and Lerche & Schlickeiser"""
+    
+    D0 = eta*2.083d19/B  # CHECK THIS eta (E_h)^(1-mu) * C_d / B0
+    a = 1.57e-3  # Synchrotron constant ... declare at module level
+    tau = 1. / (a * B**2 * E)
+    lad = v * tau
+    ldiff = dsqrt(D0*E**mu*tau)
+    
+    # lad/ldiff ~ sqrt(v*lad) / dsqrt(D) ~ peclet number!
+    
+    if lad/ldiff > 30:
+        return distr_adv()
+    
+    if mu > 1:
+        return distr_mgt1(E, B, E_cut, r, eta_c, mu, rs, v, s)
+        # I think this is the same as below...
+    elif mu < 1:
+        return distr_mlt1(E, B, E_cut, r, eta_c, mu, rs, v, s)
+    else:
+        return distr_rpohl(E, B, E_cut, r, eta_c, mu, rs, v, s)
+
+ 
+def distr_adv(E, B, E_cut, r, eta_c, mu, rs, v, s):
+    """If advective length much greater than diffusive lengthscale"""
+    pass
+
+
+def distr_mgt1(E, B, E_cut, r, eta_c, mu, rs, v, s):
+    """Case: mu > 1"""
+    pass
+
+
+def distr_mlt1(E, B, E_cut, r, eta_c, mu, rs, v, s):
+    """Case: mu < 1"""
+    pass
+
+
+def distr_rpohl(E, B, E_cut, r, eta_c, mu, rs, v, s):
+    """Case: mu = 1"""
+    pass
+
 
 # utilities
 

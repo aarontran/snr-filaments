@@ -79,6 +79,26 @@
           iradmax = 100  ! resolution on tabulated electron distribution
           ixmax =  500   ! resolution along line of sight for integration
  
+! Set up from optional parameters (fit/plot)
+! TODO: twiddle-able rminarc, should be placed with other params
+! (more generally -- port to Python to vary nu more readily)
+          if (ifit.eq.1) then
+              nu0 = nukev
+              inumax = 2
+              rminarc = 60d0  ! close to FWHM being fitted?  SET THIS!!
+          endif
+
+          if (iplot.eq.1) then
+              nu0 = nukev*.1d0
+              inumax = 32
+              rminarc = 110d0
+          endif
+
+          ! rmin = fraction of SNR r (900arcsec) to go in, range [0,1]
+          rmin = 1d0 - rminarc/rsarc  ! The only place rminarc is used
+          nu = nu0
+
+! ___________________________________________
 ! Start doing things -- read input parameters
 
           open(242, file = 'widthcut2.dat')
@@ -104,6 +124,10 @@
 
           if (icut.eq.1) then
               ! TODO: Equation (19), but disagrees w/paper? check!
+              ! For comparison, the magnetic damping version of code has:
+              ! ecut = 8.3d0*(Bfield/(100d-6))**(-.5d0)
+              !        *(v0*4d0/1d8)*1.6021773d0
+              ! 1 TeV = 1.602177 erg
               ecut = (8.3d0*(Bfield/(100d-6))**(-1d0/2d0)*(v0*4d0/1d8)*
      &            1.6021773d0)**(2d0/(1d0+mu))*
      &            (1d0/eta)**(1d0/(mu+1d0))
@@ -122,24 +146,6 @@
           ir = ir-1  ! Set ir = number of lines read
           close(9)
 
-! Set up from optional parameters (fit/plot)
-! TODO: twiddle-able rminarc, should be placed with other params
-! (more generally -- port to Python to vary nu more readily)
-          if (ifit.eq.1) then
-              nu0 = nukev
-              inumax = 2
-              rminarc = 60d0  ! close to FWHM being fitted?  SET THIS!!
-          endif
-
-          if (iplot.eq.1) then
-              nu0 = nukev*.1d0
-              inumax = 32
-              rminarc = 110d0
-          endif
-
-          ! rmin = fraction of SNR r (900arcsec) to go in, range [0,1]
-          rmin = 1d0 - rminarc/rsarc  ! The only place rminarc is used
-          nu = nu0
 
 ! Perform all numerical integrals and calculate intensity profiles
 ! in each observation band (iterate over nu, which is incremented at
@@ -187,11 +193,6 @@
             delr(inu) = -(1d0-rmin)/real(irmax)  ! Could depend on inu,
             r = 1d0                              ! but currently doesn't
             do i = 1, irmax
-
-              ! TODO: Are we using Simpson's rule?????
-              ! if so, need to 1. divide by 3.0 in loop, and 
-              ! 2. handle edge case at ix = ixmax-1
-
               ! Initialize integral at s=sqrt(1 - r**2) to s=0
               ! argument of j_nu ranges (r to rs), flipped wrt paper
               ! emis1 = j_nu, emisx integrates disttab against G(y) dy
@@ -369,44 +370,30 @@
 ! eta = \eta*(E_h)^(1-\mu), from the paper
 ! mu = diffusion coefficient exponent
 ! rs, v = shock radius, plasma velocity
+!
+! Cleaned 2014 July 18
 ! ------------------------------------------------
-
-!disttab(j,irad) = distrmlt1(en,B0, ecut,rad,eta,mu, rs, v0,s)
-
-! Removed constant k0=1d0, which was only used in one location
 
       function distrmlt1(E,B, Ecut,r, eta,mu, rs, v,s)
           implicit none
-          !double precision v, tau, E, Ecut
-          !double precision distrmlt1, vs
-          !double precision D0, B, a, b0, alpha
-          !double precision k0, s, integrand
-          !double precision x, n, argexp,pi, dn, rs, r
-          !double precision integral, rsc, dr
-          !double precision oldintegrand, nmin, dy
-          !double precision y,q,t, dt, dellog, dE
-          !double precision tmax, integrandmax
-          !double precision tmin, lad, ldiff
-          !double precision epsmax, epsmin, eps
-          !double precision en0, efinv, ef,  Xi
-          !double precision br, bt
-          !double precision  mu, muvector(1:5)
-          !double precision Bfield, eta, eh
-          !integer imu
 
+          ! Inputs
           double precision E, r  ! Variables to grid over
           double precision B, mu, rs, v, s  ! Input/constants
           double precision Ecut, eta ! Derived from program inputs
 
-          ! Various constants
-          double precision D0, a, b0, alpha, pi
+          ! Derived constants etc
+          double precision D0, a, k0, b0, alpha, pi
           double precision tau, lad, ldiff, x
-          double precision tmin, tmax
 
+          ! Integration
+          double precision efinv, ef, en0, Xi  ! For lad >> ldiff case
+          double precision t, tmin, tmax, dt
+          integer it, itmax
+          double precision n, argexp
+          double precision integral, integrand, oldintegrand
           double precision distrmlt1
 
-          ! Caught by implicit none
-          integer it, itmax ! Array variables
 
           D0 = eta*2.083d19/B  ! eta (E_h)^(1-mu) * C_d / B0
           a = 1.57d-3  ! This is b in the paper
@@ -421,17 +408,18 @@
 
           x = (rs-r*rs)/alpha  ! Convert radial coord to x
 
-          ! ???
+          ! Integration limits
           tmin = 0d0
           tmax = 1d0
 
           !If lad >> ldiff, compute easy solution and skip to end
           if (lad/ldiff.gt.30d0) then  !If lad<<ldiff the solution is easy
-            efinv = a/v*B**2d0*(rs-r*rs)
+            efinv = a/v * B**2d0*(rs-r*rs)
             ef =1d0/efinv
             en0 = E/(1d0-E/ef)
             argexp = en0/ecut
-            Xi = 1d0-E/ef 
+            ! argexp = E/ecut / (1 - a*B**2d0*E * (rs-r*rs) / v)
+            Xi = 1d0-E/ef  ! Only used for if-else structure below
         
             if (Xi.gt.0d0) then
               integral = 1./en0**s*(en0/E)**2/dexp(argexp)*8d-9
@@ -442,6 +430,8 @@
             go to 444
           endif
 
+          ! Set up integral over t, where n = 1-t^2
+          ! Using trapezoidal sum
           itmax = 1000
           oldintegrand = 0d0
           integral = 0d0
@@ -455,14 +445,15 @@
      &               ( lad/alpha*(1d0-n**(1d0/(1d0-mu)))-x )**2d0 /
      &               (4d0*ldiff**2d0*(1d0-n)/alpha) * (1d0-mu)
 
-            if (n.eq.1d0) argexp = 1d35
+            if (n.eq.1d0) argexp = 1d35  ! Prevent argexp blowup
 
             integrand = 2d0*(1d0-t**2d0)**((s+mu-2d0)/(1d0-mu))
      &                  /dexp(argexp)
-            if (it.eq.1) go to 2222
+            if (it.eq.1) go to 2222  ! Skip first point
             integral = integral + (integrand + oldintegrand)*dt/2d0
  2222       continue
             oldintegrand = integrand
+
             t = t + dt
           enddo
 
@@ -470,9 +461,7 @@
      &               E**(-1d0*(mu/2d0+1d0/2d0+s))*integral
           distrmlt1 = integral
 
-          ! Exit point for lad >> ldiff case
-  444     continue
-
+  444     continue  ! Exit point for lad >> ldiff case
           distrmlt1 = integral
 
           return 
@@ -491,10 +480,9 @@
         double precision x, n, argexp,pi, dn, rs, r
         double precision integral, rsc, dr
         double precision oldintegrand, nmin, dy
-        double precision y,q,t, dt, dellog, dE
+        double precision y,q,t, dt
         double precision tmax, integrandmax
         double precision tmin, lad, ldiff
-        double precision epsmax, epsmin, eps
         double precision en0, efinv, ef,  Xi
         double precision br, bt
         double precision Bfield, eta, mu
@@ -529,6 +517,8 @@
             go to 444
         endif
 
+        ! This integral only runs from t=0 to t=1 (n=1 to n=e)
+        ! Using trapezoidal sum
         itmax = 1000
         oldintegrand = 0d0
         integral = 0d0
@@ -539,28 +529,30 @@
             argexp = n*E/Ecut+(lad/alpha*(1d0-1d0/n)-x)**2d0/
      &               (4d0*ldiff**2d0/alpha*dlog(n))
 
-            if (n.eq.1d0) argexp = 1d35
+            if (n.eq.1d0) argexp = 1d35  ! Prevent argexp blowup
             integrand = 2d0*dexp((1d0-s)*t**2d0)/dexp(argexp)
 
-            if (integrand.lt.1d45) then
-            else
+            ! Spew numbers if bad things happen?
+            if (integrand.gt.1d45) then
               print *, n,E,Ecut,lad, alpha, x, ldiff, t, s
             endif
         
-            if (it.eq.1) go to 2222
+            if (it.eq.1) go to 2222 ! Skip first point
             integral = integral + (integrand + oldintegrand)*dt/2d0
  2222       continue
             oldintegrand = integrand
+
             t = t + dt
         enddo
 
+        ! Second part of integral from n=e to n=\infty
+        ! Change variables, n = y / (1 - y^2)^q + n_min
         inmax=100
         dy = 1d0/dble(inmax)
-
         y = 0d0
         q = 2d0
         nmin = dexp(1d0)
-        
+
         oldintegrand = 0d0
 
         do i = 1, inmax
@@ -571,13 +563,12 @@
      &                  ((2d0*q-1d0)*y**2d0+1d0)/
      &                  (1d0-y**2d0)**(q+1d0)
          
-            ! This structure looks familiar...
-            if (integrand.lt.1d45) then
-            else
+            ! Again, if integrand blows up, spew numbers
+            if (integrand.gt.1d45) then
                 print *, integrand, argexp
             endif
 
-            if (i.eq.1) go to 1111
+            if (i.eq.1) go to 1111 ! Skip first point
             integral = integral + (integrand+oldintegrand)*dy/2d0
  1111       continue
             oldintegrand = integrand
@@ -589,7 +580,7 @@
      &             *integral
         distrpohl = integral
 
-  444   continue
+  444   continue  ! Exit point for lad >> ldiff
         distrpohl = integral
 
         return 
@@ -601,6 +592,7 @@
 ! ------------------------------------------------
 
       function distrmgt1(E,B, Ecut,r, eta,mu, rs, v,s)
+          !implicit none
           double precision v, tau, E, Ecut
           double precision distrmgt1
           double precision D0, B, a, b0, alpha
@@ -608,14 +600,17 @@
           double precision x, n, argexp,pi, dn, rs, r
           double precision integral, rsc, dr
           double precision oldintegrand, nmin, dy
-          double precision y,q,t, dt, dellog, dE
+          double precision y,q,t, dt
           double precision tmax, integrandmax
           double precision tmin, lad, ldiff
-          double precision epsmax, epsmin, eps
-          double precision en0, efinv, ef,  Xi
-          double precision br, bt
+          !double precision en0, efinv, ef,  Xi
+          !double precision br, bt
           double precision mu
           double precision Bfield, eta
+
+          ! Integration
+          double precision efinv, ef, en0, Xi  ! For lad >> ldiff case
+          integer i, inmax, it, itmax
 
           D0 = eta*2.083d19/B
           a = 1.57d-3
@@ -633,6 +628,7 @@
           tmin = 0d0
           tmax = 1d0
 
+          ! Same, use easy soln for lad >> ldiff
           if (lad/ldiff.gt.30d0) then 
               efinv = a/v*B**2d0*(rs-r*rs)
               ef =1d0/efinv
@@ -649,6 +645,8 @@
               go to 444
           endif
 
+          ! Set up integral over t, n = 1+t^2 (not same as before!)
+          ! Using trapezoidal sum
           itmax = 1000
           oldintegrand = 0d0
           integral = 0d0
@@ -660,21 +658,22 @@
      &                 (lad/alpha*(1d0-n**(1d0/(1d0-mu)))-x)**2d0/
      &                 (4d0*ldiff**2d0*(1d0-n)/alpha)*(1d0-mu)
 
-              if (n.eq.1d0) argexp = 1d35
+              if (n.eq.1d0) argexp = 1d35 ! Catch argexp blowup
               integrand = 2d0*(1d0+t**2d0)**((s+mu-2d0)/(1d0-mu))
      &                    /dexp(argexp)
 
-              if (it.eq.1) go to 2222
+              if (it.eq.1) go to 2222 ! Skip first point
               integral = integral + (integrand + oldintegrand)*dt/2d0
-
  2222         continue
               oldintegrand = integrand
+
               t = t + dt
           enddo
 
+          ! Set up second integral, for n=2 to n=\infty
+          ! Same change of variables as for mu=1
           inmax=100
           dy = 1d0/dble(inmax)
-
           y = 0d0
           q = 2d0
           nmin = 2d0
@@ -691,16 +690,16 @@
      &                    ((2d0*q-1d0)*y**2d0+1d0)/
      &                    (1d0-y**2d0)**(q+1d0)
 
-          if (integrand.lt.1d45) then  !Prints out numbers when bad things happen
-          else
+          !Prints out numbers when bad things happen
+          if (integrand.gt.1d45) then
               print *, integrand, argexp
           endif
 
-          if (i.eq.1) go to 1111
+          if (i.eq.1) go to 1111 ! Skip first point
           integral = integral + (integrand+oldintegrand)*dy/2d0
-
  1111     continue
           oldintegrand = integrand
+
           y = y + dy
         enddo
 
@@ -709,7 +708,7 @@
 
         distrmgt1 = integral
 
-  444   continue
+  444   continue ! Exit point for lad >> ldiff case
         distrmgt1 = integral
 
         return 
@@ -726,6 +725,9 @@
 ! regions behind the shock, broken up by whether they are part of the peak intensity 
 ! region or not
 
+! Aaron: this looks good but I haven't cleaned it / checked what's up
+! with all the commented code pieces, so I just left it there
+
       subroutine FWHM(intensitygraph,inumax,irmax,delr,nugraph,width, 
      &                fluxpeak, fluxplat, gammapeak, gammaplat,imu)
 
@@ -739,69 +741,72 @@
           ! Initialize variables reused for each energy band
           imax = 1
           halfint =0d0
-          do i = 1, irmax
-            onedint(i) = 0d0
-          enddo
+          !do i = 1, irmax
+          !  onedint(i) = 0d0
+          !enddo
 
           ! Compute FWHM for each energy band
           do inu = 1, inumax
 
             ! Copy intensitygraph to onedint
+            ! Sean notes: i=1 to irmax goes /inwards/ from shock(r=1)
+            ! See main program calculation of intensity profiles
             do i = 1, irmax
               onedint(i) = intensitygraph(inu,i)
             enddo
 
-            ! Is this initialization necessary?
-            ! YES: if xmax/xmin are not found
+            ! Initialize in case xmax/xmin not found
             xmax = 0d0
             xmin = 0d0
 
             ! Find peak intensity, position (index), and halfmax
-            maxintensity = 0d0  ! Does this line do anything?
             maxintensity = maxval(onedint)
             do i = 1, irmax
               if (onedint(i).eq.maxintensity) imax=i
             enddo
             halfint = .5d0*maxintensity
 
-            print *, 'DEBUG: imax=',imax,'irmax=',irmax
-            ! Something is terribly wrong, it's not getting the right
-            ! profiles...
+            ! Sean notes: delr(inu) is negative!
+            ! xmin, xmax may be better named rmin, rmax
+            ! they do NOT correspond to x as defined in paper
+            ! See main program calculation of intensity profiles
 
             ! Search points to left of max
-            ! Start from i = imax-1, and move left (downhill)
-            ! (I think the labeling of xmax/xmin is backwards?)
+            ! Start at i = imax-1 and move left (down to shock front)
             do j = 1, imax-1  ! Could decrement i instead of using j
-              i = imax-j
+              i = imax-j  ! i = index position
               if (onedint(i).lt.halfint) then
-                xmax = 1d0+real(i+1)*delr(inu)  ! 1.0 + (imax-j+1)*delr
-                ! This computation seems fishy
+                xmax = 1d0 + real(i+1)*delr(inu)  ! r = xmax < 1
                 ixmax(inu) = imax-i  ! I think this should be just `i`
-                goto 993  ! break out of the loop
+                ! reading variable name as i(ndex) (of) xmax
+                ! but ixmax isn't currently in use anyways
+                ! ALSO, not same as IXMAX in main program
+                goto 993  ! break once xmax is found
               endif
             enddo
             ! Edge case, if no xmax is found
-            if (xmax.eq.0d0) xmax = 1d0
+            if (xmax.eq.0d0) then
+                xmax = 1d0
+                print *, 'Rim falloff towards shock is weird?'
+            endif
   993       continue
 
             ! Search points to right of max
-            ! Start from i = imax, and move right (downhill)
+            ! Start at i = imax and move right (downstream of shock)
             do i = imax, irmax
               if (onedint(i).lt.halfint) then
-                xmin = 1d0+real(i-1)*delr(inu)
-                print *, 'DEBUG, xmin=', xmin  ! THIS IS NEVER REACHED
-                ! This computation also seems fishy
+                xmin = 1d0 + real(i-1)*delr(inu)
                 ixmin(inu) = i
-                goto 994  ! break out of the loop
+                goto 994  ! break once xmin is found
               endif
             enddo
-    
   994       continue
 
-            width(inu) = xmax-xmin
+            width(inu) = xmax - xmin ! Yes this is positive
 
             if (xmax.eq.0d0) then
                 print *, 'Box Length Error at', nugraph(inu)/2.417989d17
+                ! This won't ever be reached, with edge case fix
             elseif (xmin.eq.0d0) then
                 print *, 'Box Length Error at', nugraph(inu)/2.417989d17
             elseif ((xmax-xmin)/dabs(delr(inu)).lt.20d0) then

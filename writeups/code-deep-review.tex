@@ -50,6 +50,8 @@ justification=justified]{caption} % Captions in figure floats
     \today \\
 \end{center}
 
+\tableofcontents
+
 % ============
 % Introduction
 % ============
@@ -285,15 +287,19 @@ guess is that it's buried in the functions for numerically evaluating equations
 
 TBD...
 
-% ----------
+% ==========
 % Appendix A
-% ----------
-\section*{Appendix A: clarifying code implementation of various equations}
+% ==========
+\appendix
+\section*{Appendices}
+\section{Code implementation of various equations}
 
 Mainly for documentation / reference.
 
+% ---------------
 % Diffusion coeff
-\subsection*{Scaled diffusion coefficient $\eta_2$}
+% ---------------
+\subsection{Scaled diffusion coefficient \texorpdfstring{$\eta_2$}{eta2}}
 
 The diffusion coefficient is defined as $D(E) = \eta D_B(E_h) (E/E_h)^\mu$
 where $E_h$ is an arbitrary fiducial energy.
@@ -343,8 +349,10 @@ this, but I don't think it's obvious that $\eta$ depends on the choice of
 fiducial energy $E_h$ (Sean mentions this as a ``degeneracy'' in the choice of
 $\eta$ and $E_h$).
 
+% ------------------------------------
 % Emissivity calculation / integration
-\subsection*{Synchrotron emissivity integration (equation (20))}
+% ------------------------------------
+\subsection{Synchrotron emissivity integration (equation (20))}
 
 Equation (20) is best evaluated as an integral over scaled frequency
 $y = \nu / (c_1 E^2 B)$, as Pacholczyk (1970) tabulates the 1-particle
@@ -378,39 +386,207 @@ Some caveats:
 I will follow this up by reading Pacholczyk and Rybicki \& Lightman, which will
 hopefully explain some of the notation.
 
+% -------------------------------
+% Electron energy spectrum cutoff
+% -------------------------------
+\subsection{Electron energy spectrum cutoff}
+I don't fully understand Sean's discussion of the effects of including a cutoff
+or not -- nor the theoretical/experimental justification, for having a cutoff
+in the spectrum (need to read papers...).  Nevertheless, I can stare at
+equations and match symbols up.
 
-% Electron distribution integrals
-\subsection*{Electron distribution calculations}
-
-For $\mu < 1$, we have equation (15) implemented with... (for the general case)
-Define $n = 1 - t^2$, as a change of variables ($dn$ to $dt$).
+Sean's original code (loss-limited only) writes:
 \[
-    \text{argexp} = \frac{n^{1/(1-\mu)} E}{E_{\mt{cut}}}
+    E_{\mt{cut}} = \left[ 8.3 \left( \frac{B_0}{100 \unit{\mu G}} \right)^{-1/2}
+                          \left( \frac{4 v_d}{10^8 \unit{cm\;s^{-1}}} \right)
+                          1.6021773
+                   \right]^{2/(1+\mu)}
+                   \left( \frac{1}{\eta E_h^{(1-\mu)}} \right)^{1/(1+\mu)}
+\]
+The magnetic damping version of the code writes:
+\[
+    E_{\mt{cut}} = 8.3 \left( \frac{B_0}{100 \unit{\mu G}} \right)^{-1/2}
+                   \left( \frac{4 v_d}{10^8 \unit{cm\;s^{-1}}} \right)
+                   1.6021773
+\]
+The random factor of $1.6021773$ converts from TeV to ergs (since we are
+working in Gaussian CGS units). Ahhhh
+
+The other issue -- the exponent on the $B_0$ term should be $-1/(1+\mu)$, and I
+don't know why the giant $2/(1+\mu)$ exponent is spanning several things.
+
+Okay, time to try rederiving $E_{\mt{cut}}$.  Then, email Sean...
+
+% -------------------------------
+% Electron distribution integrals
+% -------------------------------
+\subsection{Electron distribution calculations}
+
+First I'll reproduce the equations as seen in the code.  Then I'll 
+simplify and make corrections as needed.  I have \emph{not} rederived the
+equations from scratch.  In particular, I have no reference for the purely
+advective solution (though it should be straightforward, if tedious, to
+rederive).
+
+% Pure advection (lad/ldiff > 30)
+\subsubsection{Purely advective case}
+
+If $l_{\mt{ad}} / l_{\mt{diff}} > 30$, Sean uses an analytic/easy solution to
+the 1st order (linear, inhomogeneous) PDE:
+\[
+    v \frac{\ptl f}{\ptl x} - b B^2 E^2 \frac{\ptl f}{\ptl E}
+    = 2 b B^2 E f + K_0 E^{-s} e^{-E/E_{\mt{cut}}} \delta(x)
+\]
+Sean's code gives the solution:
+\[
+    f(E,x) = (E_0(x))^{-s} \left(\frac{E_0(x)}{E}\right)^2
+    \exp \left[ -E_0(x)/E_{\mt{cut}} \right] \cdot \left(8\times10^{-9}\right)
+\]
+where $E_0 = E / (1 - x/(v\tau_{\mt{synch}}))$.
+If $x / (v \tau_{\mt{synch}}) > 1$, Sean sets $f(E,x) = 0$ (qualitatively makes
+sense, but is this correct?).
+The solution is repeated 3 times in Sean's code (for $\mu > 1$, $\mu < 1$, and
+$\mu = 1$) but appears the same each time.  This is as expected, since $\mu$
+does not matter if we neglect diffusion.
+
+It is also worth noting that the ratio $l_{\mt{ad}} / l_{\mt{diff}}$ is a
+rescaled Peclet number.  Write:
+\[
+    \frac{l_{\mt{ad}}}{l_{\mt{diff}}}
+    = \frac{ v_d \tau_{\mt{synch}} }{ \sqrt{D \tau_{\mt{synch}}} }
+    = \sqrt{ \frac{ v_d^2 \tau_{\mt{synch}} }{ D } }
+    = \sqrt{ \frac{ v_d l_{\mt{ad}} }{ D } }
+    = \sqrt{\mt{Pe}}
+\]
+and thus Sean neglects diffusion for $\mt{Pe} > 900$.
+
+
+% General solution, remarks
+\subsubsection{General solutions -- some general notes}
+
+For all solutions, $z(x) = x$ as we assume constant magnetic field (i.e., no
+magnetic damping model here).
+
+The normalizations are NOT given in Sean's paper, but appear to follow
+Lerche \& Schlickeiser (1980) and Rettig \& Pohl (2012).  The variable
+$D_0 = \eta E_h^{1-\mu} C_d / B = D(E) / E^\mu$ is oft-seen in these
+normalizing prefactors.  This is simply the scaling constant for $D(E)$, though
+not really used in Sean's paper.
+
+Additionally, the synchrotron cooling time constant $b = 1.57 \times 10^{-3}$
+is defined as {\tt{a}} in Sean's code, to avoid conflict with magnetic field
+$B$.
+
+The distribution equations are near identical for $\mu > 1$ and $\mu < 1$,
+but the limits are not the same.  Hence the distinct numerical implementations.
+
+% mu < 1
+\subsubsection{Solution for \texorpdfstring{$\mu < 1$}{mu lt 1}}
+Change variables and evaluate equation (15) as a single integral.
+Let $n = 1 - t^2$. Then $dn = -2t dt = -2\sqrt{1-n}dt$;
+this kills the denominator $\sqrt{1-n}$.  Numerically integrate:
+\[
+    f(E,x) = \frac{Q_0 E^{-(\mu/2 + 1/2 + s)}}
+            {2 \sqrt{\pi \alpha b B^2 D_0 (1-\mu)}} 
+            \int_0^1 dt 2 (1-t^2)^{ (s+\mu-2) / (1-\mu) }
+            \exp[ - \mathtt{argexp} ]
+\]
+with exponential argument
+\[
+    \mathtt{argexp} = \frac{n^{-1/(1-\mu)} E}{E_{\mt{cut}}}
     + \frac{(1 - \mu)
         \left[ l_{\mt{ad}}/\alpha \left(1 - n^{1/(1-\mu)}\right) - x \right]^2}
         {4 l_{\mt{diff}}^2 (1-n) / \alpha}
+    \text{ .}
 \]
-with integrand:
+If $n=1$ ($t=0$), Sean sets $\mathtt{argexp} = 10^{35}$ to prevent blowup.
+This zeroes the integrand (recall we are performing a sum).
+
+% mu = 1
+\subsubsection{Solution for \texorpdfstring{$\mu = 1$}{mu eq 1}}
+Break equation (14) into a two piece integral.
+The first piece integrates over $n\in [1,e]$ ($t\in[0,1]$).
+Let $n = e^{t^2}$ with $dn = 2 n \sqrt{\ln(n)} dt$.
+This kills the denominator $\sqrt{\ln(n)}$.
+
+The second piece integrates over $n=[e,\infty)$ ($y\in[0,1]$).
+Change variables as:
+\begin{align*}
+    n &= \frac{y}{(1-y^2)^q} + n_{\mt{min}} \\
+    dn &= \left( \frac{1}{(1-y^2)^q} + \frac{2qy^2}{(1 - y^2)^{q+1}} \right) dy
+\end{align*}
+where $n_{\mt{min}} = e$ and $q = 2$ appears to be an arbitrary exponent (?).
+
+Now, the piece-wise integral is:
 \[
-    2 (1 - t^2)^{ (s+\mu-2) / (1-\mu) } \exp(-\text{argexp})
+    \frac{Q_0 E^{-(1+s)}}
+         { 2 \sqrt{ \pi \alpha b B^2 D_0 } }
+    \left[
+        \int_0^1 dt \; 2 e^{(1-s) t^2} \exp[ - \mathtt{argexp} ]
+        \; + \;
+        \int_0^1 dy \left(\frac{(2q-1) y^2 + 1}{(1 - y^2)^{q+1}}\right)
+                    \left(\frac{n^{-s}}{ \sqrt{\ln(n)} }\right)
+                    \exp[ - \mathtt{argexp} ]
+    \right]
 \]
-and normalization:
+with exponential argument (same for both integrals):
 \[
-    \frac{Q_0}
-    {2 \sqrt{ \pi \alpha b B^2 \frac{\eta E_h^{1-\mu} C_d}{B} (1-\mu) }}
-    E^{ -(\mu/2 + 1/2 + s)}
+    \mathtt{argexp} = \frac{n E}{E_{\mt{cut}}}
+        + \frac{ \left[ l_{\mt{ad}}/\alpha (1 - 1/n) - x \right]^2 }
+        { 4 l_{\mt{diff}}^2 /alpha \ln(n) }
+    \text{ .}
 \]
+
+
+% mu > 1
+\subsubsection{Solution for \texorpdfstring{$\mu > 1$}{mu gt 1}}
+Break equation (16) into a two piece integral.
+The first piece integrates over $n\in[1,2]$ ($t\in[0,1]$).
+Change variables as $n=1+t^2$ with $dn = 2\sqrt{n-1} dt$.
+This kills the denominator $\sqrt{n-1}$.
+
+The second piece integrates over $n\in[2,\infty]$ ($y\in[0,1]$).
+Change variables as $n = y / (1-y^2)^q + n_{\mt{min}}$ again,
+but with $n_{\mt{min}} = 2$ this time!
+
+Now, the piece-wise integral is:
+\begin{align*}
+    \frac{Q_0 E^{-(\mu/2 + 1/2 + s)}}
+         {2 \sqrt{\pi\alpha b B^2 D_0 (\mu-1)}}
+    \biggl[
+        &\int_0^1 dt \; 2 (1+t^2)^{(s+\mu-2)/(1-\mu)} \exp [ -\mathtt{argexp} ]
+        \\
+        & +\;
+        \int_0^1 dy \left(\frac{(2q-1) y^2 + 1}{(1-y^2)^{q+1}}\right)
+                    \left(\frac{n^{(s+\mu-2)/(1-\mu)}}{\sqrt{n-1}}\right)
+                    \exp[ - \mathtt{argexp}]
+    \biggr]
+\end{align*}
+with exponential argument (same for both integrals):
+\[
+    \mathtt{argexp} = \frac{n^{-1/(1-\mu)} E}{E_{\mt{cut}}}
+    + \frac{(1 - \mu)
+        \left[ l_{\mt{ad}}/\alpha \left(1 - n^{1/(1-\mu)}\right) - x \right]^2}
+        {4 l_{\mt{diff}}^2 (1-n) / \alpha}
+    \text{ .}
+\]
+This is the same $\mathtt{argexp}$ as for the $\mu < 1$ case.
+
 
 % ----------
 % Appendix B
 % ----------
-\section*{Appendix B: synchrotron power spectrum and parameters}
+\section{Synchrotron power spectrum and parameters}
 
 Here I should double-check all of Sean's provided constants, and
 present a derivation of the synchrotron power spectrum (to better understand
 what Sean's doing).
 
-\subsection*{Sanity checks on constants}
+\subsection{Synchrotron power spectrum derivation}
+
+This follows Condon and Ransom's ERA, and Pacholczyk.
+
+\subsection{Sanity checks on constants}
 
 Need to verify synchrotron constants $b$, $C_d$, $c_m$.  Shock radius and
 velocity are different for Tycho (and shock velocity varies with azimuthal
