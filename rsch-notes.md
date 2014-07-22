@@ -2183,3 +2183,45 @@ need to resolve Ecut issue!
 
 Then... change it up to work with f2py easily.
 Then... try porting it if that doesn't work / runs into trouble...
+
+
+Monday 2014 July 21
+===================
+
+
+Resolved Ecut issue.  Sean's code is correct, paper equation (18) has a typo,
+follow equation (19).  Funny exponent formatting is to make it easier to work
+with the prefactor.
+
+Figured out how to get numpy f2py running, and compile fortran code into python
+module
+
+Remove widthfun\_mod.py which didn't really add/change anything, since the code
+for that is in another folder now.
+
+Copy working version of FullEfflength\_mod.f to backup -- because this is close
+to the intent/design of Sean's code, and now messing with f2py I am going to
+start deviating substantially by altering the inputs/outputs functionality.
+
+Okay, now setting up python wrapper to fit function
+
+Remove "options" in code for fitting/plotting versions -- should be superseded
+by python control, if we need to generate plots or other things.
+For Sean's plotting code, he changed rmin with each change in nu?!
+with `rmin = 1d0-(1d0-rmin)*((10d0)**(-.25d0/16d0))`, small 
+
+Updated code to accept arbitrary number of nu arguments, in keV...
+
+geezus this really shouldn't take that long to do :(... be efficient, dammit.
+
+
+Running fit code with scipy.optimize.leastsq
+changing epsfcn=1e-6 finally got it to do more than 5 iterations
+(with mu=1, eta2=1 fixed, b0 initial guess=1e-4, filament 5 from sn1006
+I got 16 iterations, and b0=108 microG.  Ehh... better than before?!
+It actually looks like a tolerable fit (just looking at numbers...)
+
+
+Tuesday 2014 July 22
+====================
+First thing: try to replicate fit with lmfit, now.

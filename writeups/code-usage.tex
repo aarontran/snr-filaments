@@ -165,16 +165,26 @@ Fits weren't given for all $\mu$ values in Table 8 (Filaments 2, 5 appear to
 have small $m_E$ values at 2 keV).
 
 What do the parameters mean, or how do they affect predicted FWHM widths?
-I still need to mess with this.  Roughly, per Sean's observations (to be
+I am still messing with this.  Roughly, per Sean's observations (to be
 checked): $B_0$ controls overall FWHM widths, but doesn't affect width-energy
 scaling much.  Diffusion parameters $\eta_2$ and $\mu$ are the main controls on
 the width-energy scaling, as you might expect.
 
 The effect of $\mu$ on width-energy scaling is shown in Figure 1.
 The effects of both $\mu$ and $\eta_2 \sim D/D_{\mt{bohm}}$ on width-energy
-scaling are shown in Figure 3.  Both decreasing $\mu$ and increasing $\eta_2$
+scaling are shown in Figure 3.  Both increasing $\mu$ and increasing $\eta_2$
 will weaken the width-energy scaling, as the filaments are all smeared out by
-diffusion, and smaller $\mu$ means diffusion is less sensitive to energy.
+diffusion.  Larger $\mu$ means diffusion is stronger at higher energies, which
+more strongly counteracts thinning with energy from synchrotron losses.
+
+Finally, the effect of $\mu$ on width-energy scaling is stronger for larger
+$\eta_2$ (Figure 3).  Figure 3 also suggests how degeneracy might occur --
+e.g., multiple pairs of $\eta_2$, $\mu$ can reproduce $m_E = -0.15$, and we can
+have strong variation in $\eta_2$ with just a small variation in $\mu$.  In
+principle, the absolute widths should also help constrain the best set of
+values, but it may simply not be a very strong constraint -- which we'll see
+from $\Delta\chi^2 \leq 2.7$ errors, for example.
+
 
 % ==========
 % Next steps

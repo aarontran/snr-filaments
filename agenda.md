@@ -59,7 +59,7 @@ introduction:
 Main agenda
 ===========
 
-*Work/pipeline/asap*
+*Work/pipeline/software engineering/whatever*
 
 So need to
 1. overhaul specextract pipeline (handle region coordinates correctly, test and
@@ -132,6 +132,19 @@ FULL numerical code (the full power of this orbiting ........)
 * At some point, verify all of sean's calculated constants
 * Demonstrate that I get the same results as Sean's original `Widthfun.py`.
 
+### Full model
+
+* Check transport equation for pure advection case
+* Check numerical prefactor 8.3 TeV for electron cutoff energy
+* Update numbers from Pacholczyk (?), consider adding more entries (can ask
+  Sean about this)
+* Check FORTRAN code for memory-efficient array indexing?
+* Consider caching / memoizing tabulated electron distributions?
+  Problem: advective/diffusive lengthscales depend on B0, mu, eta, etc.
+  So, as we try new parameters, the electron distributions change...
+  which does physically make sense, after all.  sigh.
+  How can we get around the speed issue?
+
 ### All models
 * Incorporate Tycho's variable shock speed into results (Williams et al., 2013)
 * USE 3 kpc instead of 2.3 kpc, and will need to investigate this effect soon
@@ -152,13 +165,10 @@ Quantify effects on calculation of `m_E`, B0, eta2.
 Documentation/poster/paper
 --------------------------
 
-* Tabulate the results in LaTeX -- put all the FWHM numbers
-  together, with point-to-point `m_e` calculations and global fit `m_e`.
-  Send plots, numbers, documentation -- explain procedure, how everything was
-  done.
-* Eventually, generate a flowchart of what calculations were done, what
-  equations were used (where used), etc... kind of what we're retracing now
-  going through the Ressler paper.
+Start making poster later this week, have nice draft ready by Monday
+(print by Wednesday morning at latest -- setup 2-6p Weds, 7:30-11a Thurs)
+(presentations: 11a-2p, must be present 12a-2p)
+(spec: 45" by 45" max)
 
 More supernova remnants
 -----------------------

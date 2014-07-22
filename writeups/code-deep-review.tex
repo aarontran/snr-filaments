@@ -417,6 +417,23 @@ don't know why the giant $2/(1+\mu)$ exponent is spanning several things.
 
 Okay, time to try rederiving $E_{\mt{cut}}$.  Then, email Sean...
 
+Conclusion -- equate the loss and acceleration times as:
+\[
+    \tau_{\mt{accel}} \propto \frac{D}{v_s^2}
+    \sim \frac{1}{b B^2 E} = \tau_{\mt{synch}}
+\]
+taking $D = \eta (C_D E_h / B) (E/E_h)^\mu$ as usual.
+The scaling factors are correct, and the $\eta$ term indeed
+should be $\eta E_h^{1-\mu}$, so that is correct.  The only weird part is
+rederiving the prefactor, for which you must refer to several constants and
+assumptions in Parizot et al. (2006); they treat spatial dependence and other
+stuff in more detail.
+
+So, for now, I shall trust Sean's judgement and just move forward with the
+code.  In fact, it is the magnetic damping model that needs an extra factor of
+$\eta^{-1/2}$ (and consequently Sean's equation (18) is also incorrect).
+
+
 % -------------------------------
 % Electron distribution integrals
 % -------------------------------
@@ -427,6 +444,26 @@ simplify and make corrections as needed.  I have \emph{not} rederived the
 equations from scratch.  In particular, I have no reference for the purely
 advective solution (though it should be straightforward, if tedious, to
 rederive).
+
+
+
+The normalizations are NOT given in Sean's paper, but appear to follow
+Lerche \& Schlickeiser (1980) and Rettig \& Pohl (2012).  The variable
+$D_0 = \eta E_h^{1-\mu} C_d / B = D(E) / E^\mu$ is oft-seen in these
+normalizing prefactors.  This is simply the scaling constant for $D(E)$, though
+not really used in Sean's paper.
+
+\textbf{Not checked}: what is the role of $\alpha$ in all of this?!  Part of
+the normalization and other factors above.  Low priority...
+
+For all solutions, $z(x) = x$ as we assume constant magnetic field (i.e., no
+magnetic damping model here).  The distribution equations are near identical
+for $\mu > 1$ and $\mu < 1$, but the limits are not the same.  Hence the
+distinct numerical implementations.
+Additionally, the synchrotron cooling time constant $b = 1.57 \times 10^{-3}$
+is defined as {\tt{a}} in Sean's code, to avoid conflict with magnetic field
+$B$.
+
 
 % Pure advection (lad/ldiff > 30)
 \subsubsection{Purely advective case}
@@ -461,25 +498,6 @@ rescaled Peclet number.  Write:
 and thus Sean neglects diffusion for $\mt{Pe} > 900$.
 
 
-% General solution, remarks
-\subsubsection{General solutions -- some general notes}
-
-For all solutions, $z(x) = x$ as we assume constant magnetic field (i.e., no
-magnetic damping model here).
-
-The normalizations are NOT given in Sean's paper, but appear to follow
-Lerche \& Schlickeiser (1980) and Rettig \& Pohl (2012).  The variable
-$D_0 = \eta E_h^{1-\mu} C_d / B = D(E) / E^\mu$ is oft-seen in these
-normalizing prefactors.  This is simply the scaling constant for $D(E)$, though
-not really used in Sean's paper.
-
-Additionally, the synchrotron cooling time constant $b = 1.57 \times 10^{-3}$
-is defined as {\tt{a}} in Sean's code, to avoid conflict with magnetic field
-$B$.
-
-The distribution equations are near identical for $\mu > 1$ and $\mu < 1$,
-but the limits are not the same.  Hence the distinct numerical implementations.
-
 % mu < 1
 \subsubsection{Solution for \texorpdfstring{$\mu < 1$}{mu lt 1}}
 Change variables and evaluate equation (15) as a single integral.
@@ -501,6 +519,7 @@ with exponential argument
 \]
 If $n=1$ ($t=0$), Sean sets $\mathtt{argexp} = 10^{35}$ to prevent blowup.
 This zeroes the integrand (recall we are performing a sum).
+
 
 % mu = 1
 \subsubsection{Solution for \texorpdfstring{$\mu = 1$}{mu eq 1}}

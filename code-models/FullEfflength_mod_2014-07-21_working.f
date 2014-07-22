@@ -9,137 +9,79 @@
 ! UPDATED by Aaron Tran for application to Tycho's SNR
 ! Summer 2014
 !
-! Fixed format Fortran 77 with mishmash of useful newer things
 ! Statement labels right aligned from column 5
 ! Continuation ampersands on column 6
-! Exclamation points for all comments
+! Exclamation points for all comments (even though not FORTRAN 77)
 ! ----------------------------------------------------------------------
 
-
-! --------------------------------------
-! Just a driver for the main subroutine
-! E.g. for manual fitting, checking, etc
-! --------------------------------------
-
       program Fullefflength
-          implicit none
-          ! Inputs
-          double precision kevs(40)
-          integer inumax
-          double precision B0, eta2, mu
-          double precision widtharc(40)
+          !implicit none
+          double precision Bfield, eta2, mu
 
-          ! For spitting out results, optional
-          integer i
-
-          ! Common block
-          double precision xex(100), fex(100)
-          integer ir
-          common /xrays/ xex, fex, ir
-
-          ! Load common block first
-          call readfglists()
+! TODO: allow options/parameters to be read from external text file
+! so that source doesn't have to be recompiled to vary parameters
 
           print *, 'Enter B0'
-          read *, B0            ! Gauss
+          read *, Bfield        ! Gauss
           print *, 'Enter Eta2'
           read *, eta2          ! dimensionless
           print *, 'Enter mu'
           read *, mu            ! dimensionless
 
-          kevs(1) = 0.7d0
-          kevs(2) = 1d0
-          kevs(3) = 2d0
-          kevs(4) = 3d0
-          inumax = 4
-
-!      subroutine Fullefflengthsub(kevs, inumax, widtharc, B0, eta2, mu,
-!     &                            vs, v0, rs, rsarc, s, rminarc, icut,
-!     &                            irmax, iradmax, ixmax)
-
-          call Fullefflengthsub(kevs, inumax, widtharc, B0, eta2, mu,
-     &                          5d0*1.d8, 5d0*1.d8/4d0, 2.96d19, 900d0,
-     &                          2d0*0.6d0+1d0, 60d0, 0, 400, 100, 500)
-
-          do i = 1, inumax
-            print *, kevs(i), ' keV: ', widtharc(i)
-          enddo
-
-          stop
+          call Fullefflengthsub(Bfield, eta2, mu)
       end
 
-! ------------------------------------------
-! Main subroutine for generating FWHM values
-! using subroutine rather than program for
-! f2py wrapping, so we can fit output values
-! ------------------------------------------
+! Bfield = magnetic field in Gauss
+! eta2 = diffusion coeff. scaled, dimensionless
+! mu = diffusion scaling, dimensionless
 
-! Yes, I die a little everytime I write a parameter list this long
+! For now, don't worry about Tycho -- just see if f2py works for SN1006
+! numbers.  Then we can think about using Tycho parameters.
+! Else, I'm just going straight to Python
 
-! Parameters (SN 1006 values):
-!     vs = 5d0*1.d8     ! Shock veloc (only used to compute Ecut)
-!     v0 = vs/4d0       ! Plasma veloc measured by Satoru et al. (cm/s)
-!     rs = 2.96d19      ! Shock radius, tan(943.7 arcsec) * 2.2 kpc
-!     rsarc = 900d0     ! rs in arcsec, from Green's SNR Catalog
-!     s = 2d0*.6d0+1d0  ! Spectral index
-
-!     rminarc = 60d0    ! How far back to extend model
-!     icut = 0          ! 1 for cut-off, 0 for no cut-off 
-!     irmax = 400       ! Resolution on intensity profile
-!     iradmax = 100     ! Resolution on tabulated electron distribution
-!     ixmax =  500      ! Resolution along line of sight for integration
-
-      subroutine Fullefflengthsub(kevs, inumax, widtharc, B0, eta2, mu,
-     &                            vs, v0, rs, rsarc, s, rminarc, icut,
-     &                            irmax, iradmax, ixmax)
-          implicit none
-          ! Input parameters (widtharc is for output)
-          integer inumax
-          double precision mu, eta2, B0
-          double precision kevs(inumax), widtharc(inumax)
-          ! Constants, or nominally constant inputs (SNR specific)
-          double precision vs, v0, rs, rsarc, s
-          double precision rminarc
-          ! Settings
-          integer irmax, ixmax, iradmax
-          integer icut
-
-          ! "Fundamental" constants
-          double precision cm, c1, a ! Synchrotron params
-          double precision nukev ! nu-kev conversion
-          double precision rmin, ecut, eta  ! Derived constants
-          ! Emissivity data for common block
+      subroutine Fullefflengthsub(Bfield, eta2, mu)
+          ! implicit none
+          double precision cm, ecut
+          double precision B0, v0, rs, rsarc, alpha
+          double precision nu0, nu, nukev, emis1
+          double precision a, nugraph(100)
+          double precision r, delr(40), rgraph(10000,40)
+          double precision dx, integrand, integral
+          double precision compratio
+          double precision distrpohl, distrmlt1, distrmgt1,Bfield
+          double precision intensitygraph(40,10000)
           double precision xex(100), fex(100)
-          integer ir  ! Should label as ifmax or so, to be consistent
-
-          ! Iterate over nu
-          double precision nu, nugraph(inumax)
-          integer inu
-          ! Tabulate e- distribution over particle energy (1 to ir)
-          ! and over radial coord ( (rsarc - rminarc) / iradmax )
-          double precision en, rad, delrad
-          integer j, irad
+          double precision x, rho
+          double precision width(40), advection(40)
+          double precision rmin, rminarc, norms(40)
+          double precision intensity, fluxplat(40), fluxpeak(40)
+          double precision gammaplat(40), gammapeak(40)
+          double precision en, rad, delrad, c1
           double precision disttab(100, 1000), radtab(1000)
-          ! Iterate over radial coord (r, irmax pts), at each point
-          ! Integrate over line of sight (x, ixmax pts)
-          double precision r, delr(inumax), rgraph(10000,40)
-          double precision dx, x, rho
-          integer i, ix
-          double precision emis1, integrand, integral, intensity
-          double precision distgraph(1000), intensitygraph(inumax,10000)
-          ! FWHM calculation, outputs
-          double precision width(inumax)
+          double precision distgraph(1000)
+          double precision eta, mu, eta2
 
-          ! Functions used
-          double precision distrpohl, distrmlt1, distrmgt1
-          double precision emisx, Distgraphr
+          ! ADDITION: explicit variable declarations
+          ! to avoid type mismatch (and bugs and things)
+          ! BUT I think variables E, B are wrong anyways...
+          double precision E, B, s
+          double precision emisx  ! function
+          double precision Distgraphr  ! function
+          integer ir
+
+          integer icut, ifit, iplot
 
           common /xrays/ xex, fex, ir
 
-! f2py directives for fitting
+! Physical Parameters
 
-cf2py intent(out) widtharc
-cf2py depend(inumax) widtharc
+          compratio = 4d0          ! Rankine-Hugoniot
+          v0 = 5d0*1.d8/compratio  ! As measured by Satoru et al. (cm/s)
+          rs = 2.96d19             ! Modified from nufit code....distance is now 2.2 kpc,
+                                   ! so rs is found from tan(943.7'')*2.2 kpc 
+          rsarc = 900d0            ! From Green's SNR Catalog...rs in arcseconds
+          alpha = .6d0             ! Spectral index
+          s = 2d0*alpha+1d0        
 
 ! Constants
           cm = 1.82d18         ! Constant needed for max synchrotron frequency
@@ -147,40 +89,97 @@ cf2py depend(inumax) widtharc
           a = 1.57d-3          ! Constant needed for synchrotron loss time
           nukev = 2.417989d17  ! 1keV photon frequency
 
-! Calculate derived parameters
+! Options
+          icut = 0    ! 1 for cut-off, 0 for no cut-off 
+          ifit = 1    ! 1 for the fitting version of the code
+          iplot = 0   ! 1 for the plotting version of the code  
 
-          rmin = 1d0 - rminarc/rsarc ! Scaled r, range [0,1]
+! Grid Parameters
 
-          ! eta = \eta*(E_h)^(1-\mu), per section 4.2 of paper
-          eta =  eta2 * (2d0*nukev/(cm*B0))**(-(mu-1d0)/2d0)
+          irmax = 400    ! resolution on intensity profile
+          iradmax = 100  ! resolution on tabulated electron distribution
+          ixmax =  500   ! resolution along line of sight for integration
+ 
+! Set up from optional parameters (fit/plot)
+! TODO: twiddle-able rminarc, should be placed with other params
+! (more generally -- port to Python to vary nu more readily)
+! TODO: allow nukev to span arbitrary range...
+          if (ifit.eq.1) then
+              nu0 = nukev
+              inumax = 2
+              rminarc = 60d0  ! close to FWHM being fitted?  SET THIS!!
+          endif
+
+          if (iplot.eq.1) then
+              nu0 = nukev*.1d0
+              inumax = 32
+              rminarc = 110d0
+          endif
+
+          ! rmin = fraction of SNR r (900arcsec) to go in, range [0,1]
+          rmin = 1d0 - rminarc/rsarc  ! The only place rminarc is used
+          nu = nu0
+
+! ___________________________________________
+! Start doing things -- read input parameters
+
+          open(242, file = 'widthcut2.dat')
+          open(243, file = 'distint.dat')
+          ! open(119, file = 'disttab.dat')  ! Doesn't seem to be in use?
+                                             ! No other references to 119
+          open(225, file='FLUX.dat')  ! Doesn't seem to be in use, as
+                                      ! lines are commented out below
+                                      ! Superseded by widthcut2.dat?
+
+! Superseded by subroutine arguments!
+!          print *, 'Enter B0'
+!          read *, Bfield        ! Gauss
+!          print *, 'Enter Eta2'
+!          read *, eta2          ! dimensionless
+!          print *, 'Enter mu'
+!          read *, mu            ! dimensionless
+
+          ! eta2 = dimensionless diffusion coefficient scale at 2 keV
+          ! eta = eta2 * (2 keV)**(1-mu)
+          ! I think eta maps to \eta*(E_h)^(1-\mu), as in Section 4.2
+          ! of the paper
+          eta =  eta2 * (2d0*nukev/(cm*Bfield))**(-(mu-1d0)/2d0)
 
           if (icut.eq.1) then
-              ! Scaling checks out, and 1.602177 erg = 1 TeV
+              ! For comparison, the magnetic damping version of code has:
+              ! ecut = 8.3d0*(Bfield/(100d-6))**(-.5d0)
+              !        *(v0*4d0/1d8)*1.6021773d0
+              ! 1 TeV = 1.602177 erg
+              ! Scaling checks out
               ! TODO: numerical prefactor 8.3 TeV not checked yet
-              ecut = (8.3d0*(B0/(100d-6))**(-1d0/2d0)
-     &               *(vs/1d8)*1.6021773d0)**(2d0/(1d0+mu))
-     &               *(1d0/eta)**(1d0/(mu+1d0))
+              ecut = (8.3d0*(Bfield/(100d-6))**(-1d0/2d0)*(v0*4d0/1d8)*
+     &            1.6021773d0)**(2d0/(1d0+mu))*
+     &            (1d0/eta)**(1d0/(mu+1d0))
           else
               ecut = 1d40
           endif
 
-! _________________________________________________
-! Start doing things -- perform numerical integrals
+! Read frequency-dep. synchrotron emissivity table to common block
+! variables xex, fex
+          open(9, file='fglists.dat', status='old')
+          do 90 ir = 1, 300
+              read(9,*) xex(ir), fex(ir)
+              if (xex(ir).eq.0.) go to 91  ! Break at end of file
+   90     continue
+   91     continue
+          ir = ir-1  ! Set ir = number of lines read
+          close(9)
+
 
 ! Perform all numerical integrals and calculate intensity profiles
 ! in each observation band (iterate over nu, which is incremented at
 ! bottom of the loop).
           do inu = 1, inumax
-            nu = kevs(inu) * nukev ! Convert keV to Hz
-            nugraph(inu) = nu  ! Store nu in array TODO redundant
+            B0 = Bfield
+            nugraph(inu) = nu  ! Store nu in array
 
             ! Tabulate electron distribution for fixed nu
             ! generating 2-D grid as function of energy, radial position
-
-            ! TODO idea -- to avoid recomputing integrals every time
-            ! for the electron distribution (esp. if doing non-linear
-            ! fit) -- can we compute it once, for each value of nu,
-            ! and then store it?
 
             ! Step over particle energies from Pacholczyk table
             do j = 1, ir  ! ir = number of entries in Pacholczyk
@@ -189,6 +188,8 @@ cf2py depend(inumax) widtharc
               rad = rmin
               do irad = 1, iradmax
                 en = dsqrt(nu/c1/B0/xex(j))  ! e- energy for xex(j)
+                ! TODO: B->B0 or Bfield?  doesn't matter?!
+                ! why make the distinction / have two variables?
                 if (mu.lt.1d0) then
                   disttab(j,irad) = distrmlt1(en,B0, ecut,rad,
      &                                        eta,mu, rs, v0,s)
@@ -264,58 +265,57 @@ cf2py depend(inumax) widtharc
             enddo
             ! Finished computing integrals for intensity profile
 
+
+            ! Update value of nu for next loop
+            ! TODO: change this for Tycho, or other SNRs
+            if (ifit.eq.1) then
+              nu = 2d0*nu
+            endif
+            if (iplot.eq.1) then
+              nu = nu*10d0**(.07d0)
+              rmin = 1d0-(1d0-rmin)*((10d0)**(-.25d0/16d0))
+            endif
+
+            print *, 'rmin is: ', rmin
+            print *, 'ecut is: ', ecut
           enddo
           ! DONE computing stuff for all energy bands!
 
-! Now, compute FWHM values and print widths
+          Call FWHM(intensitygraph,inumax,irmax,delr,nugraph,
+     &              width, fluxpeak, fluxplat, gammapeak, gammaplat,imu)
 
-          Call FWHM(intensitygraph,inumax,irmax,delr,nugraph,width)
+! Now, just writing output to stdout / files
 
-          do inu = 1, inumax
-            widtharc(inu) = width(inu)*rsarc  ! Convert to arcsec output
+          do n = 1, inumax
+            print 124, nugraph(n)/nukev, 'keV',
+     &        width(n)*rsarc, 'arcseconds',
+     &        log10(width(n)/width(n-1))/log10(nugraph(n)/nugraph(n-1)),
+     &        'mnu'  ! TODO: this doesn't work for n=1. not pressing
+  124       format (F5.2,2x, A3, 2x, F6.2, 2x,A10, 2x, F4.2, 2x, A3)
+
+!           write(225,*) nugraph(n)/nukev, fluxpeak(n), fluxplat(n), 
+!    &        gammapeak(n), gammaplat(n)
+            write (242,*) nugraph(n)/nukev, width(n)*rsarc
           enddo
 
-          ! TODO:  We may want intensity profiles, and/or
-          ! electron distributions, for debugging.  How to get out?
-          ! From best fit parameters, could get them manually...
+          open (111, file = 'Intensity.dat') 
+          do i =1, irmax
+            norms = maxval(intensitygraph, dim = 2)
+            write (111,*) rgraph(i,1), (intensitygraph(j,i)/norms(j)
+     &                    , j = 1, inumax)
+            write (243,*) rgraph(i,1), distgraph(i)  ! distint.tab
+          enddo
 
-!          open (111, file = 'Intensity.dat') 
-!          open(243, file = 'distint.dat')
-!          do i =1, irmax
-!            norms = maxval(intensitygraph, dim = 2)
-!            write (111,*) rgraph(i,1), (intensitygraph(j,i)/norms(j)
-!     &                    , j = 1, inumax)
-!            write (243,*) rgraph(i,1), distgraph(i)
-!          enddo
-!          close(111)
-!          close(243)
+          close(111)  ! Intensity.dat (opened just above)
+          close(225)  ! FLUX.dat (not currently in use)
+          close(242)  ! widthcut2.tab
+          close(243)  ! distint.tab
 
+! Edited for f2py integration
+!          stop
           return
       end
 
-
-! --------------------------------------------
-! Read frequency-dep. 1-particle emissivity
-! table to common block variables xex, fex, ir
-! --------------------------------------------
-
-      subroutine readfglists()
-          implicit none
-          double precision xex(100), fex(100)
-          integer ir
-          common /xrays/ xex, fex, ir
-
-          open(9, file='fglists.dat', status='old')
-          do 90 ir = 1, 300
-              read(9,*) xex(ir), fex(ir)
-              if (xex(ir).eq.0.) go to 91  ! Break at end of file
-   90     continue
-   91     continue
-          ir = ir-1  ! Set ir = number of lines read
-          close(9)
-
-          return
-      end
 
 ! ----------------------------------------------------------------
 ! Integrate 1-particle emissivity with particle distribution over
@@ -503,14 +503,15 @@ cf2py depend(inumax) widtharc
         double precision distrpohl
         double precision D0, B, a, b0, alpha
         double precision k0, s, integrand
-        double precision x, n, argexp,pi, rs, r
-        double precision integral
+        double precision x, n, argexp,pi, dn, rs, r
+        double precision integral, rsc, dr
         double precision oldintegrand, nmin, dy
         double precision y,q,t, dt
-        double precision tmax
+        double precision tmax, integrandmax
         double precision tmin, lad, ldiff
         double precision en0, efinv, ef,  Xi
-        double precision eta, mu
+        double precision br, bt
+        double precision Bfield, eta, mu
 
         D0 = eta*2.083d19/B
         a = 1.57d-3
@@ -617,24 +618,25 @@ cf2py depend(inumax) widtharc
 ! ------------------------------------------------
 
       function distrmgt1(E,B, Ecut,r, eta,mu, rs, v,s)
-          implicit none
-          double precision E, r  ! Variables to grid over
-          double precision B, mu, rs, v, s  ! Input/constants
-          double precision Ecut, eta  ! Derived from program inputs
-
-          ! Derived constants etc
-          double precision D0, a, k0, b0, alpha, pi
-          double precision tau, lad, ldiff, x
+          !implicit none
+          double precision v, tau, E, Ecut
+          double precision distrmgt1
+          double precision D0, B, a, b0, alpha
+          double precision k0, s, integrand
+          double precision x, n, argexp,pi, dn, rs, r
+          double precision integral, rsc, dr
+          double precision oldintegrand, nmin, dy
+          double precision y,q,t, dt
+          double precision tmax, integrandmax
+          double precision tmin, lad, ldiff
+          !double precision en0, efinv, ef,  Xi
+          !double precision br, bt
+          double precision mu
+          double precision Bfield, eta
 
           ! Integration
           double precision efinv, ef, en0, Xi  ! For lad >> ldiff case
           integer i, inmax, it, itmax
-          double precision t, tmin, tmax, dt  ! 1st variable change
-          double precision y, q, nmin, dy  ! 2nd variable change
-          double precision n, argexp
-          double precision integral, integrand, oldintegrand
-
-          double precision distrmgt1
 
           D0 = eta*2.083d19/B
           a = 1.57d-3
@@ -749,16 +751,18 @@ cf2py depend(inumax) widtharc
 ! regions behind the shock, broken up by whether they are part of the peak intensity 
 ! region or not
 
-! TODO: turn this into a function?
+! Aaron: this looks good but I haven't cleaned it / checked what's up
+! with all the commented code pieces, so I just left it there
 
-      subroutine FWHM(intensitygraph,inumax,irmax,delr,nugraph,width)
-          ! implicit none
-          integer inumax
-          double precision intensitygraph(inumax,10000)
+      subroutine FWHM(intensitygraph,inumax,irmax,delr,nugraph,width, 
+     &                fluxpeak, fluxplat, gammapeak, gammaplat,imu)
+
           double precision xmax, xmin, maxintensity, halfint
-          double precision onedint(10000), delr(inumax), nugraph(inumax)
-          double precision width(inumax)
-          
+          double precision onedint(10000), delr(40), nugraph(40)
+          double precision width(40), fluxplat(40), fluxpeak(40)
+          double precision intensitygraph(40,10000)
+          double precision gammaplat(40), gammapeak(40), fac
+          integer iplat(100), ixmax(100), ixmin(100), imu
 
           ! Initialize variables reused for each energy band
           imax = 1
@@ -799,6 +803,10 @@ cf2py depend(inumax) widtharc
               i = imax-j  ! i = index position
               if (onedint(i).lt.halfint) then
                 xmax = 1d0 + real(i+1)*delr(inu)  ! r = xmax < 1
+                ixmax(inu) = imax-i  ! I think this should be just `i`
+                ! reading variable name as i(ndex) (of) xmax
+                ! but ixmax isn't currently in use anyways
+                ! ALSO, not same as IXMAX in main program
                 goto 993  ! break once xmax is found
               endif
             enddo
@@ -814,6 +822,7 @@ cf2py depend(inumax) widtharc
             do i = imax, irmax
               if (onedint(i).lt.halfint) then
                 xmin = 1d0 + real(i-1)*delr(inu)
+                ixmin(inu) = i
                 goto 994  ! break once xmin is found
               endif
             enddo
@@ -830,7 +839,49 @@ cf2py depend(inumax) widtharc
                 print *, 'Resolution Error at', nugraph(inu)/2.417989d17
             endif
 
+            ! fluxpeak(inu) = 0d0
+            ! fluxplat(inu) = 0d0
+            ! iplat(inu) = irmax !2*ixmin(inu)!+(ixmin(inu)-ixmax(inu))
+            ! if (iplat(inu).lt.1) then
+            !   print *, 'Make Box Larger to fit Plateau'
+            ! endif
           enddo
+
+!         ifix = 8
+!         do inu = 1, inumax
+!           do i = 2, ixmin(ifix)
+!             fluxpeak(inu) = fluxpeak(inu) + 
+!    &          (intensitygraph(inu,i,imu)+intensitygraph(inu,i-1,imu))/2d0
+!           enddo
+
+!           do i = ixmin(ifix)+1, iplat(ifix)
+!             fluxplat(inu) = fluxplat(inu) +  
+!    &          (intensitygraph(inu,i,imu)+intensitygraph(inu,i-1,imu))/2d0
+!           enddo
+!         enddo
+
+!         fac = 2d0
+
+!         do inu = 1, inumax-1
+!           if (inu.eq.1) then
+!             gammapeak(inu) =-1d0*
+!    &          dlog(fluxpeak(inu+1)/fluxpeak(inu)/fac)/dlog(fac)
+!             gammaplat(inu) = -1d0*
+!    &          dlog(fluxplat(inu+1)/fluxplat(inu)/fac)/dlog(fac)
+
+!           elseif (inu.eq.inumax) then
+!             gammapeak(inu) =-1d0*
+!    &          dlog(fluxpeak(inu)/fluxpeak(inu-1)/fac)/dlog(fac)
+!             gammaplat(inu) = -1d0*
+!    &          dlog(fluxplat(inu)/fluxplat(inu-1)/fac)/dlog(fac)
+
+!           else
+!             gammapeak(inu) =-1d0*
+!    &          dlog(fluxpeak(inu+1)/fluxpeak(inu-1)/fac**2d0)/dlog(fac**2d0)
+!             gammaplat(inu) = -1d0*
+!    &          dlog(fluxplat(inu+1)/fluxplat(inu-1)/fac**2d0)/dlog(fac**2d0)
+!           endif
+!         enddo
 
           return 
       end
