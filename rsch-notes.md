@@ -2224,4 +2224,95 @@ It actually looks like a tolerable fit (just looking at numbers...)
 
 Tuesday 2014 July 22
 ====================
+
+Quick profiling of code: takes 33 seconds to run that (16 calls).
+So if, e.g., I am to grid over 100 points in B0, 100 points in eta2, 20 points
+in mu, thats 200,000 function calls = 400,000 seconds = 111 hours = 4.6 days
+(!).
+
+Let's say, 10 points in mu, 20 points in B0 (logarithmic space, 10 microgauss
+to 1000 gauss?), 20 points in eta2 = 4000 points, at say 4 seconds each (to be
+conservative, with 5 bands), we have abt 4.5 hours.  From there you can refine
+the grid as needed -- need to list configuration parameters, and make it append
+only or something like that, so you can keep adding more numbers if needed?
+(think adaptive meshing ideas)
+
+play with rminarc etc appropriately, run a few TEST CASES for
+SN 1006 specifically, or Tycho specifically, before you generate the table)
+*list test case procedure for table computations (grid resolutions, rminarc),
+in some kind of nice readme*.
+
+
+
+Perhaps the best is to downsample by a factor of about 10-100, and make a small
+grid of values -- FWHMs with normalization and m\_E values.
+
 First thing: try to replicate fit with lmfit, now.
+
+with lmfit: 42 seconds, converges to 110.7 microG
+
+For quick reference, comparing best fit values with eta2=1, mu=1 fixed
+computing chi-squared values by hand, for SN 1006 filament 5 average values
+data = np.array([33.75, 27.2, 24.75 ]), eps = np.array([2.37,.62,.61])
+    plain leastsq: B0 = 108.60
+        FWHMs: 33.9, 29.7, 24.0
+        chi-squared: 17.77
+    lmfit wrapper: B0 = 110.68
+        FWHMs: 32.85, 28.8, 23.25
+        chi-squared: 12.85
+
+NOW, if I let eta2 go free (mu=1 still fixed), I get 26 calls and best fit:
+    lmfit wrapper: B0 = 123.223 microgauss, eta2 = 2.075
+        FWHMs: 31.35, 28.2, 23.85
+Compare to Sean's paper:
+    B0 = 206, eta2 = 80
+        FWHMS: ... what?!
+
+right -- remember that some of the filaments / labeling / etc are incorrect...
+maybe best to use a well vetted filament...
+
+Now is perhaps the time to discuss -- how do we best compute and present fit
+results?  for individual regions, individual filaments, ?
+
+
+I need code to call function and get output values...
+and compute chisqrs quickly.
+
+
+Need a plan of action -- first how to validate this code against SN 1006, then
+apply to our results.  Run it by Sean.
+Maybe in the paper we can present new results for SN 1006... following a more
+consistent procedure.
+
+Confidence intervals -- messing with resolution and rminarc.  This will be
+fun...
+
+
+Remarks from Brian (throw this into a meeting notes file / replicate in agenda
+/ whatever):
+* Williams et al. (2013) reported shock speeds assuming 2.3 kpc, just rescale
+  by multiplying with factor 3/2.3
+* Grid idea sounds good (generate grid, use that to find good initial guesses
+  and to just explore / look at parameter space, check degeneracy / trends)
+* Okay to just generate grid over a few days, not that bad.
+* I noted that our work would disagree with SN 1006 values, no big deal.
+  Try to reproduce Sean's numbers anyways and sanity check the code !!!
+* Consider: compute values / fits for all the regions individually, since our
+  data/signal is so good, and then average the output values of mu, B0, eta2.
+  Keeps more salient information, maybe...
+* Don't worry about 2 regions/filament, it's okay for now.
+* Gridding -- be smart about it, pick grid points appropriately.  E.g. you
+  probably don't need to do B0=500, B0=600 (microgauss)... if the relationships
+  are linear, stuff behaves nicely
+
+Send around tablesssssss (Monday meeting), do Table 7 (simple model) meanwhile,
+Table 8 soon (so that's all in the works).
+Remember the poster..
+
+Eventually clean up the last week of messy notes / agenda!... but for now I
+want TABLES TABLES TABLES.
+
+ALSO NEED TO PLAY WITH THE LEASTSQ KWARGS -- THE STEP SIZE ETC WHAT HAPPENS
+WHEN YOU CHANGE THAT (doesn't matter for the grid fit -- but for a naive fit it
+will matter... and it will matter if the grid is poorly sampled, not well
+reflecting chisquared space)

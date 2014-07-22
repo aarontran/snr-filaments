@@ -25,6 +25,7 @@ of amplification?  (ressler mentioned expected value of 4x for unmodified,
 strong shock -- where did that come from?)
 
 (Rankine-Hugoniot conditions for strong adiabatic shock?.. go read Shu)
+(Drury mentions compression ratio @ shock in DSA...)
 
 turbulent B field amplification (nonlinear plasma physics):
 doi:10.1038/nphys2978 (in a lab! this is really cool)
@@ -96,14 +97,34 @@ Model stuff
 
 One major issue -- appropriate electron distribution parameters for TYCHO!
 Cut-off energy, spectrum index, etc.  Where did he get value 2.2 for SN 1006?
+Answered by Sean's email -- see NRAO ERA (power law e- begets power law
+synchrotron... work backwards. but there's also zirakashvili and aharonian
+(2007) to get more detail?)
+
+Another question: how do you know the compression ratio is 4?  It seems like a
+nice assumption -- what happens if we change that assumption? where does that
+factor into the model? (larger compression ratio -- smaller plasma velocity --
+shorter advective lengthscale -- could help explain narrow filaments, although
+not the scaling!)
+
+Similar -- empirically check effect of changing remnant distance (2 to 4 kpc),
+how do FWHMs and other parameters, change w/ distance?  Our guess/expectation:
+scaling shouldn't change, just magnetic field estimate.  As Brian said use 3
+kpc for now, scale his shock speeds appropriately.
+
+Check all your constants urgh.  `snr_catalog.py`, model fitting code both
+wrapper and fortran
+
+Update code deep review eventually (correction to the negative sign in electron
+distribution functions, explain the Ecut matter, etc)
 
 One big question -- what are the qualitative differences between the models --
-this seems somewhat addressed by the discussion of electron cut-off energy.
+one aspect is addressed by the discussion of electron cut-off energy.
 
 Why should the cut-off energy be set by equating loss times and acceleration
 times?  Is that to say that, the electrons radiate faster than they can be
 accelerated?  But that seems weird -- because I thought the acceleration is
-what gives rise to the radiation.  Please read rettig/pohl carefully, take
+what gives rise to the radiation.  Please read parizot et al (2006), take
 notes, rederive things.
 
 How the hell to get such strong B field values?!
