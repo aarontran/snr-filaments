@@ -140,7 +140,7 @@ def holding_test():
 # =============================================================================
 # Functions to execute various types of fits
 # 1. manual_fit(...) - interactively guess/check parameter values
-# 2. tab_eta2(...) and helpers - tabulate parameter space....
+# 2. tab_eta2(...) - 
 # =============================================================================
 
 def fit_from_tab():
@@ -185,207 +185,124 @@ def make_tabs():
 def tab_eta2(snr, kevs, data, eps, mu, fmt):
     """SNR dependent tabulation of FWHM values for fitting / to explore
     parameter space, given some energy bands
-    Carve out a swath of points in the eta2-B0 plane for fixed mu.
 
-    First, grid over eta2.
-    For each eta2, get range of B0 values that give reasonable FWHMs.
-    With B0 values, also save the model FWHMs.
+    This code traces out a swath in the eta2-B0 plane (approx. 1-D curve)
+    but does not grid over mu
 
-    Verify that results are independent of input FWHMs (mins, maxs, etc)
-        Generate two tables w/ slightly different FWHM inputs/ranges
-        Fit procedure should give results consistent within error
+    Need to configure.
+    
+    May need to allow to pick eta2 gridding parameters (range of values, number
+    of data points).
 
-    Think about full model fit errors?  Once we have best fit B0, eta2, mu for a
-    given region/filament, then deal with error.  Here we're just making
-    a table of possible/candidate values.
+    Finally, think about how to store the data -- we need to store the 3-tuple
+    of eta2, B0, mu, along with model FWHMs (don't recompute each time you try
+    to perform a fit).
+
+    Output values of chisqr_vals are SPECIFIC to this particular set of
+    FWHMs...
+
+    I have a single B0 value for each pair (eta2, mu)
+    but we need a few values of B0, to span possible FWHM range...
+    Time to implement B0 rangefinding procedure...
+
+    so for each mu (only one in this method),
+           for each eta2, return B0 values + model FWHMs for each B0
+
+    use the input FWHMs as a guideline/baseline to get simple model fit values.
+    Regrettably, the tabulation will be FWHM input dependent...
+    But, in the end, the result should not depend strongly on the inputs.
+        YOU NEED TO VERIFY THIS -- generate TWO TABLES, with slightly different
+        measured FWHM inputs (say, two different filaments).
+        Then, check that output results from full procedure are consistent
+        within error whatever...
+
+        ANDDDDDDD YOU need to think about how to get fricking error from this
+        procedure.  I think once I have the best fit B0, eta2, mu then I can
+        deal with error and that shouldn't be so bad.
+
+    Friday -- bring tables of results to brian (cc rob)
+        bring poster sketch / draft to discuss things to include, briefly...
     """
 
-    # Can go ahead and grid over mu in here as well...
+    # For set of eta2 values, find best fit B0 values from simple model
+    # B0 values from simple model are reasonably close to complex model
+    # but complex model requires smaller B0 (at fixed eta2)
 
-    eta2_vals = np.logspace(-2, 3, 20, base=10)  # Must be sorted
-    eta2_dict = {}
+    eta2_vals = np.logspace(-2, 3, 10, base=10) # If using full code
+    #eta2_vals = np.logspace(-3, 4, 200, base=10) # plotting (simple only)
 
+    # Set-up for loop
     p = lmfit.Parameters()
     p.add('mu', value=mu, vary=False)
+
+    b0_vals = []
+    chisqr_vals = []
+    prev_b0 = 1e-6
+
+    full_model_fwhms = []  # List of lists/arrays
+
+    np.set_printoptions(precision=2)
 
     for eta2 in eta2_vals:
         p.add('eta2', value=eta2, vary=False)
         p.add('B0', value=150e-6, min = 1e-6, max=1e-2)  # Just initial guess
 
-        # Compute simple fits to "mean" FWHMs, (min+max)/2, to obtain initial B0
-        # No weights in fit.
-        dmid = (datamax + datamin)/2  # FWHM values in middle of range
-        res = lmfit.minimize(objectify(width_dump), pars,
-                             args=(dmid, np.ones(len(dmid)), kevs, snr),
+        print '\nGrid: eta2 = {:.2f}, mu = {:.2f}'.format(eta2, mu)
+        print '--------------------------------'
+
+        # Run simple model fit
+        res = lmfit.minimize(objectify(width_dump), p,
+                             args=(data, eps, kevs, snr),
                              method='leastsq')
+        b0_simp = p['B0'].value
+        chi2_simp = res.chisqr
+        fwhms_simp = width_dump(p, kevs, snr)
 
-        # List of B0 values, and list of model FWHMs (list of lists)
-        eta2_dict[eta2] = tab_eta2_helper_B0(snr, p, kevs, datamin, datamax)
+        # Here I need to generate multiple values of B0, which work.
+        # Need to save the values that I do manage to tabulate...
+        # (no sense in wasting generated intermediate values)
 
-    return eta2_dict
+        # here I'm expressly NOT executing a best fit -- a fit may not
+        # hit all the desired values / sample them well.
 
+        # Run complex model fit
+        # Use previous complex fit B0, and current simple fit B0, to help
+        # constrain current fit B0
+        if prev_b0 == 1e-6:
+            p.add('B0', value=p['B0'].value, min=prev_b0*0.8, max=p['B0'].value*1.5)
+        else:
+            p.add('B0', value=prev_b0, min=prev_b0*0.8, max=p['B0'].value*1.5)
 
-def tab_eta2_helper_B0(snr, pars, kevs, fwhms_min, fwhms_max):
-    """
-    Supply list of min FWHMs, max FWHMs.  ALL model fit FWHMS must have at
-    least one FWHM in the ranges.  If all FWHMs are outside range, then there
-    exists a better fit somewhere in parameter space for sure.
+        print 'Simple fit B0 = {:.2f} muG'.format(b0_simp*1e6)
+        print 'Starting complex model fit (eta2 fixed, B0 free)'
+        res = lmfit.minimize(objectify(width_cont), p,
+                             args=(data, eps, kevs, snr),
+                             kws={'icut':1},
+                             method='leastsq',
+                             epsfcn=1e-1)  # changed from 1e-5, due to B0 bounds
+        b0_comp = p['B0'].value
+        chi2_comp = res.chisqr
+        fwhms_comp = width_cont(p, kevs, snr, verbose=False)
+        prev_b0 = b0_comp # To help constrain next fit
+        # since next eta2 is bigger, next B0 must increase as well
 
-    Input:
-        pars (lmfit.Parameters): mu, eta2, initial B0 guess, any other parameters needed...
+        print 'measured:    {}'.format(data)
+        print ('simple fit: {}; '.format(fwhms_simp)
+                + 'B0 = {:.2f} muG, chisqr = {:.2f}'.format(b0_simp*1e6, chi2_simp))
+        print ('full fit:   {}; '.format(fwhms_comp)
+               + 'B0 = {:.2f} muG, chisqr = {:.2f}'.format(b0_comp*1e6, chi2_comp))
 
-        (alternate approach -- try to grid consistently in B0 and use B0 values
-        from previous fit???)
-
-        fwhms_min, fwhms_max must be numpy arrays
-    Outputs:
-        list of B0 values, list of FWHM value lists (for each B0)
-    """
-
-    # TODO: If fits give bad box / bad resolution, it may be worth modifying
-    #       FORTRAN code to give 0's or INFs, to ensure they're out of range.
-    # If code works (we have good resolution (rminarc small enough),
-    # good min/max FWHMs, then we should be okay.
-
-    # TODO: maybe worth logging script output, to check for
-    # box/resolution errors.  Shouldn't be a problem though...
-
-    f_minarc = 1.2  # How much margin of safety for rminarc?
-    n_min = 20  # Ad hoc guess -- depends on spread of your SNR FWHMs
-
-    # Work in rescaled width space (r in [0,1]), averaged over FWHMs
-    def rscale(x):
-        return np.mean((x-fwhms_min)/(fwhms_max - fwhms_min))
-    def inband(x):
-        return all(x < fwhms_max) and all(x > fwhms_min)
-
-    # Get FWHMs from initial guess
-    fwhms_init = width_cont(pars, kevs, snr, verbose=False,
-                       rminarc = max(fwhms_max)*f_minarc)
-    B0_init = pars['B0'].value
-
-    # Reinit B0 if initial guess is bad.  Cannot be TOO bad or this will take a
-    # while to run
-    # TODO: risk of oscillating forever, back and forth between bad values.
-    # (e.g., if B0/1.05 is too small, but B0*1.05 is too big.
-    if all(fwhms_init > fwhms_max):
-        pars.add('B0', value=B0_init * 1.05)  # min/max not needed, not fitting
-        return tab_eta2_helper_B0(snr, pars, kevs, fwhms_min, fwhms_max)
-    elif all(fwhms_init < fwhms_min):
-        pars.add('B0', value=B0_init / 1.05)
-        return tab_eta2_helper_B0(snr, pars, kevs, fwhms_min, fwhms_max)
+        #b0_vals.append(b0_simp)
+        #chisqr_vals.append(chi2_simp)
+        b0_vals.append(b0_comp)
+        chisqr_vals.append(chi2_comp)
+        full_model_fwhms.append(fwhms_comp)
 
 
-    # fwhms are in acceptable range.  Start generating B0 values
-    r_init = rscale(fwhms_init)
-
-    n_thin = int(np.around(r_init * n_tot))
-    n_wide = int(np.around((1 - r_init) * n_tot))
-    dr = 1.0 / n_tot
-
-    B0_thin, fwhms_thin = find_pts(r_init, 0, -1*dr)  # Decrease r, increase B0
-    B0_wide, fwhms_wide = find_pts(r_init, 1, dr)  # Increase r, decrease B0
-
-    # These must all be regular Python lists
-    B0_vals = B0_thin + [B0_init] + B0_wide
-    fwhms_all = fwhms_thin + [fwhms_init] + fwhms_wide
-
-    return B0_vals, fwhms_all
-
-
-def fill_pts(x0, y0, y_final, dy_max, f, dx_max=float('inf'),
-             epsfcn_init=1e-2):
-    """Find pts (x,y) such that y-values span interval [y0, y_final] with
-    no gap greater than dy_max; starts search from (x0, y0)
-
-    Uses simple Newton iteration, but keeps intermediate values.
-
-    Warnings: function must be monotonic, well-behaved, and have no extrema
-    (i.e., derivative strictly nonzero and single-signed).
-    There is no upper bound on the number of points generated.
-    Code developed specifically for Sean's model fitting.
-
-    Inputs:
-    Outputs:
-    """
-    sgn = np.sign(y_final - y0)
-    dy_max = sgn * abs(dy_max)  # Sign of dy_max, set by y0/y_final
-    dx_max = abs(dx_max)  # Force dx_max > 0
-
-    # Initialize derivative estimate, and find first new point
-    dx_init = epsfcn_init * abs(x0)
-    jcbn = f(x0 + dx_init)/dx_init  # Could store width measurement from here...
-    dx = next_step(jcbn, dx_max, dy_max)
-
-    # Initialize storage for loop
-    x_vals = np.array([x0])
-    y_vals = np.array([y0])
-    x_prev, y_prev = x_curr, y_curr = x0, y0  # Just for starters
-
-    while sgn * y_curr < sgn * y_final:  # ad hoc stopping threshold
-        # if dy_max > 0, proceed if y_curr < y_final
-        # if dy_max < 0, proceed if y_curr > y_final
-        if len(x_vals) > 1:
-            jcbn = (y_curr - y_prev) / (x_curr - x_prev)  # Approx first deriv
-        else:  # Only (x0, y0) known
-            dx_init = epsfcn_init * abs(x0)
-            jcbn = f(x0 + dx_init)/dx_init  # Could store width measurement...
-
-        dx = next_step(jcbn, dx_max, dy_max)
-
-        # Shift last iteration values back
-        x_prev, y_prev = x_curr, y_curr
-        # Add new data point
-        x_curr = x_prev + dx
-        y_curr = f(x_curr)  # Store this width measurement
-        x_vals = np.append(x_vals, x_curr)
-        y_vals = np.append(y_vals, y_curr)
-
-    return x_vals, y_vals
-
-
-def next_step(jcbn, dx_max, dy_max):
-    """Estimate step size dx to reach dy_max, using scalar Jacobian
-    (which is just the derivative here, in 1D"""
-    dx = dy_max/jcbn
-    return dx if abs(dx) < dx_max else np.sign(dx) * dx_max
-
-
-def mind_the_gap(x, y, dy_max, f):
-    """Fill data until y-spacing is always less than dy_max
-    Assumptions: x, y are sorted; y = f(x)
-
-    Whenever a gap (dy > dy_max) is found, iteratively sample f at x-coordinate
-    midpoints until all gaps are smaller than dy_max
-
-    Input:
-        x, y (np.array): data values to fill in
-        dy_max (float): maximum y spacing
-        f (function): function with call signature f(x).  Expect y = f(x)
-    Output:
-        x, y (np.array) with new data values
-    """
-    dy = np.diff(y)
-    while any(dy > dy_max):
-        mask = dy > dy_max 
-        indgaps = np.where(mask)[0]
-
-        x_midpts = (x[1:][mask] + x[:-1][mask]) / 2
-        y_midpts = np.array([f(xm) for xm in x_midpts])  # Store widths here
-
-        x = np.insert(x, indgaps + 1, x_midpts)
-        y = np.insert(y, indgaps + 1, y_midpts)
-        dy = np.diff(y)
-
-    return x, y
-
-
-
-def simple_fits(snr, kevs, data, eps, mu):
-    """Fit both eta2 and B0 together, simple model only.
-    Should reproduce Table 7 of Ressler!
-    """
-
+    # Additional fit to find best fit eta2, B0 in tandem
+    # but this should be run separately -- doing a slightly different job.
+    # This is important for reproducing Table 7 of Ressler!
+    # And, this should agree with the output plots from this tabulation process
     p.add('B0', value=150e-6, min=1e-6, max=1e-2)
     p.add('eta2', value=1, min=0.01, max=1000)
     res = lmfit.minimize(objectify(width_dump), p,
@@ -393,12 +310,15 @@ def simple_fits(snr, kevs, data, eps, mu):
                              method='leastsq')
     print 'Best fit values with both eta2, B0 free'
     print 'eta2 = {:.2f}, B0 = {:.2f}, mu = {:.2f}'.format(p['eta2'].value,
-            p['B0'].value * 1e6, p['mu'].value)
+                                                     p['B0'].value * 1e6,
+                                                     p['mu'].value)
+    print '---------------------------------------'
+
     print 'measured: {}'.format(data)
     print ('simple fit: {}; '.format(width_dump(p, kevs, snr))
             + 'chisqr = {:.2f}'.format(res.chisqr))
 
-    return res
+    return eta2_vals, b0_vals, chisqr_vals, fwhm_vals
 
 
 def manual_fit(snr, kevs, w_meas, w_eps):
@@ -498,14 +418,10 @@ def get_float(prompt):
 # Model functions, objectify(f)
 # =============================
 
-def width_cont(params, kevs, snr, verbose=True, rminarc=None, icut=1,
+def width_cont(params, kevs, snr, verbose=True, rminarc=60, icut=1,
                irmax=400, iradmax=100, ixmax=500):
     """Width function, wraps numerical computation in fm.fullefflengthsub
     which solves continuous loss model (equation 12)
-
-    Be careful -- rminarc depends on snr being fitted.
-    If not provided, rminarc is set by an SNR "default"
-    (e.g., SN 1006 has default rminarc=60)
 
     Inputs:
         params: lmfit.Parameters object with entries B0, eta2, mu
@@ -534,9 +450,6 @@ def width_cont(params, kevs, snr, verbose=True, rminarc=None, icut=1,
     rs = snr.rs
     rsarc = snr.rsarc
     s = snr.s
-
-    if rminarc is None:
-        rminarc = snr.rminarc
 
     if verbose:
         print ('\tFunction call with B0 = {:0.3f} muG; eta2 = {:0.3f}; '

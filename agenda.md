@@ -95,6 +95,19 @@ So need to
 Model stuff
 -----------
 
+To be clear -- Sean used ecut in all of the model fits?
+
+How do you rule out magnetic damping, exactly?  Looking at Figure 4, with ab =
+0.05 rs, it seems like that would give you a decent size mE.  How did Sean get
+the numbers that he did (i.e. that mE must be order -0.1 for damping)?
+
+Question: is mu restricted to fall within `[0, 2]` (as is suggested by the
+turbulence - mu relation given in Sean's paper?).
+
+In table 8 -- how do you define unobtainable?
+e.g., for mu =0.5 I can get a chisquared of at best 6.2 (compared to abt 4 for
+the higher values of mu). (with manual fitting, that is)
+
 One major issue -- appropriate electron distribution parameters for TYCHO!
 Cut-off energy, spectrum index, etc.  Where did he get value 2.2 for SN 1006?
 Answered by Sean's email -- see NRAO ERA (power law e- begets power law
@@ -105,7 +118,7 @@ Another question: how do you know the compression ratio is 4?  It seems like a
 nice assumption -- what happens if we change that assumption? where does that
 factor into the model? (larger compression ratio -- smaller plasma velocity --
 shorter advective lengthscale -- could help explain narrow filaments, although
-not the scaling!)
+not the scaling!)  (see brian's paper...)
 
 Similar -- empirically check effect of changing remnant distance (2 to 4 kpc),
 how do FWHMs and other parameters, change w/ distance?  Our guess/expectation:
@@ -128,6 +141,7 @@ what gives rise to the radiation.  Please read parizot et al (2006), take
 notes, rederive things.
 
 How the hell to get such strong B field values?!
+Solution: read the damn literature
 
 Another issue -- when converting from particle energy E to radiated frequency
 nu, doesn't the use of `$\nu_m = c_m E^2 B$` implicitly invoke the

@@ -34,8 +34,6 @@ def make_tycho():
     tycho.rs = 1.077e19  # Shock radius (cm), tan(240 arcsec) * 3 kpc
     tycho.s = 2.3  # e- spectrum index, 2.3 = 2*0.65 + 1; 0.65 = radio spectral index
 
-    tycho.rminarc = 10  # Default rminarc, arcsec (temporary...)
-
     return tycho
 
 
@@ -48,8 +46,6 @@ def make_SN1006():
     sn1006.rsarc = 900  # Shock radius (arcsec) from Green's SNR catalog
     sn1006.rs = 2.96e19  # Shock radius (cm), tan(900 arcsec) * 2.2 kpc
     sn1006.s = 2.2  # e- spectrum index, 2.2 = 2*0.6 + 1; 0.6 = radio spectral index
-
-    sn1006.rminarc = 60  # Default rminarc, arcsec
 
     return sn1006
 

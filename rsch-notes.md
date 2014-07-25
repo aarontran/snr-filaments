@@ -2316,3 +2316,213 @@ ALSO NEED TO PLAY WITH THE LEASTSQ KWARGS -- THE STEP SIZE ETC WHAT HAPPENS
 WHEN YOU CHANGE THAT (doesn't matter for the grid fit -- but for a naive fit it
 will matter... and it will matter if the grid is poorly sampled, not well
 reflecting chisquared space)
+
+
+Thursday 2014 July 24
+=====================
+
+Added code to make interactive manual fitting easier (remember best fit and
+plot data with fits interactively).  Not perfect but no need for more bells and
+whistles right now.
+
+I note that the naive fitting code (i.e. throw numbers into lmfit with some
+initial guesses for eta2 and B0) is actually not working that well.
+Essentially, it's not exploring enough of parameter space, especially if its
+initial guesses are bad.  Or, rather, you might say that the parameter space is
+too messy, littered with local minima...
+
+Messing with epsfcn parameter (i.e., step size knob) slightly.  This will not
+save us.
+
+
+
+So, next step in validation is to generate a table for SN1006...
+
+
+For Tycho -- generate tables with slightly different shock velocities / plasma
+velocities, and see how they differ.
+
+Compression ratio doesn't relate 1-to-1 with widths / magnetic fields (how does
+it work, what does it do to the filaments/plasma?).  But yes, generate numbers
+with 1/6 instead of 1/4 and see how it looks (hard to get smaller compression
+ratio, Brian says?)
+
+Another thought -- we are treating this all as a steady state process.  Seems
+reasonable given the velocities involved (is there an equilibration timescale
+for advection-diffusion equation?)
+
+Finally, the grid is going to be kinda messy.  Twiddling the parameters too
+much, blows things up real fast.
+
+Increase or decrease B0, set the range dynamically -- or even could do so
+manually, basically imitating what Sean did.  There is degeneracy in that
+B0 and eta2 are correlated -- both strongly affect the overall size of FWHMs,
+but only eta2 will affect the scaling.
+
+Following the approximate equation of Parizot et al...
+I have that, for roughly constant/consistent filament amplitude,
+eta2 propto B0^(mu/2 + 1) should be maintained (makes sense at mu=0, one to one
+scaling because with mu=0 implies diffusion just stretches/shrinks filaments by
+a small factor... neglecting messy transport and stuff.
+
+If diffusion is strong, this should be eta2 propto B0^(mu/4 + 5/4)... pretty
+close relation.  They agree if mu=1.
+
+Because diffusion doesn't seem to be strong most of the time...
+let's go with eta2 propto B0^(mu/2+1) for the grid generation.
+and allow the values to covary around this approx scaling relationship.
+
+But I think this breaks down eventually.  As eta2 goes to zero B0 does not go
+to zero...
+
+Aha -- you have to deal with the singularity correctly as mu goes to zero!
+
+Result:
+Turns out that attempting to use the theoretical scaling (i.e. from my math and
+derivations) failed horribly.  Numbers were way off the mark, and I couldn't be
+bothered to try to fix/correct it.  Easier solution is to just fit the simple
+model directly because that gives good, physically sensible numbers
+
+    # Me attempting to compute values in B0, eta2 space by
+    # SOLVING equation (6) directly.  Needless to say, this failed badly.
+
+    #b = snrcat.SYNCH_B
+    #cm = snrcat.SYNCH_CM
+    #Cd = snrcat.CD
+    #nu2 = snrcat.NUKEV * 2.0
+    #v0, rs, rsarc = snr.v0, snr.rs, snr.rsarc
+    #a = (30/snrcat.BETA) * rs/rsarc # Scale length = fwhm / beta
+    #B0_vals = np.linspace(75, 300, 10) * 1e-6
+    #eta2_vals = (a*v0/Cd * (nu2/cm)**(-mu/2) * np.power(B0_vals, 1 - mu/2) *
+    #    (a*b/v0 * np.sqrt(nu2/cm) * np.power(B0_vals, 3/2) - 1))
+
+    #init_B0 = 208e-6
+    #init_eta2 = 80.0
+    #c = init_B0 / init_eta2**(1 / (5/4 + mu/4))
+    #eta2_vals = np.logspace(0, 2.5, 10, base=10)
+    #B0_vals = c * eta2_vals**(1 / (5/4 + mu/4))
+    #np.insert(eta2_vals, [0.01, 0.04, 0.1, 0.2, 0.5], 0)
+    #np.insert(B0_vals, 5*[B0_vals[0]], 0)
+
+So I moved on to fitting the simple model directly
+
+
+Main conclusion (after generating values from fits) -- in the SIMPLE model
+no matter the value of mu,
+the best fit value of B0 is propto (eta * (E\_h)^(1-mu)) ^ (1/3)
+
+but at small eta2 (negligible diffusion) B0 levels out as a constant.
+The leveling off is quite sharp, so a simple powerlaw + constant doesn't quite
+get it.  But it doesn't matter because we're already using an analytic
+function.
+
+
+....
+
+much fiddling later, this is hard. whee.  I have a better grip on what's going
+on in parameter space, and on the subspace of acceptable physical parameters in
+the parameter space.
+
+The best fit value of B0 is certainly not unique, nor guaranteed to be found...
+And, at any rate -- adding min/max bounds doesn't help it converge any faster
+
+some numbers (on a grid of mu, eta2, find the best fit value for B0 using full
+numerical code, on filament 5, mu=1...)
+
+    measured:   33.75, 27.20, 24.75
+    simple fit: 35.52, 29.74, 21.09
+
+epsfcn=1e-5
+
+    B0 = 92.177 muG
+    full fit:   36.45, 30.30, 21.30
+    chisqr = 58.29
+
+epscfn = 1e-4
+
+    B0 = 91.797 muG
+    full fit:   36.45, 30.45, 21.45
+    chisqr = 58.04
+
+epsfcn = 1e-1, epsfcn=None
+
+    B0 = 93.263 muG
+    full fit:   35.70, 29.70, 20.85
+    chisqr = 57.81
+
+epscfn = 1e-2
+
+    B0 = 92.661 muG
+    full fit:   36.15, 30.00, 21.15
+    chisqr = 56.25
+
+Conclusion: parameter space SUCKS... what's going on here? why is it so bad?
+
+One possible effect is the finite intensity profile resolution.  
+If you change B0 or eta2 or other parameters slightly, the exact FWHMs may
+not jump instantly. rminarc = 60 arcsec, with 400 grid points, gives discrete
+step size of 0.15 arcsec.
+
+(if I twiddle rminarc or other parameters, the results will change
+subtly as well.  But the hope is that it doesn't really matter)
+
+Lastly, these are really bad quality fits -- the best fit eta2 is between 1
+and 10.  MAYBE the fits are more robust there?  But, honestly, with fixed eta2
+and mu it shouldn't matter -- as we see in the plots of chi-squared vs. B0, at
+fixed, where we are gridding on mu and B0 and doing a fit for eta2, the best
+fit value of B0 is usually very well defined.
+
+But the spread is small enough and almost certainly within uncertainty, is my
+guess.  Yes -- all within delta chi-squared = 2.7 (super ad hoc, empirical, not
+scientific, not rigorous, not sampling the space of possible outputs from fit
+convergence).
+
+So I think we have no choice but to grid over the space, as finely as possible
+(the spacing in eta2 matters much more than spacing in B0, actually.  And the
+mu spacing is not so important.)
+
+
+Give qualitative observations of fit behavior, chi-squared space (from simple
+fits) for each filament, alongside my best fit results from simple and complex
+models.
+And, in all work, use the simple model as a guide to what's going on.
+
+
+Thursday 2014 July 24
+=====================
+
+Summary
+-------
+
+
+Tabulating FWHMs in (B0, eta2, mu) space
+----------------------------------------
+
+
+
+
+Idea: SNR class should store (slightly more transient) information about
+filaments, regions, etc... ?  Idea is to keep all information together.
+
+
+
+I think it's worth plotting a scatter of the tabulated grid values.
+And, then, plot the simple model best fit (maybe for multiple/all filaments)
+to show that our tabulation range is consistent with where we expect real
+filaments to lie..........
+
+
+Currently -- formulating algorithm to generate grid points...
+I am worrying about overshooting (if derivative is ever near zero, this
+Newton-Raphson procedure is essentially gonna blow up.  YEAH -- this part of it
+is simply rootfinding, except trying to hit y\_Final instead of y=0).
+
+But -- for our purposes, since we are fitting B0 to widths, there should be no
+local minima/maxima -- the function should be monotonic, and the derivative
+should not be small.
+
+Happy solution -- iterate along function until we reach FWHM (Rscale) min, max limits.
+Then, use `mind_the_gap` to fill in the rest of the data points.
+
+
+Some very simplistic test cases shows it works nicely.  Great.
