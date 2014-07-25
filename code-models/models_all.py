@@ -292,15 +292,41 @@ def tab_eta2_helper_B0(snr, pars, kevs, fwhms_min, fwhms_max):
 
     return B0_vals, fwhms_all
 
+"""
+To illustrate the general utility of the following functions,
+fill_pts(...), mind_the_gap(...), try this code:
+(was used for debugging -- making sure it works when iterating backwards)
 
-def fill_pts(x0, y0, y_final, dy_max, f, dx_max=float('inf'),
+import numpy as np
+import matplotlib.pyplot as plt
+import models_all as ma
+
+# Cannot start at (0,0) due to zero derivative
+x, y = ma.fill_pts(0.1, 0.1**2, 10, 1, lambda x: x**2, dx_max=1)
+xnew, ynew = ma.mind_the_gaps(x, y, 0.5, lambda x: x**2)
+plt.plot(x,y,'-ro',ms=10)
+plt.plot(xnew,ynew,'*b',ms=8)
+plt.show()
+
+x, y = ma.fill_pts(-0.1, (-0.1)**3, -15, 1, lambda x: x**3, dx_max=1)
+xnew, ynew = ma.mind_the_gaps(x, y, 0.5, lambda x: x**3)
+plt.plot(x,y,'-ro',ms=10)
+plt.plot(xnew,ynew,'*b',ms=8)
+xm = np.linspace(1, -(15)**(1./3), 100)
+plt.plot(xm, xm**3, '-g')
+plt.show()
+"""
+
+
+def fill_pts(x0, y0, y_final, dy_step, f, dx_max=float('inf'),
              epsfcn_init=1e-2):
-    """Find pts (x,y) such that y-values span interval [y0, y_final] with
-    no gap greater than dy_max; starts search from (x0, y0)
+    """Find pts (x,y) with y-values spanning interval [y0, y_final]
 
-    Uses simple Newton iteration, but keeps intermediate values.
+    Just Newton-Raphson iteration, but keeping intermediate values.
+    dy_step is just a guideline for stepping torwards y_final
+    to enforce data spacing, use mind_the_gaps
 
-    Warnings: function must be monotonic, well-behaved, and have no extrema
+    WARNINGS: function must be monotonic, well-behaved, and have no extrema
     (i.e., derivative strictly nonzero and single-signed).
     There is no upper bound on the number of points generated.
     Code developed specifically for Sean's model fitting.
@@ -309,13 +335,13 @@ def fill_pts(x0, y0, y_final, dy_max, f, dx_max=float('inf'),
     Outputs:
     """
     sgn = np.sign(y_final - y0)
-    dy_max = sgn * abs(dy_max)  # Sign of dy_max, set by y0/y_final
+    dy_step = sgn * abs(dy_step)  # Sign of dy_step, set by y0/y_final
     dx_max = abs(dx_max)  # Force dx_max > 0
 
-    # Initialize derivative estimate, and find first new point
-    dx_init = epsfcn_init * abs(x0)
-    jcbn = f(x0 + dx_init)/dx_init  # Could store width measurement from here...
-    dx = next_step(jcbn, dx_max, dy_max)
+    # Convenience function to estimate step size dx, to reach dy_step
+    def next_step(jcbn):
+        dx = dy_step/jcbn  # if dy_step < 0 and jcbn < 0, dx > 0...
+        return dx if abs(dx) < dx_max else np.sign(dx) * dx_max
 
     # Initialize storage for loop
     x_vals = np.array([x0])
@@ -323,15 +349,15 @@ def fill_pts(x0, y0, y_final, dy_max, f, dx_max=float('inf'),
     x_prev, y_prev = x_curr, y_curr = x0, y0  # Just for starters
 
     while sgn * y_curr < sgn * y_final:  # ad hoc stopping threshold
-        # if dy_max > 0, proceed if y_curr < y_final
-        # if dy_max < 0, proceed if y_curr > y_final
+        # if dy_step > 0, proceed if y_curr < y_final
+        # if dy_step < 0, proceed if y_curr > y_final
         if len(x_vals) > 1:
             jcbn = (y_curr - y_prev) / (x_curr - x_prev)  # Approx first deriv
-        else:  # Only (x0, y0) known
+        else:  # Initialize first deriv. if only (x0, y0) known
             dx_init = epsfcn_init * abs(x0)
-            jcbn = f(x0 + dx_init)/dx_init  # Could store width measurement...
+            jcbn = (f(x0 + dx_init) - y0)/dx_init  # Could store width measurement...
 
-        dx = next_step(jcbn, dx_max, dy_max)
+        dx = next_step(jcbn)
 
         # Shift last iteration values back
         x_prev, y_prev = x_curr, y_curr
@@ -344,14 +370,7 @@ def fill_pts(x0, y0, y_final, dy_max, f, dx_max=float('inf'),
     return x_vals, y_vals
 
 
-def next_step(jcbn, dx_max, dy_max):
-    """Estimate step size dx to reach dy_max, using scalar Jacobian
-    (which is just the derivative here, in 1D"""
-    dx = dy_max/jcbn
-    return dx if abs(dx) < dx_max else np.sign(dx) * dx_max
-
-
-def mind_the_gap(x, y, dy_max, f):
+def mind_the_gaps(x, y, dy_max, f):
     """Fill data until y-spacing is always less than dy_max
     Assumptions: x, y are sorted; y = f(x)
 
@@ -360,12 +379,12 @@ def mind_the_gap(x, y, dy_max, f):
 
     Input:
         x, y (np.array): data values to fill in
-        dy_max (float): maximum y spacing
+        dy_max (float): maximum y spacing, must be greater than zero
         f (function): function with call signature f(x).  Expect y = f(x)
     Output:
         x, y (np.array) with new data values
     """
-    dy = np.diff(y)
+    dy = np.abs(np.diff(y))
     while any(dy > dy_max):
         mask = dy > dy_max 
         indgaps = np.where(mask)[0]
@@ -375,10 +394,9 @@ def mind_the_gap(x, y, dy_max, f):
 
         x = np.insert(x, indgaps + 1, x_midpts)
         y = np.insert(y, indgaps + 1, y_midpts)
-        dy = np.diff(y)
+        dy = np.abs(np.diff(y))
 
     return x, y
-
 
 
 def simple_fits(snr, kevs, data, eps, mu):
