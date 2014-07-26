@@ -95,6 +95,12 @@ So need to
 Model stuff
 -----------
 
+
+Thought -- should we be constraining the resolution... checking that it
+works/makes sense?  How do we quantify when the grid is sufficiently resolved?!
+Compute the error from changing the grid fractionally (e.g. doubling)... kind
+of like in Math 228B...
+
 To be clear -- Sean used ecut in all of the model fits?
 
 How do you rule out magnetic damping, exactly?  Looking at Figure 4, with ab =
@@ -119,6 +125,35 @@ nice assumption -- what happens if we change that assumption? where does that
 factor into the model? (larger compression ratio -- smaller plasma velocity --
 shorter advective lengthscale -- could help explain narrow filaments, although
 not the scaling!)  (see brian's paper...)
+
+Solution: throw this into the simple model... some numbers:
+> compression ratio = 4
+> Filament 1: mu = 1.00    eta2 = 1.06 +/- 0.37    B0 = 112.55 +/- 4.27
+> Filament 2: mu = 1.00    eta2 = 0.08 +/- 1.05    B0 = 144.84 +/- 26.26
+> Filament 3: mu = 1.00    eta2 = 0.01 +/- 0.14    B0 = 80.88 +/- 2.58
+> Filament 4: mu = 1.00    eta2 = 0.01 +/- 0.06    B0 = 118.17 +/- 2.40
+> Filament 5: mu = 1.00    eta2 = 4.81 +/- 5.18    B0 = 155.77 +/- 36.22
+> 
+> compression ratio = 6
+> Filament 1: mu = 1.00    eta2 = 0.47 +/- 0.16    B0 = 85.89 +/- 3.26
+> Filament 2: mu = 1.00    eta2 = 0.03 +/- 0.47    B0 = 110.53 +/- 20.05
+> Filament 3: mu = 1.00    eta2 = 0.01 +/- 0.06    B0 = 61.89 +/- 2.07
+> Filament 4: mu = 1.00    eta2 = 0.01 +/- 0.00    B0 = 90.42 +/- 2.22
+> Filament 5: mu = 1.00    eta2 = 2.14 +/- 2.30    B0 = 118.88 +/- 27.64
+> 
+> compression ratio = 8
+> Filament 1: mu = 1.00    eta2 = 0.27 +/- 0.09    B0 = 70.90 +/- 2.69
+> Filament 2: mu = 1.00    eta2 = 0.02 +/- 0.26    B0 = 91.25 +/- 16.54
+> Filament 3: mu = 1.00    eta2 = 0.01 +/- 0.03    B0 = 51.28 +/- 1.82
+> Filament 4: mu = 1.00    eta2 = 0.01 +/- 0.06    B0 = 74.92 +/- 2.12
+> Filament 5: mu = 1.00    eta2 = 1.20 +/- 1.30    B0 = 98.13 +/- 22.82
+> 
+> compression ratio = 20
+> Filament 1: mu = 1.00    eta2 = 0.04 +/- 0.01    B0 = 38.49 +/- 1.46
+> Filament 2: mu = 1.00    eta2 = 0.01 +/- 0.01    B0 = 50.91 +/- 10.77
+> Filament 3: mu = 1.00    eta2 = 0.01 +/- 0.00    B0 = 29.00 +/- 2.27
+> Filament 4: mu = 1.00    eta2 = 0.01 +/- 0.00    B0 = 42.36 +/- 3.41
+> Filament 5: mu = 1.00    eta2 = 0.19 +/- 0.21    B0 = 53.27 +/- 12.39
 
 Similar -- empirically check effect of changing remnant distance (2 to 4 kpc),
 how do FWHMs and other parameters, change w/ distance?  Our guess/expectation:

@@ -2526,3 +2526,71 @@ Then, use `mind_the_gap` to fill in the rest of the data points.
 
 
 Some very simplistic test cases shows it works nicely.  Great.
+
+Continued work until it seems to work on FWHM tabulation and all, generates
+proper grids in eta2-B0 space.  Mostly
+
+
+Friday 2014 July 25
+===================
+
+
+Debugging full model gridding code.  A few different small issues coming up, as
+I test the code on certain edge cases (e.g., when the initial guess for B0 is
+bad, and/or `r_init` falls outside of range [0,1])
+
+Next I need code to work with the results... i.e. perform simple/complex fits,
+and save/tabulate the most important numbers.  Also adapt hte complex fit
+gridding code, to accept arbitrary grid inputs... -- this will let us pick up
+the code where it left off, if it ever breaks / running is interrupted, as long
+as we save to a file continuously.
+
+First let's do simple fit, to have stuff to talk w/ brian about.
+then complex fit to test the table.
+
+
+
+Plot point-to-point measurements of `m_E` as a function of energy, get the
+scaling -- what does that tell you?  Just to get a qualitative feel on how
+`m_E` scales...
+
+
+Preliminary test -- dammit, filament 2 is not resolved in chi-squared space,
+these are NOT best fits..
+
+
+Realization: we really need FWHMs outside of the limits, set by FWHMS -- to be
+able to find the best fit B0's for those filaments near the limits...
+Filaments 2,3,4 are crap (2,3 especially, some in 4 barely find that
+chi-squared minimum)
+
+even if we have 
+
+
+
+Key idea: even though for most fits, we don't need to compute this many values
+of B0 (we are over sampling chi2 space and doing so in places where its not
+needed),
+
+
+
+
+
+
+
+Problems on the horizon:
+if I'm generating values for eta2 inconsistenly some places I will be able to
+find best fits, some places I will not.... might be better to regenerate
+tables....
+
+
+Resolving eta2 is a big problem.  Remember to throw in some linear values per
+Brian's suggestion.
+
+
+Weird problem: code bugs out on rminarc=73.71
+The bug is due to f2py, not my code ?!?!?!?!.
+It goes bonkers on VERY specific values of rminarc (e.g., 73.71), but works on
+other (say, 73.72)
+
+Conclusions.....

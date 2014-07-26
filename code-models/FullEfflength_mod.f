@@ -26,7 +26,7 @@
           ! Inputs
           double precision kevs(40)
           integer inumax
-          double precision B0, eta2, mu
+          double precision B0, eta2, mu, rminarc
           double precision widtharc(40)
 
           ! For spitting out results, optional
@@ -46,6 +46,8 @@
           read *, eta2          ! dimensionless
           print *, 'Enter mu'
           read *, mu            ! dimensionless
+          print *, 'Enter rminarc'
+          read *, rminarc       ! arcsec
 
           kevs(1) = 0.7d0
           kevs(2) = 1d0
@@ -59,7 +61,7 @@
 
           call Fullefflengthsub(kevs, inumax, widtharc, B0, eta2, mu,
      &                          5d0*1.d8, 5d0*1.d8/4d0, 2.96d19, 900d0,
-     &                          2d0*0.6d0+1d0, 60d0, 0, 400, 100, 500)
+     &                          2d0*0.6d0+1d0, rminarc, 1, 400, 100,500)
 
           do i = 1, inumax
             print *, kevs(i), ' keV: ', widtharc(i)
@@ -128,7 +130,7 @@
           double precision emis1, integrand, integral, intensity
           double precision distgraph(1000), intensitygraph(inumax,10000)
           ! FWHM calculation, outputs
-          double precision width(inumax)
+          double precision width(inumax)!, norms(inumax)
 
           ! Functions used
           double precision distrpohl, distrmlt1, distrmgt1
@@ -822,12 +824,15 @@ cf2py depend(inumax) widtharc
             width(inu) = xmax - xmin ! Yes this is positive
 
             if (xmax.eq.0d0) then
-                print *, 'Box Length Error at', nugraph(inu)/2.417989d17
+                print *, 'Box Length Error (xmax) at',
+     &                   nugraph(inu)/2.417989d17
                 ! This won't ever be reached, with edge case fix
             elseif (xmin.eq.0d0) then
-                print *, 'Box Length Error at', nugraph(inu)/2.417989d17
+                print *, 'Box Length Error (xmin) at',
+     &                   nugraph(inu)/2.417989d17
             elseif ((xmax-xmin)/dabs(delr(inu)).lt.20d0) then
-                print *, 'Resolution Error at', nugraph(inu)/2.417989d17
+                print *, 'Resolution Error at',
+     &                   nugraph(inu)/2.417989d17
             endif
 
           enddo

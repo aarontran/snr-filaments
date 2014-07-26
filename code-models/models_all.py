@@ -45,13 +45,8 @@ import sys
 from fplot import fplot
 import snr_catalog as snrcat
 
-# Compile and import Fortran code -- not sure where to do this.
 # Could throw this into another short script? remember to call
 # fm.readfglists() before anything else though.
-
-#with open('FullEfflength_mod.f', 'r') as f:
-#    fsource = ''.join(list(f))
-#np.f2py.compile(fsource, modulename='fullmodel', verbose=1)
 import fullmodel as fm
 fm.readfglists()  # Only do this once
 
@@ -67,111 +62,193 @@ SN1006_DATA[5] = np.array([33.75, 27.2, 24.75 ]), np.array([2.37,.62,.61])
 
 
 def main():
-    """Just testing, for now"""
+    pass
 
-    flmt = 5
-    kevs = SN1006_KEVS
-    data, eps = SN1006_DATA[flmt]
-    kevs, data, eps = kevs[1:], data[1:], eps[1:]  # Try reproducing SN 1006 numbers
+# ======================================================
+# Code to execute fits (this belongs in a separate file)
+# ======================================================
 
-    manual_fit(snrcat.make_SN1006(), kevs, data, eps)
+def run_table_fit():
+    """Load thing"""
 
-
-def holding_test():
-    """Testing some fits -- just messing around with numbers"""
-    flmt = 5
-    kevs = SN1006_KEVS
-    data, eps = SN1006_DATA[flmt]
-
-    kevs, data, eps = kevs[1:], data[1:], eps[1:]  # Try reproducing SN 1006 numbers
-
-    # Set SNR physical parameters here
     snr = snrcat.make_SN1006()
+    kevs = SN1006_KEVS
 
-    # Search previously generated table for best initial guesses
-    # OR, supply initial guesses
-    p = lmfit.Parameters()
-    p.add('B0', value=2e-4, min=1e-6, max=1e-2)
-    #p.add('eta2', value=1, vary=False)
-    p.add('eta2', value=1, min=0, max=1e4)
-    p.add('mu', value=1, vary=False)
+    with open('tables/sn1006_grid-3-40-15_2014-07-25.pkl', 'r') as fpkl:
+        tab = pickle.load(fpkl)
 
-    # Fit complex model
-    res = lmfit.minimize(objectify(width_cont), p,
-                   args=(data, eps, kevs, snr),
-                   kws={'icut':1},  # Numerical code settings
-                   method='leastsq',
-                   epsfcn=1e-5)  # this epsfcn is IMPORTANT!!!
-                   # Step size set in an ad hoc fashion -- sort of guess and
-                   # check.  Goal is to let fit explore parameter space, while 
-                   # preventing blowup or immobilization...
-        # But, larger steps means longer time to converge, too
-        # And, still not guaranteed to find best fit.
+    for flmt in [1]: #[1,2,3,4,5]:
+        print 'Filament {}'.format(flmt)
+        print 'mu\teta2\t\t\tB0'
+        data, eps = SN1006_DATA[flmt]
 
-    # Print fit information
-    lmfit.printfuncs.report_fit(res.params)
-    print 'chisqrt = {}'.format(res.chisqr)
-    #ci = lmfit.conf_interval(res)  # Only if more than 2 variables?
-    #lmfit.printfuncs.report_ci(ci)
+        for mu in [1/3, 1/2, 1]:
+            res = table_fit(snr, kevs, data, eps, mu, tab)
+        plt.show()
 
-    # Fit simple model
-    #print 'Simple model'
-    #res2 = lmfit.minimize(objectify(width_dump), p,
-    #                args=(data, eps, kevs, snr),
-    #                method='leastsq')
+            #print '{:0.2f}\t{:0.2f} +/- {:0.2f}\t\t{:0.2f} +/- {:0.2f}'.format(
+            #        res.values['mu'],
+            #        res.values['eta2'], res.params['eta2'].stderr,
+            #        res.values['B0']*1e6, res.params['B0'].stderr*1e6)
 
-    # Print fit information
-    #lmfit.printfuncs.report_fit(res2.params)
-    #ci = lmfit.conf_interval(res2)  # Only if more than 2 variables?
-    #lmfit.printfuncs.report_ci(ci)
-
-    # Plot fit with data
-    #plot_data()
-    en_plt = np.linspace(0.6, 2.1, 10)
-    plt.errorbar(kevs, data, eps, fmt='bo')
-    plt.plot(en_plt, width_cont(p, en_plt, snr), '-k.')
-    plt.xlabel('Observation energy (keV)')
-    plt.ylabel('FWHM (arcsec)')
-    plt.draw()
-    plt.show(block=False)
-
-    # Maybe good to spit out a configuration file here, to log fit inputs and
-    # outputs.
-
-    return res
+            # Next, error from confidence intervals...
+            # Error bars on B0 and eta2 will be tremendous in many cases.
 
 
-def simple_fits(snr, kevs, data, eps, mu):
+def check_effects():
+    """Make numbers blagh
+    What happens when we change
+    compression ratio (i.e. v0) ?
+    """
+    mu = 1
+    compratios = [4, 6, 8, 20]
+
+    snr = snrcat.make_SN1006()
+    kevs = SN1006_KEVS
+
+    for cr in compratios:
+
+        snr.v0 = snr.vs/cr
+        print '\ncompression ratio = {}'.format(cr)
+
+        for flmt in [1,2,3,4,5]:
+
+            data, eps = SN1006_DATA[flmt]
+            res = simple_fit(snr, kevs, data, eps, mu)
+
+            print ('Filament {}: mu = {:0.2f}\teta2 = {:0.2f} +/- {:0.2f}\t'
+                   'B0 = {:0.2f} +/- {:0.2f}').format(flmt, res.values['mu'],
+                    res.values['eta2'], res.params['eta2'].stderr,
+                    res.values['B0']*1e6, res.params['B0'].stderr*1e6)       
+
+
+def make_table7_SN1006():
+    """Make numbers blagh
+    This reproduces Table 7 of Ressler et al.
+    """
+
+    snr = snrcat.make_SN1006()
+    kevs = SN1006_KEVS
+
+    for flmt in [1,2,3,4,5]:
+        print 'Filament {}'.format(flmt)
+        print 'mu\teta2\t\t\tB0'
+        for mu in [0, 1/3, 1/2, 1, 1.5, 2]:
+            data, eps = SN1006_DATA[flmt]
+            res = simple_fit(snr, kevs, data, eps, mu)
+
+            print '{:0.2f}\t{:0.2f} +/- {:0.2f}\t\t{:0.2f} +/- {:0.2f}'.format(
+                    res.values['mu'],
+                    res.values['eta2'], res.params['eta2'].stderr,
+                    res.values['B0']*1e6, res.params['B0'].stderr*1e6)
+
+            # Next, error from confidence intervals...
+            # Error bars on B0 and eta2 will be tremendous in many cases.
+            
+
+# ============================================
+# Fit from just initial guesses (simple model)
+# ============================================
+
+# May be good to somehow save configuration files --... logt settings, SNR
+# parameters, et cetera...
+
+def simple_fit(snr, kevs, data, eps, mu):
     """Fit both eta2 and B0 together, simple model only.
     Should reproduce Table 7 of Ressler!
     """
-    # this is strictly temporary -- to be adapted into a larger routine
-
+    p = lmfit.Parameters()
+    p.add('mu', value=mu, vary=False)
     p.add('B0', value=150e-6, min=1e-6, max=1e-2)
     p.add('eta2', value=1, min=0.01, max=1000)
     res = lmfit.minimize(objectify(width_dump), p,
                              args=(data, eps, kevs, snr),
                              method='leastsq')
-    print 'Best fit values with both eta2, B0 free'
-    print 'eta2 = {:.2f}, B0 = {:.2f}, mu = {:.2f}'.format(p['eta2'].value,
-            p['B0'].value * 1e6, p['mu'].value)
-    print 'measured: {}'.format(data)
-    print ('simple fit: {}; '.format(width_dump(p, kevs, snr))
-            + 'chisqr = {:.2f}'.format(res.chisqr))
+
+    #print 'Best fit values with both eta2, B0 free'
+    #print 'eta2 = {:.2f}, B0 = {:.2f}, mu = {:.2f}'.format(p['eta2'].value,
+    #        p['B0'].value * 1e6, p['mu'].value)
+    #print 'measured: {}'.format(data)
+    #print ('simple fit: {}; '.format(width_dump(p, kevs, snr))
+    #        + 'chisqr = {:.2f}'.format(res.chisqr))
 
     return res
 
 
-# ===============================
-# Different fitting procedures
-# manual_fit(...), table_fit(...)
-# ===============================
+# ======================================================
+# Fit, optimizing with precached table (full model code)
+# ======================================================
 
-def table_fit():
-    """Fit data from precomputed table of values..."""
-    pass
+def table_fit(snr, kevs, data, eps, mu, tab):
+    """Fit data from precomputed table of values...
+    
+    mu must be an element of tab.keys(); we neglect fit in mu space.
+    tab should be opened prior
+    """
+
+    # Find best fit values in table, eta2 and B0 for each mu or whatever
+    # The fear is that, if we are not sampling finely enough in B0 or eta2
+    # We will miss the correct global minimum...
+    eta2_dict = tab[mu]
+
+    eta2_bestchisqrs = np.array([])
+    eta2_bestB0 = np.array([])
+
+    eta2_vals = np.sort(eta2_dict.keys())
+    print eta2_vals
+
+    for eta2 in eta2_vals:
+        B0_vals, fwhms = eta2_dict[eta2]  # Unpack tuple
+
+        chisqr_vals = map(lambda x: chi_squared(data, eps, x), fwhms)
+        ind = np.argmin(chisqr_vals)
+
+        #eta2_bestchisqrs = np.append(eta2_bestchisqrs, chisqr_vals[ind])
+        #eta2_bestB0 = np.append(eta2_bestB0, B0_vals[ind])
+
+        p = lmfit.Parameters()
+        p.add('mu', value=mu, vary=False)
+        p.add('B0', value=B0_vals[ind], min=1e-6, max=1e-2)
+        p.add('eta2', value=eta2, vary=False)
+        res = lmfit.minimize(objectify(width_cont), p,
+                             args=(data, eps, kevs, snr),
+                             method='leastsq',
+                             epsfcn=1e-6)  # Try messing with epsfcn...
+
+        eta2_bestchisqrs = np.append(eta2_bestchisqrs, res.chisqr)
+        eta2_bestB0 = np.append(eta2_bestB0, p['B0'].value)
+
+        print ('Table best fit: B0 = {:0.2f}, chisqr = '
+               '{:0.2f}').format(B0_vals[ind]*1e6, chisqr_vals[ind])
+        print ('Fitted best fit: B0 = {:0.2f}, chisqr = '
+               '{:0.2f}').format(p['B0'].value*1e6, res.chisqr)
+
+    fmt = {1/3: '-or', 1/2:'-og', 1:'-ob'}
+    plt.plot(eta2_vals, eta2_bestchisqrs, fmt[mu])
+    plt.xscale('log'); plt.yscale('log')
+    plt.xlabel(r'$\eta_2$'); plt.ylabel(r'$\chi^2$')
+    #plt.show()
+
+    # From best fit table values, run one more fit
+
+    #res = lmfit.minimize(objectify(width_cont), p,
+    #               args=(data, eps, kevs, snr),
+    #               kws={'icut':1},  # Numerical code settings
+    #               method='leastsq',
+    #               epsfcn=1e-5)  # Try messing with epsfcn...
+
+    # Make plots of chi-squared as a function of eta2
+    # Give fit information, estimate error (or let lmfit try to do so)
+    #lmfit.printfuncs.report_fit(res.params)
+    #print 'chisqrt = {}'.format(res.chisqr)
+    #ci = lmfit.conf_interval(res)  # Only if more than 2 variables?
+    #lmfit.printfuncs.report_ci(ci)
+    # return res
 
 
+# ============================================
+# Interactive manual fitting (full model code)
+# ============================================
 
 def manual_fit(snr, kevs, w_meas, w_eps):
     """Interactively prompts user for values of B0, eta2, mu
@@ -270,29 +347,9 @@ def get_float(prompt):
 # Tabulate FWHM values from full model code
 # =========================================
 
-def make_tabs():
-    """Making tables and plots and things, using grid function.
-    Temporary -- previously used for some tests/plots.
-    Will iterate over mu and call gridding functions when done
-    """
-    pass # superseded by tab_eta2()? 
-
-
-def test_gen_table():
-    """Try generating a table for SN 1006, and save
-    ONLY RUN THIS ONCE LEST YOU OVERWRITE..."""
-    tab = tab_eta2()
-    
-
-    try:
-        fname = 'sn1006_grid-3-40-20_2014-07-25.pkl'
-        with open(fname, 'w') as fpkl:
-            pickle.dump(tab, fpkl)
-    except:
-        print 'dammit, pickle dump failed'
-
-    vistable(tab)
-    return tab  # TO BE PARANOID
+def merge_tables(tab1, tab2):
+    """does what it says"""
+    pass
 
 
 def vistable(tab):
@@ -308,7 +365,40 @@ def vistable(tab):
     plt.show()
 
 
-def tab_eta2():
+def generate_SN1006_table():
+    """Try generating a table for SN 1006, and save
+    TODO: Once done -- you should move table to /tables and set write only...
+    code to merge table pickles coming sometime...
+    TODO: would also be good to save data in plaintext form, somehow
+    (4+ columns of mu, eta2, B0, fwhm values)
+    TODO: no more feature creep dammit.
+    """
+
+    #mu_vals = [0, 1/3, 1/2, 1, 1.5, 2]  # Following Sean
+    mu_vals = np.array([1/3, 1/2, 1])  # Kolmogorov, Kraichnan, Bohm
+    eta2_vals = np.logspace(-2, 2, 50, base=10)
+    n_B0 = 20  # In practice, you'll usually get ~1.5 to 2x as many points
+               # as code tries to achieve good spacing
+
+    snr = snrcat.make_SN1006()
+    kevs = SN1006_KEVS
+    data = np.array([SN1006_DATA[flmt][0] for flmt in [1,2,3,4,5]])
+    data_min = np.amin(data/1.25, axis=0) #/ 1.25  # Try widening....
+    data_max = np.amax(data*1.25, axis=0) #* 1.25  # Now the fortran code is complaining
+
+    print data
+    print data_min
+    print data_max
+
+    fname = 'sn1006_grid-3-50-20_2014-07-25.pkl'
+
+    tab = maketab(snr, kevs, data_min, data_max, mu_vals, eta2_vals, n_B0, fname)
+
+    vistable(tab)
+    return tab  # TO BE PARANOID
+
+
+def maketab(snr, kevs, data_min, data_max, mu_vals, eta2_vals, n_B0, fname_out):
     """SNR dependent tabulation of FWHM values for fitting / to explore
     parameter space, given some energy bands
     Carve out a swath of points in the eta2-B0 plane for fixed mu.
@@ -326,68 +416,62 @@ def tab_eta2():
     a table of possible/candidate values.
     """
 
-    #mu_vals = [0, 1/3, 1/2, 2/3, 1, 1.5, 2, 3, 4, 5]
-    #eta2_vals = np.logspace(-2, 3, 20, base=10)  # Must be sorted
+    # Start logging to files (search for errors...)
+    log_fname = fname_out + '.log'
+    errlog_fname = fname_out + '.log'  # temporary.... use os.path
+    stdout = TeeStdout(log_fname, 'a+')
+    stderr = TeeStderr(errlog_fname, 'a+')
 
-    #mu_vals = [0, 1/3, 1/2, 1, 1.5, 2]  # Following Sean
-    mu_vals = [1/3, 1/2, 1]  # Kolmogorov, Kraichnan, Bohm
-    eta2_vals = np.logspace(-2, 2, 40, base=10)
-    n_B0 = 20
-
-    # Estimate: this 3*40*20 * 3sec/call / 3600 = ~ 2 hours to run
-
-    snr = snrcat.make_SN1006()
-    # Generate fwhm_range
-    kevs = SN1006_KEVS
-    data = np.array([SN1006_DATA[flmt][0] for flmt in [1,2,3,4,5]])
-    #eps = np.array([SN1006_DATA[flmt][1] for flmt in [1,2,3,4,5]])
-    data_min = np.amin(data, axis=0)
-    data_max = np.amax(data, axis=0)
-    #eps = np.mean(eps, axis=0)
-    
-    mu_dict = {}
-
+    np.set_printoptions(precision=2)
+    print '\nTabulating full model code FWHMs for {}'.format(snr.name)
+    print 'Resolution in mu, eta2, B0: {}, {}, {}+'.format(len(mu_vals),
+            len(eta2_vals), n_B0)
+    print 'Mu values are {}'.format(mu_vals)
     print 'Gridding with FWHM limits:'
     print 'min: {}'.format(data_min)
     print 'max: {}'.format(data_max)
 
+    mu_dict = {}
     for mu in mu_vals:
-        print 'Starting grid for mu = {}'.format(mu)
-
         p = lmfit.Parameters()
         p.add('mu', value=mu, vary=False)
 
         eta2_dict = {}
         for eta2 in eta2_vals:
-            print 'Adding points for eta2 = {}'.format(eta2)
+            print '\nAdding points for mu = {:0.2f}, eta2 = {:0.2f}'.format(mu, eta2)
+            print '-------------------------------------------'
 
             p.add('eta2', value=eta2, vary=False)
-            p.add('B0', value=150e-6, min = 1e-6, max=1e-2)  # Just initial guess
+            p.add('B0', value=150e-6, min = 1e-6, max=1e-2)
 
-            # Compute simple fits to "mean" FWHMs, (min+max)/2, to obtain initial B0
-            # No weights in fit.
-            dmid = (data_max + data_min)/2  # FWHM values in middle of range
-            res = lmfit.minimize(objectify(width_dump), p,
-                                 args=(dmid, np.ones(len(dmid)), kevs, snr),
-                                 method='leastsq')
+            # Give initial guess for B0, using simple model fit
+            dmid = (data_max + data_min)/2
+            res = lmfit.minimize(objectify(width_dump), p, method='leastsq',
+                                 args=(dmid, np.ones(len(dmid)), kevs, snr))
 
-            # List of B0 values, and list of model FWHMs (list of lists) (np.array)
-            eta2_dict[eta2] = tab_eta2_helper_B0(snr, p, kevs, data_min,
-                                                 data_max, n_B0)
+            # Do the heavy work of computing FWHMs for many B0 values
+            eta2_dict[eta2] = maketab_gridB0(snr, p, kevs, data_min, data_max,
+                                             n_B0)
 
+        # Store the completed dictionary, and march onwards
         mu_dict[mu] = eta2_dict
+        try:
+            with open(fname_out, 'w') as fpkl:  # .. and save your work, dammit
+                pickle.dump(mu_dict, fpkl)
+        except:
+            print 'ERROR: could not save table to file... continuing anyways'
+            print 'I hope the program output is being saved to some variable'
+            print 'in an interactive (i)Python session...'
 
-    # write final table to pickle, just temporarily
+    # Stop logger
+    del stdout
+    del stderr
 
     return mu_dict
 
 
-def tab_eta2_helper_B0(snr, pars, kevs, fwhms_min, fwhms_max, n_tot):
-    """
-    Supply list of min FWHMs, max FWHMs (rough guidelines for gridding).  ALL model fit FWHMS must have at
-    least one FWHM in the ranges (note no longer satisfied...)
-    If all FWHMs are outside range, then there
-    exists a better fit somewhere in parameter space for sure.
+def maketab_gridB0(snr, pars, kevs, fwhms_min, fwhms_max, n_tot, f_minarc=1.2):
+    """Helper method to grid over B0 at fixed eta2, mu (passed in via pars)
 
     Procedure:
     1. Improve initial guess for B0 using simple model fit to "average" fwhms
@@ -395,78 +479,89 @@ def tab_eta2_helper_B0(snr, pars, kevs, fwhms_min, fwhms_max, n_tot):
     2. From new initial guess for B0, generate grid over many values of B0.
        Store values of B0 and FWHMs from complex model.
 
-    TODO: If fits give bad box / bad resolution, it may be worth modifying
-          FORTRAN code to give 0's or INFs, to ensure they're out of range.
-    If code works (we have good resolution (rminarc small enough),
-    good min/max FWHMs, then we should be okay.
-
     TODO: maybe worth logging script output, to check for
     box/resolution errors.  Shouldn't be a problem though...
 
     TODO: rminarc is fixed at f_minarc*max(fwhms_max)...
-    should be good enough for our work, BUT if there is a case of wide spread
-    in SNR FWHMs or otherwise this may be a problem.
+    not good enough.  We need to cover a decent range of FWHMs in order
+    to constrain fit.
 
     Input:
         pars (lmfit.Parameters): mu, eta2, initial B0 guess, any other parameters needed...
-
-        (alternate approach -- try to grid consistently in B0 and use B0 values
-        from previous fit???)
-
         fwhms_min, fwhms_max must be numpy arrays
     Outputs:
         list of B0 values, list of FWHM value lists (for each B0)
     """
 
-    f_minarc = 1.2  # How much margin of safety for rminarc?
-    n_min = 20  # Ad hoc guess -- depends on spread of your SNR FWHMs
+    # Beware -- we are essentially using pars as a global-variable
+    # within the scope of this function and its helpers
 
-    # Work in rescaled width space (r in [0,1]), averaged over FWHMs
-    def rscale(x):
+    def rscale(x):  # Grid with rescaled width averaged over FWHMS, r in [0,1]
         return np.mean((x-fwhms_min)/(fwhms_max - fwhms_min))
-    def f_rscale(grid_B0):
-        """Simplify full model function for grid fitting"""
+
+    def f_rscale(grid_B0):#, rminarc_adapt=True, **kwargs):
+        """Rescale model width function, option for adaptive rminarc setting
+        kwargs: passed straight to width_cont(...)"""
         pars.add('B0', value=grid_B0)  # Vary B0, other parameters same
-        fwhms = width_cont(pars, kevs, snr,
-                           rminarc = max(fwhms_max)*f_minarc)
-        #fwhms = width_dump(pars, kevs, snr)  # FOR FAST TESTING!
+        #if not rminarc_adapt or 'rminarc' not in pars.keys():
+        #    pars.add('rminarc', value = max(fwhms_max), vary=False)
+
+        #fwhms = width_cont(pars, kevs, snr,
+        #                   rminarc = pars['rminarc'].value, **kwargs)
+        #if rminarc_adapt:
+            # Assumes prev/next function calls are close in parameter space
+        #    pars.add('rminarc', value = max(fwhms) * f_minarc, vary=False)
+
+        fwhms = width_cont(pars, kevs, snr, rminarc=max(fwhms_max)*f_minarc)
+
+        print '\tModel fwhms = {}'.format(fwhms)
         return rscale(fwhms), fwhms
-    #def inband(x):
-    #    return all(x < fwhms_max) and all(x > fwhms_min)
 
     # Get FWHMs from initial guess, reinitialize B0 if initial guess is bad
-    r_init, fwhms_init = f_rscale(pars['B0'].value)  # Reinit B0 guess
+    # WARNING: risk of oscillating forever if function is badly behaved
+    print 'Checking initial guess for B0'
+    r_init, fwhms_init = f_rscale(pars['B0'].value)
     B0_init = pars['B0'].value
-    if all(fwhms_init > fwhms_max):  # WARNING: risk of oscillating forever
-        pars.add('B0', value=B0_init * 1.05)  # min/max not needed, not fitting
-        return tab_eta2_helper_B0(snr, pars, kevs, fwhms_min, fwhms_max)
+    if all(fwhms_init > fwhms_max):
+        pars.add('B0', value=B0_init * 1.1)  # TODO: magic number...
+        return maketab_gridB0(snr, pars, kevs, fwhms_min, fwhms_max, n_tot)
     elif all(fwhms_init < fwhms_min):
-        pars.add('B0', value=B0_init / 1.05)
-        return tab_eta2_helper_B0(snr, pars, kevs, fwhms_min, fwhms_max)
+        pars.add('B0', value=B0_init / 1.1)
+        return maketab_gridB0(snr, pars, kevs, fwhms_min, fwhms_max, n_tot)
 
-    print 'Using initial B0 value {}'.format(B0_init)
-    print 'Now finding B0 values with FWHMs in range.'
-
-    # fwhms are in acceptable range.  Start generating B0 values
-    # Idea is to grid evenly over rescaling of FWHMS (rscale)
-
+    # Prepare to compute B0 values and FWHMs.
+    # Grid evenly over rescaling of FWHMS (rscale)
     n_thin = int(np.around(r_init * n_tot))
     n_wide = int(np.around((1 - r_init) * n_tot))
     dr = 1.0 / n_tot  # y-coord for fill_pts
 
-    # Calculate values
-    B0_wide, r_wide, fwhms_wide = fill_pts(B0_init, r_init, fwhms_init, 1, dr, f_rscale,
-                                           dx_max=10e-6)  # Increase r, decrease B0
-    B0_thin, r_thin, fwhms_thin = fill_pts(B0_init, r_init, fwhms_init, 0, dr, f_rscale,
-                                           dx_max=10e-6)  # Decrease r, increase B0
+    print 'Using initial B0 value {} muG'.format(B0_init*1e6)
+    print 'Now finding B0 values with FWHMs in range.'
+    print 'Require {} values above, {} below initial B0'.format(n_thin, n_wide)
+
+    # Now, actually calculate B0 values.
+    if r_init < 1:
+        print 'Computing values below initial B0'  # Increasing r towards 1
+        B0_wide, r_wide, fwhms_wide = fill_pts(B0_init, fwhms_init, r_init, 1, dr, f_rscale,
+                                               dx_max=10e-6)
+    else:
+        B0_wide, r_wide, fwhms_wide = [B0_init], [r_init], [fwhms_init]
+    if r_init > 0:
+        print 'Computing values above initial B0'  # Decreasing r towards 0
+        B0_thin, r_thin, fwhms_thin = fill_pts(B0_init, fwhms_init, r_init, 0, dr, f_rscale,
+                                               dx_max=10e-6)
+    else:
+        B0_thin, r_thin, fwhms_thin = [B0_init], [r_init], [fwhms_init]
+    # Repetitive if/else structure to avoid unnecessary function calls
+    # Each call to fill_pts computes the local Jacobian at the same spot (hence
+    # the repeated function call -- but, it won't be stored in the output)
 
     print 'Filling in FWHM range to achieve desired spacing'
 
-    # Combine lists, remove double included B0_init/r_init and sort
+    # Combine lists, remove doubly included B0_init/r_init and sort
     B0_all = np.append(B0_thin, B0_wide)
     fwhms_all = np.append(fwhms_thin, fwhms_wide, axis=0)
     r_all = np.append(r_thin, r_wide)
-
 
     B0_all, uniqsrt = np.unique(B0_all, return_index=True)
     fwhms_all = fwhms_all[uniqsrt]
@@ -475,10 +570,10 @@ def tab_eta2_helper_B0(snr, pars, kevs, fwhms_min, fwhms_max, n_tot):
     # Fill in the gaps
     B0_all, r_all, fwhms_all = mind_the_gaps(B0_all, r_all, fwhms_all, dr, f_rscale)
 
-    return B0_all, fwhms_all  # don't care about r values after we're done
+    return B0_all, fwhms_all  # No longer need r-values
 
 
-def fill_pts(x0, y0, yaux0, y_final, dy_step, f, dx_max=float('inf'),
+def fill_pts(x0, yaux0, y0, y_final, dy_step, f, dx_max=float('inf'),
              epsfcn_init=1e-2):
     """Find pts (x,y) with y-values spanning interval [y0, y_final]
 
@@ -494,6 +589,7 @@ def fill_pts(x0, y0, yaux0, y_final, dy_step, f, dx_max=float('inf'),
     Inputs:
     Outputs:
         may not be sorted -- you deal with this.
+        likely sorted, or sorted in reverse order
     """
     sgn = np.sign(y_final - y0)
     dy_step = sgn * abs(dy_step)  # Sign of dy_step, set by y0/y_final
@@ -619,6 +715,8 @@ def width_cont(params, kevs, snr, verbose=True, rminarc=None, icut=1,
     if verbose:
         print ('\tFunction call with B0 = {:0.3f} muG; eta2 = {:0.3f}; '
                'mu = {:0.3f}').format(B0*1e6, eta2, mu)
+        print kevs, B0, eta2, mu
+        print vs, v0, rs, rsarc, s, rminarc, icut, irmax, iradmax, ixmax
 
     # FORTRAN subroutine call signature:
     #     Fullefflengthsub(kevs, inumax, widtharc, B0, eta2, mu, vs, v0, rs,
@@ -690,6 +788,49 @@ def objectify(f):
     """
     return lambda pars, data, eps_data, *args, **kwargs: \
         (f(pars, *args, **kwargs) - data)/eps_data
+
+
+# ======================================================
+# Useful tees -- for code-integrated log file generation
+# ======================================================
+# (in principle we could even parse the logs to recover model FWHMs if
+# something in the code goes wrong -- but we don't want to do that...)
+
+class TeeStdout(object):
+    """From Python mailing list
+    mail.python.org/pipermail/python-list/2007-May/438106.html
+    and, stackoverflow.com/a/616686
+    Not ideal (issues with __del__, close?)... but it works, so oh well.
+    """
+    def __init__(self, name, mode):
+        self.file = open(name, mode)
+        self.stdout = sys.stdout
+        sys.stdout = self
+    def __del__(self):
+        sys.stdout = self.stdout
+        self.file.close()
+    def write(self, data):
+        self.file.write(data)
+        self.stdout.write(data)
+    def flush(self):
+        self.file.flush()
+
+class TeeStderr(object):
+    """Source as above. Too lazy to refactor code, and
+    can't reassign sys.stderr when passed in anyways
+    """
+    def __init__(self, name, mode):
+        self.file = open(name, mode)
+        self.stderr = sys.stderr
+        sys.stderr = self
+    def __del__(self):
+        sys.stderr = self.stderr
+        self.file.close()
+    def write(self, data):
+        self.file.write(data)
+        self.stderr.write(data)
+    def flush(self):
+        self.file.flush()
 
 
 if __name__ == '__main__':
