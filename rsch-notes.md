@@ -2593,4 +2593,20 @@ The bug is due to f2py, not my code ?!?!?!?!.
 It goes bonkers on VERY specific values of rminarc (e.g., 73.71), but works on
 other (say, 73.72)
 
-Conclusions.....
+Quan suggests, astutely (or I may simply be ignorant of common bugs in
+numerical computation / lower level stuff...), that it may be due to floating
+point error.  Sounds plausible...
+
+Anyway the key takeaway is that we cannot adaptively adjust rminarc
+
+
+
+
+Try saving to new file after every set of B0's (every eta2)...
+
+
+Useful note: of course, output FWHMs are resolution dependent. at rminarc ~60, error
+~0.1 arcsec (which is order 3%)
+
+Okay need to clean up these notes but the code is running and the bug is set
+aside, for now.

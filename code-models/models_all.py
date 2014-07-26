@@ -34,6 +34,7 @@ Aaron Tran
 from __future__ import division
 
 import cPickle as pickle
+from datetime import datetime
 import lmfit
 import matplotlib.pyplot as plt
 import numpy as np
@@ -62,7 +63,9 @@ SN1006_DATA[5] = np.array([33.75, 27.2, 24.75 ]), np.array([2.37,.62,.61])
 
 
 def main():
-    pass
+    """Just for now"""
+    generate_SN1006_table()
+
 
 # ======================================================
 # Code to execute fits (this belongs in a separate file)
@@ -374,27 +377,24 @@ def generate_SN1006_table():
     TODO: no more feature creep dammit.
     """
 
-    #mu_vals = [0, 1/3, 1/2, 1, 1.5, 2]  # Following Sean
-    mu_vals = np.array([1/3, 1/2, 1])  # Kolmogorov, Kraichnan, Bohm
+    mu_vals = [0, 1./3, 1./2, 1, 1.5, 2]  # Following Sean
+    #mu_vals = np.array([1./3, 1./2, 1])  # Kolmogorov, Kraichnan, Bohm
     eta2_vals = np.logspace(-2, 2, 50, base=10)
+    eta2_vals = np.sort(np.append(eta2_vals, np.linspace(0, 10, 50)))
     n_B0 = 20  # In practice, you'll usually get ~1.5 to 2x as many points
                # as code tries to achieve good spacing
 
     snr = snrcat.make_SN1006()
     kevs = SN1006_KEVS
     data = np.array([SN1006_DATA[flmt][0] for flmt in [1,2,3,4,5]])
-    data_min = np.amin(data/1.25, axis=0) #/ 1.25  # Try widening....
-    data_max = np.amax(data*1.25, axis=0) #* 1.25  # Now the fortran code is complaining
+    data_min = np.amin(data/1.51, axis=0)
+    data_max = np.amax(data*1.51, axis=0)
 
-    print data
-    print data_min
-    print data_max
-
-    fname = 'sn1006_grid-3-50-20_2014-07-25.pkl'
+    fname = 'sn1006_grid-6-100-20_2014-07-25.pkl'
 
     tab = maketab(snr, kevs, data_min, data_max, mu_vals, eta2_vals, n_B0, fname)
 
-    vistable(tab)
+    #vistable(tab)
     return tab  # TO BE PARANOID
 
 
@@ -417,16 +417,20 @@ def maketab(snr, kevs, data_min, data_max, mu_vals, eta2_vals, n_B0, fname_out):
     """
 
     # Start logging to files (search for errors...)
+    # Beware -- this messes with the stdout improperly...
+    # doesn't return control correctly if ctrl-c'd.
     log_fname = fname_out + '.log'
-    errlog_fname = fname_out + '.log'  # temporary.... use os.path
-    stdout = TeeStdout(log_fname, 'a+')
-    stderr = TeeStderr(errlog_fname, 'a+')
+    errlog_fname = fname_out + '.errlog'  # temporary.... use os.path
+    stdout = TeeStdout(log_fname, 'w')
+    stderr = TeeStderr(errlog_fname, 'w')
 
     np.set_printoptions(precision=2)
     print '\nTabulating full model code FWHMs for {}'.format(snr.name)
+    print 'Started: {}'.format(datetime.now())
     print 'Resolution in mu, eta2, B0: {}, {}, {}+'.format(len(mu_vals),
             len(eta2_vals), n_B0)
     print 'Mu values are {}'.format(mu_vals)
+    print 'eta2 values are {}'.format(eta2_vals)
     print 'Gridding with FWHM limits:'
     print 'min: {}'.format(data_min)
     print 'max: {}'.format(data_max)
@@ -436,7 +440,7 @@ def maketab(snr, kevs, data_min, data_max, mu_vals, eta2_vals, n_B0, fname_out):
         p = lmfit.Parameters()
         p.add('mu', value=mu, vary=False)
 
-        eta2_dict = {}
+        mu_dict[mu] = eta2_dict = {}
         for eta2 in eta2_vals:
             print '\nAdding points for mu = {:0.2f}, eta2 = {:0.2f}'.format(mu, eta2)
             print '-------------------------------------------'
@@ -453,17 +457,15 @@ def maketab(snr, kevs, data_min, data_max, mu_vals, eta2_vals, n_B0, fname_out):
             eta2_dict[eta2] = maketab_gridB0(snr, p, kevs, data_min, data_max,
                                              n_B0)
 
-        # Store the completed dictionary, and march onwards
-        mu_dict[mu] = eta2_dict
-        try:
-            with open(fname_out, 'w') as fpkl:  # .. and save your work, dammit
-                pickle.dump(mu_dict, fpkl)
-        except:
-            print 'ERROR: could not save table to file... continuing anyways'
-            print 'I hope the program output is being saved to some variable'
-            print 'in an interactive (i)Python session...'
+            # Save data, but don't interrupt tabulation if fails
+            try:
+                with open(fname_out, 'w') as fpkl:
+                    pickle.dump(mu_dict, fpkl)
+            except:
+                print 'ERROR: could not save table to file'
 
     # Stop logger
+    print 'Finished: {}'.format(datetime.now())
     del stdout
     del stderr
 
@@ -479,22 +481,12 @@ def maketab_gridB0(snr, pars, kevs, fwhms_min, fwhms_max, n_tot, f_minarc=1.2):
     2. From new initial guess for B0, generate grid over many values of B0.
        Store values of B0 and FWHMs from complex model.
 
-    TODO: maybe worth logging script output, to check for
-    box/resolution errors.  Shouldn't be a problem though...
-
-    TODO: rminarc is fixed at f_minarc*max(fwhms_max)...
-    not good enough.  We need to cover a decent range of FWHMs in order
-    to constrain fit.
-
     Input:
         pars (lmfit.Parameters): mu, eta2, initial B0 guess, any other parameters needed...
         fwhms_min, fwhms_max must be numpy arrays
     Outputs:
         list of B0 values, list of FWHM value lists (for each B0)
     """
-
-    # Beware -- we are essentially using pars as a global-variable
-    # within the scope of this function and its helpers
 
     def rscale(x):  # Grid with rescaled width averaged over FWHMS, r in [0,1]
         return np.mean((x-fwhms_min)/(fwhms_max - fwhms_min))
@@ -503,17 +495,7 @@ def maketab_gridB0(snr, pars, kevs, fwhms_min, fwhms_max, n_tot, f_minarc=1.2):
         """Rescale model width function, option for adaptive rminarc setting
         kwargs: passed straight to width_cont(...)"""
         pars.add('B0', value=grid_B0)  # Vary B0, other parameters same
-        #if not rminarc_adapt or 'rminarc' not in pars.keys():
-        #    pars.add('rminarc', value = max(fwhms_max), vary=False)
-
-        #fwhms = width_cont(pars, kevs, snr,
-        #                   rminarc = pars['rminarc'].value, **kwargs)
-        #if rminarc_adapt:
-            # Assumes prev/next function calls are close in parameter space
-        #    pars.add('rminarc', value = max(fwhms) * f_minarc, vary=False)
-
-        fwhms = width_cont(pars, kevs, snr, rminarc=max(fwhms_max)*f_minarc)
-
+        fwhms = width_cont(pars, kevs, snr, rminarc = max(fwhms_max)*f_minarc)
         print '\tModel fwhms = {}'.format(fwhms)
         return rscale(fwhms), fwhms
 
@@ -714,9 +696,8 @@ def width_cont(params, kevs, snr, verbose=True, rminarc=None, icut=1,
 
     if verbose:
         print ('\tFunction call with B0 = {:0.3f} muG; eta2 = {:0.3f}; '
-               'mu = {:0.3f}').format(B0*1e6, eta2, mu)
-        print kevs, B0, eta2, mu
-        print vs, v0, rs, rsarc, s, rminarc, icut, irmax, iradmax, ixmax
+               'mu = {:0.3f}; rminarc = {:0.2f}').format(B0*1e6, eta2, mu,
+                                                         rminarc)
 
     # FORTRAN subroutine call signature:
     #     Fullefflengthsub(kevs, inumax, widtharc, B0, eta2, mu, vs, v0, rs,

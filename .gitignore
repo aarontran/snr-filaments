@@ -26,7 +26,7 @@ merged_evt.fits
 *.dat
 *.pdf
 *.ps
-
+*.errlog
 
 
 # Various exclusions from
