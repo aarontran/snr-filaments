@@ -92,6 +92,9 @@ So need to
 * Eventually: run whole pipeline on one set of ALL regions, sampled all around
   SNR, save the output.  Use this to argue/show why regions are good/bad.
 
+* remember brian's suggestion (from Friday): what's the dependence of mE on
+  energy? what happens if you fit a straight power law to that???
+
 Model stuff
 -----------
 
@@ -106,6 +109,7 @@ To be clear -- Sean used ecut in all of the model fits?
 How do you rule out magnetic damping, exactly?  Looking at Figure 4, with ab =
 0.05 rs, it seems like that would give you a decent size mE.  How did Sean get
 the numbers that he did (i.e. that mE must be order -0.1 for damping)?
+Discussion w/ brian on Friday - maybe Sean did it, maybe from old paper?
 
 Question: is mu restricted to fall within `[0, 2]` (as is suggested by the
 turbulence - mu relation given in Sean's paper?).
@@ -113,6 +117,7 @@ turbulence - mu relation given in Sean's paper?).
 In table 8 -- how do you define unobtainable?
 e.g., for mu =0.5 I can get a chisquared of at best 6.2 (compared to abt 4 for
 the higher values of mu). (with manual fitting, that is)
+Brian (Friday): yeah run this by Sean.
 
 One major issue -- appropriate electron distribution parameters for TYCHO!
 Cut-off energy, spectrum index, etc.  Where did he get value 2.2 for SN 1006?
@@ -176,7 +181,9 @@ what gives rise to the radiation.  Please read parizot et al (2006), take
 notes, rederive things.
 
 How the hell to get such strong B field values?!
-Solution: read the damn literature
+Solution: read the damn literature (can we get any numbers on this, are the
+numbers we're seeing for tycho reasonable/consistent w/ numerical simulations
+or whatnot of magnetic turbulence?)
 
 Another issue -- when converting from particle energy E to radiated frequency
 nu, doesn't the use of `$\nu_m = c_m E^2 B$` implicitly invoke the
@@ -222,10 +229,12 @@ FULL numerical code (the full power of this orbiting ........)
 
 * Model code -- test it out first, before automating / wasting time scripting
   stuff up.  Parameter space could be weird, so might have trouble converging
+  (partially done)
 
 Then look at spatial dependence of B field, robustness of numbers from approx
 python model. Brian asked, does B field scale with stronger energy dependence
-Should verify this. Need to have discussion/commentary on what affects what.
+Should verify this (NOT ADDRESSED YET, July 27).
+Need to have discussion/commentary on what affects what.
 
 On using different calculations of the FWHM: how do I show the effect of these
 different procedures?  Some kind of normalization? (Figure 10 of Ressler).
@@ -239,6 +248,7 @@ Start making poster later this week, have nice draft ready by Monday
 (print by Wednesday morning at latest -- setup 2-6p Weds, 7:30-11a Thurs)
 (presentations: 11a-2p, must be present 12a-2p)
 (spec: 45" by 45" max)
+
 
 More supernova remnants
 -----------------------

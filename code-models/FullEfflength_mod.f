@@ -27,6 +27,7 @@
           double precision kevs(40)
           integer inumax
           double precision B0, eta2, mu, rminarc
+          integer snrflag
           double precision widtharc(40)
 
           ! For spitting out results, optional
@@ -48,6 +49,8 @@
           read *, mu            ! dimensionless
           print *, 'Enter rminarc'
           read *, rminarc       ! arcsec
+          print *, 'Enter 0 for SN1006, 1 for Tycho'
+          read *, snrflag       ! binary...
 
           kevs(1) = 0.7d0
           kevs(2) = 1d0
@@ -59,9 +62,16 @@
 !     &                            vs, v0, rs, rsarc, s, rminarc, icut,
 !     &                            irmax, iradmax, ixmax)
 
-          call Fullefflengthsub(kevs, inumax, widtharc, B0, eta2, mu,
+          if (snrflag.eq.0) then
+            call Fullefflengthsub(kevs, inumax, widtharc, B0, eta2, mu,
      &                          5d0*1.d8, 5d0*1.d8/4d0, 2.96d19, 900d0,
      &                          2d0*0.6d0+1d0, rminarc, 1, 400, 100,500)
+          elseif (snrflag.eq.1) then
+            call Fullefflengthsub(kevs, inumax, widtharc, B0, eta2, mu,
+     &                            4.7d0*1.d8, 4.7d0*1.d8/4d0, 1.077d19,
+     &                            240d0, 2d0*0.65d0+1d0, rminarc, 1,
+     &                            400, 100,500)
+          endif
 
           do i = 1, inumax
             print *, kevs(i), ' keV: ', widtharc(i)

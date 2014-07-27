@@ -2610,3 +2610,153 @@ Useful note: of course, output FWHMs are resolution dependent. at rminarc ~60, e
 
 Okay need to clean up these notes but the code is running and the bug is set
 aside, for now.
+
+
+Saturday 2014 July 26
+=====================
+
+Summary
+-------
+* Code cleanup
+* Split code -- one file for tabulating/model fitting, one for running fits
+* Download and check Tycho shock velocity values
+* Start Tycho table generation
+
+
+Start the gridding process for Tycho.
+Useful to know -- with max fwhm = 10 (my arbitrary setting), times 1.51 to get
+a large range of fwhm in table, times 1.2 to get a factor of safety,
+rminarc = 18.12 for these simulations
+
+Compare rminarc = ~90 for SN 1006 (74.1 max, * 1.2 safety) gives abt 0.2 arcsec
+resolution on FWHM values, vs. about 0.05 arcsec for Tycho.  So okay, even the
+FWHMs of about 1 to 1.5 arcsec will be resolved all right.
+
+
+Quick remark, on selecting shock velocity values for gridding:
+Tycho shock velocities vary up to a factor of two!...
+2000 to 4000.  But, a majority of Brian's measurements found it to be around
+3000 to 4000 -- excluding one odd data point near the north.
+Aha!  that data point appears to be associated with that tuft of thermal
+emission, so we are definitely sampling the shock at its fastest locations...
+
+Conclusion -- worry not so much about data near 2000 km/s, unless I get any
+regions in the thermal eastern bits.
+
+REMEMBER THAT BRIAN ASSUMED D = 2.3 kpc.  WE ARE TAKING D = 3 kpc.
+
+See a short txt file on velocities I added.  Summary -- start by taking
+`vs = 3600 * 3 / 2.3` as vs; the range in the non-thermal shock regions is 3110
+to 4060.  And, 3600 (3580 without rounding) is the mean and median of the data.
+I am omitting veloc. measurements in the thermally contaminated areas
+
+
+Remember -- we are curious about the effects of:
+* changing compression ratio (changes v0 only)
+* changing shock velocity (changes both vs and v0)
+* changing distance to remnant -- this works TWO WAYS. (1) if we increase
+  distance alone, not veloc., this widens the rim widths, and we need weaker B
+  fields or stronger diffusion to compensate.
+  (2) if we increase distance, and increase shock veloc. correspondingly, the
+  increase in veloc. would help "explain" wider rims, so this counters the
+  previous effect.  Two competing things here.
+
+Also, this is kind of obvious... but given the great range of possible B0 and
+eta2 values (because we will have enormous uncertainty on the best fit, which
+we will investigate in chi-squared space?), it would be good to be able to
+constrain one or the other.  If we can cap B0 somewhere, that allows us to also
+cap / favor / limit eta2 values.  And, perhaps, mu.  Time for statistics?
+
+SOME RESULTS (interpretation and accounting for asap...)
+
+    Simple model fits, Tycho, region 1
+    Using mu = 1, data: [ 2.72  2.2   2.22  1.88  1.9 ]
+    Investigating effect of changing shock velocity
+    Shock velocity = 2.50e+08: mu = 1.00    eta2 = 2.28 +/- 2.14    B0 = 489.36 +/- 114.65
+    Shock velocity = 4.06e+08: mu = 1.00    eta2 = 5.98 +/- 5.62    B0 = 674.95 +/- 158.15
+    Shock velocity = 4.67e+08: mu = 1.00    eta2 = 7.92 +/- 7.44    B0 = 741.34 +/- 173.71
+    Shock velocity = 5.30e+08: mu = 1.00    eta2 = 10.19 +/- 9.57   B0 = 806.21 +/- 188.91
+
+    Now investigating remnant distance effect
+    Dremnant = 2.3 (vs = 3.58e8 * d/2.3): mu = 1.00 eta2 = 4.66 +/- 4.37    B0 = 741.34 +/- 173.70
+    Dremnant = 3.0 (vs = 3.58e8 * d/2.3): mu = 1.00 eta2 = 7.92 +/- 7.44    B0 = 741.34 +/- 173.71
+    Dremnant = 4.0 (vs = 3.58e8 * d/2.3): mu = 1.00 eta2 = 14.08 +/- 13.23  B0 = 741.34 +/- 173.71
+    Dremnant = 5.0 (vs = 3.58e8 * d/2.3): mu = 1.00 eta2 = 22.00 +/- 20.67  B0 = 741.34 +/- 173.71
+
+vs = 2.5e8 corresponds to min of Brian's values.
+the remainder: 4.06e8 to 5.3e8, correspond to min/mean/max of the fast velocs
+reported, at D= 3 kpc (rather than 2.3 kpc)
+
+
+
+Remarks on how to deal with rminarc bug
+---------
+1. call the code with random values of rminarc
+2. check the input parameters in fortran version of code (test/a.out, for now)
+and ensure that you get decent numbers there...., if that doesn't help.
+
+
+Weird bug -- width\_dump with initial guess value is not working -- this is
+super important because for Tycho we need to larger B0 values, so the simple
+model should help us get there...
+
+
+TODO CHECK dy values in grid stepping... don't work well for small numbers?
+Oh, it's because I force it to step no more than 10 muG at a time...
+Updated to step 15 percent of initial B0 value.
+
+Resolution errors are killing the grid stepping !!!!!
+I'm seeing both box length errors at 0.7-1kev and resolution errors at 4.5-7 kev
+Well, resolution errors don't kill, they just warn.  But box length, now that
+kills...
+
+Eventually the whole damn thing just gets stuck when it tries to fill in the
+gaps.  I don't mind that some values are bad (though I'd prefer not -- my ad
+hoc gridding method doesn't set hard limits on FWHM values right now, it would
+be challenging to do so -- remember my functions depend on monotonicity to work
+properly).
+
+Ah, I see -- part of the challenge is that we're working with 5 energy bands in
+Tycho.  The range of min/max FWHM, regardless of energy, is order 5-10x... in
+SN1006 it was up to 7x ish... okay that's not that bad.  But, I think
+importantly, in the actual code values we are seeing a bigger range (e.g., 3 to
+12 arcsec), vs. SN1006 we would never hit a range that big.
+
+possible solutions?
+
+1. adaptive rminarc (no no can't do this because of bug)
+2. use different rminarc values for different energy bands?...
+   kind of a pain, but actually not so hard!  Simply call
+   generate tables for different energy bands, separately...
+
+   good because it would also improve resolution.
+
+   But, bad because that means we need to stitch the tables together, and they
+   won't have the same grids in B0...
+
+3. temporary solution -- use a LARGER max range of FWHMs... (not min range)
+   also, I need to twiddle the minimum step size thing...
+   Ad hoc solution, always commit before you prepare to run a table and leave
+   for the night or w/e.
+
+   Problem... doesn't address resolution errors
+
+
+
+When running code, please always make sure it writes to file safely at least 1x
+Warning: if changing `f_B0_step` it cannot be too big or you will rapidly hit
+resolution errors and the like...
+
+Stupid ad hoc workaround for dynamic rminarc computation:
+generate a list of acceptable values, by hand..........
+then feed into program to take the appropriate value, dynamically
+(using the approach before -- let rscale keep the previous value, but reset it
+when we start the next "chain" of B0 computations...)
+
+Dammit I can't afford to mess up my sleep schedule.  I'll go home, sleep, and
+come back first thing in the morning, this really needs my time and attention
+to address the resolution thing.   The most sustainable solution is to vary
+rminarc dynamically.
+
+But, the plan is to just compute grid for one good value of shock veloc just
+for now... can do more later.

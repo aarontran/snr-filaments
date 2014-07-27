@@ -23,18 +23,24 @@ class SupernovaRemnant(object):
         self.name = name
 
 
+# TODO: may make sense to change v0, rs to being functions
+# based on inputs (vs, cratio, dist-to-remnant) ?
+
 def make_tycho():
     """Physical parameters for Tycho's SNR"""
     tycho = SupernovaRemnant('Tycho')
+
+    tycho.darc = 3.0  # Distance to remnant in kpc (!)
+    tycho.cratio = 4.0  # Compression ratio, strong adiabatic shock (R-H)
     
-    tycho.vs = 3e8  # Approx. shock velocity cm/s (cf. Williams et al., 2013)
-                    # Shock velocity is variable around SNR, account for that!
-    tycho.v0 = tycho.vs/4.0  # Plasma velocity, cm/s (compratio = 4)
+    tycho.vs = 3.6e8 * tycho.darc/2.3  # Shock velocity, cm/s.  Mean of velocs
+               # from nonthermal regions, Williams et al. 2013
+    tycho.v0 = tycho.vs/tycho.cratio  # Plasma velocity, cm/s
     tycho.rsarc = 240  # Shock radius (arcsec) from Green's SNR catalog
-    tycho.rs = 1.077e19  # Shock radius (cm), tan(240 arcsec) * 3 kpc
+    tycho.rs = 1.077e19  * tycho.darc / 3. # Shock radius (cm), tan(240 arcsec) * 3 kpc
     tycho.s = 2.3  # e- spectrum index, 2.3 = 2*0.65 + 1; 0.65 = radio spectral index
 
-    tycho.rminarc = 10  # Default rminarc, arcsec (temporary...)
+    tycho.rminarc = 12  # Default rminarc, arcsec
 
     return tycho
 
@@ -43,8 +49,11 @@ def make_SN1006():
     """Physical parameters for SN 1006"""
     sn1006 = SupernovaRemnant('SN 1006')
 
+    sn1006.darc = 2.2  # Distance to remnant in kpc (!!)
+    sn1006.cratio = 4.0  # Compression ratio, strong adiabatic shock (R-H)
+
     sn1006.vs = 5e8  # Shock velocity, cm/s (Satoru et al., 2009, 2013)
-    sn1006.v0 = sn1006.vs/4.0  # Plasma velocity, cm/s (compratio = 4)
+    sn1006.v0 = sn1006.vs/sn1006.cratio  # Plasma velocity, cm/s
     sn1006.rsarc = 900  # Shock radius (arcsec) from Green's SNR catalog
     sn1006.rs = 2.96e19  # Shock radius (cm), tan(900 arcsec) * 2.2 kpc
     sn1006.s = 2.2  # e- spectrum index, 2.2 = 2*0.6 + 1; 0.6 = radio spectral index
