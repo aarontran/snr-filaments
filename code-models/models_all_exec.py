@@ -16,6 +16,7 @@ Aaron Tran
 
 from __future__ import division
 
+import argparse
 import cPickle as pickle
 from datetime import datetime
 import lmfit
@@ -65,17 +66,18 @@ TYCHO_DATA_MAX = np.array([10.0, 8.866, 6.901, 7.508, 5.763])
 #    fwhm_max = np.nanmax([data[n][b]['meas']['fwhm'] for n in data])
 #    print 'Band {} min/max are {}, {}'.format(b, fwhm_min, fwhm_max)
 
-# TODO: see todo in snr_catalog, maybe turn certain attributes into functions
-# This requires (1) update fits in models_all which draw on attributes,
-# (2) update printing (and setting!) of relevant parameters...
 
 def main():
-    """main stuff"""
-    generate_tycho_table()
+    """main stuff.  Edit this at will to generate desired output..."""
 
 
-def vistable(tab):
-    """Make plot of grid, using tab output from tab_eta2()"""
+def vistable(tab_fname):
+    """Make plot of grid, using tab output from tab_eta2().
+    Only shows grid for one (arbitrary, first) value of mu
+    """
+    with open(tab_fname, 'r') as fpkl:
+        tab = pickle.load(fpkl)
+
     mu_vals = tab.keys()
     mu_dict = tab[mu_vals[0]]
     for eta2 in mu_dict.keys():
@@ -84,58 +86,26 @@ def vistable(tab):
 
     plt.xscale('log'); plt.yscale('log')
     plt.xlabel(r'$\eta_2$'); plt.ylabel(r'$B_0$')
+    plt.title(r'\eta_2, B_0 grid for \mu = {}'.format(mu_vals[0]))
     plt.show()
 
 # Short functions, which set various configuration parameters
 # to generate tables for fitting...
 
-def generate_tycho_table():
-    """Try generating a table for Tycho's SNR, and save
-    TODO: Once done -- you should move table to /tables and set write only...
-    code to merge table pickles coming sometime...
-    TODO: would also be good to save data in plaintext form, somehow
-    (4+ columns of mu, eta2, B0, fwhm values)
-    TODO: no more feature creep dammit.
-    """
-
-    mu_vals = [0, 1./3, 1./2, 1, 1.5, 2]  # Following Sean
-    eta2_vals = np.logspace(-2, 2, 50, base=10)
-    eta2_vals = np.sort(np.append(eta2_vals, np.linspace(0, 10, 50)))
-    n_B0 = 1#20  # In practice, you'll usually get ~1.5 to 2x as many points
-               # as code tries to achieve good spacing
-
-    snr = snrcat.make_tycho()
-    kevs = TYCHO_KEVS
-    data_min = TYCHO_DATA_MIN / 1.151
-    data_max = TYCHO_DATA_MAX * 1.251
-
-    # use datetime for the more/most general method
-    #fname = '{}_gen_{}-{}-{}_grid_{}-{}-{}.pkl'.format(
-    fname = 'tycho_gen_2014-07-26_grid_6-100-20_lowE.pkl'
-
-    tab = models.maketab(snr, kevs[:2], data_min[:2], data_max[:2],
-                         mu_vals, eta2_vals, n_B0, fname, f_minarc=1.5,
-                         f_B0_step=10) # just testing
-
-    fname = 'tycho_gen_2014-07-26_grid_6-100-20_highE.pkl'
-
-    tab = models.maketab(snr, kevs[2:], data_min[2:], data_max[2:],
-                         mu_vals, eta2_vals, n_B0, fname)
-
-    return tab
+# TODO: Once done -- you should move table to /tables and set write only...
+# code to merge table pickles coming sometime...
+# TODO: would also be good to save data in plaintext form, somehow
+# (4+ columns of mu, eta2, B0, fwhm values)
 
 
-def generate_SN1006_table():
-    """Try generating a table for SN 1006, and save
-    TODO: Once done -- you should move table to /tables and set write only...
-    code to merge table pickles coming sometime...
-    TODO: would also be good to save data in plaintext form, somehow
-    (4+ columns of mu, eta2, B0, fwhm values)
-    TODO: no more feature creep dammit.
-    """
 
-    mu_vals = [0, 1./3, 1./2, 1, 1.5, 2]  # Following Sean
+
+def generate_SN1006_table(mu):
+    """What it says.  Configured for single mu value."""
+
+    #mu_vals = [0, 1./3, 1./2, 1, 1.5, 2]  # Following Sean
     #mu_vals = np.array([1./3, 1./2, 1])  # Kolmogorov, Kraichnan, Bohm
+    mu_vals = [mu]
     eta2_vals = np.logspace(-2, 2, 50, base=10)
     eta2_vals = np.sort(np.append(eta2_vals, np.linspace(0, 10, 50)))
     n_B0 = 20  # In practice, you'll usually get ~1.5 to 2x as many points
@@ -147,12 +117,12 @@ def generate_SN1006_table():
     data_min = np.amin(data/1.51, axis=0)
     data_max = np.amax(data*1.51, axis=0)
 
-    #fname = 'sn1006_grid-6-100-20_2014-07-25.pkl'
-    fname = 'temp.pkl'
+    fname = 'sn1006_grid-1-100-20_2014-07-28_mu-{:0.2f}_partest.pkl'.format(mu)
 
-    tab = maketab(snr, kevs, data_min, data_max, mu_vals, eta2_vals, n_B0, fname)
+    tab = models.maketab(snr, kevs, data_min, data_max, mu_vals, eta2_vals,
+                         n_B0, fname=fname)
 
-    return tab  # TO BE PARANOID
+    return tab
 
 
 # ======================================

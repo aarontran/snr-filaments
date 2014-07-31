@@ -29,6 +29,8 @@
           double precision B0, eta2, mu, rminarc
           integer snrflag
           double precision widtharc(40)
+          double precision rminarcarray(40)
+          ! rminarc array
 
           ! For spitting out results, optional
           integer i
@@ -55,8 +57,14 @@
           kevs(1) = 0.7d0
           kevs(2) = 1d0
           kevs(3) = 2d0
-          kevs(4) = 3d0
-          inumax = 4
+          !kevs(4) = 3d0
+          inumax = 3
+
+          ! Same as old code, array of rminarcs used in python wrapper
+          rminarcarray(1) = rminarc
+          rminarcarray(2) = rminarc - 5d0
+          rminarcarray(3) = rminarc - 10d0
+          !rminarcarray(4) = rminarc - 15d0
 
 !      subroutine Fullefflengthsub(kevs, inumax, widtharc, B0, eta2, mu,
 !     &                            vs, v0, rs, rsarc, s, rminarc, icut,
@@ -65,12 +73,13 @@
           if (snrflag.eq.0) then
             call Fullefflengthsub(kevs, inumax, widtharc, B0, eta2, mu,
      &                          5d0*1.d8, 5d0*1.d8/4d0, 2.96d19, 900d0,
-     &                          2d0*0.6d0+1d0, rminarc, 1, 400, 100,500)
+     &                          2d0*0.6d0+1d0, rminarcarray, 1, 400,
+     &                          100,500)
           elseif (snrflag.eq.1) then
             call Fullefflengthsub(kevs, inumax, widtharc, B0, eta2, mu,
      &                            4.7d0*1.d8, 4.7d0*1.d8/4d0, 1.077d19,
-     &                            240d0, 2d0*0.65d0+1d0, rminarc, 1,
-     &                            400, 100,500)
+     &                            240d0, 2d0*0.65d0+1d0, rminarcarray,
+     &                            1, 400, 100,500)
           endif
 
           do i = 1, inumax
@@ -95,7 +104,7 @@
 !     rsarc = 900d0     ! rs in arcsec, from Green's SNR Catalog
 !     s = 2d0*.6d0+1d0  ! Spectral index
 
-!     rminarc = 60d0    ! How far back to extend model
+!     rminarc = 60d0    ! How far back to extend model (array, now!!)
 !     icut = 0          ! 1 for cut-off, 0 for no cut-off 
 !     irmax = 400       ! Resolution on intensity profile
 !     iradmax = 100     ! Resolution on tabulated electron distribution
@@ -111,7 +120,7 @@
           double precision kevs(inumax), widtharc(inumax)
           ! Constants, or nominally constant inputs (SNR specific)
           double precision vs, v0, rs, rsarc, s
-          double precision rminarc
+          double precision rminarc(inumax)
           ! Settings
           integer irmax, ixmax, iradmax
           integer icut
@@ -119,7 +128,8 @@
           ! "Fundamental" constants
           double precision cm, c1, a ! Synchrotron params
           double precision nukev ! nu-kev conversion
-          double precision rmin, ecut, eta  ! Derived constants
+          double precision ecut, eta  ! Derived constants
+          double precision rmin(inumax) ! From rminarc(inumax)
           ! Emissivity data for common block
           double precision xex(100), fex(100)
           integer ir  ! Should label as ifmax or so, to be consistent
@@ -161,7 +171,10 @@ cf2py depend(inumax) widtharc
 
 ! Calculate derived parameters
 
-          rmin = 1d0 - rminarc/rsarc ! Scaled r, range [0,1]
+          do inu = 1, inumax
+            rmin(inu) = 1d0 - rminarc(inu) / rsarc ! Scaled r, range [0,1]
+          end do
+          !rmin = 1d0 - rminarc/rsarc 
 
           ! eta = \eta*(E_h)^(1-\mu), per section 4.2 of paper
           eta =  eta2 * (2d0*nukev/(cm*B0))**(-(mu-1d0)/2d0)
@@ -197,8 +210,8 @@ cf2py depend(inumax) widtharc
             ! Step over particle energies from Pacholczyk table
             do j = 1, ir  ! ir = number of entries in Pacholczyk
               ! Step from r=rmin to r=1 (IRADMAX resolution)
-              delrad = (1d0-rmin)/dble(iradmax-1)
-              rad = rmin
+              delrad = (1d0-rmin(inu))/dble(iradmax-1)
+              rad = rmin(inu)
               do irad = 1, iradmax
                 en = dsqrt(nu/c1/B0/xex(j))  ! e- energy for xex(j)
                 if (mu.lt.1d0) then
@@ -225,8 +238,8 @@ cf2py depend(inumax) widtharc
             ! (integrates over particle energy via emisx)
 
             ! Step from r=1 to r=rmin (IRMAX resolution)
-            delr(inu) = -(1d0-rmin)/real(irmax)  ! Could depend on inu,
-            r = 1d0                              ! but currently doesn't
+            delr(inu) = -(1d0-rmin(inu))/real(irmax)
+            r = 1d0
             do i = 1, irmax
               ! Initialize integral at s=sqrt(1 - r**2) to s=0
               ! argument of j_nu ranges (r to rs), flipped wrt paper
@@ -271,6 +284,7 @@ cf2py depend(inumax) widtharc
               ! Plots, remember i indexes "viewer's" radial coord
               rgraph(i, inu) = r
               distgraph(i) = Distgraphr(r, radtab, disttab)
+              ! distragph not used for anything except text output
   
               r = r+delr(inu)  ! Increment radial pos for next loop
             enddo
@@ -363,12 +377,13 @@ cf2py depend(inumax) widtharc
    14     continue
    15     continue
 
-          ! TODO: catch edge case when r = 1.0
-          ! Because I think I'm seeing cases of j=1001 (?)
+          ! If radtab(iradmax) is slightly less than 1, and r=1.0
+          ! It will never find the right place to interpolate
+          ! (note radtab(1000) extends well past iradmax, all zeros-ish
+          ! But in this edge case, dist should be 0 anyways
           if (j.eq.1001) then
-              print *, 'DEBUG emisx: r=',r,
-     &                 ', radtab(1000)=',radtab(1000),
-     &                 ', radtab(1)=',radtab(1)
+              j = maxloc(radtab, 1)
+              dist = disttab(1, j)  ! Assume r=1.0 case
           endif
 
           ! Initialize trapezoidal sum
@@ -840,9 +855,12 @@ cf2py depend(inumax) widtharc
             elseif (xmin.eq.0d0) then
                 print *, 'Box Length Error (xmin) at',
      &                   nugraph(inu)/2.417989d17
+                width(inu) = 1d0  ! Add-on for error detection
             elseif ((xmax-xmin)/dabs(delr(inu)).lt.20d0) then
+                ! Warning, but still returns an approx value
                 print *, 'Resolution Error at',
      &                   nugraph(inu)/2.417989d17
+                width(inu) = 0d0  ! Add-on for error detection
             endif
 
           enddo

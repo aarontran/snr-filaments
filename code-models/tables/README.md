@@ -60,8 +60,47 @@ The code appears to go bonkers for very specific values of rminarc.
 Hence the use of scaling factor 1.51 to determine `data_min` and `data_max`.
 See my debugging notes on this matter...
 
-`tycho_grid-6-100-20_
+`sn1006_grid-1-100-20_2014-07-28_mu=0.25_partest.pkl`
+---------------------------------------------
+And, three additional variants of this (mu=0.66, mu=0.75, mu=1.25)
+Checking Brian's ad hoc parallelization idea.  With 4 cores, all four of these
+should run in approx 1 hour!  Start them all at abt the same time.
+
+    mu_vals = [mu]
+    eta2_vals = np.logspace(-2, 2, 50, base=10)
+    eta2_vals = np.sort(np.append(eta2_vals, np.linspace(0, 10, 50)))
+    n_B0 = 20  # In practice, you'll usually get ~1.5 to 2x as many points
+               # as code tries to achieve good spacing
+
+    snr = snrcat.make_SN1006()
+    kevs = SN1006_KEVS
+    data = np.array([SN1006_DATA[flmt][0] for flmt in [1,2,3,4,5]])
+    data_min = np.amin(data/1.51, axis=0)
+    data_max = np.amax(data*1.51, axis=0)
+
+    fname = 'sn1006_grid-1-100-20_2014-07-28_mu-{:0.2f}_partest.pkl'.format(mu)
+
+    # Buried inside code (kind of, now included in log file)
+    rminarc = max(fwhms_max) * f_minarc
+    f_minarc = 1.2
+    f_B0_init = 1.1
+    f_B0_step = 0.15
+
+All started at ~15:01.  Yup, looks like this is taking full advantage of
+all four cores!  Yay!
+Finished: 19:16, 19:16, 18:12, 18:26.  Interesting.
+
+Compare -- 6 mu values, w/ otherwise same grid.  Start 22:51, finish 17:30 the
+next day (total = 17:30 + 1:09 = 18:09, means ~3 hrs / mu value).
+
+Here we finished at 19:08 on average --> 4:07 hrs / 4 mu values, or about 1 hr/
+mu value now.  So we cut the time expenditure by 1/3rd!
+
+
+`tycho_grid-6-100-20_...`
 
 
 Changed  in `maketab_gridB0`, dx_max (i.e. the B0 step) to 15 percent of the
 initial B0 value.  Yes, it's another twiddle-able...
+
+Gridding for this on hold while I address rminarc problem.

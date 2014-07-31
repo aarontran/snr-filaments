@@ -26,6 +26,7 @@ merged_evt.fits
 *.dat
 *.pdf
 *.ps
+*.tiff
 *.errlog
 
 

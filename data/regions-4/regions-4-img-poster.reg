@@ -1,0 +1,30 @@
+# Region file format: DS9 version 4.1
+global color=green dashlist=8 3 width=1 font="helvetica 10 normal roman" select=1 highlite=1 dash=0 fixed=0 edit=1 move=1 delete=1 include=1 source=1
+fk5
+# text(0:24:37.123,+64:07:57.02) color=white font="times 32 normal roman" text={1}
+# text(0:24:37.398,+64:08:39.29) color=white font="times 32 normal roman" text={2}
+# text(0:24:38.437,+64:09:10.48) color=white font="times 32 normal roman" text={3}
+# text(0:24:49.013,+64:11:10.58) color=white font="times 32 normal roman" text={4}
+# text(0:24:51.118,+64:11:23.40) color=white font="times 32 normal roman" text={5}
+# text(0:25:26.605,+64:12:50.19) color=white font="times 32 normal roman" text={6}
+# text(0:25:30.072,+64:12:43.78) color=white font="times 32 normal roman" text={7}
+# text(0:24:45.751,+64:05:19.24) color=white font="times 32 normal roman" text={8}
+# text(0:24:42.285,+64:05:50.67) color=white font="times 32 normal roman" text={9}
+# text(0:24:39.566,+64:06:29.49) color=white font="times 32 normal roman" text={10}
+# text(0:24:38.280,+64:06:50.13) color=white font="times 32 normal roman" text={11}
+# text(0:24:37.744,+64:07:11.77) color=white font="times 32 normal roman" text={12}
+# text(0:24:36.908,+64:07:33.90) color=white font="times 32 normal roman" text={13}
+box(0:24:41.352,+64:07:52.08,30.2359",14.5666",354.892) # color=yellow width=3
+box(0:24:40.926,+64:08:35.54,15.3768",10.958",11.5728) # color=yellow width=3
+box(0:24:41.649,+64:09:06.79,13.5771",13.3476",10.6925) # color=yellow width=3
+box(0:24:51.915,+64:10:51.90,25.3865",10.2539",47.6746) # color=yellow width=3
+box(0:24:53.119,+64:11:01.04,21.5955",12.4562",52.8765) # color=yellow width=3
+box(0:25:25.391,+64:12:27.27,20.0311",23.4545",114.698) # color=yellow width=3
+box(0:25:28.442,+64:12:19.45,19.8322",13.1336",112.438) # color=yellow width=3
+box(0:24:49.098,+64:05:35.69,25.138",23.588",324.573) # color=yellow width=3
+box(0:24:45.278,+64:06:06.04,18.3484",15.7785",325.547) # color=yellow width=3
+box(0:24:43.582,+64:06:45.93,26.9485",15.6059",341.66) # color=yellow width=3
+box(0:24:42.283,+64:06:59.29,19.6881",14.7696",342.206) # color=yellow width=3
+box(0:24:41.521,+64:07:14.82,18.5578",16.6817",345.112) # color=yellow width=3
+box(0:24:40.934,+64:07:40.21,21.9761",8.35329",355.68) # color=yellow width=3
+line(0:25:58.306,+64:03:59.04,0:25:40.005,+64:03:59.25) # line=0 0 color=white width=4 font="times 48 normal roman" text={2'}

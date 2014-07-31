@@ -28,7 +28,7 @@ subset of parameter space by careful gridding + good initial guess), might be
 useful in other problems?
 
 Aaron Tran
-2014 July 21 (last modified: 2014 July 26)
+2014 July 21 (last modified: 2014 July 29)
 """
 
 from __future__ import division
@@ -82,22 +82,25 @@ def run_table_fit():
 # Fit from just initial guesses (simple model)
 # ============================================
 
-# May be good to somehow save configuration files --... logt settings, SNR
-# parameters, et cetera...
-
-def simple_fit(snr, kevs, data, eps, mu, B0=150e-6, eta2=1):
-    """Fit both eta2 and B0 together, simple model only.
-    Should reproduce Table 7 of Ressler!
+def simple_fit(snr, kevs, data, eps, mu, B0=150e-6, eta2=1, mu_free=False):
+    """Fit both eta2 and B0 to simple model (equation 6; Table 7 of paper)
+    Just a wrapper around lmfit.minimize(objectify(...), ...)
+    
+    Inputs:
+        kevs, data, eps (np.array) as usual
+        mu, B0, eta2 (float) initial guesses, but mu fixed
+        mu_free (bool) unless you want mu to vary in fit
+    Output:
+        lmfit.Minimizer with fit information / parameters
     """
     p = lmfit.Parameters()
-    p.add('mu', value=mu, vary=False)
+    p.add('mu', value=mu, vary=mu_free)
     p.add('B0', value=B0, min=1e-6, max=1e-2)
     p.add('eta2', value=eta2, min=1e-4, max=1000)
     res = lmfit.minimize(objectify(width_dump), p,
                              args=(data, eps, kevs, snr),
                              method='leastsq')
     return res
-
 
 # ===========================================
 # Fit using precached table (full model code)
@@ -288,17 +291,17 @@ def merge_tables(tab1, tab2):
     pass
 
 
-def maketab(snr, kevs, data_min, data_max, mu_vals, eta2_vals, n_B0, fname,
-            f_minarc=1.2, f_B0_init=1.1, f_B0_step=0.15):
-    """SNR dependent tabulation of FWHM values for fitting / to explore
-    parameter space, given some energy bands
-    Carve out a swath of points in the eta2-B0 plane for fixed mu.
+def maketab(snr, kevs, data_min, data_max, mu_vals, eta2_vals, n_B0,
+            fname=None, rminarc=None, f_rminarc=1.2, f_B0_init=1.1,
+            f_B0_step=0.15):
+    """Tabulate FWHM values for set of SNR parameters in parameter space of
+    (mu, eta2, B0), given some energy bands.
 
     First, grid over eta2.
     For each eta2, get range of B0 values that give reasonable FWHMs.
-    With B0 values, also save the model FWHMs.
+    Save B0 values and corresponding model FWHMs.
 
-    Verify that results are independent of input FWHMs (mins, maxs, etc)
+    TODO: Verify that results are independent of input FWHMs (mins, maxs, etc)
         Generate two tables w/ slightly different FWHM inputs/ranges
         Fit procedure should give results consistent within error
 
@@ -307,23 +310,34 @@ def maketab(snr, kevs, data_min, data_max, mu_vals, eta2_vals, n_B0, fname,
     a table of possible/candidate values.
     """
 
+    # Mildly convenient to define rminarc here
+    if rminarc is None:
+        rminarc = data_max * f_rminarc
+
     # Start logging to files (search for errors...)
-    # Beware -- this messes with the stdout improperly...
-    # doesn't return control to user correctly if ctrl-c'd.
+    if fname is None:
+        fname = '{}_gen_{}_grid_{}-{}-{}.pkl'.format(snr.name,
+                datetime.now().strftime('%Y-%m-%d'), len(mu_vals),
+                len(eta2_vals), n_B0)
+
     fname_b = os.path.splitext(fname)[0]
     log = fname_b + '.log'
     errlog = fname_b + '.errlog'
     stdout = TeeStdout(log, 'w')
     stderr = TeeStderr(errlog, 'w')
-
     np.set_printoptions(precision=2)
-    print '\nTabulating full model code FWHMs for SNR: {}'.format(snr.name)
 
+    # Spew a bunch of configuration parameters
+    print '\nTabulating full model code FWHMs for SNR: {}'.format(snr.name)
+    print '\nStarted: {}'.format(datetime.now())
     print 'SNR parameters are (rminarc will be modified):'
     for v in vars(snr):
-        print '{} = {}'.format(v, vars(snr)[v])
+        print '\t{} = {}'.format(v, vars(snr)[v])
+    print '\tDerived SNR parameters:'
+    print '\tv0 = {}'.format(snr.v0())
+    print '\trs = {}'.format(snr.rs())
 
-    print '\nStarted: {}'.format(datetime.now())
+    print '\nGridding parameters are:'
     print 'Resolution in mu, eta2, B0: {}, {}, {}+'.format(len(mu_vals),
             len(eta2_vals), n_B0)
     print 'Mu values are {}'.format(mu_vals)
@@ -331,20 +345,21 @@ def maketab(snr, kevs, data_min, data_max, mu_vals, eta2_vals, n_B0, fname,
     print 'Gridding with FWHM limits:'
     print 'min: {}'.format(data_min)
     print 'max: {}'.format(data_max)
-    print 'fminarc = {}'.format(f_minarc)
-    print 'rminarc = {}'.format(max(data_max) * f_minarc)
-    #TODO: clean this up -- just set rminarc in this method and be done
-    print 'Less important code parameters:'
+    print 'rminarc: {}'.format(rminarc)
+
+    print '\nAdditional parameters:'
     print 'File output stem: {}'.format(fname)
+    print 'f_rminarc = {}'.format(f_rminarc)
     print 'f_B0_init = {}'.format(f_B0_init)
     print 'f_B0_step = {}'.format(f_B0_step) # This is getting ridiculous
 
+    # Loop over mu, eta2 grid
     mu_dict = {}
     for mu in mu_vals:
+        mu_dict[mu] = eta2_dict = {}
         p = lmfit.Parameters()
         p.add('mu', value=mu, vary=False)
 
-        mu_dict[mu] = eta2_dict = {}
         for eta2 in eta2_vals:
             print '\n(mu, eta2) = ({:0.2f}, {:0.2f})'.format(mu, eta2)
             print '---------------------------------'
@@ -352,23 +367,27 @@ def maketab(snr, kevs, data_min, data_max, mu_vals, eta2_vals, n_B0, fname,
             p.add('eta2', value=eta2, vary=False)
             p.add('B0', value=150e-6, min = 1e-6, max=1e-2)
 
-            # Give initial guess for B0, using simple model fit
+            # Use simple model fit to set initial guess for B0
+            # This does fail badly for eta2 = 0, so the value of B0 above
+            # had better be decent as a fallback.
             dmid = (data_max + data_min)/2
             res = lmfit.minimize(objectify(width_dump), p, method='leastsq',
                                  args=(dmid, np.ones(len(dmid)), kevs, snr))
 
             # Do the heavy work of computing FWHMs for many B0 values
             eta2_dict[eta2] = maketab_gridB0(snr, p, kevs, data_min, data_max,
-                                             n_B0, f_minarc, f_B0_init,
+                                             rminarc, n_B0, f_B0_init,
                                              f_B0_step)
 
-            # Save data regularly, but don't interrupt tabulation if fails
+            # Save data regularly, but keep tabulating if save fails...
             try:
                 with open(fname, 'w') as fpkl:
                     pickle.dump(mu_dict, fpkl)
                 print 'Wrote table to file.'
             except:
                 print 'ERROR: could not save table to file'
+                fname = fname + '-badfname-save'  # Ad hoc workaround...
+                print 'On next pass, will try saving to {}'.format(fname)
 
     # Stop logger
     print 'Finished: {}'.format(datetime.now())
@@ -378,8 +397,8 @@ def maketab(snr, kevs, data_min, data_max, mu_vals, eta2_vals, n_B0, fname,
     return mu_dict
 
 
-def maketab_gridB0(snr, pars, kevs, fwhms_min, fwhms_max, n_tot,
-                   f_minarc=1.2, f_B0_init=1.1, f_B0_step=0.15):
+def maketab_gridB0(snr, pars, kevs, fwhms_min, fwhms_max, rminarc, n_tot,
+                   f_B0_init=1.1, f_B0_step=0.15):
     """Grid over B0 at fixed eta2, mu (passed in via pars)
 
     1. Check that initial guess for B0 gives FWHMs in range of fwhms_min/max
@@ -394,13 +413,13 @@ def maketab_gridB0(snr, pars, kevs, fwhms_min, fwhms_max, n_tot,
         pars (lmfit.Parameters): contains mu, eta2, initial B0 guess
 
         kevs (np.array): energy bands, same ones used to generate fwhms_min/max
-        fwhms_min, fwhms_max: must be numpy arrays
+        fwhms_min, fwhms_max, rminarc: must be numpy arrays
 
         n_tot (float): minimum number of evenly spaced data points.  In
             practice, this sets the max interval between rescaled mean widths
-        f_minarc (float): sets grid limit, rminarc = max(fwhms_max) * f_minarc
         f_B0_init (float): factor to change B0_init, if bad init guess
             must be greater than 1
+        f_B0_step (float): max span_intv(...) step as fraction of initial B0
 
     Outputs:
         list of B0 values, list of FWHM value lists (for each B0)
@@ -409,12 +428,14 @@ def maketab_gridB0(snr, pars, kevs, fwhms_min, fwhms_max, n_tot,
     def rscale(x):  # Grid with rescaled width averaged over FWHMS, r in [0,1]
         return np.mean((x-fwhms_min)/(fwhms_max - fwhms_min))
 
-    def f_rscale(grid_B0):#, rminarc_adapt=True, **kwargs):
-        """Rescale model width function, option for adaptive rminarc setting
-        kwargs: passed straight to width_cont(...)"""
+    # Use f_rscale for gridding in lieu of width_cont
+    def f_rscale(grid_B0):
+        """Rescale model width function"""
         pars.add('B0', value=grid_B0)  # Vary B0, other parameters same
-        fwhms = width_cont(pars, kevs, snr, rminarc = max(fwhms_max)*f_minarc)
+
+        fwhms = width_cont(pars, kevs, snr, rminarc = rminarc)
         print '\tModel fwhms = {}'.format(fwhms)
+
         return rscale(fwhms), fwhms
 
     # Get FWHMs from initial guess, reinitialize B0 if initial guess is bad
@@ -424,15 +445,17 @@ def maketab_gridB0(snr, pars, kevs, fwhms_min, fwhms_max, n_tot,
     B0_init = pars['B0'].value
     if all(fwhms_init > fwhms_max):
         pars.add('B0', value=B0_init * f_B0_init)
-        return maketab_gridB0(snr, pars, kevs, fwhms_min, fwhms_max, n_tot)
+        return maketab_gridB0(snr, pars, kevs, fwhms_min, fwhms_max, n_tot,
+                              f_B0_init, f_B0_step)
     elif all(fwhms_init < fwhms_min):
         pars.add('B0', value=B0_init / f_B0_init)
-        return maketab_gridB0(snr, pars, kevs, fwhms_min, fwhms_max, n_tot)
+        return maketab_gridB0(snr, pars, kevs, fwhms_min, fwhms_max, n_tot,
+                              f_B0_init, f_B0_step)  # KEEP UPDATED... ugh
+    print 'Initial guess accepted'
 
-    # Prepare to compute B0 values and FWHMs.
     # Grid evenly over rescaling of FWHMS (rscale)
-    n_thin = int(np.around(r_init * n_tot))
-    n_wide = int(np.around((1 - r_init) * n_tot))
+    n_thin = int(np.around(r_init * n_tot))  # Just for logging/debugging
+    n_wide = int(np.around((1 - r_init) * n_tot))  # ditto
     dr = 1.0 / n_tot  # y-coord for span_intv
 
     print 'Using initial B0 value {} muG'.format(B0_init*1e6)
@@ -455,7 +478,7 @@ def maketab_gridB0(snr, pars, kevs, fwhms_min, fwhms_max, n_tot,
     else:
         B0_thin, r_thin, fwhms_thin = [B0_init], [r_init], [fwhms_init]
     # Each call to span_intv first computes local derivative at the same spot
-    # So you see the same function call 2x, but it's not stored in the output
+    # So user sees one repeated function call, but it's not stored in output
 
     # Combine lists
     B0_all = np.append(B0_thin, B0_wide)
@@ -472,6 +495,7 @@ def maketab_gridB0(snr, pars, kevs, fwhms_min, fwhms_max, n_tot,
                                              f_rscale)
 
     return B0_all, fwhms_all  # No longer need r-values
+
 
 
 def span_intv(x0, yaux0, y0, y_final, dy_step, f, dx_max=float('inf'),
@@ -606,6 +630,7 @@ def width_cont(params, kevs, snr, verbose=True, rminarc=None, icut=1,
                  units arcsec, profile computed on [rsarc - rminarc, rsarc]
                  distance should be slightly greater than computed FWHMs
                  (and rsarc > rminarc, of course)
+                 either np.ndarray, or a numeric type
         icut: 0 or 1; toggle electron spectrum cutoff for f(E,x)
         irmax: resolution on intensity profile (radial coordinate)
         iradmax: resolution on tabulated e- distribution (radial coordinate)
@@ -619,18 +644,20 @@ def width_cont(params, kevs, snr, verbose=True, rminarc=None, icut=1,
     mu = params['mu'].value
 
     vs = snr.vs
-    v0 = snr.v0
-    rs = snr.rs
+    v0 = snr.v0()
+    rs = snr.rs()
     rsarc = snr.rsarc
     s = snr.s
 
+    # Case handling for rminarc, keep old methods from breaking
     if rminarc is None:
-        rminarc = snr.rminarc
+        rminarc = snr.rminarc * np.ones(len(kevs))
+    elif isinstance(rminarc, int) or isinstance(rminarc, float):
+        rminarc = rminarc * np.ones(len(kevs))
 
     if verbose:
         print ('\tFunction call with B0 = {:0.3f} muG; eta2 = {:0.3f}; '
-               'mu = {:0.3f}; rminarc = {:0.2f}').format(B0*1e6, eta2, mu,
-                                                         rminarc)
+               'mu = {:0.3f}; rminarc = {}').format(B0*1e6, eta2, mu, rminarc)
 
     # FORTRAN subroutine call signature:
     #     Fullefflengthsub(kevs, inumax, widtharc, B0, eta2, mu, vs, v0, rs,
@@ -659,8 +686,8 @@ def width_dump(params, kevs, snr):
     eta2 = params['eta2'].value
     mu = params['mu'].value
 
-    v0 = snr.v0
-    rs = snr.rs
+    v0 = snr.v0()
+    rs = snr.rs()
     rsarc = snr.rsarc
 
     b = snrcat.SYNCH_B

@@ -98,6 +98,40 @@ So need to
 Model stuff
 -----------
 
+* Pressing issue of updating rminarc (grid domain)
+> Addressing the resolution issue workarounds.....
+> 1. dynamically update rminarc, using pre-selected set of values that don't give
+     the floating point error... (must pick rminarc values by trial/error, each
+     time)
+> 2. use simple model code to get rminarc estimates.  simple model predicts
+     wider filaments at a given B0, but I don't know how much wider.
+> 3. use some combination of dynamic updates + simple model estimates
+> 4. modify sean's code to take array of rminarc values.  Then we could:
+>    * fixed `rminarc = np.amax(fwhm_max, axis=0)`, similar to current approach
+>    * get rminarc from simple model code, in each band
+> 5. combine both methods -- dynamically update rminarc, SOMEHOW -- but do so in all energy bands, this would get the best possible resolution and avoid errors.
+
+
+* Throw safeguard in function `f_rscale` -- if FWHM calculation errors out,
+  recompute with smaller/larger rminarc automatically.  The gridding code never
+  calls `width_cont` directly, only `f_rscale`, so this should be helpful.
+
+
+For put together data, values, tables.
+Remember to report chi-squared values everywhere, so we can compare different
+values of mu... and report errors from brute-force chi-square, rather than from
+std err (cov).
+
+Conceptual questions:
+
+* do we have hard evidence for proton acceleration? seems like stuff jack is
+working on.
+* Is there a way to relate diffusion /coefficient/ to turbulent energy?
+  (wondering, what would happen if shock did not induce turbulence but only
+  compressed magnetic field -- different effects for plane parallel/perp
+  field, but what would those effects be?)
+* In re shock heating: sections 5.1 / 11.1 seem to cover what you explained!
+
 
 Thought -- should we be constraining the resolution... checking that it
 works/makes sense?  How do we quantify when the grid is sufficiently resolved?!
@@ -113,6 +147,7 @@ Discussion w/ brian on Friday - maybe Sean did it, maybe from old paper?
 
 Question: is mu restricted to fall within `[0, 2]` (as is suggested by the
 turbulence - mu relation given in Sean's paper?).
+(discussion w/ Brian -- seems legit)
 
 In table 8 -- how do you define unobtainable?
 e.g., for mu =0.5 I can get a chisquared of at best 6.2 (compared to abt 4 for
