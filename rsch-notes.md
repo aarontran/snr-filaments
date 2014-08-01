@@ -2954,45 +2954,51 @@ a bad idea, I think, but I don't know the best way to implement it.
 Wednesday 2014 July 30
 ======================
 
-........
+Summary
+-------
+* Tweaks to poster (alignment of text/box elements and small updates,
+  regenerate 4-7 keV nonthermal emission, print and pin poster in Bldg 28)
+* First draft of abstract + revision to Rob/Brian
+* Give up on rminarc and configure code set by hand + minor tweaks
+* Start generating Tycho grids for 4 shock velocity values
+* Cleaned agenda / questions...
 
-Now adding rminarc values by hand.  First compute the appropriate values (using
-default settings, i.e. rminarc=None, then check which ones don't work
-consistently with repeated calls.  Replace those ones with just barely
-different values until it works...
 
-Note: initial guess for eta2 always fails badly on eta2 = 0, or eta2 extremely
-small.  Solution is to just... not worry about that data.
+Grid generation procedure
+-------------------------
 
+Key assumption -- rminarc bug is only for specific rminarc values.  Despite the
+cases of the bug appearing or disappearing, when calling identical code 2x
+(very frustrating), the hope is that "good" values of rminarc will "stay" good.
+This is a gamble.
 
 Procedure for pipeline.
-1. Determine the "good" values of rminarc, note how you got them.
-2. Write your script to call appropriate method(s) with desired parameters.
+1. Write script to call appropriate method(s) with desired parameters.
+2. Determine the "good" values of rminarc.  Take max FWHMs, multiply by safety
+   factor, and tweak manually until script doesn't give spurious errors.
 3. Run code, checking for box-length and resolution errors in the first call
    with mu = eta2 = 0 (FWHMs vary most drastically without diffusion).
-   If there are no errors -- the hope is that there won't be errors later.
-   But this is definitely uncertain, so set rminarc carefully...
-   _resolution or box length errors WILL KILL tabulation_ (and you will be sad)
-4. Check activity monitor to ensure no processes are hogging CPU.
+   Continue to update rminarc and `f_B0_step` to avoid such errors.  Note that
+   this is separate from the "rminarc bug".
+
+4. Check activity monitor to ensure no processes are hogging CPU. And,
+   ensure computer is not allowed to go to sleep (display off only).
 5. Call the code as:
 
     python fullmodel_recompile.py
     git add -A
     git commit
     python one_time_script.py  # Whatever you want to call it
-6. Move tables and log files to /tables and set as read-only
-7. Merge tables if needed (not implemented yet)
 
-The table logs store config parameters and time of execution, so in principle
-you should be able to pull up an old commit and rerun the code to reproduce
-the exact same results... but, of course, pipelines and derived data projects
-change and morph and all that.  Argh.
+If code is called multiple times (ad hoc parallelization), check for resolution
+errors in each individual call.
 
-If you change values (e.g. change shock veloc...) check for resolution errors
-in each function call...
+Note: initial guess for eta2 always fails badly on eta2 = 0, or eta2 extremely
+small (`width_dump` function goes singular?).  Not to worry, code will adapt.
 
-Editing rminarc and `f_B0_step` may help avoid resolution errors (mainly,
-prevent code from jumping too far in B0, at cost of extra computation time).
+6. Search log files for errors (ignore caps)
+7. Move tables and log files to /tables and set as read-only
+8. Merge tables if needed (not implemented yet)
 
 
 Tabulating Tycho FWHMs, first attempt
@@ -3019,3 +3025,164 @@ Goal is to have code to check gridding and compute best fits from table values
 ready by Friday.  Then I can rerun grid over weekend if needed.
 
 Started around 8:30pm, Wednesday July 30
+
+
+Thursday 2014 July 31
+=====================
+
+Poster session...
+More skeleton code / messing with grid fit / simple fit prettyprinting etc.
+
+
+Friday 2014 August 01
+=====================
+
+Summary
+-------
+* Troubleshoot box length errors and resumed gridding for Tycho's SNR
+
+
+Failed gridding troubleshooting
+-------------------------------
+
+Found that gridding was hanging up this morning.  Stopped and recorded error
+output printed to screen.  It turns out that my Python stdout logging does NOT
+capture "Box Length Error ..." printouts from f2py-compiled module!
+
+### When did gridding fail?
+Pkl files were last written 03:10 -- 03:16, August 1st.
+
+### Are previous values okay?
+Yes, in principle pkl has only stored "good" values (when a resolution or box
+length error occurs, the code hangs indefinitely (empirically...) trying to
+interpolate the FWHM gaps).
+
+Since logs don't record f2py error messages (I amend `models_all.py` to rectify
+this...), find errors in TextMate or other editor with decent search/replace:
+* box length errors: search for "240.", or regex search for
+  `Model fwhms = \[.* 240\..*\]`
+* resolution errors: regex search for `Model fwhms = \[.* 0\.0.*\]`
+
+Search for previous errors turned up nothing, so older data should be good.
+
+### What happened?
+Computing FWHMs at values below initial B0 (wider rims), rminarc was too small.
+When diffusion is large (eta2 large), rims at high energies are wide; the most
+extreme case of (mu, eta2) = (2, 100) WIDENS rims at increasing energy.
+
+Since we lost about 7.5 hours, I expect this gridding to finish around 7pm
+tonight.
+
+### New procedure
+Always test rminarc values with cases (mu, eta2) = (0., 0.) AND (mu, eta2) =
+(2., 100.), or whatever the maximum values of mu, eta2 are for your grid.
+
+* No diffusion gives max FWHM spread, check for box length errors at lowest
+  energy, resolution errors at highest energy
+* Max diffusion gives min FWHM spread, check for box length errors at highest
+  energy, resolution errors at lowest energy
+
+We want smallest rminarc values we can get away with.  Errors are also set by
+minimum/maximum FWHM values to table.  Bit of a balancing act, to get enough
+data but also avoid box / resolution errors.
+
+I restart gridding from (mu, eta2) = (1.5, 15.26) and generate two more sets
+of grid files, to be merged with the larger ("part one") output.  Note that the
+grid on (mu, eta2) = (1.5, 15.26) is repeated for vs = 5.14e8.
+
+### Error logs for reference
+
+These are copy-pasted from terminal output, since error notifications weren't
+saved to log files.
+
+#### vs = 4.21e8
+
+    (mu, eta2) = (1.50, 15.26)
+    ---------------------------------
+    Checking initial guess for B0
+        Function call with B0 = 458.987 muG; eta2 = 15.264; mu = 1.500; rminarc = [18.5, 15.0, 10.77, 11.73, 9.1]
+        Model fwhms = [ 3.05  2.89  2.67  2.55  2.46]
+    Initial guess accepted
+    Using initial B0 value 458.986958344 muG
+    Now finding B0 values with FWHMs in range.
+    Require 4 values above, 16 below initial B0
+    Computing values below initial B0
+        Function call with B0 = 463.577 muG; eta2 = 15.264; mu = 1.500; rminarc = [18.5, 15.0, 10.77, 11.73, 9.1]
+        Model fwhms = [ 3.01  2.85  2.61  2.52  2.43]
+        ...
+        ...
+        Function call with B0 = 202.174 muG; eta2 = 15.264; mu = 1.500; rminarc = [18.5, 15.0, 10.77, 11.73, 9.1]
+            Model fwhms = [ 10.68  10.05   9.18   8.83   8.53]
+            Function call with B0 = 196.178 muG; eta2 = 15.264; mu = 1.500; rminarc = [18.5, 15.0, 10.77, 11.73, 9.1]
+         Box Length Error (xmin) at   4.5000000000000000     
+            Model fwhms = [  11.19   10.5     9.61    9.24  240.  ]
+
+
+
+#### vs = 4.52e8
+
+    (mu, eta2) = (1.50, 15.26)
+    ---------------------------------
+    Checking initial guess for B0
+        Function call with B0 = 462.406 muG; eta2 = 15.264; mu = 1.500; rminarc = [18.5, 15.0, 10.77, 11.73, 9.1]
+        Model fwhms = [ 3.15  2.96  2.72  2.58  2.48]
+    Initial guess accepted
+    Using initial B0 value 462.405952043 muG
+    Now finding B0 values with FWHMs in range.
+    Require 4 values above, 16 below initial B0
+    Computing values below initial B0
+        Function call with B0 = 467.030 muG; eta2 = 15.264; mu = 1.500; rminarc = [18.5, 15.0, 10.77, 11.73, 9.1]
+        Model fwhms = [ 3.1   2.93  2.67  2.55  2.46]
+        ...
+        ...
+        Function call with B0 = 205.228 muG; eta2 = 15.264; mu = 1.500; rminarc = [18.5, 15.0, 10.77, 11.73, 9.1]
+            Model fwhms = [ 10.82  10.13   9.24   8.86   8.53]
+            Function call with B0 = 199.174 muG; eta2 = 15.264; mu = 1.500; rminarc = [18.5, 15.0, 10.77, 11.73, 9.1]
+         Box Length Error (xmin) at   4.5000000000000000     
+            Model fwhms = [  11.33   10.61    9.67    9.27  240.  ]
+
+
+
+#### vs = 4.83e8
+
+    (mu, eta2) = (1.50, 15.26)
+    ---------------------------------
+    Checking initial guess for B0
+        Function call with B0 = 465.863 muG; eta2 = 15.264; mu = 1.500; rminarc = [18.5, 15.0, 10.77, 11.73, 9.1]
+        Model fwhms = [ 3.24  3.04  2.75  2.61  2.53]
+    Initial guess accepted
+    Using initial B0 value 465.863155822 muG
+    Now finding B0 values with FWHMs in range.
+    Require 4 values above, 16 below initial B0
+        ...
+        ...
+    Function call with B0 = 208.638 muG; eta2 = 15.264; mu = 1.500; rminarc = [18.5, 15.0, 10.77, 11.73, 9.1]
+        Model fwhms = [ 10.92  10.2    9.24   8.83   8.51]
+        Function call with B0 = 202.435 muG; eta2 = 15.264; mu = 1.500; rminarc = [18.5, 15.0, 10.77, 11.73, 9.1]
+     Box Length Error (xmin) at   4.5000000000000000     
+        Model fwhms = [  11.47   10.69    9.67    9.27  240.  ]
+
+
+
+#### vs = 5.14e8
+
+This one barely made it past the eta2 = 15.26 stumbling block...
+
+    (mu, eta2) = (1.50, 22.23)
+    ---------------------------------
+    Checking initial guess for B0
+        Function call with B0 = 520.874 muG; eta2 = 22.230; mu = 1.500; rminarc = [18.5, 15.0, 10.77, 11.73, 9.1]
+        Model fwhms = [ 3.1   2.93  2.67  2.55  2.46]
+        ...
+        ...
+    Function call with B0 = 229.784 muG; eta2 = 22.230; mu = 1.500; rminarc = [18.5, 15.0, 10.77, 11.73, 9.1]
+        Model fwhms = [ 10.68  10.05   9.18   8.83   8.53]
+        Function call with B0 = 222.784 muG; eta2 = 22.230; mu = 1.500; rminarc = [18.5, 15.0, 10.77, 11.73, 9.1]
+     Box Length Error (xmin) at   4.5000000000000000     
+        Model fwhms = [  11.19   10.54    9.64    9.24  240.  ]
+
+
+Gridding fits and things
+------------------------
+
+CONTINUING... (see agenda.md)

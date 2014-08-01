@@ -285,9 +285,18 @@ def _get_float(prompt):
 # Tabulate FWHM values from full model code
 # =========================================
 
-def merge_tables(tab1, tab2):
+def merge_tables(*args):
     """Does what it says.  Lower priority at this time,
     but would be a nice feature to have."""
+    # BEWARE NEED TO DEAL WITH REPEATED ETA2 VALUES...
+    # ... well that's not so hard just merge the values and look for conflicts
+    # in B0.  Only in this split case of Tycho will you need to address this
+    # explicitly, and choose one or the other to discard.  Keep the one with
+    # smaller rminarc.  Could make this interactive and prompt the user, or
+    # automatically opt for the data w/ smaller rminarc.
+    # BUT, rminarc is not stored as metadata with the tables.  ARGH.
+    #.........
+    # deal with this later.
     pass
 
 
@@ -434,6 +443,11 @@ def maketab_gridB0(snr, pars, kevs, fwhms_min, fwhms_max, rminarc, n_tot,
         pars.add('B0', value=grid_B0)  # Vary B0, other parameters same
 
         fwhms = width_cont(pars, kevs, snr, rminarc = rminarc)
+
+        if any(fwhms <= 1e-5):
+            print "Resolution error!"
+        if any(fwhms >= snr.rsarc - 1e-5):
+            print "Box length error!"
         print '\tModel fwhms = {}'.format(fwhms)
 
         return rscale(fwhms), fwhms

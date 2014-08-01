@@ -97,10 +97,27 @@ Here we finished at 19:08 on average --> 4:07 hrs / 4 mu values, or about 1 hr/
 mu value now.  So we cut the time expenditure by 1/3rd!
 
 
-`tycho_grid-6-100-20_...`
+`Tycho_gen_2014-07-30_grid-6-100-20_vs-*.pkl`
+---------------------------------------------
+
+Generating grids for four values of shock velocity in Tycho, currently
+assuming remnant distance of 3 kpc.  See log and "table generating script"
+`tab_tycho_20140730.py` for details.
 
 
-Changed  in `maketab_gridB0`, dx_max (i.e. the B0 step) to 15 percent of the
-initial B0 value.  Yes, it's another twiddle-able...
+`Tycho_gen_2014-07-30_grid-6-100-20_vs-*_part2_mu-*.pkl`
+-------------------------------------------------------
 
-Gridding for this on hold while I address rminarc problem.
+Part 2 of the previous tabulation attempt.  All of the grids died
+simultaneously at (mu, eta2) = (1.50, 15.26) (excepting vs=5.14e8, which died
+at the next value, eta2=22.23).  The logs did not have earlier box length or
+resolution errors.
+
+After troubleshooting the error, I have a new procedure for manually obtaining
+rminarc (need to check w/cases of min/max diffusion (read: eta2)).
+
+Here, I resume gridding from (mu, eta2) = (1.50, 15.26) and finish up the
+remaining grid in eta2.  Then I wrap up the gridding for mu=2.  The final grids
+need to be merged together.
+
+

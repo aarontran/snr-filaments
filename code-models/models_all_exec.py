@@ -16,7 +16,6 @@ Aaron Tran
 
 from __future__ import division
 
-import argparse
 import cPickle as pickle
 from datetime import datetime
 import lmfit
@@ -89,19 +88,10 @@ def vistable(tab_fname):
     plt.title(r'\eta_2, B_0 grid for \mu = {}'.format(mu_vals[0]))
     plt.show()
 
-# Short functions, which set various configuration parameters
-# to generate tables for fitting...
-
-# TODO: Once done -- you should move table to /tables and set write only...
-# code to merge table pickles coming sometime...
-# TODO: would also be good to save data in plaintext form, somehow
-# (4+ columns of mu, eta2, B0, fwhm values)
-
-
-
 
 def generate_SN1006_table(mu):
-    """What it says.  Configured for single mu value."""
+    """What it says.  Configured for single mu value.
+    Move to a configuration script if any more SN1006 tables are generated."""
 
     #mu_vals = [0, 1./3, 1./2, 1, 1.5, 2]  # Following Sean
     #mu_vals = np.array([1./3, 1./2, 1])  # Kolmogorov, Kraichnan, Bohm

@@ -60,7 +60,8 @@ introduction:
 Main agenda
 ===========
 
-*Work/pipeline/software engineering/whatever*
+Pipeline, profile and FWHM calculation and plots
+------------------------------------------------
 
 So need to
 1. overhaul specextract pipeline (handle region coordinates correctly, test and
@@ -72,7 +73,6 @@ So need to
 4. proper config files / cmd line arguments for fitting/FWHM analysis scripts?
 5. clean up rsch notes document... keep track of what changes/etc I've been
    making
-
 
 * overhaul pipeline for profile fit / FWHM processing again -- it's just so
   messy, and feels hard to work with
@@ -92,164 +92,135 @@ So need to
 * Eventually: run whole pipeline on one set of ALL regions, sampled all around
   SNR, save the output.  Use this to argue/show why regions are good/bad.
 
-* remember brian's suggestion (from Friday): what's the dependence of mE on
+On using different calculations of the FWHM: how do I show the effect of these
+different procedures?  Some kind of normalization? (Figure 10 of Ressler).
+Quantify effects on calculation of `m_E`, B0, eta2.
+
+
+Models for filament widths
+--------------------------
+
+* Clean up your notes.
+
+Some high level questions / thoughts from poster session (July 31):
+* Ori -- sanity check on checking luminosity and shock kinetic energy, though
+  Rob/Brian note that the synchrotron radiation is very inefficient (esp.
+  compared to when the remnant cools, H starts recombining and emitting thermal
+  lines, T ~ 10^4 K)
+* Terri/Amy -- why are the shocks so thin, anyways?  don't have a good answer
+  for that...
+* Our analysis, if anything, confirms that the shocks are thin to begin with...
+  but doesn't say "why".  Why shouldn't accelerated particles travel farther
+  back?  Function of time / remnant evolution?
+* Madura -- 3D reconstruction?
+* We really need to quantify the magnetic damping issue -- can we put a lower
+  bound on the relevant damping scale length, given that it basically can't
+  explain the rim dropoff with energy?
+
+
+### General (higher level to-dos)
+
+* Tables 7, 8 reproduced for SN 1006, then Tycho.
+  As we have wanted for the last SEVERAL weeks...
+  Report chi-squared values so we can compare different
+  values of mu... and report errors from brute-force chi-square
+  Also, print out `m_E` values, point to point and from `width_dump` model...
+  see some of the old notebooks in `code-profiles/` (merge functionality
+  together and throw out old / unused things)
+
+  Plan -- use ipython notebook to prettyprint output, but use `models_all_exec`
+  to abstract away as many details as possible.
+
+  Idea -- avoid making ipython code "general".  Use it for one off scripts,
+  e.g. make a new notebook for each supernova remnant.
+
+  To do this...
+  1. need a quick rootfinder for simple fit errors.
+  2. need a quick rootfinder for full grid fit errors.
+
+
+  SOOOOO how to do the fits?
+  1. naive, stupid way: (let us treat just mu=1, one set of data... rest is the
+     same) at each eta2, find best B0 in grid.  Fit to formally find best
+     chisqr (with good rminarc estimates too) at each eta2 -- perhaps, only in
+     the range of good eta2 values to begin with.
+
+     (quick criterion -- do this process only for all eta2 values w/ chisqr
+     within chisqr_min, chisqr_min + 2.7 + 0.1 or something)
+
+     Downside, this requires ~20 calls / eta2 value * ~20 eta2 values +
+     ~20 more function calls starting from the 2 best fits.
+
+  2. ignore all that.  just find the best B0 and eta2 naively in the
+     imperfect grid.  Fit at that point, let it run around (~20 calls), then
+     compute error.  To compute error, check the eta2 grid until you find
+     chisqared values bracketing chisqr_min + 2.7.  Perform actual fits to B0.
+     If the values no longer bracket chisqr_min+2.7, move onwards.
+
+     Tricky part is that this has to be somewhat done by hand, in case that no
+     such error exists (e.g. if eta2 runs to 0 or infinity without blowing up
+     chisqr...)  I don't know the best way to do this, trying to automate the
+     process but still leaving room to do some processing by hand...
+
+* ipython notebook with results of varying compression ratio, shock speed,
+  remnant distance, any other twiddleables (including/excluding energy cutoff).
+  Show for both SN 1006 and Tycho.
+  Use this for discussion/commentary on twiddle-able knobs.
+
+* Remember brian's suggestion (from Friday july 25): how does mE depend on
   energy? what happens if you fit a straight power law to that???
 
-Model stuff
------------
+* Write code to compute azimuth angle of regions, and estimate shock speed for
+  each region.
 
-* Pressing issue of updating rminarc (grid domain)
-> Addressing the resolution issue workarounds.....
-> 1. dynamically update rminarc, using pre-selected set of values that don't give
-     the floating point error... (must pick rminarc values by trial/error, each
-     time)
-> 2. use simple model code to get rminarc estimates.  simple model predicts
-     wider filaments at a given B0, but I don't know how much wider.
-> 3. use some combination of dynamic updates + simple model estimates
-> 4. modify sean's code to take array of rminarc values.  Then we could:
->    * fixed `rminarc = np.amax(fwhm_max, axis=0)`, similar to current approach
->    * get rminarc from simple model code, in each band
-> 5. combine both methods -- dynamically update rminarc, SOMEHOW -- but do so in all energy bands, this would get the best possible resolution and avoid errors.
+* Check all your constants.  `snr_catalog.py`, model fitting code both
+  wrapper and fortran
 
+* Update code deep review eventually (discuss: correction to the negative sign
+  in electron distribution functions, explain the Ecut scaling / calculation)
 
-* Throw safeguard in function `f_rscale` -- if FWHM calculation errors out,
-  recompute with smaller/larger rminarc automatically.  The gridding code never
-  calls `width_cont` directly, only `f_rscale`, so this should be helpful.
+* Look at azimuthal dependence of B field, robustness of numbers from approx
+  python model. Brian asked, does B field scale with stronger energy
+  dependence? (NOT ADDRESSED as of July 30)
 
+### General (high-level questions)
 
-For put together data, values, tables.
-Remember to report chi-squared values everywhere, so we can compare different
-values of mu... and report errors from brute-force chi-square, rather than from
-std err (cov).
+* How does Sean define unobtainable, in Table 8? E.g., for mu = 0.5 I can
+  manually fit and get a chi-squared value of 6.2 (compared to ~4 for the higher
+  values of mu).  Brian: yeah, run this by Sean.
 
-Conceptual questions:
+* Ask Sean if there was any reason for 1sigma error in Table 7?  I think I was
+  seeing larger errors from brute-force chi-square in lmfit, even for 1 sigma
+  (so it seemed like the errors in Table 7 came from sqrt of diag elements of
+  covariance matrix, which would be inaccurate here)
 
-* do we have hard evidence for proton acceleration? seems like stuff jack is
-working on.
-* Is there a way to relate diffusion /coefficient/ to turbulent energy?
-  (wondering, what would happen if shock did not induce turbulence but only
-  compressed magnetic field -- different effects for plane parallel/perp
-  field, but what would those effects be?)
-* In re shock heating: sections 5.1 / 11.1 seem to cover what you explained!
+* Sean used energy cutoff in all his model fits?
 
+### General (lower level to-dos)
 
-Thought -- should we be constraining the resolution... checking that it
-works/makes sense?  How do we quantify when the grid is sufficiently resolved?!
-Compute the error from changing the grid fractionally (e.g. doubling)... kind
-of like in Math 228B...
+* SAFETY FEATURE, do NOT let user call maketab if `fullmodel.so` is older than
+  `FullEfflength_mod.f`... or just force it to be recompiled each time, but you
+  have to reload the module in all scripts or something...
 
-To be clear -- Sean used ecut in all of the model fits?
+* (feature creep) write Makefiles to automate the human aspect of running this
+  pipeline?
 
-How do you rule out magnetic damping, exactly?  Looking at Figure 4, with ab =
-0.05 rs, it seems like that would give you a decent size mE.  How did Sean get
-the numbers that he did (i.e. that mE must be order -0.1 for damping)?
-Discussion w/ brian on Friday - maybe Sean did it, maybe from old paper?
+* Should we be constraining/checking resolution somehow -- checking that grid
+  is "sufficiently" resolved to get a good fit?  What is the "error" of
+  fractionally changing the grid... thinking of Math 228B here.
 
-Question: is mu restricted to fall within `[0, 2]` (as is suggested by the
-turbulence - mu relation given in Sean's paper?).
-(discussion w/ Brian -- seems legit)
-
-In table 8 -- how do you define unobtainable?
-e.g., for mu =0.5 I can get a chisquared of at best 6.2 (compared to abt 4 for
-the higher values of mu). (with manual fitting, that is)
-Brian (Friday): yeah run this by Sean.
-
-One major issue -- appropriate electron distribution parameters for TYCHO!
-Cut-off energy, spectrum index, etc.  Where did he get value 2.2 for SN 1006?
-Answered by Sean's email -- see NRAO ERA (power law e- begets power law
-synchrotron... work backwards. but there's also zirakashvili and aharonian
-(2007) to get more detail?)
-
-Another question: how do you know the compression ratio is 4?  It seems like a
-nice assumption -- what happens if we change that assumption? where does that
-factor into the model? (larger compression ratio -- smaller plasma velocity --
-shorter advective lengthscale -- could help explain narrow filaments, although
-not the scaling!)  (see brian's paper...)
-
-Solution: throw this into the simple model... some numbers:
-> compression ratio = 4
-> Filament 1: mu = 1.00    eta2 = 1.06 +/- 0.37    B0 = 112.55 +/- 4.27
-> Filament 2: mu = 1.00    eta2 = 0.08 +/- 1.05    B0 = 144.84 +/- 26.26
-> Filament 3: mu = 1.00    eta2 = 0.01 +/- 0.14    B0 = 80.88 +/- 2.58
-> Filament 4: mu = 1.00    eta2 = 0.01 +/- 0.06    B0 = 118.17 +/- 2.40
-> Filament 5: mu = 1.00    eta2 = 4.81 +/- 5.18    B0 = 155.77 +/- 36.22
-> 
-> compression ratio = 6
-> Filament 1: mu = 1.00    eta2 = 0.47 +/- 0.16    B0 = 85.89 +/- 3.26
-> Filament 2: mu = 1.00    eta2 = 0.03 +/- 0.47    B0 = 110.53 +/- 20.05
-> Filament 3: mu = 1.00    eta2 = 0.01 +/- 0.06    B0 = 61.89 +/- 2.07
-> Filament 4: mu = 1.00    eta2 = 0.01 +/- 0.00    B0 = 90.42 +/- 2.22
-> Filament 5: mu = 1.00    eta2 = 2.14 +/- 2.30    B0 = 118.88 +/- 27.64
-> 
-> compression ratio = 8
-> Filament 1: mu = 1.00    eta2 = 0.27 +/- 0.09    B0 = 70.90 +/- 2.69
-> Filament 2: mu = 1.00    eta2 = 0.02 +/- 0.26    B0 = 91.25 +/- 16.54
-> Filament 3: mu = 1.00    eta2 = 0.01 +/- 0.03    B0 = 51.28 +/- 1.82
-> Filament 4: mu = 1.00    eta2 = 0.01 +/- 0.06    B0 = 74.92 +/- 2.12
-> Filament 5: mu = 1.00    eta2 = 1.20 +/- 1.30    B0 = 98.13 +/- 22.82
-> 
-> compression ratio = 20
-> Filament 1: mu = 1.00    eta2 = 0.04 +/- 0.01    B0 = 38.49 +/- 1.46
-> Filament 2: mu = 1.00    eta2 = 0.01 +/- 0.01    B0 = 50.91 +/- 10.77
-> Filament 3: mu = 1.00    eta2 = 0.01 +/- 0.00    B0 = 29.00 +/- 2.27
-> Filament 4: mu = 1.00    eta2 = 0.01 +/- 0.00    B0 = 42.36 +/- 3.41
-> Filament 5: mu = 1.00    eta2 = 0.19 +/- 0.21    B0 = 53.27 +/- 12.39
-
-Similar -- empirically check effect of changing remnant distance (2 to 4 kpc),
-how do FWHMs and other parameters, change w/ distance?  Our guess/expectation:
-scaling shouldn't change, just magnetic field estimate.  As Brian said use 3
-kpc for now, scale his shock speeds appropriately.
-
-Check all your constants urgh.  `snr_catalog.py`, model fitting code both
-wrapper and fortran
-
-Update code deep review eventually (correction to the negative sign in electron
-distribution functions, explain the Ecut matter, etc)
-
-One big question -- what are the qualitative differences between the models --
-one aspect is addressed by the discussion of electron cut-off energy.
-
-Why should the cut-off energy be set by equating loss times and acceleration
-times?  Is that to say that, the electrons radiate faster than they can be
-accelerated?  But that seems weird -- because I thought the acceleration is
-what gives rise to the radiation.  Please read parizot et al (2006), take
-notes, rederive things.
-
-How the hell to get such strong B field values?!
-Solution: read the damn literature (can we get any numbers on this, are the
-numbers we're seeing for tycho reasonable/consistent w/ numerical simulations
-or whatnot of magnetic turbulence?)
-
-Another issue -- when converting from particle energy E to radiated frequency
-nu, doesn't the use of `$\nu_m = c_m E^2 B$` implicitly invoke the
-delta-function approximation for synchrotron radiation?  I have no idea how
-you'd do it otherwise though -- the diffusion coefficient is set by a singular
-electron energy, which corresponds to some distribution of synchrotron
-radiation.  But, perhaps, for an individual electron this is not a bad
-approximation?  I don't understand the physics of the derivation of synchrotron
-stuff (MUST REVIEW ALL OF THIS...).
-
-Further clarification with Sean -- after having rederived `m_E` and all, I am
-convinced that the output from `Widthfun.py` should allow us to use equation
-(23) to compute `m_E`.  I think, Sean misread my question / my question was
-unclear, and so that is important in attempting to describe `m_E` using the
-FULL numerical code (the full power of this orbiting ........)
-
-### Python lmfit, approx equation
+### Small checks, constants, verification
 
 * CREATE a test case for lmfit, to verify it is doing a least squares fit as I
   would expect (just check against scipy curve fit).
   During this test -- verify that when I freeze a parameter, chi2red is
   calculated correctly with one less DOF (if it spits out a chi2red)
-* At some point, verify all of sean's calculated constants
-* Demonstrate that I get the same results as Sean's original `Widthfun.py`.
-
-### Full model
 
 * Check transport equation for pure advection case
 * Check numerical prefactor 8.3 TeV for electron cutoff energy
 * Update numbers from Pacholczyk (?), consider adding more entries (can ask
   Sean about this)
+
 * Check FORTRAN code for memory-efficient array indexing?
 * Consider caching / memoizing tabulated electron distributions?
   Problem: advective/diffusive lengthscales depend on B0, mu, eta, etc.
@@ -257,41 +228,51 @@ FULL numerical code (the full power of this orbiting ........)
   which does physically make sense, after all.  sigh.
   How can we get around the speed issue?
 
-### All models
-* Incorporate Tycho's variable shock speed into results (Williams et al., 2013)
-* USE 3 kpc instead of 2.3 kpc, and will need to investigate this effect soon
-  (2.3 to 4 kpc range).  Brian's paper actually favored a larger distance.
 
-* Model code -- test it out first, before automating / wasting time scripting
-  stuff up.  Parameter space could be weird, so might have trouble converging
-  (partially done)
+### Conceptual/background/physics questions (look up and/or ask)
+* When converting from particle energy E to radiated frequency nu, doesn't the
+  formula `$\nu_m = c_m E^2 B$` implicitly invoke the delta-function approx for
+  synchrotron radiation?  I have no idea how you'd do it otherwise though.
+  The diffusion coefficient is set by a singular electron energy, which gives
+  some synchrotron radiation spectrum.  Perhaps, for an individual electron
+  this is not a bad approximation?  I don't understand the physics of the
+  derivation of synchrotron stuff (MUST REVIEW ALL OF THIS...).
+  Perhaps it corresponds to some median, mean energy, or power, or something.
+* How to get such strong B field values?!  Is nonlinear MHD turbulence enough?
+* How to get larger compression ratios?  What does it imply?
+* Why is cutoff energy set by equating loss and acceleration times?
+  The electrons radiate faster than they can be accelerated?  But that seems
+  weird -- because I thought the acceleration is what gives rise to the
+  radiation.  Please read parizot et al (2006), take notes, rederive things.
 
-Then look at spatial dependence of B field, robustness of numbers from approx
-python model. Brian asked, does B field scale with stronger energy dependence
-Should verify this (NOT ADDRESSED YET, July 27).
-Need to have discussion/commentary on what affects what.
+* What are the qualitative differences between the models, especially in
+  results?  We can see the different assumptions in source/sink terms, but how
+  does that change what comes out?  We already see that the complex model
+  favors smaller B fields to explain observed widths.  How does that reflect
+  the underlying physics?  Complex model generates "thinner" filaments
+  naturally?
+* Is mu restricted to fall within `[0, 2]`, as suggested by equations for
+  turbulent spectrum and diffusion coefficient?  Seems legit...
+* How do you rule out magnetic damping?  E.g., looking at figure 4 with ab =
+  5 percent of shock radius, seems like it would give a decent energy dropoff.
+  How did Sean get that mE must be of order -0.1 for damping? (Brian: maybe
+  Sean explored parameters, maybe from old/"classic" papers on damping?)
 
-On using different calculations of the FWHM: how do I show the effect of these
-different procedures?  Some kind of normalization? (Figure 10 of Ressler).
-Quantify effects on calculation of `m_E`, B0, eta2.
-
-
-Documentation/poster/paper
---------------------------
-
-Start making poster later this week, have nice draft ready by Monday
-(print by Wednesday morning at latest -- setup 2-6p Weds, 7:30-11a Thurs)
-(presentations: 11a-2p, must be present 12a-2p)
-(spec: 45" by 45" max)
+* what are the main lines of evidence for proton acceleration? Stuff Jack and
+  Zeeve are working on, I suppose.
+* Is there a way to relate diffusion /coefficient/ to turbulent energy?
+  (wondering, what would happen if shock did not induce turbulence but only
+  compressed magnetic field -- different effects for plane parallel/perp
+  field, but what would those effects be?)
 
 
 More supernova remnants
 -----------------------
 
-* Kepler -- use CIAO `merge_obs`
+Read about work on Kepler / Cas A sometime, when you have time
+
 * sanity check that when I run CIAO `merge_obs`, I get the same files that
-  Brian has been sending me... (so, verify that it works right with Tycho, then
-  test on kepler???)
+  Brian has been sending me...
 * Question: looks like `reproject_obs` will give evt file (which can then be
   partitioned by `dmcopy`, is that good enough....
 
