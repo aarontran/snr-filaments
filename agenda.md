@@ -135,32 +135,28 @@ Some high level questions / thoughts from poster session (July 31):
   e.g. make a new notebook for each supernova remnant.
 
   To do this...
-  1. need a quick rootfinder for simple fit errors.
+  1. need a quick rootfinder for simple fit errors. (DONE... barring kinks)
   2. need a quick rootfinder for full grid fit errors.
 
-
   SOOOOO how to do the fits?
-  1. naive, stupid way: (let us treat just mu=1, one set of data... rest is the
-     same) at each eta2, find best B0 in grid.  Fit to formally find best
-     chisqr (with good rminarc estimates too) at each eta2 -- perhaps, only in
-     the range of good eta2 values to begin with.
 
-     (quick criterion -- do this process only for all eta2 values w/ chisqr
-     within chisqr_min, chisqr_min + 2.7 + 0.1 or something)
+  Find the best B0 and eta2 naively in the imperfect grid.  Fit at that point,
+  let it run around (~20 calls), then compute error.
 
-     Downside, this requires ~20 calls / eta2 value * ~20 eta2 values +
-     ~20 more function calls starting from the 2 best fits.
+  So, 6 mu values * 13 regions = 78 fits... * 20 calls = 1560 calls, 5 seconds
+  each requires 2.2 hours... blahhhh.
+  
+  To compute error, check the eta2 grid until you find chisquared values
+  bracketing `chisqr_min + 2.7`.  Perform actual fits to B0. If values no
+  longer bracket `chisqr_min+2.7`, move onwards...
 
-  2. ignore all that.  just find the best B0 and eta2 naively in the
-     imperfect grid.  Fit at that point, let it run around (~20 calls), then
-     compute error.  To compute error, check the eta2 grid until you find
-     chisqared values bracketing chisqr_min + 2.7.  Perform actual fits to B0.
-     If the values no longer bracket chisqr_min+2.7, move onwards.
+  (problem -- what to do if multiple values bracket... given resolution
+  issues, etc)
 
-     Tricky part is that this has to be somewhat done by hand, in case that no
-     such error exists (e.g. if eta2 runs to 0 or infinity without blowing up
-     chisqr...)  I don't know the best way to do this, trying to automate the
-     process but still leaving room to do some processing by hand...
+  Tricky part is that this has to be somewhat done by hand, in case that no
+  such error exists (e.g. if eta2 runs to 0 or infinity without blowing up
+  chisqr...)  I don't know the best way to do this, trying to automate the
+  process but still leaving room to do some processing by hand...
 
 * ipython notebook with results of varying compression ratio, shock speed,
   remnant distance, any other twiddleables (including/excluding energy cutoff).

@@ -82,21 +82,25 @@ def run_table_fit():
 # Fit from just initial guesses (simple model)
 # ============================================
 
-def simple_fit(snr, kevs, data, eps, mu, B0=150e-6, eta2=1, mu_free=False):
-    """Fit both eta2 and B0 to simple model (equation 6; Table 7 of paper)
-    Just a wrapper around lmfit.minimize(objectify(...), ...)
+def simple_fit(snr, kevs, data, eps, mu, eta2=1, B0=150e-6,
+               mu_free=False, eta2_free=True, B0_free=True):
+    """Perform a simple model fit (equation 6; Table 7 of Ressler et al.)
+    A convenience wrapper for lmfit.minimize(objectify(width_dump), ...)
+
+    Default is to fit both eta2, B0 at fixed mu.
     
     Inputs:
         kevs, data, eps (np.array) as usual
         mu, B0, eta2 (float) initial guesses, but mu fixed
-        mu_free (bool) unless you want mu to vary in fit
+        mu_free, eta2_free (bool) which parameters shall vary in fits?
     Output:
         lmfit.Minimizer with fit information / parameters
     """
     p = lmfit.Parameters()
     p.add('mu', value=mu, vary=mu_free)
-    p.add('B0', value=B0, min=1e-6, max=1e-2)
-    p.add('eta2', value=eta2, min=1e-4, max=1000)
+    p.add('B0', value=B0, min=1e-6, max=1e-2, vary=B0_free)
+    p.add('eta2', value=eta2, min=5e-16, max=1e5, vary=eta2_free)
+    # Must be nonzero to prevent width_dump from going singular
     res = lmfit.minimize(objectify(width_dump), p,
                              args=(data, eps, kevs, snr),
                              method='leastsq')
@@ -106,7 +110,7 @@ def simple_fit(snr, kevs, data, eps, mu, B0=150e-6, eta2=1, mu_free=False):
 # Fit using precached table (full model code)
 # ===========================================
 
-def table_fit(snr, kevs, data, eps, mu, tab):
+def table_fit(snr, kevs, data, eps, mu, tab, inds=None, **lsq_kws):
     """Fit data from precomputed table of values...
     Find best fit eta2, B0 for given mu value
     
@@ -122,64 +126,78 @@ def table_fit(snr, kevs, data, eps, mu, tab):
     
     mu must be an element of tab.keys(); we neglect fit in mu space.
     tab should be opened prior
+    Probably want to set epsfcn via **lsq_kws
+    """
+
+    eta2_vals, B0_vals, chisqr_vals = table_scan(snr, kevs, data, eps, mu, tab,
+                                                 inds)
+
+    # Best (eta2, B0) in entire grid
+    ind_min = np.argmin(chisqr_vals)
+    eta2_grid, B0_grid = eta2_vals[ind_min], B0_vals[ind_min]
+
+    # Now, try a fit
+    p = lmfit.Parameters()
+    p.add('mu', value=mu, vary=False)
+    p.add('eta2', value=eta2_grid, min=5e-16, max=1e5)
+    p.add('B0', value=B0_grid, min=1e-6, max=1e-2)
+
+    # TODO: let some of these things be free arguments
+    print 'Best grid B0 = {:0.2f}, eta2 = {:0.2f} (chisqr = {:0.4f})'.format(
+                B0_grid*1e6, eta2_grid, chisqr_vals[ind_min])
+    res = lmfit.minimize(objectify(width_cont), p,
+                   args=(data, eps, kevs, snr),
+                   kws={'icut':1},  # Numerical code settings
+                   method='leastsq', **lsq_kws)
+    
+    return res  # Deal with error etc later...
+
+
+def table_scan(snr, kevs, data, eps, mu, tab, inds=None):
+    """Compute chisqr at every point in grid, for provided data
+
+    To use a subset of energy bands, give all the bands (must match grid)
+    then specify bands to use via index array inds
+
+    Input: kevs, data, eps must be np.ndarray
+    Output: eta2_vals, B0_vals, chisqr_vals
     """
 
     eta2_dict = tab[mu]
     eta2_vals = np.sort(eta2_dict.keys())
 
-    eta2_bestchisqrs = np.array([])
-    eta2_bestB0 = np.array([])
-
-    # TODO: cleaning up somewhere around here
+    # These are the best B0/chisqr values for each eta2
+    B0_vals = np.array([])
+    chisqr_vals = np.array([])
 
     for eta2 in eta2_vals:
-        B0_vals, fwhms = eta2_dict[eta2]  # Unpack tuple
+        B0_pts, fwhms = eta2_dict[eta2]
+        chisqr_pts = map(lambda x: chi_squared(data[inds],eps[inds],x[inds]),
+                         fwhms)
+        ind_min = np.argmin(chisqr_pts)
 
-        chisqr_vals = map(lambda x: chi_squared(data, eps, x), fwhms)
-        ind = np.argmin(chisqr_vals)
+        # If we want to optimize B0 value at each eta2...
+        # Need to identify a domain of eta2 values in which to do so.
+        # everywhere else, we don't care about.
 
-        #eta2_bestchisqrs = np.append(eta2_bestchisqrs, chisqr_vals[ind])
-        #eta2_bestB0 = np.append(eta2_bestB0, B0_vals[ind])
+        # Option: could try generating a best-fit curve (polynomial, spline)
+        # in eta2 space, in the neighborhood of the best grid value
+        # Then, try to calculate a better value of B0
+        # Compute the function at that value 1x, and verify that it's better
+        # (else, throw it out)... this might be robust
 
-        p = lmfit.Parameters()
-        p.add('mu', value=mu, vary=False)
-        p.add('B0', value=B0_vals[ind], min=1e-6, max=1e-2)
-        p.add('eta2', value=eta2, vary=False)
-        res = lmfit.minimize(objectify(width_cont), p,
-                             args=(data, eps, kevs, snr),
-                             method='leastsq',
-                             epsfcn=1e-6)  # Try messing with epsfcn...
+        #p = lmfit.Parameters()
+        #p.add('mu', value=mu, vary=False)
+        #p.add('B0', value=B0_vals[ind], min=1e-6, max=1e-2)
+        #p.add('eta2', value=eta2, vary=False)
+        #res = lmfit.minimize(objectify(width_cont), p,
+        #                     args=(data, eps, kevs, snr),
+        #                     method='leastsq', **lsq_kws)
 
-        eta2_bestchisqrs = np.append(eta2_bestchisqrs, res.chisqr)
-        eta2_bestB0 = np.append(eta2_bestB0, p['B0'].value)
+        B0_vals = np.append(B0_vals, B0_pts[ind_min])
+        chisqr_vals = np.append(chisqr_vals, chisqr_pts[ind_min])
 
-        print ('Table best fit: B0 = {:0.2f}, chisqr = '
-               '{:0.2f}').format(B0_vals[ind]*1e6, chisqr_vals[ind])
-        print ('Fitted best fit: B0 = {:0.2f}, chisqr = '
-               '{:0.2f}').format(p['B0'].value*1e6, res.chisqr)
-
-    fmt = {1/3: '-or', 1/2:'-og', 1:'-ob'}
-    plt.plot(eta2_vals, eta2_bestchisqrs, fmt[mu])
-    plt.xscale('log'); plt.yscale('log')
-    plt.xlabel(r'$\eta_2$'); plt.ylabel(r'$\chi^2$')
-    #plt.show()
-
-    # From best fit table values, run one more fit
-
-    #res = lmfit.minimize(objectify(width_cont), p,
-    #               args=(data, eps, kevs, snr),
-    #               kws={'icut':1},  # Numerical code settings
-    #               method='leastsq',
-    #               epsfcn=1e-5)  # Try messing with epsfcn...
-
-    # Make plots of chi-squared as a function of eta2
-    # Give fit information, estimate error (or let lmfit try to do so)
-    #lmfit.printfuncs.report_fit(res.params)
-    #print 'chisqrt = {}'.format(res.chisqr)
-    #ci = lmfit.conf_interval(res)  # Only if more than 2 variables?
-    #lmfit.printfuncs.report_ci(ci)
-    # return res
-
+    return eta2_vals, B0_vals, chisqr_vals
 
 # ============================================
 # Interactive manual fitting (full model code)

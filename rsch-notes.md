@@ -3186,3 +3186,27 @@ Gridding fits and things
 ------------------------
 
 CONTINUING... (see agenda.md)
+
+To determine 90% confidence interval errors: `lmfit.conf_interval` has
+difficulty stepping eta2 up/down, especially when eta2 is near zero.
+Example output from SN 1006, Filament 3 (this required up to 3000 iterations):
+
+    [[Variables]]
+         B0:       8.066719e-05 +/- 2.606319e-06 (3.23%) initial =  0.00015
+         eta2:     0.0001000048 +/- 0.1367508 (136744.26%) initial =  1
+         mu:       1 (fixed)
+    [[Correlations]] (unreported correlations are <  0.100)
+        C(B0, eta2)                  =  0.936 
+            90.00%     0.00%    90.00%
+      B0   0.00008   0.00008   0.00011
+    eta2      -inf   0.00010   2.87972
+
+
+...
+(add more notes later)
+Finished building and mostly(?) debugging rootfinder to find confidence
+interval limits for simple model fits.  Tursn out that lmfit uses an F-test of
+some kind, very different approach.
+
+Ran fits from best grid values, as I think I did try before.  Yup, it's a mess.
+So we're gonna need a systematic way to tackle this...
