@@ -16,24 +16,23 @@ Aaron Tran
 
 from __future__ import division
 
-import cPickle as pickle
-from datetime import datetime
+#import cPickle as pickle
+#from datetime import datetime
 import lmfit
 import matplotlib.pyplot as plt
 import numpy as np
-from numpy import f2py
-import scipy as sp
-from scipy import optimize
-import sys
+#from numpy import f2py
+#import scipy as sp
+#from scipy import optimize
+#import sys
 
 from fplot import fplot
-import snr_catalog as snrcat
+#import fullmodel as fm
+#fm.readfglists()
+#import snr_catalog as snrcat
 import models_all as models
 
-# Could throw this into another short script? remember to call
-# fm.readfglists() before anything else though.
-import fullmodel as fm
-fm.readfglists()  # Only do this once
+
 
 # TEMPORARY (FOR TESTING PURPOSES ONLY)
 SN1006_KEVS = np.array([0.7, 1.0, 2.0])
@@ -66,168 +65,187 @@ TYCHO_DATA_MAX = np.array([10.0, 8.866, 6.901, 7.508, 5.763])
 #    print 'Band {} min/max are {}, {}'.format(b, fwhm_min, fwhm_max)
 
 
+# Table from Press et al., Section 14.5 (1st ed.),
+# 15.6 (3rd ed.); see also Avni, Y. (1976, ApJ)
+# Would be good to compute properly in a function
+CI_2_CHISQR = {}
+CI_2_CHISQR[0.683] = 1.0
+CI_2_CHISQR[0.90] = 2.71
+CI_2_CHISQR[0.9545] = 4.0
+CI_2_CHISQR[0.99] = 6.63
+
+
 def main():
     """main stuff.  Edit this at will to generate desired output..."""
 
 
-def vistable(tab_fname):
-    """Make plot of grid, using tab output from tab_eta2().
-    Only shows grid for one (arbitrary, first) value of mu
-    """
-    with open(tab_fname, 'r') as fpkl:
-        tab = pickle.load(fpkl)
+# =====================================================
+# Parameter space checking for simple model fits + grid
+# =====================================================
 
-    mu_vals = tab.keys()
-    mu_dict = tab[mu_vals[0]]
-    for eta2 in mu_dict.keys():
-        B0_vals = mu_dict[eta2][0]  # [1] for FWHM values!
-        plt.plot(eta2*np.ones(len(B0_vals)), B0_vals, 'ob')
+# Designed to be called in iPython notebook w/ inline plots
+# Simply feed in your grid, supernova remnant, data, etc...
 
-    plt.xscale('log'); plt.yscale('log')
-    plt.xlabel(r'$\eta_2$'); plt.ylabel(r'$B_0$')
-    plt.title(r'\eta_2, B_0 grid for \mu = {}'.format(mu_vals[0]))
+def check_eta2_simp(snr, kevs, data, eps, eta2_vals, mu_vals, fmt_vals):
+    """Plot chi-squared space for eta2"""
+    plt.figure(figsize=(6,4))
+    for mu, fmt in zip(mu_vals, fmt_vals):
+        b0_vals = []
+        chisqr_vals = []
+        for eta2 in eta2_vals:
+            res = models.simple_fit(snr, kevs, data, eps, mu, eta2=eta2, eta2_free=False)
+            b0_vals.append(res.params['B0'])
+            chisqr_vals.append(res.chisqr)
+
+        plt.plot(eta2_vals, chisqr_vals, fmt, lw=2)
+
+    fplot(r'$\eta_2$ (-)', r'Best fit $\chi^2$', scales=('log','log'))
+    plt.legend( tuple(r'$\mu = {:0.2f}$'.format(mu) for mu in mu_vals),
+                loc='best')
     plt.show()
 
+# ================================================
+# Errors from confidence limits, simple model fits
+# ================================================
 
-def generate_SN1006_table(mu):
-    """What it says.  Configured for single mu value.
-    Move to a configuration script if any more SN1006 tables are generated."""
+# This is a simple reimplementation of `lmfit.conf_interval(...)`, using 
+# a different metric for conf intervals. Compare results to be sure though
 
-    #mu_vals = [0, 1./3, 1./2, 1, 1.5, 2]  # Following Sean
-    #mu_vals = np.array([1./3, 1./2, 1])  # Kolmogorov, Kraichnan, Bohm
-    mu_vals = [mu]
-    eta2_vals = np.logspace(-2, 2, 50, base=10)
-    eta2_vals = np.sort(np.append(eta2_vals, np.linspace(0, 10, 50)))
-    n_B0 = 20  # In practice, you'll usually get ~1.5 to 2x as many points
-               # as code tries to achieve good spacing
-
-    snr = snrcat.make_SN1006()
-    kevs = SN1006_KEVS
-    data = np.array([SN1006_DATA[flmt][0] for flmt in [1,2,3,4,5]])
-    data_min = np.amin(data/1.51, axis=0)
-    data_max = np.amax(data*1.51, axis=0)
-
-    fname = 'sn1006_grid-1-100-20_2014-07-28_mu-{:0.2f}_partest.pkl'.format(mu)
-
-    tab = models.maketab(snr, kevs, data_min, data_max, mu_vals, eta2_vals,
-                         n_B0, fname=fname)
-
-    return tab
+# get_ci_errors(...)
+# get_ci_bounds(...) is a wrapper for get_bounds(...)
+# one_dir_rootfind(...) is generalized, but convenient for chisqr thresholding
 
 
-# ======================================
-# Some ad hoc functions to check effects
-# of varying certain parameters, or just
-# spewing out some numbers (for now...)
-# ======================================
+def get_ci_errors(ci_dict, par_name, ci_val=0.683):
+    """Read out +/- errors from dict of CI bounds"""
+    x_bnds = ci_dict[par_name]
+    x_lo, x_hi = np.sort([tup[1] for tup in x_bnds if tup[0] == ci_val])
+    x = [tup[1] for tup in x_bnds if tup[0] == 0.][0]
+    return x - x_lo, x_hi - x
 
 
-def make_table7_SN1006():
-    """Make numbers blagh
-    This reproduces Table 7 of Ressler et al.
+def get_ci_bounds(res, ci_vals=(0.683, 0.9)):
+    """Manually compute confidence interval parameter values, for free
+    parameters in res (lmfit.Minimizer)
+
+    Input:
+        res is the output from lmfit.minimize(...), ALREADY MINIMIZED
+        f is the objective function being minimized
+    Output:
+        dict of ci bounds, structured like lmfit.conf_interval(...) output
+    """
+    ci2 = {}
+    
+    for pstr in [p for p in res.params if res.params[p].vary]:
+        ci2[pstr] = [(0., res.params[pstr].value)]
+
+        for ci_val in ci_vals:
+            p_lo, p_hi = get_bounds(ci_val, res, pstr, eps=None, adapt=True,
+                                    verbose=True)
+            ci2[pstr].append((ci_val, p_lo))
+            ci2[pstr].append((ci_val, p_hi))
+
+        ci2[pstr].sort(key=lambda x: x[1])
+
+    return ci2
+
+
+def get_bounds(conf_intv, res, pstr, **kwargs):
+    """Bounds for confidence interval conf_intv, within res.params[pstr] limits
+    res must be already fitted, with fit parameters to vary in chisqr
+    analysis already free.
+    res will be modified in this process!
+    
+    Input: **kwargs are passed to one_dir_rootfind(...)
+    Output: lower, upper bounds on parameter res.params[pstr]
     """
 
-    snr = snrcat.make_SN1006()
-    kevs = SN1006_KEVS
+    # Rerun fit, store parameter values, stderrs, chisqr
+    res.prepare_fit()
+    res.leastsq()
+    orig = lmfit.confidence.copy_vals(res.params)
+    best_chisqr = res.chisqr
 
-    for flmt in [1,2,3,4,5]:
-        print 'Filament {}'.format(flmt)
-        print 'mu\teta2\t\t\tB0'
-        for mu in [0, 1/3, 1/2, 1, 1.5, 2]:
-            data, eps = SN1006_DATA[flmt]
-            res = simple_fit(snr, kevs, data, eps, mu)
+    # Fix parameter to be bounded throughout manual stepping
+    res.params[pstr].vary = False  
+    # Objective function for root finding.  Modifies res...
+    # WARNING: other free parameters are constrained by their own limits!
+    def chisqr_thresh(x):
+        # Reset parameters to initial best fits, every time
+        # seems like this reduces errors... but very ad hoc patch
+        lmfit.confidence.restore_vals(orig, res.params)
+        res.params[pstr].value = x
+        res.prepare_fit()
+        res.leastsq()
+        return (res.chisqr - best_chisqr) - CI_2_CHISQR[conf_intv]
 
-            print '{:0.2f}\t{:0.2f} +/- {:0.2f}\t\t{:0.2f} +/- {:0.2f}'.format(
-                    res.values['mu'],
-                    res.values['eta2'], res.params['eta2'].stderr,
-                    res.values['B0']*1e6, res.params['B0'].stderr*1e6)
+    # Find bounds if possible, using stored limits
+    p_init = res.params[pstr].value
+    p_lims = res.params[pstr].min, res.params[pstr].max
+    p_lo = one_dir_rootfind(chisqr_thresh, p_init, p_lims[0], **kwargs)
+    p_hi = one_dir_rootfind(chisqr_thresh, p_init, p_lims[1], **kwargs)
 
-            # Next, error from confidence intervals...
-            # Error bars on B0 and eta2 will be tremendous in many cases.
+    # Restore values/chisqr in lmfit.Minimizer object
+    lmfit.confidence.restore_vals(orig, res.params)
+    res.params[pstr].vary = True
+    res.chisqr = best_chisqr
+
+    return p_lo, p_hi
 
 
-def check_effects():
-    """Make numbers blagh
-    What happens when we change
-    compression ratio (i.e. v0) ?
+def one_dir_rootfind(f, x_init, x_lim, eps=None, adapt=True, verbose=False):
+    """Find root in function f from starting x with max/min limit
+    Naive, brute force search in one direction, set by sgn(x_lim - x_init)
+    If zero crossing is found, uses scipy.optimize.brentq to get root
 
-    And, what happens when we change shock velocity (vs and v0 together)?
-    I think the result will be, B0 changes dramatically...
-    Given what I see with compression ratio.
+    Designed specifically for chisqr bounds to compute confidence intervals
+
+    Input: f has call signature f(x)
+    Output: root within 2x machine precision, else x_lim if root was not found
     """
-    mu = 1
-    compratios = [4, 6, 8, 20]
+    if eps is None:
+        eps = abs(0.01 * x_init) * np.sign(x_lim - x_init)
+    else:
+        eps = abs(eps) * np.sign(x_lim - x_init)
 
-    snr = snrcat.make_SN1006()
-    kevs = SN1006_KEVS
+    prev_x = x_init
+    prev_dist = f(x_init)
+    start_sgn = np.sign(prev_dist)  # Allow crossings in either direction
+    if start_sgn == 0:
+        return x_init
 
-    for cr in compratios:
+    while np.sign(prev_dist) == start_sgn:
+        # Break if we hit parameter limit without crossing threshold
+        if np.abs(prev_x - x_lim) <= np.finfo(float).eps * 2:  # brentq rtol
+            break
 
-        snr.v0 = snr.vs/cr
-        print '\ncompression ratio = {}'.format(cr)
+        x = prev_x + eps
+        if (eps > 0 and x > x_lim) or (eps < 0 and x < x_lim):
+            if verbose:
+                print 'Hit parameter limit {}'.format(x_lim)
+            x = x_lim
 
-        for flmt in [1,2,3,4,5]:
+        dist = f(x)
 
-            data, eps = SN1006_DATA[flmt]
-            res = simple_fit(snr, kevs, data, eps, mu)
+        # Update step size if desired... arbitrary picks for adaptive step
+        if adapt:
+            if abs(dist - prev_dist) < 0.1:
+                eps *= 1.5
+            elif abs(dist - prev_dist) > 1:
+                eps /= 1.5
 
-            print ('Filament {}: mu = {:0.2f}\teta2 = {:0.2f} +/- {:0.2f}\t'
-                   'B0 = {:0.2f} +/- {:0.2f}').format(flmt, res.values['mu'],
-                    res.values['eta2'], res.params['eta2'].stderr,
-                    res.values['B0']*1e6, res.params['B0'].stderr*1e6)
+        # Go back to start, where we can check if crossing was found or not
+        prev_dist = dist
+        prev_x = x
 
-def check_tycho_effects():
-    """A TEMPORARY METHOD... better version later?
+    # Broke out of loop (x = x_lim, prev_dist < 0),
+    # or hit crossing right on (prev_dist == 0)
+    if np.sign(prev_dist) == start_sgn:
+        if verbose:
+            print 'Crossing not found, hit limit at {}'.format(x)
+        return x
 
-    Checking effects of shock velocity on B0 and eta2 values
-    Also, may as well check effect of distance
-    """
-
-    mu = 1
-    shock_velocs = np.array([1.92e8, 3.11e8, 3.58e8, 4.06e8]) * 3 / 2.3
-    # From Williams et al. 2013, scaled for D = 3 kpc
-    # Values are min, min of {vs|vs>2500}, mean of {vs|vs>2500}, max of {...}
-    # (I am trying to ignore the regions of anomalously low shock velocity)
-
-    snr = snrcat.make_tycho()
-    kevs = TYCHO_KEVS
-    # Region 1, from regions-4 set on Tycho, simple 2-exp fit
-    data = np.array([2.72, 2.2, 2.22, 1.88, 1.90])
-    eps = np.array([0.23, 0.05, 0.08, 0.08, 0.11])
-
-    np.set_printoptions(precision=2)
-    print 'Simple model fits, Tycho, region 1'
-    print 'Using mu = {}, data: {}'.format(mu, data)
-    print 'Investigating effect of changing shock velocity'
-
-    for vs in shock_velocs:
-        # Currently, I am computing tycho radius w D=3kpc assumption
-        # So we are only looking at vs variation, ignoring dist
-        snr.vs = vs
-        snr.v0 = snr.vs/snr.cratio
-        res = models.simple_fit(snr, kevs, data, eps, mu)
-
-        print ('Shock velocity = {:0.2e}: mu = {:0.2f}\t'
-               'eta2 = {:0.2f} +/- {:0.2f}\t'
-               'B0 = {:0.2f} +/- {:0.2f}').format(vs, res.values['mu'],
-                res.values['eta2'], res.params['eta2'].stderr,
-                res.values['B0']*1e6, res.params['B0'].stderr*1e6)
-
-
-    print '\nNow investigating remnant distance effect'
-    dists = np.array([2.3, 3, 4, 5])
-
-    for d in dists:
-        snr.vs = 3.58e8 * d / 2.3
-        snr.v0 = snr.vs / snr.cratio
-        snr.rs = 1.077e19 * d / 3
-        res = models.simple_fit(snr, kevs, data, eps, mu)
-
-        print ('Dremnant = {} (vs = 3.58e8 * d/2.3): mu = {:0.2f}\t'
-               'eta2 = {:0.2f} +/- {:0.2f}\t'
-               'B0 = {:0.2f} +/- {:0.2f}').format(d, res.values['mu'],
-                res.values['eta2'], res.params['eta2'].stderr,
-                res.values['B0']*1e6, res.params['B0'].stderr*1e6)
+    return sp.optimize.brentq(f, min(x_init,x), max(x_init,x))
 
 
 if __name__ == '__main__':

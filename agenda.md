@@ -158,6 +158,48 @@ Some high level questions / thoughts from poster session (July 31):
   chisqr...)  I don't know the best way to do this, trying to automate the
   process but still leaving room to do some processing by hand...
 
+
+  If I really wanted to nail down fits...
+  for each mu, for each filament, do the following:
+  1. select rough region of best eta2 values, and for each eta2 run a fit
+     to get the best possible B0 + chisqr value. (~20 * 20 function calls)
+  2. with best eta2 + B0, run about 6 fits with different epsfcn values,
+     keeping the very best fit values you can find (~6 * 20 function calls)
+  3. use grid to find brackets on errors.  At each putative error point, you
+     need to perform a fit to verify that that is the best error bound.  If the
+     chisqr drops below threshold, move on.  (~10 * 20 function calls)
+
+  result: 6 x 13 x (20+6+10) x 20 x 5 seconds = 78 hours total.
+  Well, if I ignore step 1 and just run fits around grid best value, that cuts
+  the time in half to ~40 hours.
+
+  For SN 1006 that's 8 hours = 6 x 5 x (6+10) x 20 x 3 sec.
+
+  This looks about right, my time estimate... annoyingly slow, just to get
+  error estimates!!...  Maybe fit a curve and narrow estimates that way...
+  I have no idea, urgh.
+  Or, could I do it by hand?
+  ORRRRR maybe given that the core issue here is that, B0 is not well resolved
+  (surprisingly or unsurprisingly), I should do that parabola fitting thing to
+  get a better B0 value...  That requires 1 function call, but 1 function call
+  for every eta2 (for every mu).  So 1 * 100 * 6 = 600 calls * 3 sec = 0.5 hr.
+  But, that's a relatively low cost... esp. if I can show it does improve
+  fits... definitely faster than this error bound pushing!!!!
+
+  Other approach -- with a priori knowledge, follow sean's approach of
+  manual fitting to estimate errors (calculate chisqr on the fly), as with the
+  lmfit it definitely takes some time... but that's still probably faster than
+  anything I could do!...
+
+  Could split by 3 with ad hoc parallelization (~13 hrs Tycho, ~3 hrs SN 1006)
+  For Tycho, I'd have to make some of these function calls anyways, just to
+  deal with the variable shock velocity gridding problem.
+
+  Maybe we should consider looking into speeding up Sean's code
+
+
+  Right now, just fitting -- 6x5x20x3 = 0.5 hours...
+
 * ipython notebook with results of varying compression ratio, shock speed,
   remnant distance, any other twiddleables (including/excluding energy cutoff).
   Show for both SN 1006 and Tycho.
@@ -193,6 +235,11 @@ Some high level questions / thoughts from poster session (July 31):
 * Sean used energy cutoff in all his model fits?
 
 ### General (lower level to-dos)
+
+* Possibly most useful: store FWHM, KEV data in SNR objects.  Maybe even this
+  indices thing, for comparison with Sean's data, or to throw out 0.7-1 keV
+  data in Tycho.  Call profile-fitting functions, or load pickled data, with a
+  function call to initialize FWHM data...
 
 * SAFETY FEATURE, do NOT let user call maketab if `fullmodel.so` is older than
   `FullEfflength_mod.f`... or just force it to be recompiled each time, but you
@@ -235,6 +282,11 @@ Some high level questions / thoughts from poster session (July 31):
   derivation of synchrotron stuff (MUST REVIEW ALL OF THIS...).
   Perhaps it corresponds to some median, mean energy, or power, or something.
 * How to get such strong B field values?!  Is nonlinear MHD turbulence enough?
+* How far behind the shock does magnetic turbulence operate?  The equations we
+  use assume electrons are injected, with power law distrib. + cutoff, right at
+  the shock (I suppose as they advect/diffuse the power law distrib. may be
+  modified but still persists?).  How long should the turbulence persist,
+  time/lengthscale? (same, related by plasma advection speed)
 * How to get larger compression ratios?  What does it imply?
 * Why is cutoff energy set by equating loss and acceleration times?
   The electrons radiate faster than they can be accelerated?  But that seems

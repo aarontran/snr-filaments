@@ -3210,3 +3210,17 @@ some kind, very different approach.
 
 Ran fits from best grid values, as I think I did try before.  Yup, it's a mess.
 So we're gonna need a systematic way to tackle this...
+
+
+Sunday 2014 August 3
+====================
+
+Error code for full model fit (working off of grid, then attempting to throw in
+fits where reasonable).  Generating lots of output to compare...
+And, check chisqr values from Sean's paper to ensure we are doing okay?...
+
+
+To discuss on Monday -- further work after this week?, going through code with
+Rob/Brian, explanation of my error calculations (and perhaps, summarize what
+I've been doing... -- and the meaning of all the tables/plots)
+

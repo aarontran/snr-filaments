@@ -1,34 +1,45 @@
 """
-General code to execute model fits for measured FWHMs
+Execute model fits for measured FWHMs
 
-(calls f2py wrapper to FullEfflength_mod.f, uses code from Widthfun.py
-and inherits code design from earlier prototype `fwhm-process.ipynb`)
+Does NOT recompile f2py-generated fullmodel.so
 
 Functionality:
     1. manual fitting - let the user twiddle stuff by hand, just a wrapper.
        no different than calling a.out all the time, just easier
-    2. blind fitting - run lmfit with arbitrary initial guesses.
-       this is a BAD IDEA on anything other than simple model.
-    3. grid fitting - generate a grid of values...
+    2. grid fitting - generate a grid of values and attempt to fit data
 
-Objective:
-    1. reproduce SN 1006 numbers with manual fitting
-    2. get new SN 1006 numbers with blind fitting
-    3. compare blind fits to grid fits (after we're sure code works)
+Methods (for my own reference):
 
-    Discuss... make tables.
+    # Fitting wrappers
+    simple_fit(snr, kevs, data, eps, mu, eta2=1, B0=150e-6, ...)
+    full_fit(snr, kevs, data, eps, mu, eta2=1, B0=15e-6, ...)
 
-    4. Run code on Tycho (need function to parse region files and get shock
-       speeds for each location... can throw that function in here or something.
-       Or, separate execution from implementation -- iterate over
-       SNRs, filaments, regions in a separate file?
+    # Fitting off of table information
+    table_fit(snr, kevs, data, eps, mu, tab, inds=None, **lsq_kws)
+    table_scan(data, eps, eta2_dict, inds=None)
 
-Note: the fitting formalism used here (tabulating function values over a
-subset of parameter space by careful gridding + good initial guess), might be
-useful in other problems?
+    # Interactive fitting
+    manual_fit(snr, kevs, data, eps)
+        _get_float(prompt)
+
+    # Tabulating
+    merge_tables(...)
+    maketab(...)
+        maketab_gridB0(...)
+        span_intv(...)
+        mind_the_gaps(...)
+        classes TeeStdout, TeeStderr
+
+    # Functions to fit
+    width_cont(...)
+    width_dump(...)
+    objectify(f)
+
+    chi_squared(y, y_err, y_model)
+
 
 Aaron Tran
-2014 July 21 (last modified: 2014 July 29)
+2014 July 21
 """
 
 from __future__ import division
@@ -54,33 +65,13 @@ import snr_catalog as snrcat
 def main():
     """Just for now"""
 
-# ======================================================
-# Code to execute fits (this belongs in a separate file)
-# ======================================================
 
-def run_table_fit():
-    """Load thing
-    Code this to be independent of SNR choice
-    """
+# ==================================================
+# Fit from just initial guesses (simple, full model)
+# ==================================================
 
-    snr = snrcat.make_SN1006()
-    kevs = SN1006_KEVS
-
-    with open('tables/sn1006_grid-3-40-15_2014-07-25.pkl', 'r') as fpkl:
-        tab = pickle.load(fpkl)
-
-    for flmt in [1]: #[1,2,3,4,5]:
-        print 'Filament {}'.format(flmt)
-        print 'mu\teta2\t\t\tB0'
-        data, eps = SN1006_DATA[flmt]
-
-        for mu in [1/3, 1/2, 1]:
-            res = table_fit(snr, kevs, data, eps, mu, tab)
-
-
-# ============================================
-# Fit from just initial guesses (simple model)
-# ============================================
+# Convenience wrappers for the fit functions,
+# feed in parameters and get widths out quickly.
 
 def simple_fit(snr, kevs, data, eps, mu, eta2=1, B0=150e-6,
                mu_free=False, eta2_free=True, B0_free=True):
@@ -106,6 +97,35 @@ def simple_fit(snr, kevs, data, eps, mu, eta2=1, B0=150e-6,
                              method='leastsq')
     return res
 
+
+def full_fit(snr, kevs, data, eps, mu, eta2=1, B0=150e-6,
+             mu_free=False, eta2_free=False, B0_free=True, **lsq_kws):
+    """Perform a full model fit (equation 12; Table 8 of Ressler et al.)
+    A convenience wrapper for lmfit.minimize(objectify(width_cont), ...)
+
+    Default is to fit B0 at fixed mu, eta2.
+
+    Inputs:
+        kevs, data, eps (np.array) as usual
+        mu, B0, eta2 (float) initial guesses, but mu fixed
+        mu_free, eta2_free (bool) which parameters shall vary in fits?
+        Probably should set epsfcn via **lsq_kws
+    Output:
+        lmfit.Minimizer with fit information / parameters
+    """
+    p = lmfit.Parameters()
+    p.add('mu', value=mu, vary=mu_free)
+    p.add('B0', value=B0, min=1e-6, max=1e-2, vary=B0_free)
+    p.add('eta2', value=eta2, min=5e-16, max=1e5, vary=eta2_free)
+
+    # TODO: allow kws to width_cont?... function to get kwargs dict
+    res = lmfit.minimize(objectify(width_cont), p,
+                         args=(data, eps, kevs, snr),
+                         kws={'icut':1},  # Numerical code settings
+                         method='leastsq', **lsq_kws)
+    return res
+
+
 # ===========================================
 # Fit using precached table (full model code)
 # ===========================================
@@ -127,73 +147,45 @@ def table_fit(snr, kevs, data, eps, mu, tab, inds=None, **lsq_kws):
     mu must be an element of tab.keys(); we neglect fit in mu space.
     tab should be opened prior
     Probably want to set epsfcn via **lsq_kws
-    """
 
-    eta2_vals, B0_vals, chisqr_vals = table_scan(snr, kevs, data, eps, mu, tab,
-                                                 inds)
+    Temporary: outputting grid best values as well...
+    given that full_fit doesn't always give good fit
+    """
+    eta2_vals, B0_vals, chisqr_vals = table_scan(data, eps, tab[mu], inds=inds)
 
     # Best (eta2, B0) in entire grid
     ind_min = np.argmin(chisqr_vals)
     eta2_grid, B0_grid = eta2_vals[ind_min], B0_vals[ind_min]
+    chisqr_grid = chisqr_vals[ind_min]
 
-    # Now, try a fit
-    p = lmfit.Parameters()
-    p.add('mu', value=mu, vary=False)
-    p.add('eta2', value=eta2_grid, min=5e-16, max=1e5)
-    p.add('B0', value=B0_grid, min=1e-6, max=1e-2)
+    res = full_fit(snr, kevs, data, eps, mu, eta2=eta2_grid, B0=B0_grid,
+                   eta2_free=True, **lsq_kws)
 
-    # TODO: let some of these things be free arguments
-    print 'Best grid B0 = {:0.2f}, eta2 = {:0.2f} (chisqr = {:0.4f})'.format(
-                B0_grid*1e6, eta2_grid, chisqr_vals[ind_min])
-    res = lmfit.minimize(objectify(width_cont), p,
-                   args=(data, eps, kevs, snr),
-                   kws={'icut':1},  # Numerical code settings
-                   method='leastsq', **lsq_kws)
-    
-    return res  # Deal with error etc later...
+    return res, eta2_grid, B0_grid, chisqr_grid
 
 
-def table_scan(snr, kevs, data, eps, mu, tab, inds=None):
-    """Compute chisqr at every point in grid, for provided data
+def table_scan(data, eps, eta2_dict, inds=None):
+    """Compute chisqr over grid for provided data/eps, subsetting with inds
+    if necessary (bands in data, eps should match grid)
 
-    To use a subset of energy bands, give all the bands (must match grid)
-    then specify bands to use via index array inds
-
-    Input: kevs, data, eps must be np.ndarray
-    Output: eta2_vals, B0_vals, chisqr_vals
+    Input: data, eps must be np.ndarray
+    Output: SORTED eta2 values with corresponding best B0, chisqr
     """
+    if inds:  # Subset if needed
+        data, eps = data[inds], eps[inds]
 
-    eta2_dict = tab[mu]
     eta2_vals = np.sort(eta2_dict.keys())
-
-    # These are the best B0/chisqr values for each eta2
     B0_vals = np.array([])
     chisqr_vals = np.array([])
 
     for eta2 in eta2_vals:
         B0_pts, fwhms = eta2_dict[eta2]
-        chisqr_pts = map(lambda x: chi_squared(data[inds],eps[inds],x[inds]),
-                         fwhms)
-        ind_min = np.argmin(chisqr_pts)
+        if inds:  # Subset if needed
+            fwhms = fwhms[:,inds]
 
-        # If we want to optimize B0 value at each eta2...
-        # Need to identify a domain of eta2 values in which to do so.
-        # everywhere else, we don't care about.
+        chisqr_pts = map(lambda x: chi_squared(data, eps, x), fwhms)
 
-        # Option: could try generating a best-fit curve (polynomial, spline)
-        # in eta2 space, in the neighborhood of the best grid value
-        # Then, try to calculate a better value of B0
-        # Compute the function at that value 1x, and verify that it's better
-        # (else, throw it out)... this might be robust
-
-        #p = lmfit.Parameters()
-        #p.add('mu', value=mu, vary=False)
-        #p.add('B0', value=B0_vals[ind], min=1e-6, max=1e-2)
-        #p.add('eta2', value=eta2, vary=False)
-        #res = lmfit.minimize(objectify(width_cont), p,
-        #                     args=(data, eps, kevs, snr),
-        #                     method='leastsq', **lsq_kws)
-
+        ind_min = np.argmin(chisqr_pts)  # Could interpolate a better B0 fit
         B0_vals = np.append(B0_vals, B0_pts[ind_min])
         chisqr_vals = np.append(chisqr_vals, chisqr_pts[ind_min])
 
@@ -203,7 +195,7 @@ def table_scan(snr, kevs, data, eps, mu, tab, inds=None):
 # Interactive manual fitting (full model code)
 # ============================================
 
-def manual_fit(snr, kevs, w_meas, w_eps):
+def manual_fit(snr, kevs, data, eps):
     """Interactively prompts user for values of B0, eta2, mu
     Prints FWHMs, residuals, and chi-squared values in the process
     And, plots the data + fitted model
@@ -243,16 +235,16 @@ def manual_fit(snr, kevs, w_meas, w_eps):
             # Could add option to change resolution too
             w_model = width_cont(p, kevs, snr, rminarc=rminarc, icut=icut)
 
-        chisq = chi_squared(w_meas, w_eps, w_model)
-        wresid = (w_model - w_meas)/w_eps
+        chisq = chi_squared(data, eps, w_model)
+        wresid = (w_model - data)/eps
 
-        print ('\nObsvd fwhms: ' + len(kevs)*'{:0.2f}, ')[:-2].format(*w_meas)
+        print ('\nObsvd fwhms: ' + len(kevs)*'{:0.2f}, ')[:-2].format(*data)
         print ('Model fwhms: ' + len(kevs)*'{:0.2f}, ')[:-2].format(*w_model)
         print ('Wghtd resid: ' + len(kevs)*'{:0.3f}, ')[:-2].format(*wresid)
         print 'Chi^2: {:0.3f}'.format(chisq)
 
         plt.clf()
-        plt.errorbar(kevs, w_meas, w_eps, fmt='bo')
+        plt.errorbar(kevs, data, eps, fmt='bo')
         plt.plot(kevs, w_model, '-k.')
         plt.draw()
         plt.show(block=False)
@@ -279,11 +271,6 @@ def manual_fit(snr, kevs, w_meas, w_eps):
     return p_best
 
 
-def chi_squared(y, y_err, y_model):
-    """Compute chi-squared statistic"""
-    return np.sum( ((y_model - y) / y_err)**2 )
-
-
 def _get_float(prompt):
     """Prompt user to input float, checking for exits / bad floats"""
     while True:
@@ -297,6 +284,11 @@ def _get_float(prompt):
         except ValueError:
             print '\nInvalid float, try again (enter q to quit)\n'
     return uinput
+
+
+def chi_squared(y, y_err, y_model):
+    """Compute chi-squared statistic"""
+    return np.sum( ((y_model - y) / y_err)**2 )
 
 
 # =========================================
@@ -705,6 +697,10 @@ def width_cont(params, kevs, snr, verbose=True, rminarc=None, icut=1,
 def width_dump(params, kevs, snr):
     """Width function from catastrophic dump model (equation 6), code taken
     from Sean's code Widthfun.py
+
+    If eta2 is very small: l_ad / l_diff > 30, or D / (v0**2 * tsynch) < 1/900,
+    use pure advective solution to avoid singularity (should ease fitting)
+    Same criterion as in Sean's full model code
     
     Inputs:
         params: lmfit.Parameters object with entries B0, eta2, mu
@@ -738,7 +734,10 @@ def width_dump(params, kevs, snr):
     D = eta*Cd*E**mu/B0
 
     # Equation 6, width = beta * a
-    width = beta * 2*D/v0 / (np.sqrt(1 + (4*D/v0**2/tsynch)) - 1)
+    if D / (v0**2 / tsynch) < 1./900:
+        width = v0 * tsynch
+    else:
+        width = beta * 2*D/v0 / (np.sqrt(1 + (4*D/v0**2/tsynch)) - 1)
     
     return width*rsarc/rs  # Convert width (cm) to arcsec
 
