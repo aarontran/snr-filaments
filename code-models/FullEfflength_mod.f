@@ -62,8 +62,8 @@
 
           ! Same as old code, array of rminarcs used in python wrapper
           rminarcarray(1) = rminarc
-          rminarcarray(2) = rminarc - 5d0
-          rminarcarray(3) = rminarc - 10d0
+          rminarcarray(2) = rminarc
+          rminarcarray(3) = rminarc
           !rminarcarray(4) = rminarc - 15d0
 
 !      subroutine Fullefflengthsub(kevs, inumax, widtharc, B0, eta2, mu,

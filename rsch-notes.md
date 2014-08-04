@@ -3224,3 +3224,93 @@ To discuss on Monday -- further work after this week?, going through code with
 Rob/Brian, explanation of my error calculations (and perhaps, summarize what
 I've been doing... -- and the meaning of all the tables/plots)
 
+Summary of results from error "annealing"
+
+    Filament 1, best grid pt: eta2 = 2.857, B0 = 102.98
+        naive grid bounds (eta2): 0.9103, 8.3673
+        naive grid bounds (B0): 93.0410, 121.9826
+
+        final grid bounds (eta2): 0.8163, 8.9796
+        final grid bounds (B0): 92.9694, 121.9624
+
+
+    Filament 2, best grid pt: eta2 = 0.202, B0 = 130.01
+        naive grid bounds (eta2): 0.1677, 0.2041
+        naive grid bounds (B0): 127.7476, 129.7336
+
+        final grid bounds (eta2): 0.1677, 0.2041
+        final grid bounds (B0): 130.7659, 130.0812
+
+
+    Filament 3, best grid pt: eta2= 0.054, B0 = 73.76
+        naive grid bounds (eta2): 0.0000, 0.1389
+        naive grid bounds (B0): 74.2814, 73.2134
+
+        final grid bounds (eta2): 0.0000, 0.2442
+        final grid bounds (B0): 74.2814, 74.4371
+
+
+    Filament 4, best grid pt: eta2 = 0.026, B0 = 106.93
+        naive grid bounds (eta2): 0.0000, 0.0954
+        naive grid bounds (B0): 110.0000, 109.1598
+
+        final grid bounds (eta2): 0.0000, 0.2442
+        final grid bounds (B0): 110.0000, 108.2212
+
+
+    Filament 5, best grid pt: eta2 = 82.864, B0 = 208.82
+        naive grid bounds (eta2): 12.6486, 100.0000
+        naive grid bounds (B0): 139.4589, 214.5354
+
+        final grid bounds (eta2): 10.4811, 100.0000
+        final grid bounds (B0): 137.1678, 214.5354
+
+
+Monday 2014 August 4
+====================
+
+Summary
+-------
+* lalala
+* Tabulated a bunch of results, checking effects of error computation, fitting
+  on grid, comparison to Sean's best fit parameters.
+* Large code restructuring (shift from ipynb to python module)
+
+Reviewed results.  Possibility -- just fix several values of eta2, depends on
+how well constrained it is in Tycho.  Besides, we don't really expect eta2
+smaller than 1... sub Bohm diffusion?!?!?!  Bother Steve Reynolds in Moscow.
+
+
+Nailing down grid fits
+----------------------
+Want to get a handle on both parameter values + errors.
+
+
+
+Spline fitting in B0-chisqr space -- looks okay.  About half the time, it
+doesn't get a better value.
+Try a polynomial fit as well.  Yup, looks about the same.
+
+Also, this actually isn't that useful because... we can't use the chisqr values
+we get out usually -- esp. when chisqr shoots negative!...
+what if we try a strictly interpolating spline?  still a risk of
+overshooting... just another source of noise.  If we want to nail down chisqr
+space we'd have to perform the actual computation.
+
+If we try to fit, we won't have the same rminarc values, which adds
+fluctuation too...
+best verdict.  Forget it.  Only worry about fitting at best fit and error
+bounds, likely it won't matter within error...
+
+Verdict: don't worry about interpolating.  It's kind of okay.  Let a more
+careful fit around best grid values help figure out best parameters, and
+realize that errors are very large anyways.  We're not doing a lot better than
+manual fitting here.
+
+Major code restructuring and cleaning, after seeing that the outputs work and
+look okay.  Goal is to clean up the SN 1006 output, then prepare to run it on
+Tycho.
+
+A little less done today, w/ morning meeting + afternoon meeting + a little bit
+of planning time.  But a lot of code clean up, things look a little more
+manageable.

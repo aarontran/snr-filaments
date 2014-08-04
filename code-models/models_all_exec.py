@@ -3,12 +3,44 @@ Code to execute model fits for measured FWHMs (using models, tables, etc
 given in models_all.py
 
 Here is where we should generate tables, figures, check effects of various
-parameters, et cetera.  The other code should do the heavy lifting and
-implementation, without worrying about details of SNRs.
+parameters. Plot chisquared space and check that grids are well sampled,
+calculate errors from grids etc
 
-This is the code where I should generate plots of chi-squared space, check that
-the tables I generate are well sampled, call table generating functions, et
-cetera.
+Code should be SNR independent.
+We want to be able to feed in any SNR, any data, and get the right fits.
+
+
+Methods (for my own reference):
+
+    TODO: fitting tables should spit to simple np.ndarray
+    Array can be fed into 1. LaTeX converter, 2. iPython notebook display
+    Currently output is just for iPython display.
+
+    # Full model, fitting
+    table_full(...)         generate tables/plots for full model, calls
+    get_table_fit(...)      helpers to compute fits/errors
+    get_table_err(...)
+
+    # Full model, plotting
+    check_eta2_grid(data, eps, tab, eta2, mus, fmts, inds=None)
+    check_B0_grid(data, eps, tab, eta2, mus, fmts, inds=None)
+
+    # Full model, grid (eta2dict) manipulation, get chisqr values
+    grid_best(data, eps, eta2_dict, inds=None)
+    grid_scan(data, eps, eta2_dict, inds=None)
+    fwhm_scan(data, eps, fwhms, inds=None)
+
+    # Simple model, fitting
+    table_simp(...)         generate tables/plots for simple model
+                            performs fits + error computation
+    # Simple model, plotting
+    check_eta2_simp(...)
+
+    # Simple model, error bounds
+    get_ci_errors(ci_dict, ...)
+    get_ci_bounds(...)              wrapper for get_bounds
+    get_bounds(...)
+    one_dir_rootfind(...)           general, but meant for chisqr thresholding
 
 Aaron Tran
 2014 July 26
@@ -21,14 +53,11 @@ from __future__ import division
 import lmfit
 import matplotlib.pyplot as plt
 import numpy as np
-#from numpy import f2py
-#import scipy as sp
-#from scipy import optimize
+import scipy as sp
+from scipy import optimize
 #import sys
 
 from fplot import fplot
-#import fullmodel as fm
-#fm.readfglists()
 #import snr_catalog as snrcat
 import models_all as models
 
@@ -79,6 +108,298 @@ def main():
     """main stuff.  Edit this at will to generate desired output..."""
 
 
+# TODO still in progress
+
+def table_full(snr, kevs, data, eps, mus, fmts):
+    """Make tables, main method.
+
+    Find best grid value (could interp B0 here)
+    Fit from best grid value, with multiple steps
+    Anneal errors
+    Spit out tables
+    """
+    table = []
+    table.append(['mu', 'eta2', 'B0', 'chisqr'])
+
+    for mu, fmt in zip(mus, fmts):
+
+        # Find best grid value, interpolating in B0 if desired?
+        eta2_vals, B0_vals, chisqr_vals = models.table_scan(data, eps, tab[mu], inds)
+        ind = np.argmin(chisqr_vals)
+        e2b = eta2_vals[ind], B0_vals[ind]
+
+        # Fit from grid value
+        # full_table_fit(...)
+
+        # Get annealed errors (redundant call to table_scan)
+        # TODO: SET RMINARC
+        e2b_L, e2b_R = best_grid_pts(e2b[0], chisqr_vals[ind],
+                                     snr, kevs, data, eps, mu, tab,
+                                     conf_intv=0.683, inds=inds,
+                                     fit_on_fly=True)
+
+        # Assemble table for pretty-printing
+        tr = ['{:0.2f}'.format(mu)]
+        tr.append('{:0.3f} ({:0.3f}, {:0.3f})'.format(
+                   e2b[0], e2b_L[0], e2b_R[0]))
+        tr.append('{:0.2f} ({:0.2f}, {:0.2f})'.format(
+                   e2b[1]*1e6, e2b_L[1]*1e6, e2b_R[1]*1e6))
+        tr.append('{:0.4f}'.format(chisqr_vals[ind]))
+        table.append(tr)
+
+    return table, ax
+
+
+def run_table_fit(snr, kevs, data, eps, mu_vals, fmt_vals, inds=None):
+    """Execute table_fit for one set of data, w/ various mu values"""
+    
+    table = ListTable()
+    table.append(['mu', 'eta2', 'B0', 'chisqr'])
+
+    plt.figure(figsize=(6,4))
+    plt.errorbar(kevs, data, yerr=eps, fmt='ok')
+
+    for mu, fmt in zip(mu_vals, fmt_vals):
+
+        print 'Starting fit from best grid point'
+        # ALSO CHANGE RMINARC TO BE TIGHTER... BASED ON GRID FWHMS... may limit lmfit, that's okay.
+        res, eta2_grid, B0_grid, chisqr_grid = models.table_fit(snr, kevs, data, eps, mu, tab,
+                                                                inds=inds, epsfcn=1e-5)  # epsfcn!!!!!
+        p = res.params
+        print 'Best grid B0 = {:0.2f}, eta2 = {:0.2f} (chisqr = {:0.4f})'.format(B0_grid*1e6, eta2_grid, chisqr_grid)
+        print 'Final fit chisqr = {:0.4f}'.format(res.chisqr)
+
+        if chisqr_grid < res.chisqr:
+            print 'Warning: lmfit worsened parameter fit.  Using best grid values, printed errors may be invalid'
+            p['eta2'].value = eta2_grid
+            p['B0'].value = B0_grid
+
+        table_row = ['{:0.2f}'.format(mu)]
+        table_row.append('{:0.2g} &plusmn; {:0.2g}'.format(p['eta2'].value, p['eta2'].stderr))
+        table_row.append('{:0.3g} &plusmn; {:0.2g}'.format(p['B0'].value * 1e6, p['B0'].stderr * 1e6))
+        table_row.append('{:0.4f}'.format(min(chisqr_grid, res.chisqr)))  # AD HOC...
+        table.append(table_row)
+        
+        fwhms_m = models.width_cont(p, kevs, snr)  # Using actual model... can't overload w/ data points
+        plt.plot(kevs, fwhms_m, fmt)
+
+    display(table)
+    fplot('Energy (keV)', 'FWHM (arcsec)', axargs='tight')
+    plt.legend( tuple(['Data'] + [r'$\mu = {:0.2f}$'.format(mu) for mu in mu_vals]), loc='best')
+    plt.show()
+
+
+
+# ========================================================
+# Grid fitting and parameter space checking for full model
+# ========================================================
+
+def get_table_fit(snr, kevs, data, eps, mu, tab, inds=None,
+                   verbose=True, **lsq_kws):
+    """Find best fit eta2, B0 for given mu value"""
+    epsfcn_vals = [1e-10, 1e-8, 1e-6, 1e-4]  # MAGIC...
+
+    # Initialize with grid values
+    eta2, B0, fwhms, chisqr = models.grid_best(data, eps, tab[mu], inds=inds)
+    eta2_best, B0_best = eta2, B0
+    chisqr_best = chisqr
+
+    for epsfcn in epsfcn_vals:
+        if verbose:
+            print 'Fitting from grid with epsfcn={:0.2g}'.format(epsfcn)
+
+        res = models.full_fit(snr, kevs, data, eps, mu, eta2=eta2_grid, B0=B0_grid,
+                              eta2_free=True, verbose=verbose,
+                              epsfcn=epsfcn, **lsq_kws)
+
+        if res.chisqr < chisqr_best:
+            eta2_best = res.params['eta2'].value
+            B0_best = res.params['B0'].value
+
+    # Check if fitting improved grid value
+    refit = True
+    if chisqr_best == chisqr:
+        if verbose:
+            print 'lmfit did not improve best grid fit'
+        refit = False
+
+    return eta2_best, B0_best, chisqr_best, refit
+
+
+def get_table_err(eta2_best, chisqr_min, snr, kevs, data, eps, mu, tab,
+        inds=None, conf_intv=0.683, fit_on_fly=False):
+        pass
+
+# TODO still in progress
+
+def best_grid_pts(eta2_best, chisqr_min, snr, kevs, data, eps, mu, tab, inds=None, conf_intv=0.683, fit_on_fly=False):
+    """Estimate error in eta2/B0 simultaneously.  Threshold chisqr space in eta2 based on
+    externally provided best fit eta2 + chisqr, and find most extreme points in grid bracketing
+    this threshold.
+
+    Do NOT naively trust function output.  Plot the data and ensure it looks
+    sensible, as chi-squared space for full model fits is terribly behaved
+
+    To get better estimates, at those points, perform a fit for the best value of B0.
+    If that brings the point under the threshold, move on.  This will be rather slow.
+
+    NOTE: don't be surprised if B0 from the "left" bound is larger than the best fit value...
+    w/imperfect gridding, we don't get monotonicity in B0.
+    """
+    eta2_vals, B0_vals, chisqr_vals = models.table_scan(data, eps, tab[mu], inds)
+
+    ind = np.searchsorted(eta2_vals, eta2_best)
+
+    # Find where chisqr threshold for confidence interval is bracketed
+    sgns = np.sign(chisqr_vals - (chisqr_min + CI_2_CHISQR[conf_intv]))
+    crossings = np.where(np.diff(sgns))[0]  # First indices of crossings
+    print 'minimum at {}'.format(ind)
+    print 'crossings at {}'.format(crossings)
+
+    flg = False  # DEBUGGING
+    if any(crossings < ind):
+        ind_left = crossings[0]
+    else:
+        ind_left = 0
+        print 'bound not found (min eta2)'
+        flg=True
+    if any(crossings+1 > ind):
+        ind_right = crossings[-1] + 1  # +1 to get right-side of crossing, + account for crossings AT best fit...
+    else:
+        ind_right = len(eta2_vals) - 1
+        print 'bound not found (max eta2)'
+        flg=True
+
+    #if flg:
+    #    print chisqr_vals - (chisqr_min + CI_2_CHISQR[conf_intv])
+    #    print crossings
+
+    e2b_left = eta2_vals[ind_left], B0_vals[ind_left]
+    chisqr_left = chisqr_vals[ind_left]
+
+    e2b_right = eta2_vals[ind_right], B0_vals[ind_right]
+    chisqr_right = chisqr_vals[ind_right]
+
+    print 'naive grid bounds (eta2): {:0.4f}, {:0.4f}'.format(e2b_left[0], e2b_right[0])
+    print 'naive grid bounds (B0): {:0.4f}, {:0.4f}'.format(e2b_left[1]*1e6, e2b_right[1]*1e6)
+
+    # Now, if there is leeway to explore...
+    # ALSO CHANGE RMINARC TO BE TIGHTER...
+    if fit_on_fly:
+        if ind_left > 0:
+            print 'Checking left error bound (original bound chisqr = {}, B0 = {:0.4f})'.format(chisqr_left, e2b_left[1]*1e6)
+
+            # Need to check results are independent of epsfcn?!
+            # Should have step size comparable to, or just smaller than, grid spacing in B0 -- to ensure
+            # we are just exploring that in-between-points area of parameter space.  This we can do.
+            res = models.full_fit(snr, kevs, data, eps, mu, eta2=e2b_left[0], B0=e2b_left[1], epsfcn=1e-6)
+            while ind_left > 0 and res.chisqr - (chisqr_min + CI_2_CHISQR[conf_intv]) < 0:
+                print 'Threshold moved by one (new best B0 here = {:0.4f}) chisqr was {}; min is {}'.format(res.params['B0'].value*1e6,
+                                                                                                       res.chisqr, chisqr_min)
+                ind_left -= 1
+                e2b_left = eta2_vals[ind_left], B0_vals[ind_left]
+                res = models.full_fit(snr, kevs, data, eps, mu, eta2=e2b_left[0], B0=e2b_left[1], epsfcn=1e-6)
+            e2b_left = (e2b_left[0], res.params['B0'].value)
+
+        if ind_right < len(eta2_vals) - 1:
+            print 'Checking right error bound (original bound chisqr = {}, B0 = {:0.4f})'.format(chisqr_right, e2b_right[1]*1e6)
+            res = models.full_fit(snr, kevs, data, eps, mu, eta2=e2b_right[0], B0=e2b_right[1], epsfcn=1e-6)
+            while ind_right < len(eta2_vals) - 1 and res.chisqr - (chisqr_min + CI_2_CHISQR[conf_intv]) < 0:
+                print 'Threshold moved by one (new best B0 here = {:0.4f}) chisqr was {}; min is {}'.format(res.params['B0'].value*1e6,
+                                                                                                       res.chisqr, chisqr_min)
+                ind_right += 1
+                e2b_right = eta2_vals[ind_right], B0_vals[ind_right]
+                res = models.full_fit(snr, kevs, data, eps, mu, eta2=e2b_right[0], B0=e2b_right[1], epsfcn=1e-6)
+            e2b_right = (e2b_right[0], res.params['B0'].value)
+
+    print 'final grid bounds (eta2): {:0.4f}, {:0.4f}'.format(e2b_left[0], e2b_right[0])
+    print 'final grid bounds (B0): {:0.4f}, {:0.4f}'.format(e2b_left[1]*1e6, e2b_right[1]*1e6)
+
+    return e2b_left, e2b_right
+
+
+
+# ======================================================
+# Parameter space checking for full model grid (no fits)
+# ======================================================
+
+def check_eta2_grid(data, eps, tab, mus, fmts, inds=None):
+    """Plot chi-squared space for eta2 based on grid values
+    JACKSON POLLOCK DOES ASTROPHYSICS
+    """
+    ax = plt.gca()
+    for mu, fmt in zip(mus, fmts):
+        eta2s, B0s, fwhms, chisqrs = grid_scan(data, eps, tab[mu], inds)
+        ax.plot(eta2s, chisqrs, fmt)
+
+    ax.set_xscale('log')
+    ax.set_yscale('log')
+    ax.legend(tuple(r'$\mu = {:0.2f}$'.format(mu) for mu in mus), loc='best')
+    return ax
+
+
+def check_B0_grid(data, eps, tab, eta2, mus, fmts, inds=None):
+    """Plot chisqr as a function of B0 for arbitrary (mu, eta2), with
+    multiple mu values on a single plot.
+    Verify that we can resolve chisq minimum in B0
+    """
+    ax = plt.gca()
+    for mu, fmt in zip(mus, fmts):
+        B0_vals, fwhms = tab[mu][eta2]
+        chisqr_vals = fwhm_scan(data, eps, fwhms, inds=inds)
+        ax.plot(B0_vals*1e6, chisqr_vals, fmt)
+    return ax
+
+
+# ===========================================================
+# Grid manipulation -- compute chisqrs and find best grid pts
+# ===========================================================
+
+def grid_best(data, eps, eta2_dict, inds=None):
+    """Find the best fit to data/eps in grid specified by eta2_dict
+    A silly wrapper... but, sometimes we want grid_scan output
+    directly for plots.
+    """
+    eta2s, B0s, fwhms, chisqrs = grid_scan(data, eps, eta2_dict, inds=inds)
+    ind = np.argmin(chisqrs)
+    return eta2s[ind], B0s[ind], fwhms[ind], chisqrs[ind]
+
+
+def grid_scan(data, eps, eta2_dict, inds=None):
+    """Compute chisqr over grid for provided data/eps, subsetting with inds
+    if necessary (bands in data, eps should match grid)
+
+    Input: data, eps must be np.ndarray
+    Output: SORTED eta2 values with corresponding best B0, fwhms, chisqr
+    """
+    eta2_vals = np.sort(eta2_dict.keys())
+    B0_vals = np.array([])
+    fwhm_vals = np.array([])
+    chisqr_vals = np.array([])
+
+    for eta2 in eta2_vals:
+        B0_pts, fwhms = eta2_dict[eta2]
+
+        chisqr_pts = fwhm_scan(data, eps, fwhms, inds=inds)
+
+        ind_min = np.argmin(chisqr_pts)  # Could interpolate a better B0 fit
+        B0_vals = np.append(B0_vals, B0_pts[ind_min])
+        fwhm_vals = np.append(fwhm_vals, fwhms[ind_min])
+        chisqr_vals = np.append(chisqr_vals, chisqr_pts[ind_min])
+
+    return eta2_vals, B0_vals, fwhm_vals, chisqr_vals
+
+
+def fwhm_scan(data, eps, fwhms, inds=None):
+    """Compute chisqr values over B0 mesh"""
+    if inds:  # Subset if need
+        data, eps = data[inds], eps[inds]
+        fwhms = fwhms[:,inds]
+
+    return map(lambda x: models.chi_squared(data, eps, x), fwhms)
+
+
+
 # =====================================================
 # Parameter space checking for simple model fits + grid
 # =====================================================
@@ -86,34 +407,73 @@ def main():
 # Designed to be called in iPython notebook w/ inline plots
 # Simply feed in your grid, supernova remnant, data, etc...
 
-def check_eta2_simp(snr, kevs, data, eps, eta2_vals, mu_vals, fmt_vals):
+def table_simp(snr, kevs, data, eps, mus, fmts):
+    """Generate Table 7 of Sean's paper with better 1-sigma errors + plot"""
+
+    table = []  # To be used with ListTable in iPython notebook output
+    table.append(['mu', 'eta2', 'B0', 'chisqr'])
+
+    ax = plt.gca()
+    ax.errorbar(kevs, data, yerr=eps, fmt='ok')
+
+    for mu, fmt in zip(mus, fmts):
+        # Actual computations / fitting
+        res = models.simple_fit(snr, kevs, data, eps, mu)
+        p = res.params
+        ci2 = get_ci_bounds(res, ci_vals=(0.683,))
+        p['eta2'].better_err = get_ci_errors(ci2, 'eta2', ci_val=0.683)
+        p['B0'].better_err = get_ci_errors(ci2, 'B0', ci_val=0.683)
+
+        tr = ['{:0.2f}'.format(mu)]
+        tr.append('{:0.2g} &plusmn; {:0.2g} (or, +{:0.2g}/-{:0.2g})'.format(
+                  p['eta2'].value, p['eta2'].stderr,
+                  p['eta2'].better_err[1], p['eta2'].better_err[0]))
+        tr.append('{:0.3g} &plusmn; {:0.2g} (or, +{:0.2g}/-{:0.2g})'.format(
+                  p['B0'].value * 1e6, p['B0'].stderr * 1e6,
+                  p['B0'].better_err[1]*1e6, p['B0'].better_err[0]*1e6))
+        tr.append('{:0.4f}'.format(res.chisqr))
+        table.append(tr)
+
+        kevs_m = np.linspace(kevs[0]-0.2, kevs[-1]+0.2, 100)
+        fwhms_m = models.width_dump(p, kevs_m, snr)
+        ax.plot(kevs_m, fwhms_m, fmt)
+
+    fplot('Energy (keV)', 'FWHM (arcsec)', axargs='tight')
+    ax.legend(tuple(['Data'] + [r'$\mu = {:0.2f}$'.format(mu)
+                                 for mu in mus]), loc='best')
+    return table, ax
+
+
+def check_eta2_simp(snr, kevs, data, eps, eta2_vals, mus, fmts, inds=None):
     """Plot chi-squared space for eta2"""
-    plt.figure(figsize=(6,4))
-    for mu, fmt in zip(mu_vals, fmt_vals):
+    ax = plt.gca()
+
+    if inds is not None:
+        kevs, data, eps = kevs[inds], data[inds], eps[inds]
+
+    for mu, fmt in zip(mus, fmts):
         b0_vals = []
         chisqr_vals = []
         for eta2 in eta2_vals:
-            res = models.simple_fit(snr, kevs, data, eps, mu, eta2=eta2, eta2_free=False)
+            res = models.simple_fit(snr, kevs, data, eps, mu,
+                                    eta2=eta2, eta2_free=False)
             b0_vals.append(res.params['B0'])
             chisqr_vals.append(res.chisqr)
 
-        plt.plot(eta2_vals, chisqr_vals, fmt, lw=2)
+        ax.plot(eta2_vals, chisqr_vals, fmt, lw=2)
 
     fplot(r'$\eta_2$ (-)', r'Best fit $\chi^2$', scales=('log','log'))
-    plt.legend( tuple(r'$\mu = {:0.2f}$'.format(mu) for mu in mu_vals),
+    ax.legend( tuple(r'$\mu = {:0.2f}$'.format(mu) for mu in mus),
                 loc='best')
-    plt.show()
+    return ax
+
 
 # ================================================
 # Errors from confidence limits, simple model fits
 # ================================================
 
-# This is a simple reimplementation of `lmfit.conf_interval(...)`, using 
-# a different metric for conf intervals. Compare results to be sure though
-
-# get_ci_errors(...)
-# get_ci_bounds(...) is a wrapper for get_bounds(...)
-# one_dir_rootfind(...) is generalized, but convenient for chisqr thresholding
+# Simple reimplementation of `lmfit.conf_interval(...)`, using a
+# different metric for conf intervals. Compare results to be sure though
 
 
 def get_ci_errors(ci_dict, par_name, ci_val=0.683):
@@ -135,7 +495,7 @@ def get_ci_bounds(res, ci_vals=(0.683, 0.9)):
         dict of ci bounds, structured like lmfit.conf_interval(...) output
     """
     ci2 = {}
-    
+
     for pstr in [p for p in res.params if res.params[p].vary]:
         ci2[pstr] = [(0., res.params[pstr].value)]
 
@@ -155,7 +515,7 @@ def get_bounds(conf_intv, res, pstr, **kwargs):
     res must be already fitted, with fit parameters to vary in chisqr
     analysis already free.
     res will be modified in this process!
-    
+
     Input: **kwargs are passed to one_dir_rootfind(...)
     Output: lower, upper bounds on parameter res.params[pstr]
     """
@@ -167,7 +527,7 @@ def get_bounds(conf_intv, res, pstr, **kwargs):
     best_chisqr = res.chisqr
 
     # Fix parameter to be bounded throughout manual stepping
-    res.params[pstr].vary = False  
+    res.params[pstr].vary = False
     # Objective function for root finding.  Modifies res...
     # WARNING: other free parameters are constrained by their own limits!
     def chisqr_thresh(x):

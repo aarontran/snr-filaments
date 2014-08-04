@@ -1,22 +1,12 @@
 """
-Execute model fits for measured FWHMs
-
+Model fitting functions for measured FWHMs
 Does NOT recompile f2py-generated fullmodel.so
-
-Functionality:
-    1. manual fitting - let the user twiddle stuff by hand, just a wrapper.
-       no different than calling a.out all the time, just easier
-    2. grid fitting - generate a grid of values and attempt to fit data
 
 Methods (for my own reference):
 
     # Fitting wrappers
     simple_fit(snr, kevs, data, eps, mu, eta2=1, B0=150e-6, ...)
     full_fit(snr, kevs, data, eps, mu, eta2=1, B0=15e-6, ...)
-
-    # Fitting off of table information
-    table_fit(snr, kevs, data, eps, mu, tab, inds=None, **lsq_kws)
-    table_scan(data, eps, eta2_dict, inds=None)
 
     # Interactive fitting
     manual_fit(snr, kevs, data, eps)
@@ -63,7 +53,7 @@ import snr_catalog as snrcat
 
 
 def main():
-    """Just for now"""
+    pass
 
 
 # ==================================================
@@ -99,7 +89,8 @@ def simple_fit(snr, kevs, data, eps, mu, eta2=1, B0=150e-6,
 
 
 def full_fit(snr, kevs, data, eps, mu, eta2=1, B0=150e-6,
-             mu_free=False, eta2_free=False, B0_free=True, **lsq_kws):
+             mu_free=False, eta2_free=False, B0_free=True,
+             verbose=True, **lsq_kws):
     """Perform a full model fit (equation 12; Table 8 of Ressler et al.)
     A convenience wrapper for lmfit.minimize(objectify(width_cont), ...)
 
@@ -121,75 +112,11 @@ def full_fit(snr, kevs, data, eps, mu, eta2=1, B0=150e-6,
     # TODO: allow kws to width_cont?... function to get kwargs dict
     res = lmfit.minimize(objectify(width_cont), p,
                          args=(data, eps, kevs, snr),
-                         kws={'icut':1},  # Numerical code settings
+                         kws={'icut':1, 'verbose':verbose},
+                         # width_cont settings
                          method='leastsq', **lsq_kws)
     return res
 
-
-# ===========================================
-# Fit using precached table (full model code)
-# ===========================================
-
-def table_fit(snr, kevs, data, eps, mu, tab, inds=None, **lsq_kws):
-    """Fit data from precomputed table of values...
-    Find best fit eta2, B0 for given mu value
-    
-    MAJOR assumption -- we are sampling finely enough in both eta2, B0
-    YOU MUST CHECK THIS BEFORE RUNNING ANY FITS.  Plots should confirm:
-
-    (1) for all eta2, we are finding the minima in B0 w/ the data given
-        (this requires that we tabulate enough range B0 values)
-    (2) we are finding A minimum in chi-squared space for eta2, as
-        (a) the minimum may not be strong,
-        (b) there may be no minimum (eta2 -> infty?!), or
-        (c) eta2's chi-squared space may be a ragged mess
-    
-    mu must be an element of tab.keys(); we neglect fit in mu space.
-    tab should be opened prior
-    Probably want to set epsfcn via **lsq_kws
-
-    Temporary: outputting grid best values as well...
-    given that full_fit doesn't always give good fit
-    """
-    eta2_vals, B0_vals, chisqr_vals = table_scan(data, eps, tab[mu], inds=inds)
-
-    # Best (eta2, B0) in entire grid
-    ind_min = np.argmin(chisqr_vals)
-    eta2_grid, B0_grid = eta2_vals[ind_min], B0_vals[ind_min]
-    chisqr_grid = chisqr_vals[ind_min]
-
-    res = full_fit(snr, kevs, data, eps, mu, eta2=eta2_grid, B0=B0_grid,
-                   eta2_free=True, **lsq_kws)
-
-    return res, eta2_grid, B0_grid, chisqr_grid
-
-
-def table_scan(data, eps, eta2_dict, inds=None):
-    """Compute chisqr over grid for provided data/eps, subsetting with inds
-    if necessary (bands in data, eps should match grid)
-
-    Input: data, eps must be np.ndarray
-    Output: SORTED eta2 values with corresponding best B0, chisqr
-    """
-    if inds:  # Subset if needed
-        data, eps = data[inds], eps[inds]
-
-    eta2_vals = np.sort(eta2_dict.keys())
-    B0_vals = np.array([])
-    chisqr_vals = np.array([])
-
-    for eta2 in eta2_vals:
-        B0_pts, fwhms = eta2_dict[eta2]
-        if inds:  # Subset if needed
-            fwhms = fwhms[:,inds]
-
-        chisqr_pts = map(lambda x: chi_squared(data, eps, x), fwhms)
-
-        ind_min = np.argmin(chisqr_pts)  # Could interpolate a better B0 fit
-        B0_vals = np.append(B0_vals, B0_pts[ind_min])
-        chisqr_vals = np.append(chisqr_vals, chisqr_pts[ind_min])
-
-    return eta2_vals, B0_vals, chisqr_vals
 
 # ============================================
 # Interactive manual fitting (full model code)
@@ -734,11 +661,17 @@ def width_dump(params, kevs, snr):
     D = eta*Cd*E**mu/B0
 
     # Equation 6, width = beta * a
-    if D / (v0**2 / tsynch) < 1./900:
-        width = v0 * tsynch
-    else:
-        width = beta * 2*D/v0 / (np.sqrt(1 + (4*D/v0**2/tsynch)) - 1)
+    # Note that D, tsynch, nus, E, etc.. are vectors
     
+    width = beta * 2*D/v0 / (np.sqrt(1 + (4*D/v0**2/tsynch)) - 1)
+
+    msk = D / (v0**2 / tsynch) < 1./900
+    try:
+        width[msk] = v0*tsynch[msk]
+    except TypeError: # width is a scalar
+        if msk:
+            width = v0*tsynch
+
     return width*rsarc/rs  # Convert width (cm) to arcsec
 
 

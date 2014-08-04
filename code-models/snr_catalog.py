@@ -46,13 +46,16 @@ def make_tycho():
     
     tycho.dkpc = 3.0  # Distance to remnant in kpc (!)
     tycho.rsarc = 240  # Shock radius (arcsec) from Green's SNR catalog
-    tycho.s = 2.3  # e- spectrum index, 2.3 = 2*0.65 + 1; 0.65 = radio spectral index
+    tycho.s = 2.3  # e- spectrum index, 2.3 = 2*0.65 + 1;
+                   # 0.65 = radio spectral index
 
     tycho.vs = 3.6e8 * tycho.dkpc/2.3  # Shock velocity, cm/s
     # Mean of velocs from nonthermal regions, Williams et al. 2013
     tycho.cratio = 4.0  # Compression ratio, strong adiabatic shock (R-H)
 
     tycho.rminarc = 12  # Default rminarc, arcsec
+    #tycho.kevs = [0.7, 1., 2., 3., 4.5]  # Photon energies
+    #tycho.inds = None  # None implies use all bands
 
     return tycho
 
@@ -63,12 +66,15 @@ def make_SN1006():
 
     sn1006.dkpc = 2.2  # Distance to remnant in kpc (!!)
     sn1006.rsarc = 900  # Shock radius (arcsec) from Green's SNR catalog
-    sn1006.s = 2.2  # e- spectrum index, 2.2 = 2*0.6 + 1; 0.6 = radio spectral index
+    sn1006.s = 2.2  # e- spectrum index, 2.2 = 2*0.6 + 1;
+                    # 0.6 = radio spectral index
 
     sn1006.vs = 5e8  # Shock velocity, cm/s (Satoru et al., 2009, 2013)
     sn1006.cratio = 4.0  # Compression ratio, strong adiabatic shock (R-H)
 
     sn1006.rminarc = 60  # Default rminarc, arcsec
+    #sn1006.kevs = [0.7, 1., 2.]  # Photon energies
+    #sn1006.inds = None  # None implies use all bands
 
     return sn1006
 

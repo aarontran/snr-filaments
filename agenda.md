@@ -122,94 +122,61 @@ Some high level questions / thoughts from poster session (July 31):
 
 * Tables 7, 8 reproduced for SN 1006, then Tycho.
   As we have wanted for the last SEVERAL weeks...
-  Report chi-squared values so we can compare different
-  values of mu... and report errors from brute-force chi-square
+
   Also, print out `m_E` values, point to point and from `width_dump` model...
   see some of the old notebooks in `code-profiles/` (merge functionality
   together and throw out old / unused things)
 
-  Plan -- use ipython notebook to prettyprint output, but use `models_all_exec`
-  to abstract away as many details as possible.
+  Alternate: with a priori knowledge, manually fit to estimate errors
+  (calculate chisqr interactively).
 
-  Idea -- avoid making ipython code "general".  Use it for one off scripts,
-  e.g. make a new notebook for each supernova remnant.
+  Agenda
+  3. consolidate methods (in progress), add things for tycho, get NUMBERS for tycho ASAP...
+  4. add some methods to vary vs, compratio, etc...
 
-  To do this...
-  1. need a quick rootfinder for simple fit errors. (DONE... barring kinks)
-  2. need a quick rootfinder for full grid fit errors.
+  A few more remarks
+  ------------------
+  Sean's unobtainable values -- with two bands, his chi-squared values are
+  mostly under 1 except where the fit were unobtainable.
+  chi squared values range from ~2 to 16, with <1 degree of freedom...
 
-  SOOOOO how to do the fits?
+  Problem with the error "annealing": I can bound eta2 on left and right,
+  but though I'm running fits at each eta2, I get nonsensical values of B0
 
-  Find the best B0 and eta2 naively in the imperfect grid.  Fit at that point,
-  let it run around (~20 calls), then compute error.
+  in many cases, the fits on the grid make very little difference.
 
-  So, 6 mu values * 13 regions = 78 fits... * 20 calls = 1560 calls, 5 seconds
-  each requires 2.2 hours... blahhhh.
-  
-  To compute error, check the eta2 grid until you find chisquared values
-  bracketing `chisqr_min + 2.7`.  Perform actual fits to B0. If values no
-  longer bracket `chisqr_min+2.7`, move onwards...
+  iPython parallelization
 
-  (problem -- what to do if multiple values bracket... given resolution
-  issues, etc)
-
-  Tricky part is that this has to be somewhat done by hand, in case that no
-  such error exists (e.g. if eta2 runs to 0 or infinity without blowing up
-  chisqr...)  I don't know the best way to do this, trying to automate the
-  process but still leaving room to do some processing by hand...
-
-
-  If I really wanted to nail down fits...
-  for each mu, for each filament, do the following:
-  1. select rough region of best eta2 values, and for each eta2 run a fit
-     to get the best possible B0 + chisqr value. (~20 * 20 function calls)
-  2. with best eta2 + B0, run about 6 fits with different epsfcn values,
-     keeping the very best fit values you can find (~6 * 20 function calls)
-  3. use grid to find brackets on errors.  At each putative error point, you
-     need to perform a fit to verify that that is the best error bound.  If the
-     chisqr drops below threshold, move on.  (~10 * 20 function calls)
-
-  result: 6 x 13 x (20+6+10) x 20 x 5 seconds = 78 hours total.
-  Well, if I ignore step 1 and just run fits around grid best value, that cuts
-  the time in half to ~40 hours.
-
-  For SN 1006 that's 8 hours = 6 x 5 x (6+10) x 20 x 3 sec.
-
-  This looks about right, my time estimate... annoyingly slow, just to get
-  error estimates!!...  Maybe fit a curve and narrow estimates that way...
-  I have no idea, urgh.
-  Or, could I do it by hand?
-  ORRRRR maybe given that the core issue here is that, B0 is not well resolved
-  (surprisingly or unsurprisingly), I should do that parabola fitting thing to
-  get a better B0 value...  That requires 1 function call, but 1 function call
-  for every eta2 (for every mu).  So 1 * 100 * 6 = 600 calls * 3 sec = 0.5 hr.
-  But, that's a relatively low cost... esp. if I can show it does improve
-  fits... definitely faster than this error bound pushing!!!!
-
-  Other approach -- with a priori knowledge, follow sean's approach of
-  manual fitting to estimate errors (calculate chisqr on the fly), as with the
-  lmfit it definitely takes some time... but that's still probably faster than
-  anything I could do!...
-
-  Could split by 3 with ad hoc parallelization (~13 hrs Tycho, ~3 hrs SN 1006)
-  For Tycho, I'd have to make some of these function calls anyways, just to
-  deal with the variable shock velocity gridding problem.
-
-  Maybe we should consider looking into speeding up Sean's code
-
-
-  Right now, just fitting -- 6x5x20x3 = 0.5 hours...
 
 * ipython notebook with results of varying compression ratio, shock speed,
   remnant distance, any other twiddleables (including/excluding energy cutoff).
   Show for both SN 1006 and Tycho.
   Use this for discussion/commentary on twiddle-able knobs.
+  (methods are in place for this... add methods to display results of changing
+  twiddle-ables specifically)
 
 * Remember brian's suggestion (from Friday july 25): how does mE depend on
   energy? what happens if you fit a straight power law to that???
 
 * Write code to compute azimuth angle of regions, and estimate shock speed for
   each region.
+
+For tycho, I think the process will be, as before, to loop over all the
+regions.  But, during the loop, retrieve the azimuth angle and do a
+lookup/interpolation to get correct shock speed.
+Set the speed in snr object,
+
+    for region in Tycho:
+        az = get_az_angle(region)
+        vs = get_interp_vs(az)
+        tab = get_closest_vs_grid(vs)
+
+        snr = Tycho
+        snr.vs = vs
+
+        table, ax = table_full(...)
+        # Monitor output closely
+
 
 * Check all your constants.  `snr_catalog.py`, model fitting code both
   wrapper and fortran
@@ -220,6 +187,7 @@ Some high level questions / thoughts from poster session (July 31):
 * Look at azimuthal dependence of B field, robustness of numbers from approx
   python model. Brian asked, does B field scale with stronger energy
   dependence? (NOT ADDRESSED as of July 30)
+
 
 ### General (high-level questions)
 
@@ -233,6 +201,13 @@ Some high level questions / thoughts from poster session (July 31):
   covariance matrix, which would be inaccurate here)
 
 * Sean used energy cutoff in all his model fits?
+
+* Any suggestions on improving Fortran code speed?  Seems difficult because the
+  electron distributions f(x) require all parameters (mu, B0, eta2; nu) so we
+  can't easily reuse things...  Could we interchange any of the integrals?
+
+* Estimate error as a function of varying resolution.
+  Can we cut resolution in ixmax, iradmax while still getting good FWHMs?
 
 ### General (lower level to-dos)
 
@@ -251,6 +226,13 @@ Some high level questions / thoughts from poster session (July 31):
 * Should we be constraining/checking resolution somehow -- checking that grid
   is "sufficiently" resolved to get a good fit?  What is the "error" of
   fractionally changing the grid... thinking of Math 228B here.
+
+* On data structures and stuff:
+  [Mandoline (Clojure)](//github.com/TheClimateCorporation/mandoline),
+  [NetCDF](//www.unidata.ucar.edu/software/netcdf/).
+
+* Sphinx for documentation?...
+
 
 ### Small checks, constants, verification
 
