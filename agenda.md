@@ -131,8 +131,10 @@ Some high level questions / thoughts from poster session (July 31):
   (calculate chisqr interactively).
 
   Agenda
-  3. consolidate methods (in progress), add things for tycho, get NUMBERS for tycho ASAP...
+  3. add things for tycho, get NUMBERS for tycho ASAP...
   4. add some methods to vary vs, compratio, etc...
+  5. add methods to quantify effect of varying fwhm measurements, just to
+     see...
 
   A few more remarks
   ------------------
@@ -194,6 +196,7 @@ Set the speed in snr object,
 * How does Sean define unobtainable, in Table 8? E.g., for mu = 0.5 I can
   manually fit and get a chi-squared value of 6.2 (compared to ~4 for the higher
   values of mu).  Brian: yeah, run this by Sean.
+  (partially answered)
 
 * Ask Sean if there was any reason for 1sigma error in Table 7?  I think I was
   seeing larger errors from brute-force chi-square in lmfit, even for 1 sigma
@@ -202,12 +205,25 @@ Set the speed in snr object,
 
 * Sean used energy cutoff in all his model fits?
 
-* Any suggestions on improving Fortran code speed?  Seems difficult because the
-  electron distributions f(x) require all parameters (mu, B0, eta2; nu) so we
-  can't easily reuse things...  Could we interchange any of the integrals?
-
 * Estimate error as a function of varying resolution.
   Can we cut resolution in ixmax, iradmax while still getting good FWHMs?
+
+* Any ideas or previous attempts to improve Fortran code speed? (ask Sean)
+  Some ideas to cut down integration time:
+  1. only calculate radial intensity profiles where useful!
+     Find maximum, then search on domain (left/right) for FWHM,
+     then narrow down FWHM to some precision.
+  2. Use ifort vs. gfortran (iMac uses Intel), play with compiler flags?
+  3. iPython parallelizing...
+  4. I think I can cut the emissivity integral out of the picture!
+     tabulate that with some decent resolution, then interpolate
+     to compute intensity integral.  That may give a very nice speedup.
+     Even if B-field varies (magnetic damping), j_nu is space dependent
+     anyways.  So go ahead and compute j_nu(x) just 1x, then integrate from
+     table along line of sight.
+
+  Try reimplementing in Python, then optimize appropriately with fortran or C
+  glue...
 
 ### General (lower level to-dos)
 
@@ -215,6 +231,7 @@ Set the speed in snr object,
   indices thing, for comparison with Sean's data, or to throw out 0.7-1 keV
   data in Tycho.  Call profile-fitting functions, or load pickled data, with a
   function call to initialize FWHM data...
+  Or build a separate object for kev, data, inds...
 
 * SAFETY FEATURE, do NOT let user call maketab if `fullmodel.so` is older than
   `FullEfflength_mod.f`... or just force it to be recompiled each time, but you

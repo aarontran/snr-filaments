@@ -6,6 +6,7 @@ Methods (for my own reference):
 
     # Fitting wrappers
     simple_fit(snr, kevs, data, eps, mu, eta2=1, B0=150e-6, ...)
+    full_fitter(snr, kevs, data, eps, mu)
     full_fit(snr, kevs, data, eps, mu, eta2=1, B0=15e-6, ...)
 
     # Interactive fitting
@@ -88,9 +89,14 @@ def simple_fit(snr, kevs, data, eps, mu, eta2=1, B0=150e-6,
     return res
 
 
+def full_fitter(snr, kevs, data, eps, mu):
+    """Wrapper function to package SNR and data dependence"""
+    return lambda **kwargs: full_fit(snr, kevs, data, eps, mu, **kwargs)
+
+
 def full_fit(snr, kevs, data, eps, mu, eta2=1, B0=150e-6,
              mu_free=False, eta2_free=False, B0_free=True,
-             verbose=True, **lsq_kws):
+             rminarc=None, verbose=True, **lsq_kws):
     """Perform a full model fit (equation 12; Table 8 of Ressler et al.)
     A convenience wrapper for lmfit.minimize(objectify(width_cont), ...)
 
@@ -112,7 +118,7 @@ def full_fit(snr, kevs, data, eps, mu, eta2=1, B0=150e-6,
     # TODO: allow kws to width_cont?... function to get kwargs dict
     res = lmfit.minimize(objectify(width_cont), p,
                          args=(data, eps, kevs, snr),
-                         kws={'icut':1, 'verbose':verbose},
+                         kws={'icut':1, 'verbose':verbose, 'rminarc':rminarc},
                          # width_cont settings
                          method='leastsq', **lsq_kws)
     return res
@@ -617,8 +623,17 @@ def width_cont(params, kevs, snr, verbose=True, rminarc=None, icut=1,
     #     fullefflengthsub(kevs, b0, eta2, mu, vs, v0, rs, rsarc, s, rminarc
     #                      icut, irmax, iradmax, ixmax, [inumax])
 
-    return fm.fullefflengthsub(kevs, B0, eta2, mu, vs, v0, rs, rsarc, s,
-                               rminarc, icut, irmax, iradmax, ixmax)
+    fwhms = fm.fullefflengthsub(kevs, B0, eta2, mu, vs, v0, rs, rsarc, s,
+                                rminarc, icut, irmax, iradmax, ixmax)
+
+    reserr = fwhms < np.finfo(float).eps * 2
+    boxerr = fwhms > (rminarc - np.finfo(float).eps * 2)
+    if any(reserr):
+        print 'Resolution error! at {}'.format(kevs[np.where(reserr)[0]])
+    if any(boxerr):
+        print 'Box error! at {}'.format(kevs[np.where(boxerr)[0]])
+
+    return fwhms
 
 
 def width_dump(params, kevs, snr):

@@ -104,6 +104,9 @@ Generating grids for four values of shock velocity in Tycho, currently
 assuming remnant distance of 3 kpc.  See log and "table generating script"
 `tab_tycho_20140730.py` for details.
 
+Now merged with part2 tables (described below), original (interrupted) grid
+file is stored in subfolder
+
 
 `Tycho_gen_2014-07-30_grid-6-100-20_vs-*_part2_mu-*.pkl`
 -------------------------------------------------------

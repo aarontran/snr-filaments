@@ -3314,3 +3314,43 @@ Tycho.
 A little less done today, w/ morning meeting + afternoon meeting + a little bit
 of planning time.  But a lot of code clean up, things look a little more
 manageable.
+
+
+Tuesday 2014 August 5
+=====================
+
+Finished cleaning/porting code, testing and debugging.  It looks like
+lmfit.minimize goes bonkers when I feed in an rminarc array (to try to
+slightly improve resolution).
+
+AHA, I see errors are popping up in the ipython notebook log...
+bad rminarc values seem to induce the error, though I have
+difficulty reproducing the error when calling the function outside of lmfit.
+waaaaaaaaaaa
+
+Verdict: keep rminarc fixed for each remnant, at a value (or set of values)
+that seems to work.  Get some numbers, messy as they will be.
+Reimplement the code in python and aim for speedup and better resolution.
+the rminarc bugs and things are getting to be too much.
+
+The weird thing is that, when doing the grid tabulation, lmfit isn't even
+involved.  But, qualitatively, the bugs seem more likely, or kind of on and
+off, when lmfit.minimize calls the function........
+
+Discussion w/ Brian in re optimizing the intensity profile calculations
+(compute only where necessary to constrain FWHM, and get higher accuracy).
+
+
+This whole procedure of trying to fit within the grid, and annealing errors, is
+somewhat suspect but we should at least make the systematic attempt.
+Then, with data in hand, we can:
+1. go ahead with the python improvement and maybe we can improve resolution,
+   get closer to machine precision
+2. say the error is so large anyways, that although our method and numbers are
+   imperfect it likely doesn't matter.
+
+But we need tycho numbers first before we can make any, any assessments!
+
+Merged Tycho tables together, by hand essentially (short one-off script).
+
+Started Tycho notebook

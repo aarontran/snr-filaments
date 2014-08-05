@@ -64,18 +64,18 @@ import models_all as models
 
 
 # TEMPORARY (FOR TESTING PURPOSES ONLY)
-SN1006_KEVS = np.array([0.7, 1.0, 2.0])
-SN1006_DATA = {}
-SN1006_DATA[1] = np.array([35.5, 31.94, 25.34]), np.array([1.73, .97, 1.71])
-SN1006_DATA[2] = np.array([23.02, 17.46, 15.3]), np.array([.35,.139, .559])
-SN1006_DATA[3] = np.array([49.14, 42.76,29.34]), np.array([1.5, .718, .767])
-SN1006_DATA[4] = np.array([29, 23.9, 16.6]), np.array([.9, .39, .45])
-SN1006_DATA[5] = np.array([33.75, 27.2, 24.75 ]), np.array([2.37,.62,.61])
+#SN1006_KEVS = np.array([0.7, 1.0, 2.0])
+#SN1006_DATA = {}
+#SN1006_DATA[1] = np.array([35.5, 31.94, 25.34]), np.array([1.73, .97, 1.71])
+#SN1006_DATA[2] = np.array([23.02, 17.46, 15.3]), np.array([.35,.139, .559])
+#SN1006_DATA[3] = np.array([49.14, 42.76,29.34]), np.array([1.5, .718, .767])
+#SN1006_DATA[4] = np.array([29, 23.9, 16.6]), np.array([.9, .39, .45])
+#SN1006_DATA[5] = np.array([33.75, 27.2, 24.75 ]), np.array([2.37,.62,.61])
 
 # TEMPORARY (FOR TESTING PURPOSES, FIRST TABULATION ONLY)
-TYCHO_KEVS = np.array([0.7, 1.0, 2.0, 3.0, 4.5])
-TYCHO_DATA_MIN = np.array([1.628, 1.685, 1.510, 1.465, 1.370])
-TYCHO_DATA_MAX = np.array([10.0, 8.866, 6.901, 7.508, 5.763])
+#TYCHO_KEVS = np.array([0.7, 1.0, 2.0, 3.0, 4.5])
+#TYCHO_DATA_MIN = np.array([1.628, 1.685, 1.510, 1.465, 1.370])
+#TYCHO_DATA_MAX = np.array([10.0, 8.866, 6.901, 7.508, 5.763])
 
 # Note -- the max observed for 0.7-1keV is actually 6.092, for regions-4
 # BUT, to be consistent with the general trend seen in mins/maxes, and to be
@@ -108,9 +108,8 @@ def main():
     """main stuff.  Edit this at will to generate desired output..."""
 
 
-# TODO still in progress
-
-def table_full(snr, kevs, data, eps, mus, fmts):
+def table_full(snr, kevs, data, eps, tab, mus, fmts, ax=None, inds=None,
+               verbose=True):
     """Make tables, main method.
 
     Find best grid value (could interp B0 here)
@@ -121,73 +120,45 @@ def table_full(snr, kevs, data, eps, mus, fmts):
     table = []
     table.append(['mu', 'eta2', 'B0', 'chisqr'])
 
+    if ax is None:
+        ax = plt.gca()
+    plt.errorbar(kevs, data, yerr=eps, fmt='ok')
+
     for mu, fmt in zip(mus, fmts):
+        # Fit from best grid value
+        #eta2, B0, chisqr, refit = get_table_fit(snr, kevs, data, eps, mu, tab,
+        #                                        inds=inds, verbose=verbose)
+        print 'only using best grid value'
+        eta2, B0, asdfjkl_dont_care, chisqr = grid_best(data,eps,tab[mu],inds)
 
-        # Find best grid value, interpolating in B0 if desired?
-        eta2_vals, B0_vals, chisqr_vals = models.table_scan(data, eps, tab[mu], inds)
-        ind = np.argmin(chisqr_vals)
-        e2b = eta2_vals[ind], B0_vals[ind]
+        # Get annealed errors
+        ci = get_table_err(eta2, B0, chisqr, snr, kevs, data, eps, mu, tab,
+                           conf_intv=0.683, inds=inds, verbose=verbose)
 
-        # Fit from grid value
-        # full_table_fit(...)
-
-        # Get annealed errors (redundant call to table_scan)
-        # TODO: SET RMINARC
-        e2b_L, e2b_R = best_grid_pts(e2b[0], chisqr_vals[ind],
-                                     snr, kevs, data, eps, mu, tab,
-                                     conf_intv=0.683, inds=inds,
-                                     fit_on_fly=True)
+        err_eta2 = get_ci_errors(ci, 'eta2', ci_val=0.683)
+        err_B0 = get_ci_errors(ci, 'B0', ci_val=0.683)
 
         # Assemble table for pretty-printing
         tr = ['{:0.2f}'.format(mu)]
-        tr.append('{:0.3f} ({:0.3f}, {:0.3f})'.format(
-                   e2b[0], e2b_L[0], e2b_R[0]))
-        tr.append('{:0.2f} ({:0.2f}, {:0.2f})'.format(
-                   e2b[1]*1e6, e2b_L[1]*1e6, e2b_R[1]*1e6))
-        tr.append('{:0.4f}'.format(chisqr_vals[ind]))
+        tr.append('{:0.3f} (+{:0.3f}/-{:0.3f})'.format(
+                   eta2, err_eta2[1], err_eta2[0]))
+        tr.append('{:0.2f} (+{:0.2f}/-{:0.2f})'.format(
+                   B0*1e6, err_B0[1]*1e6, err_B0[0]*1e6))
+        tr.append('{:0.4f}'.format(chisqr))
         table.append(tr)
 
+        # Plot
+        p = lmfit.Parameters()
+        p.add('B0',value=B0)
+        p.add('eta2',value=eta2)
+        p.add('mu',value=mu)
+        fwhms_m = models.width_cont(p, kevs, snr)
+        ax.plot(kevs, fwhms_m, fmt)
+        ax.legend(tuple(['Data'] + [r'$\mu = {:0.2f}$'.format(mu) for
+                                    mu in mus]), loc='best')
+        fplot('Energy (keV)', 'FWHM (arcsec)', ax=ax, axargs='tight')
+
     return table, ax
-
-
-def run_table_fit(snr, kevs, data, eps, mu_vals, fmt_vals, inds=None):
-    """Execute table_fit for one set of data, w/ various mu values"""
-    
-    table = ListTable()
-    table.append(['mu', 'eta2', 'B0', 'chisqr'])
-
-    plt.figure(figsize=(6,4))
-    plt.errorbar(kevs, data, yerr=eps, fmt='ok')
-
-    for mu, fmt in zip(mu_vals, fmt_vals):
-
-        print 'Starting fit from best grid point'
-        # ALSO CHANGE RMINARC TO BE TIGHTER... BASED ON GRID FWHMS... may limit lmfit, that's okay.
-        res, eta2_grid, B0_grid, chisqr_grid = models.table_fit(snr, kevs, data, eps, mu, tab,
-                                                                inds=inds, epsfcn=1e-5)  # epsfcn!!!!!
-        p = res.params
-        print 'Best grid B0 = {:0.2f}, eta2 = {:0.2f} (chisqr = {:0.4f})'.format(B0_grid*1e6, eta2_grid, chisqr_grid)
-        print 'Final fit chisqr = {:0.4f}'.format(res.chisqr)
-
-        if chisqr_grid < res.chisqr:
-            print 'Warning: lmfit worsened parameter fit.  Using best grid values, printed errors may be invalid'
-            p['eta2'].value = eta2_grid
-            p['B0'].value = B0_grid
-
-        table_row = ['{:0.2f}'.format(mu)]
-        table_row.append('{:0.2g} &plusmn; {:0.2g}'.format(p['eta2'].value, p['eta2'].stderr))
-        table_row.append('{:0.3g} &plusmn; {:0.2g}'.format(p['B0'].value * 1e6, p['B0'].stderr * 1e6))
-        table_row.append('{:0.4f}'.format(min(chisqr_grid, res.chisqr)))  # AD HOC...
-        table.append(table_row)
-        
-        fwhms_m = models.width_cont(p, kevs, snr)  # Using actual model... can't overload w/ data points
-        plt.plot(kevs, fwhms_m, fmt)
-
-    display(table)
-    fplot('Energy (keV)', 'FWHM (arcsec)', axargs='tight')
-    plt.legend( tuple(['Data'] + [r'$\mu = {:0.2f}$'.format(mu) for mu in mu_vals]), loc='best')
-    plt.show()
-
 
 
 # ========================================================
@@ -196,127 +167,145 @@ def run_table_fit(snr, kevs, data, eps, mu_vals, fmt_vals, inds=None):
 
 def get_table_fit(snr, kevs, data, eps, mu, tab, inds=None,
                    verbose=True, **lsq_kws):
-    """Find best fit eta2, B0 for given mu value"""
+    """Find best fit eta2, B0 for given mu value (need mu for fit)"""
     epsfcn_vals = [1e-10, 1e-8, 1e-6, 1e-4]  # MAGIC...
+    f_rmin = 1.2  # MAGIC...
 
     # Initialize with grid values
-    eta2, B0, fwhms, chisqr = models.grid_best(data, eps, tab[mu], inds=inds)
-    eta2_best, B0_best = eta2, B0
-    chisqr_best = chisqr
+    eta2, B0, fwhms, chisqr = grid_best(data, eps, tab[mu], inds=inds)
+
+    # Refit at eta2 to get best B0
+    # or, at least recompute with better rminarc if possible
+    if verbose:
+        print 'Fitting B0 at best grid point'
+    res = models.full_fit(snr, kevs, data, eps, mu, eta2=eta2, B0=B0,
+                          eta2_free=False,#rminarc = fwhms*f_rmin,
+                          verbose=verbose, epsfcn=1e-8)
+    if res.chisqr < chisqr:
+        if verbose:
+            print 'Improved best grid point'
+        B0 = res.params['B0'].value
+        chisqr = res.chisqr
+    
+    if verbose:
+        'Starting grid point: eta2={:0.4f}, B0={:0.4f}, chisqr={:0.4f}'.format(
+                eta2, B0, chisqr)
 
     for epsfcn in epsfcn_vals:
         if verbose:
             print 'Fitting from grid with epsfcn={:0.2g}'.format(epsfcn)
 
-        res = models.full_fit(snr, kevs, data, eps, mu, eta2=eta2_grid, B0=B0_grid,
+        res = models.full_fit(snr, kevs, data, eps, mu, eta2=eta2, B0=B0,
                               eta2_free=True, verbose=verbose,
+                              #rminarc=fwhms*f_rmin,
                               epsfcn=epsfcn, **lsq_kws)
+        if verbose:
+            print 'new chisqr = {}, best = {}'.format(res.chisqr, chisqr)
 
-        if res.chisqr < chisqr_best:
-            eta2_best = res.params['eta2'].value
-            B0_best = res.params['B0'].value
+        if res.chisqr < chisqr:
+            eta2 = res.params['eta2'].value
+            B0 = res.params['B0'].value
+            chisqr = res.chisqr
 
     # Check if fitting improved grid value
     refit = True
-    if chisqr_best == chisqr:
+    if res.chisqr == chisqr:
         if verbose:
             print 'lmfit did not improve best grid fit'
         refit = False
+    elif verbose:
+        print 'lmfit improved best grid fit!'
 
-    return eta2_best, B0_best, chisqr_best, refit
+    return eta2, B0, chisqr, refit
 
 
-def get_table_err(eta2_best, chisqr_min, snr, kevs, data, eps, mu, tab,
-        inds=None, conf_intv=0.683, fit_on_fly=False):
-        pass
+# Parameter passing hell, halp
+def get_table_err(eta2_best, B0_best, chisqr_min,
+                  snr, kevs, data, eps, mu, tab,
+                  inds=None, verbose=True, conf_intv=0.683):
+    """Estimate error in eta2/B0 simultaneously from pretabulated grid.
+    Threshold eta2-chisqr space  based on given best fit eta2 + chisqr, and
+    find most extreme points in grid bracketing this threshold.
 
-# TODO still in progress
-
-def best_grid_pts(eta2_best, chisqr_min, snr, kevs, data, eps, mu, tab, inds=None, conf_intv=0.683, fit_on_fly=False):
-    """Estimate error in eta2/B0 simultaneously.  Threshold chisqr space in eta2 based on
-    externally provided best fit eta2 + chisqr, and find most extreme points in grid bracketing
-    this threshold.
+    Warning: I trust user to provide best eta2/chisqr.  If there exists a
+    better value in the grid, obviously error bounds will be invalid.
 
     Do NOT naively trust function output.  Plot the data and ensure it looks
     sensible, as chi-squared space for full model fits is terribly behaved
 
-    To get better estimates, at those points, perform a fit for the best value of B0.
-    If that brings the point under the threshold, move on.  This will be rather slow.
-
-    NOTE: don't be surprised if B0 from the "left" bound is larger than the best fit value...
-    w/imperfect gridding, we don't get monotonicity in B0.
+    To get better estimates, at those points, fit for the best value of B0.
+    If that brings the point under the threshold, move on.
     """
-    eta2_vals, B0_vals, chisqr_vals = models.table_scan(data, eps, tab[mu], inds)
-
-    ind = np.searchsorted(eta2_vals, eta2_best)
+    # This requires that grid_scan sorts the output
+    eta2s, B0s, fwhms, chisqrs = grid_scan(data, eps, tab[mu], inds=inds)
+    ind = np.searchsorted(eta2s, eta2_best)
+    def chisqr_thresh(x):
+        return x - (chisqr_min + CI_2_CHISQR[conf_intv])
 
     # Find where chisqr threshold for confidence interval is bracketed
-    sgns = np.sign(chisqr_vals - (chisqr_min + CI_2_CHISQR[conf_intv]))
-    crossings = np.where(np.diff(sgns))[0]  # First indices of crossings
-    print 'minimum at {}'.format(ind)
-    print 'crossings at {}'.format(crossings)
+    sgns = np.sign(chisqr_thresh(chisqrs))
+    crossings = np.where(np.diff(sgns))[0]  # Left indices of crossings
+    print 'Minimum index {}'.format(ind)
+    print 'Crossing indices {}'.format(crossings)
 
-    flg = False  # DEBUGGING
     if any(crossings < ind):
         ind_left = crossings[0]
     else:
         ind_left = 0
         print 'bound not found (min eta2)'
-        flg=True
-    if any(crossings+1 > ind):
-        ind_right = crossings[-1] + 1  # +1 to get right-side of crossing, + account for crossings AT best fit...
+    if any(crossings+1 > ind):         # +1 to get right side of crossing and
+        ind_right = crossings[-1] + 1  # account for crossings AT best fit
     else:
-        ind_right = len(eta2_vals) - 1
+        ind_right = len(eta2s) - 1
         print 'bound not found (max eta2)'
-        flg=True
 
-    #if flg:
-    #    print chisqr_vals - (chisqr_min + CI_2_CHISQR[conf_intv])
-    #    print crossings
+    # Abstract away details of fitting off of grid values
+    def fitter(ind, epsfcn=1e-6, f_rmin = 1.2):
+        #rminarc = fwhms[ind] * f_rmin
+        return models.full_fit(snr, kevs, data, eps, mu,
+                 eta2=eta2s[ind], B0=B0s[ind], eta2_free=False,
+                 verbose=verbose, #rminarc=rminarc,
+                 epsfcn=epsfcn)
 
-    e2b_left = eta2_vals[ind_left], B0_vals[ind_left]
-    chisqr_left = chisqr_vals[ind_left]
+    # Anneal err runs at least one fit, even if already at grid boundary
+    #eta2_left, B0_left = anneal_err(ind_left, -1, eta2s, fitter,
+    #                               chisqr_thresh, verbose)
+    #eta2_right, B0_right = anneal_err(ind_right, +1, eta2s, fitter,
+    #                                 chisqr_thresh, verbose)
 
-    e2b_right = eta2_vals[ind_right], B0_vals[ind_right]
-    chisqr_right = chisqr_vals[ind_right]
+    # TESTING: naive grid bounds
+    eta2_left, B0_left = eta2s[ind_left], B0s[ind_left]
+    eta2_right, B0_right = eta2s[ind_right], B0s[ind_right]
 
-    print 'naive grid bounds (eta2): {:0.4f}, {:0.4f}'.format(e2b_left[0], e2b_right[0])
-    print 'naive grid bounds (B0): {:0.4f}, {:0.4f}'.format(e2b_left[1]*1e6, e2b_right[1]*1e6)
+    # Output format analogous to lmfit.conf_interval
+    ci = {}
+    ci['eta2'] = [(conf_intv, eta2_left), (conf_intv, eta2_right),
+                  (0., eta2_best)]
+    ci['B0'] = [(conf_intv, B0_left), (conf_intv, B0_right),
+                (0., B0_best)]
 
-    # Now, if there is leeway to explore...
-    # ALSO CHANGE RMINARC TO BE TIGHTER...
-    if fit_on_fly:
-        if ind_left > 0:
-            print 'Checking left error bound (original bound chisqr = {}, B0 = {:0.4f})'.format(chisqr_left, e2b_left[1]*1e6)
+    return ci
 
-            # Need to check results are independent of epsfcn?!
-            # Should have step size comparable to, or just smaller than, grid spacing in B0 -- to ensure
-            # we are just exploring that in-between-points area of parameter space.  This we can do.
-            res = models.full_fit(snr, kevs, data, eps, mu, eta2=e2b_left[0], B0=e2b_left[1], epsfcn=1e-6)
-            while ind_left > 0 and res.chisqr - (chisqr_min + CI_2_CHISQR[conf_intv]) < 0:
-                print 'Threshold moved by one (new best B0 here = {:0.4f}) chisqr was {}; min is {}'.format(res.params['B0'].value*1e6,
-                                                                                                       res.chisqr, chisqr_min)
-                ind_left -= 1
-                e2b_left = eta2_vals[ind_left], B0_vals[ind_left]
-                res = models.full_fit(snr, kevs, data, eps, mu, eta2=e2b_left[0], B0=e2b_left[1], epsfcn=1e-6)
-            e2b_left = (e2b_left[0], res.params['B0'].value)
 
-        if ind_right < len(eta2_vals) - 1:
-            print 'Checking right error bound (original bound chisqr = {}, B0 = {:0.4f})'.format(chisqr_right, e2b_right[1]*1e6)
-            res = models.full_fit(snr, kevs, data, eps, mu, eta2=e2b_right[0], B0=e2b_right[1], epsfcn=1e-6)
-            while ind_right < len(eta2_vals) - 1 and res.chisqr - (chisqr_min + CI_2_CHISQR[conf_intv]) < 0:
-                print 'Threshold moved by one (new best B0 here = {:0.4f}) chisqr was {}; min is {}'.format(res.params['B0'].value*1e6,
-                                                                                                       res.chisqr, chisqr_min)
-                ind_right += 1
-                e2b_right = eta2_vals[ind_right], B0_vals[ind_right]
-                res = models.full_fit(snr, kevs, data, eps, mu, eta2=e2b_right[0], B0=e2b_right[1], epsfcn=1e-6)
-            e2b_right = (e2b_right[0], res.params['B0'].value)
+def anneal_err(ind, sgn, eta2_vals, fitter, f_thresh, verbose=True):
+    """Anneal errors along eta2dict, incrementing in direction set by sgn.
+    sgn must be +/-1, or have sign (i.e., not zero)
+    """
+    epsfcn = 1e-6 # Try multiple epsfcn's if needed
+    # Check results are independent of epsfcn?!
+    # Choose epsfcn comparable to, or just smaller than,
+    # grid spacing in B0 to ensure we are just exploring the
+    # in-between-points area of parameter space.
+    res = fitter(ind, epsfcn)
+    while f_thresh(res.chisqr) < 0 and (ind >0 and ind < len(eta2_vals)-1):
+        if verbose:
+            print 'Threshold moved by one (chisqr={:0.4f})'.format(res.chisqr)
+        ind += np.sign(sgn)
+        res = fitter(ind, epsfcn)
 
-    print 'final grid bounds (eta2): {:0.4f}, {:0.4f}'.format(e2b_left[0], e2b_right[0])
-    print 'final grid bounds (B0): {:0.4f}, {:0.4f}'.format(e2b_left[1]*1e6, e2b_right[1]*1e6)
-
-    return e2b_left, e2b_right
-
+    if f_thresh(res.chisqr) < 0 and verbose:
+        print 'Hit grid limit'
+    return res.params['eta2'], res.params['B0']
 
 
 # ======================================================
@@ -360,7 +349,7 @@ def grid_best(data, eps, eta2_dict, inds=None):
     A silly wrapper... but, sometimes we want grid_scan output
     directly for plots.
     """
-    eta2s, B0s, fwhms, chisqrs = grid_scan(data, eps, eta2_dict, inds=inds)
+    eta2s, B0s, fwhms, chisqrs = grid_scan(data, eps, eta2_dict, inds)
     ind = np.argmin(chisqrs)
     return eta2s[ind], B0s[ind], fwhms[ind], chisqrs[ind]
 
@@ -374,20 +363,20 @@ def grid_scan(data, eps, eta2_dict, inds=None):
     """
     eta2_vals = np.sort(eta2_dict.keys())
     B0_vals = np.array([])
-    fwhm_vals = np.array([])
+    fwhm_vals = []  # Easier to build up, but not efficient
     chisqr_vals = np.array([])
 
     for eta2 in eta2_vals:
         B0_pts, fwhms = eta2_dict[eta2]
 
-        chisqr_pts = fwhm_scan(data, eps, fwhms, inds=inds)
+        chisqr_pts = fwhm_scan(data, eps, fwhms, inds)
 
         ind_min = np.argmin(chisqr_pts)  # Could interpolate a better B0 fit
         B0_vals = np.append(B0_vals, B0_pts[ind_min])
-        fwhm_vals = np.append(fwhm_vals, fwhms[ind_min])
+        fwhm_vals.append(fwhms[ind_min])
         chisqr_vals = np.append(chisqr_vals, chisqr_pts[ind_min])
 
-    return eta2_vals, B0_vals, fwhm_vals, chisqr_vals
+    return eta2_vals, B0_vals, np.array(fwhm_vals), chisqr_vals
 
 
 def fwhm_scan(data, eps, fwhms, inds=None):

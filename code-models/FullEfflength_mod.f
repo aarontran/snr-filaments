@@ -259,6 +259,8 @@ cf2py depend(inumax) widtharc
               ! Integration to find intensity
               do ix = 2,ixmax-1
                 rho = dsqrt(x**2+r**2)
+
+                ! Integral over e- distribution!
                 emis1 = emisx(rho, nu,B0,radtab,disttab)
 
                 if (mod(ix,2).eq.0) then
