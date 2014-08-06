@@ -4,7 +4,7 @@ and assorted useful file IO (common to multiple scripts)
 
 Aaron Tran
 2014 June 23
-(last modified: 2014 July 8)
+(last modified: 2014 August 6)
 """
 
 import os
@@ -52,6 +52,8 @@ def load_ds9reg(fname, aux=False):
     """List of region strings from ds9 region file;
     headers checked for correct filetype (does not check coordsys)
     Trailing newlines are preserved
+
+    aux (bool): returns extra header info along with region strings
     """
     with open(fname, 'r') as f:
         header = f.readline()

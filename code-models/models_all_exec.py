@@ -61,39 +61,6 @@ from fplot import fplot
 #import snr_catalog as snrcat
 import models_all as models
 
-
-
-# TEMPORARY (FOR TESTING PURPOSES ONLY)
-#SN1006_KEVS = np.array([0.7, 1.0, 2.0])
-#SN1006_DATA = {}
-#SN1006_DATA[1] = np.array([35.5, 31.94, 25.34]), np.array([1.73, .97, 1.71])
-#SN1006_DATA[2] = np.array([23.02, 17.46, 15.3]), np.array([.35,.139, .559])
-#SN1006_DATA[3] = np.array([49.14, 42.76,29.34]), np.array([1.5, .718, .767])
-#SN1006_DATA[4] = np.array([29, 23.9, 16.6]), np.array([.9, .39, .45])
-#SN1006_DATA[5] = np.array([33.75, 27.2, 24.75 ]), np.array([2.37,.62,.61])
-
-# TEMPORARY (FOR TESTING PURPOSES, FIRST TABULATION ONLY)
-#TYCHO_KEVS = np.array([0.7, 1.0, 2.0, 3.0, 4.5])
-#TYCHO_DATA_MIN = np.array([1.628, 1.685, 1.510, 1.465, 1.370])
-#TYCHO_DATA_MAX = np.array([10.0, 8.866, 6.901, 7.508, 5.763])
-
-# Note -- the max observed for 0.7-1keV is actually 6.092, for regions-4
-# BUT, to be consistent with the general trend seen in mins/maxes, and to be
-# more conservative in tabulation, I arbitrarily choose a larger value of 10
-
-# These numbers are generated from regions-4, with simple 2-exponential fit
-# using the following short script:
-#import cPickle as pickle
-#import numpy as np
-#with open('fwhms.pkl', 'r') as fpkl:
-#    data = pickle.load(fpkl)
-#bands = ['1-1.7kev', '3-4.5kev', '2-3kev', '0.7-1kev', '4.5-7kev']
-#for b in bands:
-#    fwhm_min = np.nanmin([data[n][b]['meas']['fwhm'] for n in data])
-#    fwhm_max = np.nanmax([data[n][b]['meas']['fwhm'] for n in data])
-#    print 'Band {} min/max are {}, {}'.format(b, fwhm_min, fwhm_max)
-
-
 # Table from Press et al., Section 14.5 (1st ed.),
 # 15.6 (3rd ed.); see also Avni, Y. (1976, ApJ)
 # Would be good to compute properly in a function
@@ -107,6 +74,9 @@ CI_2_CHISQR[0.99] = 6.63
 def main():
     """main stuff.  Edit this at will to generate desired output..."""
 
+
+# NOTE currently NOT fitting from best grid value,
+#      currently NOT annealing errors
 
 def table_full(snr, kevs, data, eps, tab, mus, fmts, ax=None, inds=None,
                verbose=True):
@@ -122,7 +92,7 @@ def table_full(snr, kevs, data, eps, tab, mus, fmts, ax=None, inds=None,
 
     if ax is None:
         ax = plt.gca()
-    plt.errorbar(kevs, data, yerr=eps, fmt='ok')
+    ax.errorbar(kevs, data, yerr=eps, fmt='ok')
 
     for mu, fmt in zip(mus, fmts):
         # Fit from best grid value
@@ -152,7 +122,7 @@ def table_full(snr, kevs, data, eps, tab, mus, fmts, ax=None, inds=None,
         p.add('B0',value=B0)
         p.add('eta2',value=eta2)
         p.add('mu',value=mu)
-        fwhms_m = models.width_cont(p, kevs, snr)
+        fwhms_m = models.width_cont(p, kevs, snr)  # Here's a function call
         ax.plot(kevs, fwhms_m, fmt)
         ax.legend(tuple(['Data'] + [r'$\mu = {:0.2f}$'.format(mu) for
                                     mu in mus]), loc='best')
@@ -276,6 +246,7 @@ def get_table_err(eta2_best, B0_best, chisqr_min,
     # TESTING: naive grid bounds
     eta2_left, B0_left = eta2s[ind_left], B0s[ind_left]
     eta2_right, B0_right = eta2s[ind_right], B0s[ind_right]
+    print 'Using naive grid bounds (no annealing)'
 
     # Output format analogous to lmfit.conf_interval
     ci = {}
@@ -381,7 +352,7 @@ def grid_scan(data, eps, eta2_dict, inds=None):
 
 def fwhm_scan(data, eps, fwhms, inds=None):
     """Compute chisqr values over B0 mesh"""
-    if inds:  # Subset if need
+    if inds is not None:  # Subset if need
         data, eps = data[inds], eps[inds]
         fwhms = fwhms[:,inds]
 
@@ -396,7 +367,7 @@ def fwhm_scan(data, eps, fwhms, inds=None):
 # Designed to be called in iPython notebook w/ inline plots
 # Simply feed in your grid, supernova remnant, data, etc...
 
-def table_simp(snr, kevs, data, eps, mus, fmts):
+def table_simp(snr, kevs, data, eps, mus, fmts, inds=None):
     """Generate Table 7 of Sean's paper with better 1-sigma errors + plot"""
 
     table = []  # To be used with ListTable in iPython notebook output
@@ -404,6 +375,9 @@ def table_simp(snr, kevs, data, eps, mus, fmts):
 
     ax = plt.gca()
     ax.errorbar(kevs, data, yerr=eps, fmt='ok')
+
+    if inds is not None:
+        kevs, data, eps = kevs[inds], data[inds], eps[inds]
 
     for mu, fmt in zip(mus, fmts):
         # Actual computations / fitting

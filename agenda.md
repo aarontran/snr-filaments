@@ -149,6 +149,14 @@ Some high level questions / thoughts from poster session (July 31):
 
   iPython parallelization
 
+  Idea for ipynb -- construct iterators or generators or something, for each
+  SNR to spit out the correct data/kevs/eps/snr objects for each region.
+
+  Then it's merely a matter of:
+  for item in iterator:
+    make table 7
+    make table 8
+
 
 * ipython notebook with results of varying compression ratio, shock speed,
   remnant distance, any other twiddleables (including/excluding energy cutoff).

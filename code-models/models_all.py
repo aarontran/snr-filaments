@@ -607,10 +607,16 @@ def width_cont(params, kevs, snr, verbose=True, rminarc=None, icut=1,
     s = snr.s
 
     # Case handling for rminarc, keep old methods from breaking
+    def is_num(x):  # SUPER SKETCH BUT OH WELL
+        return isinstance(x, int) or isinstance(x, float)
+
     if rminarc is None:
-        rminarc = snr.rminarc * np.ones(len(kevs))
-    elif isinstance(rminarc, int) or isinstance(rminarc, float):
+        rminarc = snr.rminarc
+        if is_num(snr.rminarc):
+            rminarc = rminarc * np.ones(len(kevs))
+    elif is_num(rminarc)
         rminarc = rminarc * np.ones(len(kevs))
+    # else: rminarc is already an array
 
     if verbose:
         print ('\tFunction call with B0 = {:0.3f} muG; eta2 = {:0.3f}; '

@@ -2,7 +2,7 @@ README, code
 ============
 
 Aaron Tran
-(last updated: 2014 July 8)
+(last updated: 2014 August 6)
 
 Spectrum manipulation
 ---------------------
@@ -21,7 +21,7 @@ will update the headers for ungrouped and grouped spectra).
 Use this if you mess up the order of arguments to `spec_linkbg.py` and end up
 writing headers to the background files.
 
-`spec_fitplot.py`
+`spec_fit.py`
 
 Generate best fits (parameters, plots) for set of spectra, using PyXspec
 Logs with fit parameters are saved to same folder as spectra
@@ -33,14 +33,15 @@ Must run using 32 bit Python (`arch -i386 python`)!!!!!  E.g.,
 Short bash script to convert ps plots to pdf plots, deleting the ps plots in
 the process
 
-Region manipulation
--------------------
-
 `ciaoreg2spec.py`
 
 Wrapper function to run CIAO's specextract on CIAOREG files.
 NOT YET IMPLEMENTED, NOT REALLY IMPORTANT.  Easy enough to
 execute specextract from command line.
+
+
+Region manipulation
+-------------------
 
 `ds9projplotter.py`
 
@@ -49,7 +50,14 @@ Takes a ds9 region file containing projections, generates one or both of
 Operates on an arbitrary number of fits files (bands).  Labels identify output
 files to corresponding bands (but must be manually input at this time).
 
-`ds9proj2box.py`
+`ds9projsplitter.py`
+
+Goes through pickled region dictionary from profile fits and splits regions
+into two pieces, depending on FWHM locations.  This gives two region files, one
+with upstream boxes and one with downstream boxes, which can be used to
+generate spectra.
+
+`ds9proj2ciao.py`
 
 Converts ds9 region file with projections into CIAO file with rotboxes instead
 of projections.  Other regions are converted to CIAO regions automatically

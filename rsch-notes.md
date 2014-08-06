@@ -3354,3 +3354,14 @@ But we need tycho numbers first before we can make any, any assessments!
 Merged Tycho tables together, by hand essentially (short one-off script).
 
 Started Tycho notebook
+
+
+Wednesday 2014 August 6
+=======================
+
+Start some skeleton code for Fortran port.  I think we can get a good speed up
+by pre-tabulating the emissivity as a function of radius, and interpolating its
+value when integrating over line of sight.  So we tabulate the distributions,
+and then at each radial coordinate we only need ONE integral to get intensity!
+
+
