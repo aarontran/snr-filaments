@@ -3369,3 +3369,68 @@ Tycho fits and numbers generated.
 Run by Brian -- he and Rob will see Steve at HEAD meeting (Steve at conference
 is generally not so responsive, being without smartphone and busy).
 We really need to nail down chi-squared space.  Time for a rewrite.
+
+More code for Fortran port -- FWHM calculation (now using sign crossings),
+flesh out main method (copied over all electron distribution functions).
+
+
+Thursday 2014 August 7
+======================
+
+Continue Fortran code port.  Some timings, now (for ONE energy band)
+
+1st iteration:
+* spint for e- tables: 1 second.
+* manual, pt by pt loop for emisx, intensity: 3 minutes (!!!)
+
+2nd iteration:
+* spint for e- tables: 1.3 sec (to be more precise)
+* manual loop for intensity, spint for emissivity: 1.5 minutes (!!)
+
+3rd iteration:
+* manual loop for intensity, read fglists only 1x, spint for emissivity: 19 sec.
+  (cutting repeated file reads dropped times by like 5x)
+
+4th iteration (good reference):
+* spint for e- tables: 1.3 sec
+* map emisx (spint) table: 0.2 sec
+* manual loop for intensity, interpolate emis from table: 2.2 seconds
+  (interpolate emis vs. integrating cut times ~10x !!)
+
+Bulk timing: Python is ~11.2 seconds, Fortran (shell timing) is 3.3 seconds.
+But, fortran isn't interpolating for emissivity and would benefit greatly from
+that speedup too.
+
+Quick check, gfortran with `-O3` flag: Fortran w/ shell timing is 2.1 seconds.
+Goddddddaaaammit.
+
+5th iteration:
+* spint for e- tables: 1.3 sec
+* map emisx (spint) table: 0.2 sec
+* manual loop for intensity, interp emis w/single call: 0.15 seconds
+  (single vectorized call to `interp_ind` instead of loop)
+
+Cut from 11 sec to 5 sec, and cut intensity computation by 10x!  Beautiful
+
+6th iteration:
+* spint for e- tables using 3-d arrays (grid on radtab, e- energy): 0.75 sec
+
+Cut to 3.2 sec.  So by careful memory management w/ e- tab, we cut that time in
+about 1/2.
+
+
+Some conclusions:
+1. program smart
+2. when compiling f2py module, always use -O3 flag!
+3. table interpolating is huge for speedup.  I wonder where the time is going
+   into w/ the e- table calculations (can we speed that up)
+4. do we need cython or something to further improve python code, now.
+5. adaptive intensity calculation, now, if possible (w/ binary like search).
+   But that may be slow to implement in Python -- but still probably faster
+   than all the redundant calls to trapz
+
+
+Try playing with python-latex output
+http://code.google.com/p/matrix2latex/
+
+

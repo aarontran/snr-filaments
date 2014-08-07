@@ -43,16 +43,23 @@
           ! Load common block first
           call readfglists()
 
-          print *, 'Enter B0'
-          read *, B0            ! Gauss
-          print *, 'Enter Eta2'
-          read *, eta2          ! dimensionless
-          print *, 'Enter mu'
-          read *, mu            ! dimensionless
-          print *, 'Enter rminarc'
-          read *, rminarc       ! arcsec
-          print *, 'Enter 0 for SN1006, 1 for Tycho'
-          read *, snrflag       ! binary...
+          !print *, 'Enter B0'
+          !read *, B0            ! Gauss
+          !print *, 'Enter Eta2'
+          !read *, eta2          ! dimensionless
+          !print *, 'Enter mu'
+          !read *, mu            ! dimensionless
+          !print *, 'Enter rminarc'
+          !read *, rminarc       ! arcsec
+          !print *, 'Enter 0 for SN1006, 1 for Tycho'
+          !read *, snrflag       ! binary...
+
+          ! For timing test
+          B0 = 150d-6
+          eta2=1d0
+          mu=1d0
+          rminarc=60d0
+          snrflag=0
 
           kevs(1) = 0.7d0
           kevs(2) = 1d0
@@ -597,7 +604,7 @@ cf2py depend(inumax) widtharc
         ! Second part of integral from n=e to n=\infty
         ! Change variables, n = y / (1 - y^2)^q + n_min
         inmax=100
-        dy = 1d0/dble(inmax)
+        dy = 1d0/dble(inmax) ! y ranges JUST shy of y=1 (n=infty)
         y = 0d0
         q = 2d0
         nmin = dexp(1d0)
