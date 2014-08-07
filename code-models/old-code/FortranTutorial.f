@@ -198,6 +198,7 @@ c ========
 
       subroutine fileio(fname)
           implicit none
+          integer n
           character(len=*) fname
 
           open(unit=1, file=fname)  ! unit specifies the file...

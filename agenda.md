@@ -77,9 +77,10 @@ So need to
 * overhaul pipeline for profile fit / FWHM processing again -- it's just so
   messy, and feels hard to work with
 
-* Ah dammit.  I think I've been using inconsistent coordinate systems etc all
-  this time... so my background links, spectra, regions, etc may all be
-  slightly off.  Argh. Need to fix this.
+* I think I've been using inconsistent coordinate systems etc... background
+  links, spectra, regions, etc may all be slightly off (physical coords may
+  differ w/ single obsID vs. merged obsID...).  Can't remember the exact issue,
+  need to double check.
 
 * Update pipeline documentation ...
 
@@ -149,15 +150,6 @@ Some high level questions / thoughts from poster session (July 31):
 
   iPython parallelization
 
-  Idea for ipynb -- construct iterators or generators or something, for each
-  SNR to spit out the correct data/kevs/eps/snr objects for each region.
-
-  Then it's merely a matter of:
-  for item in iterator:
-    make table 7
-    make table 8
-
-
 * ipython notebook with results of varying compression ratio, shock speed,
   remnant distance, any other twiddleables (including/excluding energy cutoff).
   Show for both SN 1006 and Tycho.
@@ -167,26 +159,6 @@ Some high level questions / thoughts from poster session (July 31):
 
 * Remember brian's suggestion (from Friday july 25): how does mE depend on
   energy? what happens if you fit a straight power law to that???
-
-* Write code to compute azimuth angle of regions, and estimate shock speed for
-  each region.
-
-For tycho, I think the process will be, as before, to loop over all the
-regions.  But, during the loop, retrieve the azimuth angle and do a
-lookup/interpolation to get correct shock speed.
-Set the speed in snr object,
-
-    for region in Tycho:
-        az = get_az_angle(region)
-        vs = get_interp_vs(az)
-        tab = get_closest_vs_grid(vs)
-
-        snr = Tycho
-        snr.vs = vs
-
-        table, ax = table_full(...)
-        # Monitor output closely
-
 
 * Check all your constants.  `snr_catalog.py`, model fitting code both
   wrapper and fortran
@@ -235,12 +207,6 @@ Set the speed in snr object,
 
 ### General (lower level to-dos)
 
-* Possibly most useful: store FWHM, KEV data in SNR objects.  Maybe even this
-  indices thing, for comparison with Sean's data, or to throw out 0.7-1 keV
-  data in Tycho.  Call profile-fitting functions, or load pickled data, with a
-  function call to initialize FWHM data...
-  Or build a separate object for kev, data, inds...
-
 * SAFETY FEATURE, do NOT let user call maketab if `fullmodel.so` is older than
   `FullEfflength_mod.f`... or just force it to be recompiled each time, but you
   have to reload the module in all scripts or something...
@@ -270,13 +236,7 @@ Set the speed in snr object,
 * Check numerical prefactor 8.3 TeV for electron cutoff energy
 * Update numbers from Pacholczyk (?), consider adding more entries (can ask
   Sean about this)
-
 * Check FORTRAN code for memory-efficient array indexing?
-* Consider caching / memoizing tabulated electron distributions?
-  Problem: advective/diffusive lengthscales depend on B0, mu, eta, etc.
-  So, as we try new parameters, the electron distributions change...
-  which does physically make sense, after all.  sigh.
-  How can we get around the speed issue?
 
 
 ### Conceptual/background/physics questions (look up and/or ask)

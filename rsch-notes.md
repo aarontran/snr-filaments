@@ -3365,3 +3365,7 @@ value when integrating over line of sight.  So we tabulate the distributions,
 and then at each radial coordinate we only need ONE integral to get intensity!
 
 
+Tycho fits and numbers generated.
+Run by Brian -- he and Rob will see Steve at HEAD meeting (Steve at conference
+is generally not so responsive, being without smartphone and busy).
+We really need to nail down chi-squared space.  Time for a rewrite.

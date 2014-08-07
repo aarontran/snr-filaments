@@ -202,11 +202,6 @@ cf2py depend(inumax) widtharc
             ! Tabulate electron distribution for fixed nu
             ! generating 2-D grid as function of energy, radial position
 
-            ! TODO idea -- to avoid recomputing integrals every time
-            ! for the electron distribution (esp. if doing non-linear
-            ! fit) -- can we compute it once, for each value of nu,
-            ! and then store it?
-
             ! Step over particle energies from Pacholczyk table
             do j = 1, ir  ! ir = number of entries in Pacholczyk
               ! Step from r=rmin to r=1 (IRADMAX resolution)
