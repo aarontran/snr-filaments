@@ -187,20 +187,8 @@ Some high level questions / thoughts from poster session (July 31):
 * Estimate error as a function of varying resolution.
   Can we cut resolution in ixmax, iradmax while still getting good FWHMs?
 
-* Any ideas or previous attempts to improve Fortran code speed? (ask Sean)
-  Some ideas to cut down integration time:
-  1. only calculate radial intensity profiles where useful!
-     Find maximum, then search on domain (left/right) for FWHM,
-     then narrow down FWHM to some precision.
-  2. Use ifort vs. gfortran (iMac uses Intel), play with compiler flags?
+* Some ideas to cut down integration time:
   3. iPython parallelizing...
-  4. I think I can cut the emissivity integral out of the picture!
-     tabulate that with some decent resolution, then interpolate
-     to compute intensity integral.  That may give a very nice speedup.
-     Even if B-field varies (magnetic damping), j_nu is space dependent
-     anyways.  So go ahead and compute j_nu(x) just 1x, then integrate from
-     table along line of sight.
-     (this makes a ~10x difference)
 
   Try reimplementing in Python, then optimize appropriately with fortran or C
   glue...

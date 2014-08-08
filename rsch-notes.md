@@ -3511,6 +3511,9 @@ Friday 2014 August 8
 
 Summary
 -------
+* Maximally vectorize Numpy operations (90%+ of time is f2py call)
+* More accurate FWHM computation by scalar root finding
+
 
 More code optimization
 ----------------------
@@ -3544,18 +3547,15 @@ intensity calculation (binary search to find maximum, then FWHM locations)
 which is easier than in Fortran.
 
 A little more optimizing: mapping for emisx is not optimal.  Turn into a 2-D
-ndarray operation.
-Now the timing looks like:
+ndarray operation.  Now the timing looks like:
 * e- table in Fortran: 0.45 sec
 * emisx table, spint on 2-D array: 0.01 sec (!!!)
 * manual loop for intensity, interp emis w/single call: 0.15 seconds
 
-So, that basically negated any time cost of emisx table and dropped time to
-1.7 seconds.  Awesome!  Now only to optimize the intensity.
+So, that negated time cost of emisx table and dropped time to 1.7 seconds.
 
-While I'm at it... try computing the integrals over a 2-D array here as well.
-We can cut another 20% off, so the only bottleneck left is the electron
-distribution...
+Try computing intensity integrals over a 2-D array as well.
+Cut another 20% off, so the only bottleneck left is the electron distribution.
 * e- table in Fortran: 0.45 sec
 * emisx table, spint on 2-D array: 0.008 sec
 * interp emis and integrate intensity w/single call: 0.04 seconds
@@ -3566,8 +3566,111 @@ Down to 1.4 seconds.  Almost all time is due to e- tabulation now, which we
 could only do in ~0.75 sec w/Numpy. (note: overhead of imports, etc adds about
 0.2s when timing from terminal)
 
-But we don't actually want to integrate intensity w/ a single call, if we are
-to do it adaptively.  So the time will increase slightly.
+
+Rootfinding FWHM calculation
+----------------------------
+
+Based on the approximate intensity grid, compute intensity at points in
+between (scipy scalar maxmimize and brentq rootfinder) to better resolve FWHM
+
+Timing: this takes about 0.0002 sec / energy band (with irmax=400).
+I am okay with that.
+
+And, we can cut the amount of points on which to compute intensity by, e.g., a
+factor of 2-4 or even more.  We only have to resolve an increase and decrease.
+But, a finer grid does give faster convergence.
+
+
+Check against pure Fortran code
+-------------------------------
+Parameters: SN1006, rminarc=20, eta2 = 1, B0 = 150e-6, mu = 1.5, default energy
+bands (0.7, 1, 2 keV).  Python code uses 10000 pts to tabulate emissivity
+distribution (it did not appear to give improvement over using 2000 pts).
+
+### Default resolutions (irmax=400, iradmax=100, ixmax=500):
+Resolution on intensity profiles is 20/400 = 0.05 arcsec
+We could expect, at worst, ~0.1 arcsec error
+
+Fortran (using -Ofast)
+    0.69999999999999996       keV:    17.500000000000039     
+    1.0000000000000000       keV:    14.999999999999947     
+    2.0000000000000000       keV:    11.500000000000000 
+
+Python (without adaptive FWHM)
+    0.70 keV: 17.50000
+    1.00 keV: 15.05000
+    2.00 keV: 11.50000
+
+Python (with adaptive FWHM)
+    0.70 keV: 17.57646
+    1.00 keV: 15.07703
+    2.00 keV: 11.57270
+
+So this looks consistent.  Now, let's increase the resolution.
+
+### Double intensity profile res (irmax=800, rest same)
+Expect, at worst, (10/400)x2 = 0.05 arcsec error
+
+Fortran (using -Ofast)
+    0.69999999999999996       keV:    17.525000000000002     
+    1.0000000000000000       keV:    15.025000000000011     
+    2.0000000000000000       keV:    11.525000000000063
+Python (without adaptive FWHM)
+    0.70 keV: 17.55000
+    1.00 keV: 15.05000
+    2.00 keV: 11.55000
+Python (with adaptive FWHM) (unsurprisingly, the same)
+    0.70 keV: 17.57646
+    1.00 keV: 15.07703
+    2.00 keV: 11.57270
+
+The results seem to disagree just barely.
+
+### 10x intensity profile resolution (irmax=4000)
+Resolution is now 0.005 arcsec; worst error should be 0.01.
+
+Fortran (using -Ofast)
+    0.69999999999999996       keV:    17.539999999999999     
+    1.0000000000000000       keV:    15.045000000000041     
+    2.0000000000000000       keV:    11.544999999999995 
+Python (without adaptive FWHM)
+    0.70 keV: 17.57000
+    1.00 keV: 15.07500
+    2.00 keV: 11.57000
+Python (with adaptive FWHM) (unsurprisingly, the same)
+    0.70 keV: 17.57646
+    1.00 keV: 15.07703
+    2.00 keV: 11.57270
+
+The numbers disagree by about 0.03 arcsec.  So, something differs ever so
+slightly in our calculations.  If we increase the resolution elsewhere, would 
+that help?
+
+### Same profile (irmax=4000), 2x other grids (iradmax=200, ixmax=1000)
+
+Fortran (using -Ofast, this took 11s; with -Og, same result took 34s)
+    0.69999999999999996       keV:    17.595000000000059     
+    1.0000000000000000       keV:    15.094999999999970     
+    2.0000000000000000       keV:    11.585000000000056
+Python (without adaptive FWHM, 5s)
+    0.70 keV: 17.57000
+    1.00 keV: 15.07500
+    2.00 keV: 11.56500
+Python (with adaptive FWHM, 5s)
+    0.70 keV: 17.57550
+    1.00 keV: 15.07598
+    2.00 keV: 11.57164
+
+It is good to note that doubling intermediate computation resolutions
+only changed results by ~0.001 arcsec, in full adaptive Python code.
+As for Fortran: this made a big difference!  Now our results disagree by...
+strangely, a little less in the opposite direction.  ~0.01-0.02 arcsec, when
+they should agree to about 0.01 arcsec.
+
+Also, I can drop irmax to 100 (w/high intermediate computation res) and get
+the exact same numbers in 3 seconds, for adaptive FWHM.  Very satisfying.
+
+(I need to note this somewhere)
 
 Data backup
 -----------

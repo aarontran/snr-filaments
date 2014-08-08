@@ -80,8 +80,8 @@
           if (snrflag.eq.0) then
             call Fullefflengthsub(kevs, inumax, widtharc, B0, eta2, mu,
      &                          5d0*1.d8, 5d0*1.d8/4d0, 2.96d19, 900d0,
-     &                          2d0*0.6d0+1d0, rminarcarray, 1, 400,
-     &                          100,500)
+     &                          2d0*0.6d0+1d0, rminarcarray, 1, 4000,
+     &                          200,1000)
           elseif (snrflag.eq.1) then
             call Fullefflengthsub(kevs, inumax, widtharc, B0, eta2, mu,
      &                            4.7d0*1.d8, 4.7d0*1.d8/4d0, 1.077d19,

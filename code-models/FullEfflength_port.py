@@ -12,7 +12,7 @@ from __future__ import division
 from datetime import datetime
 import numpy as np
 import scipy as sp
-import scipy.optimize as opt
+import scipy.optimize as spopt
 import scipy.integrate as spint
 
 import fullmodel
@@ -37,7 +37,7 @@ def main():
     rminarc = 20. * np.ones(3)
 
     fwhms = fefflen(kevs, B0, eta2, mu, 5e8, 5e8/4., 2.96e19, 900.,
-                    2.2, rminarc, True, 400, 100, 500)
+                    2.2, rminarc, True, 100, 200, 1000)
     
     for en, fwhm in zip(kevs, fwhms):
         print '{:0.2f} keV: {:0.5f}'.format(en, fwhm)
@@ -48,7 +48,7 @@ def main():
 # Main function to compute FWHMs
 # ==============================
 
-#@profile
+# @profile
 def fefflen(kevs, B0, eta2, mu, vs, v0, rs, rsarc, s, rminarc, icut, irmax,
             iradmax, ixmax):
     """Use numpy arrays for everything (kevs, rminarc)
@@ -97,15 +97,14 @@ def fefflen(kevs, B0, eta2, mu, vs, v0, rs, rsarc, s, rminarc, icut, irmax,
 
         # Tabulate emissivity over radial coord
         print 'emis tab start: {}'.format(datetime.now())
-        rhotab = np.linspace(rmin_nu, 1., num=2000)  # TODO set as irhomax?
+        rhotab = np.linspace(rmin_nu, 1., num=10000)  # TODO set as irhomax?
         emistab = emisx(rhotab, nu, B0, radtab, disttab, xex, fex)
         print 'emis tab done: {}'.format(datetime.now())
 
         # Compute intensity over rmesh
         print 'intensity start: {}'.format(datetime.now())
         rmesh = np.linspace(rmin_nu, 1.0, num=irmax, endpoint=False)
-        # Maximum x value on line of sight, for each r
-        xmaxmesh = np.sqrt(1.-rmesh**2)  # size = irmax
+        xmaxmesh = np.sqrt(1.-rmesh**2)  # Max x on line of sight at each r
         # Grid along line of sight for each r; shape is (irmax, ixmax)
         # [[0., ..., xmax_0], [0., ..., xmax_1], ... [0., ..., xmax_{irmax-1}]]
         xintv = np.linspace(0., 1., num=ixmax)  # Line of sight (x) sampling
@@ -116,11 +115,21 @@ def fefflen(kevs, B0, eta2, mu, vs, v0, rs, rsarc, s, rminarc, icut, irmax,
         emisgrid = np.interp(rhogrid, rhotab, emistab)
         # then integrate emis. on lines of sight
         intensity = spint.simps(emisgrid, xgrid)
-        print 'intensity done: {}\n'.format(datetime.now())
+        print 'intensity done: {}'.format(datetime.now())
 
-        dr = (1 - rmin_nu) / (irmax - 1)
-        w = fwhm(rmesh, intensity, dr, nu)
+        def get_intensity(r):
+            """Non-vectorized intensity computation, for FWHM finding"""
+            xmesh = np.linspace(0., np.sqrt(1.-r**2), num=ixmax)
+            rhomesh = np.sqrt(xmesh**2 + r**2)
+            emismesh = np.interp(rhomesh, rhotab, emistab)
+            return spint.simps(emismesh, xmesh)
+
+        print 'find fwhm start: {}'.format(datetime.now())
+        dr = (1 - rmin_nu) / (irmax - 1) # Match rmesh
+        #w = fwhm(rmesh, intensity, dr, nu)
+        w = fwhm2(rmesh, intensity, get_intensity, dr, nu)
         widths.append(w)
+        print 'find fwhm done: {}\n'.format(datetime.now())
 
     return np.array(widths) * rsarc
 
@@ -368,7 +377,7 @@ def distr2(Ec, rc, B, Ecut, eta, mu, rs, v, s):
 # ============================
 
 def fwhm(rmesh, intensity, dr, nu):
-    """Compute fwhm. nu is for error printing"""
+    """Compute fwhm. nu is for error printing."""
 
     # Compute half max and find crossings
     half_max = 0.5 * np.amax(intensity)
@@ -399,22 +408,45 @@ def fwhm(rmesh, intensity, dr, nu):
     return width
 
 
-# =========
-# Utilities
-# =========
+def fwhm2(rmesh, intensity, f_int, dr, nu):
+    """Compute fwhm but better (test). nu is for error printing."""
 
-# ALTERNATELY, just use np.interp...
+    eps2 = np.finfo(float).eps * 2  # Brentq tolerance
 
-def interp(x, xdat, ydat):
-    """Linear interpolation of data at x; xdat MUST be sorted (for speed)"""
-    ind = np.searchsorted(xdat, x)  # xdat[ind-1] < x < xdat[ind]
-    return interp_ind(x, ind, xdat, ydat)
+    # Compute half max from grid initial guess
+    idxmax = np.argmax(intensity)
+    res = spopt.minimize_scalar(lambda x: -1*f_int(x), method='bounded',
+                                bounds=(rmesh[idxmax-1], rmesh[idxmax+1]),
+                                options={'xatol':eps2})
+    halfpk = 0.5 * f_int(res.x)
 
-def interp_ind(x, ind, xdat, ydat):
-    """Linear interpolation of data at x, xdat[ind-1] < x < xdat[ind]
-    (premature) optimization; avoid repeated binary search"""
-    slope = (ydat[ind] - ydat[ind-1]) / (xdat[ind] - xdat[ind-1])
-    return ydat[ind-1] + slope * (x - xdat[ind-1])
+    # Find where FWHMs should be 
+    cross = np.diff(np.sign(intensity - halfpk))
+    inds_rmin = np.where(cross > 0)[0]  # Left (neg to pos)
+    inds_rmax = np.where(cross < 0)[0]  # Right (pos to neg)
+
+    # Throw errors if we can't identify FWHM
+    if inds_rmin.size == 0:  # No left crossing found
+        print 'Box length error (rmin) at {} keV'.format(nu/NUKEV)
+        return 1. # Maximum (scaled) width
+    else:
+        i_rmin = inds_rmin[-1]+1  # Crossing closest to peak
+
+    if inds_rmax.size == 0:  # No right crossings found
+        print 'Box length error (rmax) at {} keV'.format(nu/NUKEV)
+        print 'Rim falloff towards shock is weird?'
+        i_rmax = -1  # Farthest right index
+        return rmesh[i_rmax] - rmesh[i_rmin]
+    else:
+        i_rmax = inds_rmax[0]  # Crossing closest to peak
+
+    # Finally, nail down the fwhm location
+    def f_thrsh(r):  # for brentq rootfinding
+        return f_int(r) - halfpk
+    rmin = spopt.brentq(f_thrsh, rmesh[i_rmin-1], rmesh[i_rmin])
+    rmax = spopt.brentq(f_thrsh, rmesh[i_rmax], rmesh[i_rmax+1])
+
+    return rmax - rmin
 
 
 if __name__ == '__main__':
