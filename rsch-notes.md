@@ -3674,7 +3674,29 @@ the exact same numbers in 3 seconds, for adaptive FWHM.  Very satisfying.
 
 Data backup
 -----------
+Everything on dropbox except for raw chandra data and stuff.
+From the Chandra data folder I skip reprojected Kepler files and thermal Tycho
+images.
 
+In total, approx 6 GB of material being saved.
+
+
+Testing new model code
+----------------------
+Need to double check the resolution stuff, etc first.
+(check what happens when I change resolution on e- tab integrals,
+and you have to check mu<1, mu=1, mu>1, with low or high diffusion)
+
+But then, let it run loose on SN 1006 and make sure we can now get sensible
+errors, and maybe a nice chi-squared space too.
+
+Try fits at different step sizes and report on whether they converged to a
+consistent value?
+
+A quick test on SN1006 hits an error, but the fits look a LOT nicer, they don't
+go wonky or get stuck.  I think this is a good sign!  And I think they proceed
+slightly faster (certailny I can cut down irmax, though that's no longer the
+limiting reagent)
 
 Table presentation
 ------------------

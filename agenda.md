@@ -135,6 +135,8 @@ Some high level questions / thoughts from poster session (July 31):
   4. add some methods to vary vs, compratio, etc...
   5. add methods to quantify effect of varying fwhm measurements, just to
      see...
+  6. Generate tables of results, for averaged filaments (using both arithmetic
+     and geometric means...)
 
   A few more remarks
   ------------------
@@ -187,11 +189,9 @@ Some high level questions / thoughts from poster session (July 31):
 * Estimate error as a function of varying resolution.
   Can we cut resolution in ixmax, iradmax while still getting good FWHMs?
 
-* Some ideas to cut down integration time:
+* Some ideas to cut down fitting time:
   3. iPython parallelizing...
 
-  Try reimplementing in Python, then optimize appropriately with fortran or C
-  glue...
 
 Try playing with python-latex output
 http://code.google.com/p/matrix2latex/

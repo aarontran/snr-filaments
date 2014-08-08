@@ -32,6 +32,9 @@ spectra from all ObsIDs and merging them together.
 To try reproducing Brian's image mosaics, use xygrid="3300:4900:1,3300:4900:1"
 (see procedure outlined below for Kepler).
 
+Folder `tycho_thermal` just holds CIAO `merge_obs` output for 1.7-2.5 keV
+image, for poster session.
+
 Kepler's SNR observation
 ------------------------
 

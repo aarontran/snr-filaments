@@ -48,17 +48,13 @@ Aaron Tran
 
 from __future__ import division
 
-#import cPickle as pickle
-#from datetime import datetime
 import lmfit
 import matplotlib.pyplot as plt
 import numpy as np
 import scipy as sp
 from scipy import optimize
-#import sys
 
 from fplot import fplot
-#import snr_catalog as snrcat
 import models_all as models
 
 # Table from Press et al., Section 14.5 (1st ed.),
@@ -96,10 +92,10 @@ def table_full(snr, kevs, data, eps, tab, mus, fmts, ax=None, inds=None,
 
     for mu, fmt in zip(mus, fmts):
         # Fit from best grid value
-        #eta2, B0, chisqr, refit = get_table_fit(snr, kevs, data, eps, mu, tab,
-        #                                        inds=inds, verbose=verbose)
-        print 'only using best grid value'
-        eta2, B0, asdfjkl_dont_care, chisqr = grid_best(data,eps,tab[mu],inds)
+        eta2, B0, chisqr, refit = get_table_fit(snr, kevs, data, eps, mu, tab,
+                                                inds=inds, verbose=verbose)
+        #print 'only using best grid value'
+        #eta2, B0, asdfjkl_dont_care, chisqr = grid_best(data,eps,tab[mu],inds)
 
         # Get annealed errors
         ci = get_table_err(eta2, B0, chisqr, snr, kevs, data, eps, mu, tab,

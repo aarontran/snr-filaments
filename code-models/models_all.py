@@ -49,6 +49,8 @@ import sys
 
 import fullmodel as fm
 fm.readfglists()  # Only do this once
+import FullEfflength_port as fmp  # Python port
+
 from fplot import fplot
 import snr_catalog as snrcat
 
@@ -614,7 +616,7 @@ def width_cont(params, kevs, snr, verbose=True, rminarc=None, icut=1,
         rminarc = snr.rminarc
         if is_num(snr.rminarc):
             rminarc = rminarc * np.ones(len(kevs))
-    elif is_num(rminarc)
+    elif is_num(rminarc):
         rminarc = rminarc * np.ones(len(kevs))
     # else: rminarc is already an array
 
@@ -626,11 +628,18 @@ def width_cont(params, kevs, snr, verbose=True, rminarc=None, icut=1,
     #     Fullefflengthsub(kevs, inumax, widtharc, B0, eta2, mu, vs, v0, rs,
     #                      rsarc, s, rminarc, icut, irmax, iradmax, ixmax)
     # f2py sets widtharc as output and inumax optional; call signature is:
-    #     fullefflengthsub(kevs, b0, eta2, mu, vs, v0, rs, rsarc, s, rminarc
+    #     fullefflengthsub(kevs, B0, eta2, mu, vs, v0, rs, rsarc, s, rminarc
     #                      icut, irmax, iradmax, ixmax, [inumax])
 
-    fwhms = fm.fullefflengthsub(kevs, B0, eta2, mu, vs, v0, rs, rsarc, s,
-                                rminarc, icut, irmax, iradmax, ixmax)
+    #fwhms = fm.fullefflengthsub(kevs, B0, eta2, mu, vs, v0, rs, rsarc, s,
+    #                            rminarc, icut, irmax, iradmax, ixmax)
+
+    # Python port call signature:
+    # def fefflen(kevs, B0, eta2, mu, vs, v0, rs, rsarc, s, rminarc, icut, irmax,
+    #             iradmax, ixmax):
+
+    fwhms = fmp.fefflen(kevs, B0, eta2, mu, vs, v0, rs, rsarc, s,
+                        rminarc, icut, irmax, iradmax, ixmax)
 
     reserr = fwhms < np.finfo(float).eps * 2
     boxerr = fwhms > (rminarc - np.finfo(float).eps * 2)

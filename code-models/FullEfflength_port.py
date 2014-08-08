@@ -88,21 +88,21 @@ def fefflen(kevs, B0, eta2, mu, vs, v0, rs, rsarc, s, rminarc, icut, irmax,
         # Tabulate e- distr. for fixed nu over e- energy, radial coord
         # Be careful, Fortran code hardcoded for iradmax < 1000
         # and Pacholczyk table < 100 entries
-        print 'e- tabulation start: {}'.format(datetime.now())
+        #print 'e- tabulation start: {}'.format(datetime.now())
         radtab = np.linspace(rmin_nu, 1.0, num=iradmax)
         disttab = fullmodel.distr(np.zeros(1000), iradmax, nu, rmin_nu,
                                   B0, Ecut, eta, mu, rs, v0, s, C_1)
         disttab = disttab[:len(xex), :iradmax]  # Slice off zeros
-        print 'e- tabulation done: {}'.format(datetime.now())
+        #print 'e- tabulation done: {}'.format(datetime.now())
 
         # Tabulate emissivity over radial coord
-        print 'emis tab start: {}'.format(datetime.now())
+        #print 'emis tab start: {}'.format(datetime.now())
         rhotab = np.linspace(rmin_nu, 1., num=10000)  # TODO set as irhomax?
         emistab = emisx(rhotab, nu, B0, radtab, disttab, xex, fex)
-        print 'emis tab done: {}'.format(datetime.now())
+        #print 'emis tab done: {}'.format(datetime.now())
 
         # Compute intensity over rmesh
-        print 'intensity start: {}'.format(datetime.now())
+        #print 'intensity start: {}'.format(datetime.now())
         rmesh = np.linspace(rmin_nu, 1.0, num=irmax, endpoint=False)
         xmaxmesh = np.sqrt(1.-rmesh**2)  # Max x on line of sight at each r
         # Grid along line of sight for each r; shape is (irmax, ixmax)
@@ -115,7 +115,7 @@ def fefflen(kevs, B0, eta2, mu, vs, v0, rs, rsarc, s, rminarc, icut, irmax,
         emisgrid = np.interp(rhogrid, rhotab, emistab)
         # then integrate emis. on lines of sight
         intensity = spint.simps(emisgrid, xgrid)
-        print 'intensity done: {}'.format(datetime.now())
+        #print 'intensity done: {}'.format(datetime.now())
 
         def get_intensity(r):
             """Non-vectorized intensity computation, for FWHM finding"""
@@ -124,12 +124,12 @@ def fefflen(kevs, B0, eta2, mu, vs, v0, rs, rsarc, s, rminarc, icut, irmax,
             emismesh = np.interp(rhomesh, rhotab, emistab)
             return spint.simps(emismesh, xmesh)
 
-        print 'find fwhm start: {}'.format(datetime.now())
+        #print 'find fwhm start: {}'.format(datetime.now())
         dr = (1 - rmin_nu) / (irmax - 1) # Match rmesh
         #w = fwhm(rmesh, intensity, dr, nu)
         w = fwhm2(rmesh, intensity, get_intensity, dr, nu)
         widths.append(w)
-        print 'find fwhm done: {}\n'.format(datetime.now())
+        #print 'find fwhm done: {}\n'.format(datetime.now())
 
     return np.array(widths) * rsarc
 
