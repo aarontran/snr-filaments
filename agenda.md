@@ -132,7 +132,6 @@ Some high level questions / thoughts from poster session (July 31):
   (calculate chisqr interactively).
 
   Agenda
-  3. add things for tycho, get NUMBERS for tycho ASAP...
   4. add some methods to vary vs, compratio, etc...
   5. add methods to quantify effect of varying fwhm measurements, just to
      see...
@@ -201,9 +200,13 @@ Some high level questions / thoughts from poster session (July 31):
      Even if B-field varies (magnetic damping), j_nu is space dependent
      anyways.  So go ahead and compute j_nu(x) just 1x, then integrate from
      table along line of sight.
+     (this makes a ~10x difference)
 
   Try reimplementing in Python, then optimize appropriately with fortran or C
   glue...
+
+Try playing with python-latex output
+http://code.google.com/p/matrix2latex/
 
 ### General (lower level to-dos)
 

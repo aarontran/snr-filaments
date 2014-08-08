@@ -3430,7 +3430,150 @@ Some conclusions:
    than all the redundant calls to trapz
 
 
-Try playing with python-latex output
-http://code.google.com/p/matrix2latex/
+After an hour-ish of meddling with Cython, verdict is I have no idea what
+I'm doing, welp.  And, static typing everywhere is cluttering code, you might
+as well move back to Fortran if you're going to do this.  Only issue is the
+mysterious rminarc bug, still.  Numpy has already nailed most of the speedup
+for us.
+
+Options: continue working in Python...
+Could also try rewrangling Sean's code in more modern fortran?
+E.g. use the improvements implemented here.  Operate on 3-D arrays and tabulate
+appropriately.
+Or, just us f2py wrapper for the electron distribution tabulation.
+
+## Some sanity checks
+Sample output to compare Fortran, Python code:
+(default resolutions: irmax=400, iradmax=100, rxmax=500)
+
+To try to be consistent with Sean's code, when finding indices bracketing
+the FWHM location, I take the "inside" indices which gives a smaller FWHM value.
+(if I take the outside, this adds 2x spatial resolution to the Python values).
+
+FWHM values agree to within resolution error!  Yay.
+
+### B0=150e-6, eta2=1, mu=1, rminarc = 60.
+(resolution: 0.15 arcsec)
+
+Fortran:
+    0.69999999999999996       keV:    18.149999999999999     
+     1.0000000000000000       keV:    15.749999999999964     
+     2.0000000000000000       keV:    12.000000000000078
+
+Python:
+    0.70 keV: 18.15000
+    1.00 keV: 15.60000
+    2.00 keV: 12.00000
+
+### B0=150e-6, eta2=1, mu=1, rminarc = 20.
+(resolution: 0.05 arcsec)
+
+Fortran:
+  0.69999999999999996       keV:    18.299999999999983     
+   1.0000000000000000       keV:    15.799999999999992     
+   2.0000000000000000       keV:    12.100000000000033 
+
+Python:
+    0.70 keV: 18.25000
+    1.00 keV: 15.75000
+    2.00 keV: 12.10000
+
+Now, for sanity, check that our results agree for different mu values (different functions for f(E,x))
+
+### B0=150e-6, eta2=1, mu=0.5; rminarc = 20.
+
+Fortran (2.5 sec)
+  0.69999999999999996       keV:    19.399999999999995     
+   1.0000000000000000       keV:    16.799999999999947     
+   2.0000000000000000       keV:    12.800000000000022 
+
+Python (3.5 sec)
+    0.70 keV: 19.45000
+    1.00 keV: 16.80000
+    2.00 keV: 12.85000
+    
+### B0=150e-6, eta2=1, mu=1.5; rminarc = 20.
+
+Fortran (2.8 sec)
+  0.69999999999999996       keV:    17.500000000000039     
+   1.0000000000000000       keV:    14.999999999999947     
+   2.0000000000000000       keV:    11.500000000000000
+
+Python (4.6 sec)
+    0.70 keV: 17.50000
+    1.00 keV: 15.05000
+    2.00 keV: 11.50000
+
+
+
+Friday 2014 August 8
+====================
+
+Summary
+-------
+
+More code optimization
+----------------------
+
+Why are we doing this?  We have a few separate goals.
+1. Faster speed for fitting (+errors) and tabulation
+2. Avoid strange rminarc bug
+3. Improved FWHM resolution, avoid discrete jumps in FWHM values
+   (to help smooth out chi-squared space)
+
+Continuing from yesterday: now, tabulate electron distribution in Fortran
+(rewrote code appropriately and updated loop order).  Python code timing:
+* e- table in Fortran: 0.45 sec (about 2x savings)
+* map emisx (spint) table: 0.2 sec
+* manual loop for intensity, interp emis w/single call: 0.15 seconds
+
+Total time for 3 bands is now about 2.4 seconds in Python, not bad at all.
+Compare 2.7 seconds in Fortran (not tabulating emissivity)!
+Using Instruments' Time Profiler on Fortran code:
+* (without -O3 flag) ~55% of time goes to e- distr, 45% goes to emisx calc
+* (with -O3 flag) ~45% of time goes to e- distr, 55% goes to emisx calc
+Flags -O, -O2, -O3 drop times from 4.1 to 2.7 sec; -Ofast drops to 1.5 seconds!
+And, compiling with/without -O3 flag makes a small difference in FWHM output..
+
+Interesting.  In Fortran we can cut time spent on trapz and memory access,
+but we can't get around calculating exponents, powers, etc.
+If we pretabulate emissivity in Fortran, our time will only drop by ~1/2.
+
+I think at this point it's better to stick to Python, optimizing
+intensity calculation (binary search to find maximum, then FWHM locations)
+which is easier than in Fortran.
+
+A little more optimizing: mapping for emisx is not optimal.  Turn into a 2-D
+ndarray operation.
+Now the timing looks like:
+* e- table in Fortran: 0.45 sec
+* emisx table, spint on 2-D array: 0.01 sec (!!!)
+* manual loop for intensity, interp emis w/single call: 0.15 seconds
+
+So, that basically negated any time cost of emisx table and dropped time to
+1.7 seconds.  Awesome!  Now only to optimize the intensity.
+
+While I'm at it... try computing the integrals over a 2-D array here as well.
+We can cut another 20% off, so the only bottleneck left is the electron
+distribution...
+* e- table in Fortran: 0.45 sec
+* emisx table, spint on 2-D array: 0.008 sec
+* interp emis and integrate intensity w/single call: 0.04 seconds
+  (combine interp search+calc into one step w/ np.interp: drop to 0.018 sec)
+  (as np.interp calls `compiled_interp` which is undoubtedly faster)
+
+Down to 1.4 seconds.  Almost all time is due to e- tabulation now, which we
+could only do in ~0.75 sec w/Numpy. (note: overhead of imports, etc adds about
+0.2s when timing from terminal)
+
+But we don't actually want to integrate intensity w/ a single call, if we are
+to do it adaptively.  So the time will increase slightly.
+
+Data backup
+-----------
+
+
+Table presentation
+------------------
 
 

@@ -57,8 +57,8 @@
           ! For timing test
           B0 = 150d-6
           eta2=1d0
-          mu=1d0
-          rminarc=60d0
+          mu=1.5d0
+          rminarc=20d0
           snrflag=0
 
           kevs(1) = 0.7d0
@@ -146,8 +146,6 @@
           integer inu
           ! Tabulate e- distribution over particle energy (1 to ir)
           ! and over radial coord ( (rsarc - rminarc) / iradmax )
-          double precision en, rad, delrad
-          integer j, irad
           double precision disttab(100, 1000), radtab(1000)
           ! Iterate over radial coord (r, irmax pts), at each point
           ! Integrate over line of sight (x, ixmax pts)
@@ -160,7 +158,7 @@
           double precision width(inumax)!, norms(inumax)
 
           ! Functions used
-          double precision distrpohl, distrmlt1, distrmgt1
+          !double precision distrpohl, distrmlt1, distrmgt1
           double precision emisx, Distgraphr
 
           common /xrays/ xex, fex, ir
@@ -208,29 +206,8 @@ cf2py depend(inumax) widtharc
 
             ! Tabulate electron distribution for fixed nu
             ! generating 2-D grid as function of energy, radial position
-
-            ! Step over particle energies from Pacholczyk table
-            do j = 1, ir  ! ir = number of entries in Pacholczyk
-              ! Step from r=rmin to r=1 (IRADMAX resolution)
-              delrad = (1d0-rmin(inu))/dble(iradmax-1)
-              rad = rmin(inu)
-              do irad = 1, iradmax
-                en = dsqrt(nu/c1/B0/xex(j))  ! e- energy for xex(j)
-                if (mu.lt.1d0) then
-                  disttab(j,irad) = distrmlt1(en,B0, ecut,rad,
-     &                                        eta,mu, rs, v0,s)
-                elseif (mu.gt.1d0) then
-                  disttab(j,irad) = distrmgt1(en,B0, ecut,rad,
-     &                                        eta,mu, rs, v0,s)
-                else
-                  disttab(j,irad) = distrpohl(en,B0, ecut,rad,
-     &                                        eta,mu, rs, v0,s)
-                endif
-                radtab(irad) = rad  ! Store/increment radial coord
-                rad = rad + delrad  ! rmin to 1.0 (scaled coord)
-              enddo
-            enddo
-
+            call distr(disttab, radtab, iradmax, nu, rmin(inu), B0,Ecut,
+     &                 eta, mu, rs, v0, s, c1)
 
             ! For each radial position in intensity profile
             ! Integrate over line of sight to get I_\nu(r)
@@ -412,6 +389,61 @@ cf2py depend(inumax) widtharc
           enddo
 
           emisx = trpsum*dsqrt(nu*B)  ! Constant prefactors skipped
+          return
+      end
+
+! --------------------------------------
+! Electron distribution tabulation
+! Compute e- distr and return full table
+! --------------------------------------
+
+      subroutine distr(disttab, radtab, iradmax, nu, rmin, B0, Ecut,
+     &                                           eta, mu, rs, v0, s, c1)
+          implicit none
+          ! Input arrays to modify
+          double precision disttab(100, 1000), radtab(1000)
+          ! Inputs
+          integer iradmax ! Resolution for radtab
+          double precision nu, rmin, B0, mu, rs, v0, s, c1  ! Input/constants
+          double precision Ecut, eta ! Derived from program inputs
+
+          ! Iteration variables
+          integer irad, j
+          double precision en, delrad, rad
+          ! Functions to use
+          double precision distrmlt1, distrmgt1, distrpohl
+          ! Emissivity data for common block
+          double precision xex(100), fex(100)
+          integer ir ! Number of entries in Pacholczyk
+
+          common /xrays/ xex, fex, ir
+
+! f2py directives
+
+cf2py intent(out) disttab
+
+          rad = rmin
+          delrad = (1d0 - rmin) / dble(iradmax-1)
+          ! rad will span rmin to 1.0, inclusive
+
+          do irad = 1, iradmax  ! Fortran-order access
+            do j = 1, ir
+              en = dsqrt(nu/c1/B0/xex(j))
+              if (mu.lt.1d0) then
+                disttab(j,irad) = distrmlt1(en,B0, ecut,rad,
+     &                                      eta,mu, rs, v0,s)
+              elseif (mu.gt.1d0) then
+                disttab(j,irad) = distrmgt1(en,B0, ecut,rad,
+     &                                      eta,mu, rs, v0,s)
+              else
+                disttab(j,irad) = distrpohl(en,B0, ecut,rad,
+     &                                      eta,mu, rs, v0,s)
+              endif
+            enddo
+            radtab(irad) = rad
+            rad = rad + delrad
+          enddo
+
           return
       end
 
@@ -907,6 +939,12 @@ cf2py depend(inumax) widtharc
               go to 18  ! Break out of loop
    17     continue
    18     continue
+
+          ! If Distgraphr is not found...
+          if (r.gt.radtab(j)) then
+              print *, 'Distgraphr error (interpolation fail)'
+              Distgraphr = 1d45
+          endif
 
           return
       end
