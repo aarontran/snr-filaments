@@ -16,6 +16,9 @@ Methods (for my own reference):
     Array can be fed into 1. LaTeX converter, 2. iPython notebook display
     Currently output is just for iPython display.
 
+    # LaTeX table output
+    table_latex(
+
     # Full model, fitting
     table_full(...)         generate tables/plots for full model, calls
     get_table_fit(...)      helpers to compute fits/errors
@@ -48,11 +51,14 @@ Aaron Tran
 
 from __future__ import division
 
-import lmfit
 import matplotlib.pyplot as plt
 import numpy as np
+import re
 import scipy as sp
 from scipy import optimize
+
+import lmfit
+#from matrix2latex import matrix2latex as m2ltx
 
 from fplot import fplot
 import models_all as models
@@ -70,6 +76,203 @@ CI_2_CHISQR[0.99] = 6.63
 def main():
     """main stuff.  Edit this at will to generate desired output..."""
 
+# ==================
+# LaTeX table output
+# ==================
+
+# TODO MANY TWEAKS, but this is a working prototype
+
+# !!! This duplicates a LOT of functionality from matrix2latex.py
+# ...
+# consider adjusting this to work w/ matrix2latex
+# in particular, see the implementation of niceFloat
+# simply use errors to compute # of sigfigs and supply that as an argument
+# and, as suggested, use \e in LaTeX to parse exponential notation presentation
+# rather than manually inputting
+
+# I'd like to extend it by adding support for data w/errors;
+# it handles a lot of other functionality nicely already.
+
+# Example matrix2lated implementation?
+# algnmt = '@{}rr@{ $\pm$ }lr@{ $\pm$ }lr@{}'
+# hr = [[''] + 5 * [title],
+#       [r'$\mu$ (-)'] + 2 * [r'$\eta_2$ (-)] + 2 * [r'$B_0$ ($\mu$G)']
+#        + [r'$\chi^2$']]
+#
+# fmtcol = 'STUFF'  # Here parse sigfigs, depending on error
+# # PROBLEM... fmtcol will vary depending on the row.
+# # So this is where I probably need to exted matrix2latex
+# m2ltx(data, headerRow = hr, formatColumn = fmtcol,
+#       alignment = algnmt)
+
+
+class LatexTable(object):
+    """Worth generalizing, someday.
+    1. customize number of columns, +/- formatting, number formatting
+    2. customize concatenating tables together... (horizontally, that is)
+    3. customize header/footer/layout control
+
+    Setup for booktabs table output (what about aastex deluxetable?)
+
+    Options for columns:
+    1. number w/ single +/- error
+        tablespec: + 'r@{ $\pm$ }l'
+        row fmt: + ' & ${}$ & ${}$'
+        units header: + r'\multicolumn{2}{c} ...'
+    2. number w/ distinct +/- errors
+        tablespec: + 'r'
+        row fmt: + ' & ${}^{}_{}$'
+        precision of stated value set by smallest error value.
+    3. something else, e.g. single # (give the fmt specifier directly)
+        tablespec: + 'r'
+        row fmt: + ' & STUFF' (you decide precision)
+
+    add_row then accepts an arbitrary number of columns
+    """
+
+    # Initializes: header, labels, rows, footer; rspec, types
+    def __init__(self, labs, types, title):
+        """Types specify column types; 0,1,2 = no/single/double +/- errors"""
+
+        self.types = types
+
+        # Build table/column spec, treating t==1 (single err) case specially
+        hlst = [r'\begin{tabular}{@{}']
+        for t in types:
+            if t == 1:
+                hlst.append(r'r@{ $\pm$ }l')
+            elif t == 2:
+                hlst.append('l')
+            else:
+                hlst.append('r')
+        hlst.append(r'@{}}')
+        self.header = [''.join(hlst)]
+        #self.header = [r'\begin{tabular}{@{}rr@{ $\pm$ }lr@{ $\pm$ }lr@{}}']
+
+        # Table header -- top header, labels, midrule
+        self.header.append(r'\toprule')
+        ncols = len(types + [t for t in types if t == 1]) # Single err case
+        self.header.append(r'{} & \multicolumn{'+str(ncols-1)+'}{c}{'+title+r'} \\')
+        self.header.append(r'\cmidrule(l){2-'+str(ncols)+'}')
+
+        # Labels for units
+        lablst = []
+        for t, lab in zip(types, labs):
+            if t == 1:
+                lablst.append(r'\multicolumn{2}{c}{' + lab + r'} & ')
+            else:
+                lablst.append('{} & '.format(lab))
+        # Remove trailing ampersand, add newline
+        self.header.append((''.join(lablst))[:-3] + r'\\')
+        self.header.append(r'\midrule')
+        #self.header.append(r'$\mu$ (-) & \multicolumn{2}{c}{$\eta_2$ (-)} & '
+        #                   r'\multicolumn{2}{c}{$B_0$ ($\mu$G)} & '
+        #                   r'\multicolumn{1}{c}{$\chi^2$} \\')
+        
+
+        # Build row spec
+        rlst = []
+        for t in types:
+            if t == 0:
+                rlst.append('{0.3g} & ')  # Default for a number
+            elif t == 1:
+                rlst.append('${}$ & ${}$ & ')  # Single error
+            elif t == 2:
+                rlst.append('${{{}}}^{{{}}}_{{{}}}$ & ')  # Double error
+                # Need braces around data value, in exponential case
+            else:
+                rlst.append(t + ' & ')  # Supply your own damn string spec
+        # Remove trailing ampersand, add newline
+        self.rspec = (''.join(rlst))[:-3] + r'\\'
+
+        # Rows to be filled with rspec-formatted strings
+        self.rows = []
+
+        self.footer = [r'\bottomrule', r'\end{tabular}']
+
+
+    def __str__(self):
+        return '\n'.join(self.get_table())
+
+    def get_table(self):
+        return self.header + self.rows + self.footer
+    
+    #def add_row(self, mu, e2, e2eps, B0, B0eps, chisqr):
+    #    """Add row to table, w/assumed format"""
+    def add_row(self, *args):
+        """Add row to table, using rspec.
+        If giving two errors, positive err comes first..."""
+        args = list(args)  # Must expand tuple
+        ind = 0
+        for t in self.types:
+            if t == 1:
+                args[ind:ind+2] = self.fmt_numerr(*args[ind:ind+2])
+                ind += 2
+            elif t == 2:
+                args[ind:ind+3] = self.fmt_num_2err(*args[ind:ind+3])
+                ind += 3
+            else:
+                ind += 1
+        self.rows.append(self.rspec.format(*args))
+        #self.rows.append(fmtstr.format(mu, e2_str, e2eps_str, B0_str,
+        #                               B0eps_str, chisqr))
+
+    def fmt_num_2err(self, num, errpos, errneg):
+        """Format number w/error nicely.
+        It's imperfect and doesn't agree w/ rounding of Ressler,
+        but it's simpler this way...
+        DEAR GOD THIS CODE IS DISGUSTING
+        """
+        num_exp = int(np.floor(np.log10(num)))
+        err_exp = int(np.floor(np.log10(abs(min(errpos, errneg)))))
+        prec = num_exp - err_exp + 2 # Print to precision + 1, allowed by error
+        if prec <= 0:
+            prec = 1  # Enforce minimum precision
+
+        # Use string formatting to handle rounding
+        numstr = ('{:0.'+str(prec)+'g}').format(num)
+        errstr_pos = ('+{:0.2g}').format(errpos)
+        errstr_neg = ('-{:0.2g}').format(errneg)
+
+        numstr = self.expstr2latex(numstr)
+        errstr_pos = self.expstr2latex(errstr_pos)
+        errstr_neg = self.expstr2latex(errstr_neg)
+        return numstr, errstr_pos, errstr_neg
+
+    def fmt_numerr(self, num, err):
+        """Format number w/error nicely.
+        It's imperfect and doesn't agree w/ rounding of Ressler,
+        but it's simpler this way...
+        """
+        num_exp = int(np.floor(np.log10(num)))
+        err_exp = int(np.floor(np.log10(err)))
+        prec = num_exp - err_exp + 2 # Print to precision + 1, allowed by error
+        if prec <= 0:
+            prec = 1  # Enforce minimum precision
+
+        # Use string formatting to handle rounding
+        numstr = ('{:0.'+str(prec)+'g}').format(num)
+        errstr = ('{:0.2g}').format(err)
+
+        numstr = self.expstr2latex(numstr)
+        errstr = self.expstr2latex(errstr)
+        return numstr, errstr
+
+    def expstr2latex(self, numstr):
+        """Convert a Python string-formatted number to nicer LaTeX"""
+        # Capturing groups for significand, exp sign if negative, exp power
+        exp_regexp = r'([0-9\+\-\.]+)' + 'e' + r'([\-]*)[\+0]*([1-9]+[0-9]*)'
+        result = re.search(exp_regexp, numstr)
+        if result:
+            return (r'{} \times '.format(result.group(1)) +
+                    '10^{' + '{}{}'.format(*result.group(2,3)) + '}')
+        return numstr
+        
+
+
+# ===========================
+# Full model fitting/plotting
+# ===========================
 
 # NOTE currently NOT fitting from best grid value,
 #      currently NOT annealing errors
@@ -86,16 +289,21 @@ def table_full(snr, kevs, data, eps, tab, mus, fmts, ax=None, inds=None,
     table = []
     table.append(['mu', 'eta2', 'B0', 'chisqr'])
 
+    ltab = LatexTable([r'$\mu$ (-)', r'$\eta_2$ (-)', r'$B_0$ ($\mu$G)',
+                       r'$\chi^2$'],
+                      ['{:0.2f}', 2, 2, '{:0.4f}'],
+                       'LaTeX table')  # BAD...
+
     if ax is None:
         ax = plt.gca()
     ax.errorbar(kevs, data, yerr=eps, fmt='ok')
 
     for mu, fmt in zip(mus, fmts):
         # Fit from best grid value
-        eta2, B0, chisqr, refit = get_table_fit(snr, kevs, data, eps, mu, tab,
-                                                inds=inds, verbose=verbose)
-        #print 'only using best grid value'
-        #eta2, B0, asdfjkl_dont_care, chisqr = grid_best(data,eps,tab[mu],inds)
+        #eta2, B0, chisqr, refit = get_table_fit(snr, kevs, data, eps, mu, tab,
+        #                                        inds=inds, verbose=verbose)
+        print 'only using best grid value'
+        eta2, B0, asdfjkl_dont_care, chisqr = grid_best(data,eps,tab[mu],inds)
 
         # Get annealed errors
         ci = get_table_err(eta2, B0, chisqr, snr, kevs, data, eps, mu, tab,
@@ -103,6 +311,14 @@ def table_full(snr, kevs, data, eps, tab, mus, fmts, ax=None, inds=None,
 
         err_eta2 = get_ci_errors(ci, 'eta2', ci_val=0.683)
         err_B0 = get_ci_errors(ci, 'B0', ci_val=0.683)
+
+        # NOTE TEMPORARY PATCH -- if errors are zero, give sensible values
+        # This is for use w/ LaTeX Table generation, Aug. 18 2014
+        # Only occurs when we are not fitting + our best fit is
+        # at very edge of eta2/B0 grid
+        # Note that this converts tuple to list
+        err_eta2 = [err if abs(err) > 1e-15 else eta2 for err in err_eta2]
+        err_B0 = [err if abs(err) > 1e-15 else B0 for err in err_B0]
 
         # Assemble table for pretty-printing
         tr = ['{:0.2f}'.format(mu)]
@@ -113,18 +329,28 @@ def table_full(snr, kevs, data, eps, tab, mus, fmts, ax=None, inds=None,
         tr.append('{:0.4f}'.format(chisqr))
         table.append(tr)
 
+        # DEBUGGING
+        print tr
+        # Problem -- this will print weirdly if errors are negative.../effed up
+        # Problem -- this will error out if error is zero, ANYWHERE...
+        # YOU MUST HANDLE IT IF ANY ERRORS ARE ZERO...
+        ltab.add_row(mu, eta2, err_eta2[1], err_eta2[0],
+                     B0*1e6, err_B0[1]*1e6, err_B0[0]*1e6,
+                     chisqr)
+
         # Plot
         p = lmfit.Parameters()
         p.add('B0',value=B0)
         p.add('eta2',value=eta2)
         p.add('mu',value=mu)
         fwhms_m = models.width_cont(p, kevs, snr)  # Here's a function call
+        print fwhms_m
         ax.plot(kevs, fwhms_m, fmt)
         ax.legend(tuple(['Data'] + [r'$\mu = {:0.2f}$'.format(mu) for
                                     mu in mus]), loc='best')
         fplot('Energy (keV)', 'FWHM (arcsec)', ax=ax, axargs='tight')
 
-    return table, ax
+    return table, ax, ltab
 
 
 # ========================================================
@@ -239,7 +465,7 @@ def get_table_err(eta2_best, B0_best, chisqr_min,
     #eta2_right, B0_right = anneal_err(ind_right, +1, eta2s, fitter,
     #                                 chisqr_thresh, verbose)
 
-    # TESTING: naive grid bounds
+    # NOTE TESTING: naive grid bounds, NOT ANNEALING!!!!
     eta2_left, B0_left = eta2s[ind_left], B0s[ind_left]
     eta2_right, B0_right = eta2s[ind_right], B0s[ind_right]
     print 'Using naive grid bounds (no annealing)'
@@ -369,6 +595,11 @@ def table_simp(snr, kevs, data, eps, mus, fmts, inds=None):
     table = []  # To be used with ListTable in iPython notebook output
     table.append(['mu', 'eta2', 'B0', 'chisqr'])
 
+    ltab = LatexTable([r'$\mu$ (-)', r'$\eta_2$ (-)', r'$B_0$ ($\mu$G)',
+                       r'$\chi^2$'],
+                      ['{:0.2f}', 1, 1, '{:0.4f}'],
+                       'LaTeX table')  # BAD...
+
     ax = plt.gca()
     ax.errorbar(kevs, data, yerr=eps, fmt='ok')
 
@@ -393,6 +624,10 @@ def table_simp(snr, kevs, data, eps, mus, fmts, inds=None):
         tr.append('{:0.4f}'.format(res.chisqr))
         table.append(tr)
 
+        ltab.add_row(mu, p['eta2'].value, p['eta2'].stderr,
+                     p['B0'].value * 1e6, p['B0'].stderr * 1e6,
+                     res.chisqr)
+
         kevs_m = np.linspace(kevs[0]-0.2, kevs[-1]+0.2, 100)
         fwhms_m = models.width_dump(p, kevs_m, snr)
         ax.plot(kevs_m, fwhms_m, fmt)
@@ -400,7 +635,7 @@ def table_simp(snr, kevs, data, eps, mus, fmts, inds=None):
     fplot('Energy (keV)', 'FWHM (arcsec)', axargs='tight')
     ax.legend(tuple(['Data'] + [r'$\mu = {:0.2f}$'.format(mu)
                                  for mu in mus]), loc='best')
-    return table, ax
+    return table, ax, ltab
 
 
 def check_eta2_simp(snr, kevs, data, eps, eta2_vals, mus, fmts, inds=None):

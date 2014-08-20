@@ -15,6 +15,12 @@ Table of contents?
 * Week 4 - profile fitting expts, new energy bands
 * Week 5 - fix profile fit errors, FWHM and `m_E` calculation, Sean's code
 * Week 6 - TBD
+* Week 7 - review/vet Sean's code, ???
+* Week 8
+* Week 9
+* Week 10
+
+* Week 12 - 
 
 
 
@@ -2062,8 +2068,8 @@ I'm very perplexed because the `</div>` tags seem to be crazy mismatched.
 Okay need to clean up these notes soon but I think I'm done for today.
 
 
-Monday 2014 July 14
-===================
+(Week 7) Monday 2014 July 14
+============================
 
 Continuing issue - how to best deal with FWHM presentation?
 * Normalize averaged values, or average normalized values
@@ -2185,8 +2191,8 @@ Then... change it up to work with f2py easily.
 Then... try porting it if that doesn't work / runs into trouble...
 
 
-Monday 2014 July 21
-===================
+(Week 8) Monday 2014 July 21
+============================
 
 
 Resolved Ecut issue.  Sean's code is correct, paper equation (18) has a typo,
@@ -2761,8 +2767,8 @@ rminarc dynamically.
 But, the plan is to just compute grid for one good value of shock veloc just
 for now... can do more later.
 
-Monday 2014 July 28
-===================
+(Week 9) Monday 2014 July 28
+============================
 
 
 
@@ -3266,8 +3272,8 @@ Summary of results from error "annealing"
         final grid bounds (B0): 137.1678, 214.5354
 
 
-Monday 2014 August 4
-====================
+(Week 10) Monday 2014 August 4
+==============================
 
 Summary
 -------
@@ -3698,7 +3704,323 @@ go wonky or get stuck.  I think this is a good sign!  And I think they proceed
 slightly faster (certailny I can cut down irmax, though that's no longer the
 limiting reagent)
 
-Table presentation
-------------------
+
+(Week 11) Monday 2014 August 11 -- Friday 2014 August 15
+========================================================
+
+On vacation
+
+
+(Week 12) Monday 2014 August 18
+=====================
+
+Summary
+-------
+Tables...
+
+Set-up for mac work
+-------------------
+For now, until I get a computer/workstation at GSFC again, work off of my mac's
+local git repo.
+
+Trying to work with `fullmodel.so` (f2py compiled model code)
+* Problems: no fortran compiler found (f2py output).  Couldn't locate
+libgfortran.3.dylib in `/opt/local/lib/gcc/` or something...
+* Solution: sudo port select --set gcc mp-gcc48
+
+As of TODAY? my access to Berkeley's library proxy is dead.
+Use UMD Research Port now...
+
+
+Table generation, errors
+------------------------
+
+Major issue: method of confidence interval contours breaks down at large
+chisquared... but I don't know when/how, or which references to seek.
+I thought the `lmfit` package had some info on this but I can't find it.
+Perhaps see [this](http://stats.stackexchange.com/q/76444).
+And, [this](http://www.itl.nist.gov/div898/handbook/eda/section3/eda3674.htm).
+Anyways...
+
+
+Tuesday 2014 August 19
+======================
+
+Summary
+-------
+* More robust FWHM computation in full model code (Python port) addresses
+  sharp drop-off at r=1 (box length error; fall-off at rim edge is weird)
+* Fail more gracefully if FWHM is not found (extreme values of B0, eta2)
+* Fix FWHM calculation bugs at intensity grid edge (for very narrow rims)
+
+
+Result: rminarc must be sized to fit rims still, AND it should be as small as
+possible to reduce resolution error (especially at high energies).  Quantifying
+that comes soon.
+
+Remark: wow, I have been working on the "full model code" for some 4 weeks
+now... minus a bit of time for the poster presentation.
+
+I need to learn to program more efficiently and avoid bugs in the first place.
+Because time is expensive...
+
+
+Remove box length errors at r=1
+-------------------------------
+A bug appears on a full model call with:
+
+    B0 = 821.815 muG; eta2 = 9.796; mu = 0.000;
+    rminarc = [ 18.5    15.    10.77  10.77  10.77]
+
+We get box length errors (max r-value in rmesh is not close enough to edge, to
+capture rim drop off).  Output FWHMs are quite small:
+
+    [ 1.9425    1.725     1.373175  1.1847    1.02315]
+
+I fixed this bug; code now searches for FWHM crossings on right.
+
+
+Bug in SN 1006 test (rim too smeared out)
+-----------------------------------------
+
+Code fails on function call with (using SN 1006 parameters):
+
+    B0 = 67.933 muG; eta2 = 1187.569; mu = 0.000; rminarc = [60.  60.  60.]
+
+Code fails while finding the intensity maximum; max is found at smallest
+rmesh value (r = rmin).  It seems that B0 was too small, eta2 was too big, so
+the rim was smeared out horribly.
+
+Solution: print warning and return error value (fwhm = shock radius).
+This allows fitting to proceed if we hit extreme parameter values.
+
+
+rminarc-dependent FWHMs at high energy
+--------------------------------------
+
+Result: bugs in intensity-finding method.
+
+Weird issue -- at large energy (10 keV), rminarc strongly affects FWHM values.
+All subsequent debugging uses the following parameters:
+
+    B0 = 300e-6, eta2 = 1000, mu = 0; Tycho's SNR with vs = 4.52e8
+
+At 10 keV, changing rminarc from 10 to 200, changes output FWHM by ~0.25 arcsec
+(for true FWHM ~6.95 arcsec).  This 4% error is quite large!
+(note that for 0.7 keV the error remains small, looks okay)
+
+### Debugging log
+
+Changing rminarc changes the peak intensity value a lot!
+
+    peak intensity = 6.31849924787e-135 at r = 0.994645003207 (rminarc = 10.)
+    peak intensity = 7.35531230369e-135 at r = 0.994283560673 (rminarc = 200.)
+
+Hypothesis: is scipy minimization to find peak intensity, not consistent?
+I was wondering if it would depend on the epsilon tolerance.
+At rminarc = 10, 200, I computed intensities at the two different peak
+locations (r = 0.9946450, 0.9942835).
+Result: computed intensity changes a lot, whether on/off peak, depending on
+rminarc.  Scipy finds the peak correctly in each case.
+
+Changing rminarc, then, is changing overall intensity values.  I'm befuddled.
+Why does rminarc change intensity calculation?  Looking in code:
+* `rmin_nu` sets values of e- distr to interpolate over (rmin to 1)
+  (sets resolution of disttab)
+* `rmin_nu` also sets values of emissivity to interpolate over (rmin to 1)
+  (sets resolution of emistab)
+These two bullet points are the same, as emissivity just integrates e-
+distribution over electron energy.
+
+If I change iradmax to improve e- distr grid, does FWHM w/rminarc=200 get
+closer to FWHM w/rminarc=10? (assuming that smaller rminarc means better
+resolution for e- distr interpolation)
+CONFIRMED: iradmax = 100 vs. 400 makes a HUGE difference.
+With iradmax=400, the FWHMs agree to 0.007 arcsec (vs. 0.25 arcsec before).
+Absolute FWHM value changed by ~0.0003 for rminarc = 10 arcsec.
+
+(sanity check) changing irmax from 100 to 400 (holding iradmax=100, ixmax=500)
+made no difference, as expected.
+
+### Are rminarc, iradmax interchangeable in setting resolution?
+
+Simple test: does doubling iradmax have the same effect as halving rminarc?
+Same parameters as before (irmax=100, ixmax=500; 10 keV energy w/ Tycho's SNR)
+
+    iradmax = 100, rminarc = 20: FWHM = 6.9568692 (baseline)
+    iradmax = 100, rminarc = 10: FWHM = 6.95696361 (change = 0.00009441)
+    iradmax = 200, rminarc = 20: FWHM = 6.95697527 (change = 0.00010607)
+
+So, doubling iradmax / halving rminarc effects a change of ~1e-4, but each
+method differs by ~1e-5.  Looks promising.
+
+How about the effects of a larger/sharper change?  Do the methods differ by
+about 10% normally, or do they differ by an absolute amount ~1e-5 arcsec?
+
+    iradmax = 100, rminarc = 100: FWHM = 7.15124535
+    iradmax = 200, rminarc = 200: FWHM = 6.97627089
+
+Goddamnit (difference: ~0.18).  Maybe that shouldn't be a surprise.
+Repeat this for 0.7 keV and 4.5 keV:
+
+    iradmax = 100, rminarc = 100: FWHM(0.7, 4.5 keV) = 26.21491971, 10.35922423
+    iradmax = 200, rminarc = 200: FWHM(0.7, 4.5 keV) = 26.21539187, 10.3612368
+
+Differences are ~0.0005, 0.002.  Wow.  The discrepancy increases very sharply
+with energy.  For comparison, check against "good" values.
+
+    iradmax = 500, rminarc = [30, 12]: FWHMs = 26.22028134, 10.37183778
+    iradmax = 900, rminarc = [30, 12]: FWHMs = 26.22013231, 10.37182883
+
+Cutting down rminarc / increasing iradmax, gives changes of ~0.005, ~0.01.
+
+
+### Apparently not.  What's going on?
+
+Questions:
+1. why are these effects not interchangeable?
+2. why does the resolution error worsen with larger energy? (and so sharply, it
+   almost looks exponential)
+
+Note that: d(rad) = (1 - rmin)/(iradmax - 1) = rminarc/rsarc /(iradmax - 1)
+To be fair, the comparison should "strictly" be (at 10 keV):
+
+    iradmax = 100, rminarc = 100: FWHM = 7.15124535
+    iradmax = 199, rminarc = 200: FWHM = 7.47571061
+    iradmax = 200, rminarc = 200: FWHM = 6.97627089
+
+Wait, what?!  This deeply bothers me not because it affects our results much,
+but because this means I don't truly understand the code / model...
+
+I walk through code and try to find where values diverge, with iradmax/rminarc
+set to 100/100 and 199/200, which I expect to give same results.
+CHECK: e- and emissivity distributions (disttab, emistab) appear to agree,
+from casual inspection, plots of small subsets.
+
+What happens if I update irhomax to match our scaling of rminarc?
+From visual inspection of a tiny subset, with
+iradmax/rminarc/irhomax = 100,100,10000 and 199,200,19999,
+emistab is identical.  Let's calculate FWHMs
+
+    iradmax = 100, rminarc = 100, irhomax = 10000: FWHM = 7.1512
+    iradmax = 199, rminarc = 200, irhomax = 10000: FWHM = 7.47571
+    iradmax = 199, rminarc = 200, irhomax = 19999: FWHM = 6.9784  (?!?!?!?!)
+
+I know the FWHM is wrong, but I expect it to be _consistently_ wrong, damnit.
+
+Since disttab, emistab are the same, I expect intensity computed at a given
+r-value to give the same result.  Checking this: AFFIRMED.
+The code with iradmax/rminarc = 100/100 is NOT finding the local max.
+
+CHECK: reenable `xatol` for SciPy's `minimize_scalar`.  Nothing happens.
+
+### Realization -- I'm hitting the r-grid (irmax) edge on the RIGHT side.
+
+I think I realized the problem. At the grid's right edge (`rmesh[-1]`),
+I seek a local maximum between rmesh[-1], 1.
+But, the maximum may lie between rmesh[-2], rmesh[-1].
+
+Example:
+
+    rminarc/iradmax/irhomax = 100/100/10000
+
+    Searched between [0.995833, 0.997917] (intensities: [6.415, 5.600] x1e-135)
+    Found max at r = 0.995833351075 (left edge was 0.995833333333)
+
+    rminarc/iradmax/irhomax = 200/199/19999
+    (didn't change irmax, so coarser intensity grid)
+
+    Searched between [0.991667, 0.997917] (intensities: [6.235, 5.600] x1e-135)
+    Found max at r = 0.99419 < 0.995833 (left bound for rminarc=100 case!)
+
+And, as expected, the rminarc=200 case got a more accurate FWHM.
+
+PATCH THE BUG.  That seems to fix things.  Let's run some tests
+
+    rminarc iradmax irhomax FWHM
+
+    100     100     10000   6.97837734
+    200     199     19999   6.97837734  YAY!
+    200     200     20000   6.97628278  Looks okay
+
+    200     199     10000   7.47571707  WHAT?!
+    200     199     20000   7.47566551  ?!?!?!
+
+    ... (drastic increase in resolution)
+
+    20      100     10000   6.9568692
+    20      199     10000   6.95696459
+    10      100     10000   6.95696359 (good, irhomax doesn't matter)
+    10      500     20000   6.95710649
+
+ONE MORE PATCH -- floating point error, when searching for a crossing, take a
+step first them compare intensity values.  In the weird cases (fwhm=7.48) code
+didn't search for a crossing, hence the error.
+
+    200     199     10000   6.97832483  Now this looks okay too
+    200     199     20000   6.97837896
+
+Please note that these bugs appear ONLY if irmax is too small to
+resolve intensity peak on the right (i.e., peak is too narrow).
+
+And, this should explain why the error was so large at high energy --
+at high energy we are hitting the edge of the irmax grid, and hence running
+into these bugs.
+
+### Parting remarks
+
+In practice, I wouldn't have caught these errors as they crop up rarely
+(at lower energy, larger irmax, smaller rminarc).
+But it does have the potential to mess up results.  Very subtle bugs...
+
+I'm afraid, what other bugs are there that I don't know about.
+As Michael reminds me: write unit tests, then write your code...
+
+This also underscores the need for a CAREFUL validation of our model over
+parameter space.  We can't blithely leave iradmax, ixmax, rminarc at arbitrary
+default settings.
+
+
+Wednesday 2014 August 20
+========================
+
+Summary
+-------
+
+Nosetests?
+Test full model fitting / code annealing on SN 1006, again?
+Full model code -- thorough resolution checking
+
+
+Rigorously check model convergence
+----------------------------------
+(started writing this yesterday, 2014 August 19)
+
+Are our resolutions fine enough to give consistent answers?
+Approach: vary the resolution and check how the answer changes.
+
+Ideally, we should plot change in absolute error as a function of resolution
+(i.e., step size) on a log-log scale.  If truncation error = absolute error
+scales as (step size)^n, the change in error also scales as (step size)^n.
+See my old Math 228B homework / notes for more on convergence and stuff.
+BUT, I think this is overkill.
+
+### Procedure
+For a given SNR and a set of energy bands:
+* Pick a few sets of (B0, eta2, mu).  Check mu<1, mu=1, mu>1;
+  check large/small B0 with eta2 small; check large/small B0 with eta2 large.
+  This gives 12 points which mark out a parallelepiped-like shape in parameter
+  space (prismatoid? according to wikipedia)
+* For each point in parameter space, vary rminarc, iradmax, ixmax.
+  (VERIFY that doubling rminarc is now equivalent to halving iradmax, since
+   our FWHM calculation is not directly affected by rminarc and irmax any more)
+* Find resolution values at each point such that the fractional change in
+  output FWHMs, at all energies, is at most 1% (maybe 0.1% to be paranoid)
+
+
+Nowadays, we do have a resolution error.
+But, unlike Sean's code, resolution error is not due to irmax; resolution error
+is due to iradmax and rminarc.  This we can not easily detect, hence the
+need to verify convergence.
 
 

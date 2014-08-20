@@ -3,6 +3,9 @@ Port Sean's model code to Python, aiming for:
 1. clarity
 2. better speed and resolution
 
+Main method is fefflen (contraction of FullEff_length), which takes
+B0, eta2, mu, SNR parameters and outputs FWHMs in specified energy bands.
+
 Aaron Tran
 2014 August 6-8
 """
@@ -24,23 +27,27 @@ C_1 = 6.27e18  # For synchrotron emissivity
 A = 1.57e-3  # For synchrotron loss time
 NUKEV = 2.417989e17  # 1 keV photon frequency
 
-
 def main():
+    """Currently used as a debugging testbed"""
     #B0 = raw_input('Enter B0 (Gauss): ')
     #eta2 = raw_input('Enter eta2: ')
     #mu = raw_input('Enter mu: ')
-    B0 = 150e-6
-    eta2 = 1
-    mu = 1.5
+    B0 = 300e-6
+    eta2 = 1000.
+    mu = 0.
 
-    kevs = np.array([0.7, 1., 2.])
-    rminarc = 20. * np.ones(3)
+    irmax, iradmax, ixmax = 100, 199, 500
+    print 'irmax, iradmax, ixmax = {},{},{}'.format(irmax, iradmax, ixmax)
 
-    fwhms = fefflen(kevs, B0, eta2, mu, 5e8, 5e8/4., 2.96e19, 900.,
-                    2.2, rminarc, True, 100, 200, 1000)
-    
+    kevs = np.array([10.])
+    rminarc = 20. * np.ones(len(kevs))
+
+    fwhms = fefflen(kevs, B0, eta2, mu, 4.52e8, 4.52e8/4, 1.077e19, 240.,
+                    2*0.65+1, rminarc, True, irmax, iradmax, ixmax)  # Tycho
+    print 'rminarc = {}'.format(rminarc)
     for en, fwhm in zip(kevs, fwhms):
         print '{:0.2f} keV: {:0.5f}'.format(en, fwhm)
+
 
     return fwhms
 
@@ -52,6 +59,8 @@ def main():
 def fefflen(kevs, B0, eta2, mu, vs, v0, rs, rsarc, s, rminarc, icut, irmax,
             iradmax, ixmax):
     """Use numpy arrays for everything (kevs, rminarc)
+
+    Note that irmax is not very important anymore.
     
     Input:
         kevs (np.ndarray)
@@ -83,53 +92,47 @@ def fefflen(kevs, B0, eta2, mu, vs, v0, rs, rsarc, s, rminarc, icut, irmax,
     widths = []
 
     for en_nu, rmin_nu in zip(kevs, rmin):
+        # Convert keV to s^{-1}
         nu = en_nu*NUKEV
 
         # Tabulate e- distr. for fixed nu over e- energy, radial coord
         # Be careful, Fortran code hardcoded for iradmax < 1000
         # and Pacholczyk table < 100 entries
-        #print 'e- tabulation start: {}'.format(datetime.now())
         radtab = np.linspace(rmin_nu, 1.0, num=iradmax)
         disttab = fullmodel.distr(np.zeros(1000), iradmax, nu, rmin_nu,
                                   B0, Ecut, eta, mu, rs, v0, s, C_1)
         disttab = disttab[:len(xex), :iradmax]  # Slice off zeros
-        #print 'e- tabulation done: {}'.format(datetime.now())
 
         # Tabulate emissivity over radial coord
-        #print 'emis tab start: {}'.format(datetime.now())
-        rhotab = np.linspace(rmin_nu, 1., num=10000)  # TODO set as irhomax?
+        rhotab = np.linspace(rmin_nu, 1., num=10000)  # TODO let num=irhomax?
         emistab = emisx(rhotab, nu, B0, radtab, disttab, xex, fex)
-        #print 'emis tab done: {}'.format(datetime.now())
 
-        # Compute intensity over rmesh
-        #print 'intensity start: {}'.format(datetime.now())
+        # Make grids for intensity computation (x = line-of-sight coord)
         rmesh = np.linspace(rmin_nu, 1.0, num=irmax, endpoint=False)
         xmaxmesh = np.sqrt(1.-rmesh**2)  # Max x on line of sight at each r
         # Grid along line of sight for each r; shape is (irmax, ixmax)
         # [[0., ..., xmax_0], [0., ..., xmax_1], ... [0., ..., xmax_{irmax-1}]]
-        xintv = np.linspace(0., 1., num=ixmax)  # Line of sight (x) sampling
+        xintv = np.linspace(0., 1., num=ixmax)  # Uniform x-coord sampling
         xgrid = xintv * xmaxmesh.reshape(-1,1)  # stackoverflow.com/a/16887425
-        # Compute rho, emissivity at each point in grid
         rgrid = np.tile(rmesh, (len(xintv), 1)).T  # r = constant on sightlines
+
+        # Compute rho, emissivity at each point in grid
         rhogrid = np.sqrt(xgrid**2 + rgrid**2)
         emisgrid = np.interp(rhogrid, rhotab, emistab)
-        # then integrate emis. on lines of sight
+        # then, integrate emis. along lines of sight
         intensity = spint.simps(emisgrid, xgrid)
-        #print 'intensity done: {}'.format(datetime.now())
 
         def get_intensity(r):
-            """Non-vectorized intensity computation, for FWHM finding"""
+            """Non-vectorized intensity computation, for FWHM finding.
+            Gives nan for r=1 (spint.simps fails for dx = 0."""
             xmesh = np.linspace(0., np.sqrt(1.-r**2), num=ixmax)
             rhomesh = np.sqrt(xmesh**2 + r**2)
             emismesh = np.interp(rhomesh, rhotab, emistab)
             return spint.simps(emismesh, xmesh)
 
-        #print 'find fwhm start: {}'.format(datetime.now())
-        dr = (1 - rmin_nu) / (irmax - 1) # Match rmesh
-        #w = fwhm(rmesh, intensity, dr, nu)
-        w = fwhm2(rmesh, intensity, get_intensity, dr, nu)
+        # Finally, compute FWHMs precisely (use intensity grid as guide)
+        w = fwhm(rmesh, intensity, get_intensity)
         widths.append(w)
-        #print 'find fwhm done: {}\n'.format(datetime.now())
 
     return np.array(widths) * rsarc
 
@@ -166,10 +169,10 @@ def emisx(r, nu, B, radtab, disttab, xex, fex):
     Output: j_\nu(r), r = radial dist, j_\nu a scalar (float)
     """
     # Integrate over y-values (e- energies) in Pacholczyk
+    # Would be nice to use np.interp, but not sure if possible
     ind = np.searchsorted(radtab, r)
     slp = (disttab[:,ind] - disttab[:,ind-1]) / (radtab[ind] - radtab[ind-1])
     dist = disttab[:,ind-1] + slp * (r - radtab[ind-1])
-    # Would be nice to use np.interp, but not sure if possible
 
     xex = np.tile(xex, (len(r),1)).T
     fex = np.tile(fex, (len(r),1)).T
@@ -184,7 +187,7 @@ def emisx(r, nu, B, radtab, disttab, xex, fex):
 # Electron distribution functions
 # ===============================
 
-# NOTE not currently in use!  Calling Fortran code instead
+# NOTE distr(...) not currently in use!  Calling Fortran code instead
 
 def distr(Ec, rc, B, Ecut, eta, mu, rs, v, s):
     """Electron distribution, from Rettig & Pohl and Lerche & Schlickeiser
@@ -344,109 +347,92 @@ def distr(Ec, rc, B, Ecut, eta, mu, rs, v, s):
         return distr_rpohl(Ec, rc, B, Ecut, eta, mu, rs, v, s)
 
 
-# =========================
-# Attempt to invoke f2py...
-# =========================
-
-def distr2(Ec, rc, B, Ecut, eta, mu, rs, v, s):
-    """Electron distribution, from Rettig & Pohl and Lerche & Schlickeiser
-
-    ASSUMED: E, r are 1-D arrays
-    spint.trapz integrates along last axis by default, conveniently
-
-    Input:
-        E = particle energy, r = radial position (scaled to [0,1])
-        B = magnetic field
-        Ecut = cut-off energy of injected electrons
-        eta = \eta*(E_h)^(1-\mu), from the paper
-        mu = diffusion coefficient exponent
-        rs, v, s = shock radius, plasma velocity, injected e- spectral index
-    """
-    disttab = np.empty(Ec.size, rc.size)
-
-    if mu > 1:
-        return distr_mgt1(Ec, rc, B, Ecut, eta, mu, rs, v, s)
-    elif mu < 1:
-        return distr_mlt1(Ec, rc, B, Ecut, eta, mu, rs, v, s)
-    else:
-        return distr_rpohl(Ec, rc, B, Ecut, eta, mu, rs, v, s)
-
-
 # ============================
 # Find FWHM in intensity graph
 # ============================
 
-def fwhm(rmesh, intensity, dr, nu):
-    """Compute fwhm. nu is for error printing."""
-
-    # Compute half max and find crossings
-    half_max = 0.5 * np.amax(intensity)
-    cross = np.diff(np.sign(intensity - half_max))
-    inds_rmin = np.where(cross > 0)[0]  # Left (neg to pos)
-    inds_rmax = np.where(cross < 0)[0]  # Right (pos to neg)
-
-    if inds_rmin.size == 0:  # No left crossing found
-        print 'Box length error (rmin) at {} keV'.format(nu/NUKEV)
-        width = 1.  # Maximum (scaled) width
-        return width
-    else:
-        i_rmin = inds_rmin[-1]+1  # Crossing closest to peak
-
-    if inds_rmax.size == 0:  # No right crossings found
-        print 'Box length error (rmax) at {} keV'.format(nu/NUKEV)
-        print 'Rim falloff towards shock is weird?'
-        i_rmax = -1  # Farthest right index
-    else:
-        i_rmax = inds_rmax[0]  # Crossing closest to peak
-
-    width = rmesh[i_rmax] - rmesh[i_rmin]
-
-    if width / abs(dr) < 20:  # Arbitrary resolution constrain
-        print 'Resolution error at {} keV'.format(nu/NUKEV)
-        width = 0.
-
-    return width
-
-
-def fwhm2(rmesh, intensity, f_int, dr, nu):
-    """Compute fwhm but better (test). nu is for error printing."""
-
-    eps2 = np.finfo(float).eps * 2  # Brentq tolerance
+def fwhm(rmesh, intensity, f_int):
+    """Compute fwhm precisely from starting grid.
+    For extreme values of B0/eta2 (extremely smeared, no peak exists),
+    code prints error messages and returns FWHM = 1 (max possible value)"""
+    eps2 = np.finfo(float).eps * 2  # Brentq tolerance, 1 ~= 1+eps2/2.
 
     # Compute half max from grid initial guess
     idxmax = np.argmax(intensity)
-    res = spopt.minimize_scalar(lambda x: -1*f_int(x), method='bounded',
-                                bounds=(rmesh[idxmax-1], rmesh[idxmax+1]),
-                                options={'xatol':eps2})
-    halfpk = 0.5 * f_int(res.x)
 
-    # Find where FWHMs should be 
+    if idxmax == 0:
+        print 'ERROR: intensity max not found (rminarc too small)'
+        return 1  # Can't search r < rmin, no disttab/emisttab values computed
+    elif idxmax == len(intensity)-1:
+        print 'WARNING: intensity max not resolved on right'
+        rpk_a = rmesh[-2]  # CANNOT be rmesh[-1], to find max
+        rpk_b = search_crossing(rmesh[-1], 1., lambda r:f_int(r)-intensity[-1],
+                                eps2)  # Find r s.t. f_int(r) < intensity[-1]
+        if rpk_b is None:  # This should never happen, honestly
+            print 'ERROR: intensity max not found (stalled on right) (?!)'
+            return 1
+    else:
+        rpk_a = rmesh[idxmax - 1]
+        rpk_b = rmesh[idxmax + 1]
+
+    # option 'xatol' requires SciPy 0.14.0
+    res = spopt.minimize_scalar(lambda x: -1*f_int(x), method='bounded',
+                                bounds=(rpk_a, rpk_b), options={'xatol':eps2})
+    pk = f_int(res.x)
+    halfpk = 0.5 * pk
+
+    # Find r-values that bracket FWHM location (zero-crossings of f_thrsh(r))
+    # if crossings not found, search outside grid
     cross = np.diff(np.sign(intensity - halfpk))
     inds_rmin = np.where(cross > 0)[0]  # Left (neg to pos)
     inds_rmax = np.where(cross < 0)[0]  # Right (pos to neg)
 
-    # Throw errors if we can't identify FWHM
-    if inds_rmin.size == 0:  # No left crossing found
-        print 'Box length error (rmin) at {} keV'.format(nu/NUKEV)
-        return 1. # Maximum (scaled) width
-    else:
-        i_rmin = inds_rmin[-1]+1  # Crossing closest to peak
-
-    if inds_rmax.size == 0:  # No right crossings found
-        print 'Box length error (rmax) at {} keV'.format(nu/NUKEV)
-        print 'Rim falloff towards shock is weird?'
-        i_rmax = -1  # Farthest right index
-        return rmesh[i_rmax] - rmesh[i_rmin]
-    else:
-        i_rmax = inds_rmax[0]  # Crossing closest to peak
-
-    # Finally, nail down the fwhm location
-    def f_thrsh(r):  # for brentq rootfinding
+    def f_thrsh(r):  # For brentq rootfinding
         return f_int(r) - halfpk
-    rmin = spopt.brentq(f_thrsh, rmesh[i_rmin-1], rmesh[i_rmin])
-    rmax = spopt.brentq(f_thrsh, rmesh[i_rmax], rmesh[i_rmax+1])
+
+    if inds_rmin.size == 0:  # No left crossing found
+        print 'ERROR: FWHM edge (rmin) not found (rminarc too small)'
+        return 1.  # Can't search r < rmin, no disttab/emisttab values computed
+    else:
+        rmin_a = rmesh[inds_rmin[-1]]  # Crossing closest to peak
+        rmin_b = rmesh[inds_rmin[-1] + 1]
+        
+    if inds_rmax.size == 0:  # No right crossing found
+        rmax_a = rmesh[-1]  # Yes, this can be rmesh[-1]
+        rmax_b = search_crossing(rmesh[-1], 1., f_thrsh, eps2)
+        if rmax_b is None:
+            print 'ERROR: FWHM edge (rmax) not found (?!)'
+            return 1.  # This should not happen
+    else:
+        rmax_a = rmesh[inds_rmax[0]]  # Crossing closest to peak
+        rmax_b = rmesh[inds_rmax[0] + 1]
+
+    rmin = spopt.brentq(f_thrsh, rmin_a, rmin_b)
+    rmax = spopt.brentq(f_thrsh, rmax_a, rmax_b)
+
+    #print 'DEBUGGING:'
+    #print 'res debug success={}, nfev={}, message={}'.format(res.success,
+    #        res.nfev, res.message)
+    #print ''
+    #print 'Grid peak @ {}, {}, {}, {}'.format(rpk_a, rmesh[-1], res.x, rpk_b)
+    #print 'intensity {}, {}, {}, {}'.format(f_int(rpk_a), f_int(rmesh[-1]), pk,
+    #                                        f_int(rpk_b))
 
     return rmax - rmin
+
+
+def search_crossing(r_init, r_lim, f, eps):
+    """Find r s.t. f(r) < 0, up to r_limit by binary search
+    (i.e., assumes monotonicity), with f(r_init) > 0.
+    If no crossing is found, return None.
+    eps should be positive.
+    """
+    r = r_init + (r_lim - r_init) / 2.  # Increment r right away to avoid
+    while f(r) >= 0:                    # floating point error in f(r_init)
+        r += (r_lim - r) / 2.
+        if abs(r_lim - r) < eps:  # Breaking criterion
+            return None
+    return r
 
 
 if __name__ == '__main__':

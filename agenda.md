@@ -82,6 +82,9 @@ So need to
   differ w/ single obsID vs. merged obsID...).  Can't remember the exact issue,
   need to double check.
 
+* Modularize code (separate out components for profile fitting, spectra
+  extraction, region processing, whatever).  Make it easier to keep track of.
+
 * Update pipeline documentation ...
 
 * Add more regions -- can we get the highest 2 energy bands, if the 2-3 keV
@@ -192,9 +195,9 @@ Some high level questions / thoughts from poster session (July 31):
 * Some ideas to cut down fitting time:
   3. iPython parallelizing...
 
+* At what chi-sqr does our simple confidence interval analysis break down/fail?
+  I don't understand the theory behind this very well.
 
-Try playing with python-latex output
-http://code.google.com/p/matrix2latex/
 
 ### General (lower level to-dos)
 
