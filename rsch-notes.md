@@ -20,7 +20,7 @@ Table of contents?
 * Week 9
 * Week 10
 
-* Week 12 - 
+* Week 12 - LaTeX code, full model Python port debugging/testing, ???
 
 
 
@@ -3040,6 +3040,23 @@ Poster session...
 More skeleton code / messing with grid fit / simple fit prettyprinting etc.
 
 
+Some high level questions / thoughts from poster session discussion:
+
+* Ori -- sanity check on checking luminosity and shock kinetic energy, though
+  Rob/Brian note that the synchrotron radiation is very inefficient (esp.
+  compared to when the remnant cools, H starts recombining and emitting thermal
+  lines, T ~ 10^4 K)
+* Terri/Amy -- why are the shocks so thin, anyways?  don't have a good answer
+  for that...
+* Our analysis, if anything, confirms that the shocks are thin to begin with...
+  but doesn't say "why".  Why shouldn't accelerated particles travel farther
+  back?  Function of time / remnant evolution?
+* Tom Madura (Eta Car NPP fellow) -- 3D reconstruction?
+* We really need to quantify the magnetic damping issue -- can we put a lower
+  bound on the relevant damping scale length, given that it basically can't
+  explain the rim dropoff with energy?
+
+
 Friday 2014 August 01
 =====================
 
@@ -3734,7 +3751,6 @@ Use UMD Research Port now...
 
 Table generation, errors
 ------------------------
-
 Major issue: method of confidence interval contours breaks down at large
 chisquared... but I don't know when/how, or which references to seek.
 I thought the `lmfit` package had some info on this but I can't find it.
@@ -3761,8 +3777,8 @@ that comes soon.
 Remark: wow, I have been working on the "full model code" for some 4 weeks
 now... minus a bit of time for the poster presentation.
 
-I need to learn to program more efficiently and avoid bugs in the first place.
-Because time is expensive...
+Learn to program more effectively and avoid bugs in the first place.
+Because time is expensive...  Think preventative coding.
 
 
 Remove box length errors at r=1
@@ -3986,15 +4002,230 @@ Wednesday 2014 August 20
 
 Summary
 -------
+* Removed old B0 interpolation code
+* Add statement to recompile f2py code in Python full model port
+* Code tidying, docstring updates, etc
+* Error annealing now 1. uses rootfinding for errors, 2. scans outside grid
 
-Nosetests?
-Test full model fitting / code annealing on SN 1006, again?
-Full model code -- thorough resolution checking
+
+Note: code folding in Vim is really handy.  Makes it a lot easier to see
+1. method hierarchy, inputs/outputs/1-liner docstrings
+2. unfolded code indicates work in progress (updated .vimrc to save code
+   folding state between sessions)
 
 
-Rigorously check model convergence
+B0 interpolation code
+---------------------
+Reviewed and removed from Tycho ipynb.  Interpolation still seems uncertain and
+inconsistent; it doesn't consistently find better chisqr values (using the 
+optimized, more accurate/faster Python port of full model code).
+Note that B0 interp code was removed in commit msg.
+
+This may be because the table FWHMs are from old full model code (Sean's), not
+the new Python port (which should vary continuously and be more accurate).
+
+If you want to retry this, generate new tables and yank code from old commit.
+If interpolation gives consistently better B0 values it may be worth it.
+For now, it complicates things, and may be covered by fitting (free eta2, B0)
+from best grid value anyways.
+
+
+Testing code on SN 1006, once more
 ----------------------------------
-(started writing this yesterday, 2014 August 19)
+Now that (more) bugs are addressed, code seems to run smoothly.
+I run the code for 20--40 minutes on SN 1006, Filament 1 w/ 3 bands.
+
+(full model fits try several fits w/ multiple epsfcn values, starting from
+grid best fit values)
+
+----------------------------------------------------------------
+
+### Results (full model fits for params, and error annealing):
+
+    mu      eta2                    B0                      chisqr
+    0.00    27.998 (+72.002/-26.672)187.92 (+55.86/-79.98)  0.1149
+    0.33    5.510 (+94.490/-4.490)  126.67 (+104.91/-26.29) 0.0173
+    0.50    4.286 (+95.714/-3.375)  117.82 (+105.79/-20.14) 0.0399
+    1.00    2.589 (+5.778/-1.679)   102.49 (+18.51/-8.67)   0.1415
+    1.50    2.458 (+3.869/-1.547)   97.08 (+10.58/-5.85)    0.2221
+    2.00    2.640 (+3.074/-1.620)   94.18 (+6.44/-4.34)     0.3021
+
+For mu=0.00, 0.33, 0.50, eta2's upper limit = 100.0 (due to eta2 grid).
+Next, compare to best _grid_ values (I believe errors are not annealed)
+
+### Results (best grid values [full model])
+
+    mu      eta2                    B0                      chisqr  change
+    0.00    10.000 (+58.665/-8.367) 151.46 (+75.70/-40.78)  0.1748  +0.06
+    0.33    5.510 (+77.354/-4.286)  126.67 (+97.65/-24.84)  0.0173  n/a?
+    0.50    4.286 (+78.579/-3.187)  117.82 (+92.30/-18.80)  0.0399  n/a?
+    1.00    2.857 (+5.510/-1.947)   102.98 (+19.00/-9.94)   0.1973  +0.06
+    1.50    1.931 (+4.396/-0.910)   94.71 (+13.84/-2.84)    0.3516  +0.13
+    2.00    2.330 (+3.180/-1.004)   93.83 (+5.37/-1.92)     0.3750  +0.07
+
+Why did fits not improve from grid values at mu=0.33, 0.50?
+It seems unlikely that the "best grid values" would be a local minimum in
+chisqr space exactly.
+
+Hypothesis: because I changed the full model code, the tabulated FWHMs may be
+erroneously "good".  So, when running full model fit, we can't find any better
+FWHMs than the pre-cached ones (even at the exact same data points).
+
+Need to rerun tables _and_ recompute FWHMs at identified best grid values.
+Use tabulated FWHMs to find best grid (eta2, B0), but always recompute FWHMs at
+this "best" value.
+
+### Time analysis
+
+For mu = 0.00 case:
+* 121 function calls to find best fit, started from best grid values
+* 42 function calls to anneal errors on left
+* 28 function calls to anneal errors on right (but, I hit grid edge)
+* Total: 191 function calls
+
+200 calls x (6 mu values) x (3 seconds) ~ 1 hr, for 1 region/filament.
+(may need more function calls for better error estimates)
+
+So ~5+ hrs for SN 1006; ~13-18+ hrs for Tycho's SNR.
+
+### Conclusions, next steps
+
+1. error annealing should optimize to find chisqr threshold and scan outside of
+   grid values. Currently, we anneal each grid point until we cross limit, then
+   stop; we don't try to refine estimate of (B0, eta2) limit. (DONE)
+2. tabulated FWHMs are no longer accurate, since we have a better full model.
+   Thus, recompute FWHMs when starting from best grid values (DONE)
+3. when fitting w/ multiple values of epsfcn, start from best grid value
+   (while keeping track of best fit found so far).  More reproducible and less
+   chance that later fits get stuck in local minimum of earlier fits. (VOID)
+4. Set smaller rminarc wherever possible (TBD)
+
+(copied these over to agenda/to-dos)
+
+See Thursday's notes about improvements to error annealing.
+
+
+Thursday 2014 August 21
+=======================
+
+Summary
+-------
+* Only fit 1x from best grid value
+* More efficient error analysis (Fitter object), testing + timing
+
+
+Useful: tack `.proxy-um.researchport.umd.edu` to links to get library access
+
+
+Varying epsfcn systematically when fitting from best grid values
+----------------------------------------------------------------
+(used code commit, early morning of Friday 2014 August 22)
+
+Previously, I let the best grid fit do the following:
+1. fix best eta2, fit to find best B0 (one fit)
+2. for multiple `epsfcn` values [1e-10, 1e-8, 1e-6, 1e-4], fit (eta2, B0) and
+   check against previous "best" values for improvement.
+
+Now, skip the rigmarole and run ONE fit from best grid values.  Does this still
+give acceptable results?
+
+Previously, I didn't do this because FWHMs from Fortran code didn't vary
+continuously/smoothly, so nonlinear fitting went wonky and got stuck in holes.
+That's what it looked like to me, but I didn't quantify/log this.
+
+Running on SN 1006 data w/ 2 bands, results are consistent w/ Sean's Table 8
+(manually checked all parameter values; chisqrs comparable or better, though
+it's not an apples-to-apples comparison as I calculate FWHMs differently).
+
+But, fitting w/ 2 data points is a bit silly since I often get chisqr == 0.
+One more, let us compare single fit vs. multiple fits directly.
+
+Filament 1, 3 bands, one fit (epsfcn = 1e-6)
+
+    mu	    eta2	                B0	                    chisqr
+    0.00	24.028 (+44.637/-22.396)181.97 (+45.19/-71.29)	0.1162
+    0.33	5.777 (+77.087/-4.553)	127.88 (+96.44/-26.04)	0.0568
+    0.50	3.811 (+79.053/-2.713)	115.78 (+94.34/-16.76)	0.0742
+    1.00	2.596 (+5.771/-1.686)	102.52 (+19.46/-9.48)	0.1415
+    1.50	2.466 (+3.861/-1.367)	97.11 (+11.45/-4.54)	0.2221
+    2.00	2.646 (+2.865/-1.320)	94.19 (+5.01/-2.28)	    0.3021
+
+Filament 1, 3 bands, multiple rounds of fitting (varying epsfcn)
+(taken from Wednesday notes)
+
+    mu      eta2                    B0                      chisqr
+    0.00    27.998 (+72.002/-26.672)187.92 (+55.86/-79.98)  0.1149
+    0.33    5.510 (+94.490/-4.490)  126.67 (+104.91/-26.29) 0.0173
+    0.50    4.286 (+95.714/-3.375)  117.82 (+105.79/-20.14) 0.0399
+    1.00    2.589 (+5.778/-1.679)   102.49 (+18.51/-8.67)   0.1415
+    1.50    2.458 (+3.869/-1.547)   97.08 (+10.58/-5.85)    0.2221
+    2.00    2.640 (+3.074/-1.620)   94.18 (+6.44/-4.34)     0.3021
+
+Tentative result: let's ditch the multiple fits for now.  This makes the
+methodology simpler / easier to explain/reproduce.  Results are good for large
+mu values (B0, eta2 less correlated), and otherwise agree within error.
+
+
+Test improved error annealing
+-----------------------------
+(used code commit, early morning of Friday 2014 August 22)
+
+Yesterday (Weds), I refined error threshold searching (more accurate, search
+farther). Today (Thurs), I refactored code using a fitter object that
+stores `B0_prev` value, which speeds up fits if we are testing a monotone
+sequence of eta2 values (esp. if searching outside the pre-cached grid).
+
+### Some test results
+
+SN 1006, Filament 1, three energy bands, mu = 0.00.
+Errors for confidence interval = 68.3% (1-sigma), +1 to chi-squared value
+
+* ONE fit from best grid values: 34 function calls (eta2=24.0283, B0=, chisqr=0.1162)
+* anneal grid chisqrs, left:     43 function calls (4 eta2 values)
+* brentq find threshold, left:   43 function calls
+* anneal grid chisqrs, right:    32 function calls (3 eta2 values, hit grid edge)
+* search past grid, right:      104 function calls (12 eta2 values)
+* brentq find threshold, right:  69 function calls (>5 eta2 values)
+
+Total function calls: 34+43+43+32+104+69 = 325.
+(add ~50--100 more to marginally improve parameter fits)
+
+SN 1006, Filament 1, 3 energy bands
+left side limit: B0 = 108.24 muG; eta2 =   1.356, mu = 0.00
+best fit values: B0 = 181.97 muG, eta2 =  24.028, mu = 0.00 (chisqr=0.1162)
+rght side limit: B0 = 271.62 muG, eta2 = 191.251, mu = 0.00
+
+(I have previously found better fit at B0=187.92, eta2=27.998, chisqr=0.1149)
+
+### Observed bug (from other messing around)
+
+Error annealing uses table FWHMs to compute chisqrs, to get limits on eta2.
+But, when recalculating FWHMs with new full model code, chisqrs may change
+and no longer bracket threshold as expected.  Then, spopt.brentq cannot find
+root between two values and errors out.
+
+### Conclusions?
+
+This doubles my estimates of time needed to run fits + get errors:
+~10 hours for SN 1006, 26--36 hours for Tycho's SNR.
+Admittedly not too bad w/ parallel code + faster computer.
+
+Improvements?
+* grid values out to very large eta2, avoid searching outside grid
+* skip `spopt.brentq`, `one_dir_root` steps and report overestimated errors.
+  this requires the larger pre-tabulated grid, though.
+
+
+
+
+
+
+
+
+
+Rigorously check model convergence (pushed down to whenever)
+------------------------------------------------------------
+(wrote this 2014 August 19, but haven't done tests yet)
 
 Are our resolutions fine enough to give consistent answers?
 Approach: vary the resolution and check how the answer changes.

@@ -1,33 +1,5 @@
 """
 Model fitting functions for measured FWHMs
-Does NOT recompile f2py-generated fullmodel.so
-
-Methods (for my own reference):
-
-    # Fitting wrappers
-    simple_fit(snr, kevs, data, eps, mu, eta2=1, B0=150e-6, ...)
-    full_fitter(snr, kevs, data, eps, mu)
-    full_fit(snr, kevs, data, eps, mu, eta2=1, B0=15e-6, ...)
-
-    # Interactive fitting
-    manual_fit(snr, kevs, data, eps)
-        _get_float(prompt)
-
-    # Tabulating
-    merge_tables(...)
-    maketab(...)
-        maketab_gridB0(...)
-        span_intv(...)
-        mind_the_gaps(...)
-        classes TeeStdout, TeeStderr
-
-    # Functions to fit
-    width_cont(...)
-    width_dump(...)
-    objectify(f)
-
-    chi_squared(y, y_err, y_model)
-
 
 Aaron Tran
 2014 July 21
@@ -35,96 +7,24 @@ Aaron Tran
 
 from __future__ import division
 
-import lmfit
-import matplotlib.pyplot as plt
-import numpy as np
-from numpy import f2py
-import scipy as sp
-from scipy import optimize
-
 import cPickle as pickle
 from datetime import datetime
+import matplotlib.pyplot as plt  # For manual (interactive) fitting only
+import numpy as np
+from numpy import f2py
 import os
+import scipy as sp
+from scipy import optimize
 import sys
 
-import fullmodel as fm
-fm.readfglists()  # Only do this once
-import FullEfflength_port as fmp  # Python port
+import lmfit
 
-from fplot import fplot
+import FullEfflength_port as fmp  # Full model code, Python port
 import snr_catalog as snrcat
 
 
 def main():
     pass
-
-
-# ==================================================
-# Fit from just initial guesses (simple, full model)
-# ==================================================
-
-# Convenience wrappers for the fit functions,
-# feed in parameters and get widths out quickly.
-
-def simple_fit(snr, kevs, data, eps, mu, eta2=1, B0=150e-6,
-               mu_free=False, eta2_free=True, B0_free=True):
-    """Perform a simple model fit (equation 6; Table 7 of Ressler et al.)
-    A convenience wrapper for lmfit.minimize(objectify(width_dump), ...)
-
-    Default is to fit both eta2, B0 at fixed mu.
-    
-    Inputs:
-        kevs, data, eps (np.array) as usual
-        mu, B0, eta2 (float) initial guesses, but mu fixed
-        mu_free, eta2_free (bool) which parameters shall vary in fits?
-    Output:
-        lmfit.Minimizer with fit information / parameters
-    """
-    p = lmfit.Parameters()
-    p.add('mu', value=mu, vary=mu_free)
-    p.add('B0', value=B0, min=1e-6, max=1e-2, vary=B0_free)
-    p.add('eta2', value=eta2, min=5e-16, max=1e5, vary=eta2_free)
-    # Must be nonzero to prevent width_dump from going singular
-    res = lmfit.minimize(objectify(width_dump), p,
-                             args=(data, eps, kevs, snr),
-                             method='leastsq')
-    return res
-
-
-def full_fitter(snr, kevs, data, eps, mu):
-    """Wrapper function to package SNR and data dependence"""
-    return lambda **kwargs: full_fit(snr, kevs, data, eps, mu, **kwargs)
-
-
-def full_fit(snr, kevs, data, eps, mu, eta2=1, B0=150e-6,
-             mu_free=False, eta2_free=False, B0_free=True,
-             rminarc=None, verbose=True, **lsq_kws):
-    """Perform a full model fit (equation 12; Table 8 of Ressler et al.)
-    A convenience wrapper for lmfit.minimize(objectify(width_cont), ...)
-
-    Default is to fit B0 at fixed mu, eta2.
-
-    Inputs:
-        kevs, data, eps (np.array) as usual
-        mu, B0, eta2 (float) initial guesses, but mu fixed
-        mu_free, eta2_free (bool) which parameters shall vary in fits?
-        Probably should set epsfcn via **lsq_kws
-    Output:
-        lmfit.Minimizer with fit information / parameters
-    """
-    p = lmfit.Parameters()
-    p.add('mu', value=mu, vary=mu_free)
-    p.add('B0', value=B0, min=1e-6, max=1e-2, vary=B0_free)
-    p.add('eta2', value=eta2, min=5e-16, max=1e5, vary=eta2_free)
-
-    # TODO: allow kws to width_cont?... function to get kwargs dict
-    res = lmfit.minimize(objectify(width_cont), p,
-                         args=(data, eps, kevs, snr),
-                         kws={'icut':1, 'verbose':verbose, 'rminarc':rminarc},
-                         # width_cont settings
-                         method='leastsq', **lsq_kws)
-    return res
-
 
 # ============================================
 # Interactive manual fitting (full model code)
@@ -205,7 +105,6 @@ def manual_fit(snr, kevs, data, eps):
 
     return p_best
 
-
 def _get_float(prompt):
     """Prompt user to input float, checking for exits / bad floats"""
     while True:
@@ -220,7 +119,6 @@ def _get_float(prompt):
             print '\nInvalid float, try again (enter q to quit)\n'
     return uinput
 
-
 def chi_squared(y, y_err, y_model):
     """Compute chi-squared statistic"""
     return np.sum( ((y_model - y) / y_err)**2 )
@@ -230,9 +128,14 @@ def chi_squared(y, y_err, y_model):
 # Tabulate FWHM values from full model code
 # =========================================
 
+# TODO when resolutions/rminarc issue better characterized
+# come back here at start dynamically updating rminarc, and setting
+# resolution appropriately, for more accurate results
+
 def merge_tables(*args):
-    """Does what it says.  Lower priority at this time,
-    but would be a nice feature to have."""
+    """NOT IMPLEMENTED.  Lower priority at this time,
+    but would be a nice feature to have.
+    """
     # BEWARE NEED TO DEAL WITH REPEATED ETA2 VALUES...
     # ... well that's not so hard just merge the values and look for conflicts
     # in B0.  Only in this split case of Tycho will you need to address this
@@ -243,7 +146,6 @@ def merge_tables(*args):
     #.........
     # deal with this later.
     pass
-
 
 def maketab(snr, kevs, data_min, data_max, mu_vals, eta2_vals, n_B0,
             fname=None, rminarc=None, f_rminarc=1.2, f_B0_init=1.1,
@@ -350,7 +252,6 @@ def maketab(snr, kevs, data_min, data_max, mu_vals, eta2_vals, n_B0,
 
     return mu_dict
 
-
 def maketab_gridB0(snr, pars, kevs, fwhms_min, fwhms_max, rminarc, n_tot,
                    f_B0_init=1.1, f_B0_step=0.15):
     """Grid over B0 at fixed eta2, mu (passed in via pars)
@@ -455,8 +356,6 @@ def maketab_gridB0(snr, pars, kevs, fwhms_min, fwhms_max, rminarc, n_tot,
 
     return B0_all, fwhms_all  # No longer need r-values
 
-
-
 def span_intv(x0, yaux0, y0, y_final, dy_step, f, dx_max=float('inf'),
              epsfcn_init=1e-2):
     """Find pts (x,y) with y-values spanning interval [y0, y_final]
@@ -527,7 +426,6 @@ def span_intv(x0, yaux0, y0, y_final, dy_step, f, dx_max=float('inf'),
 
     return x_vals, y_vals, yaux_vals
 
-
 def mind_the_gaps(x, yaux, y, dy_max, f):
     """Fill data until y-spacing is always less than dy_max
     Assumptions: x, y, yaux are all sorted; y, yaux = f(x)
@@ -565,19 +463,105 @@ def mind_the_gaps(x, yaux, y, dy_max, f):
 
     return x, yaux, y  # Match function call order...
 
+# ========================================
+# Wrappers for full/simple model functions
+# ========================================
+
+def simple_fit(snr, kevs, data, eps, mu, eta2=1, B0=150e-6,
+               mu_free=False, eta2_free=True, B0_free=True):
+    """Perform a simple model fit (equation 6; Table 7 of Ressler et al.)
+    A convenience wrapper for lmfit.minimize(objectify(width_dump), ...)
+
+    Default is to fit both eta2, B0 at fixed mu.
+    
+    Inputs:
+        kevs, data, eps (np.array) as usual
+        mu, B0, eta2 (float) initial guesses, but mu fixed
+        mu_free, eta2_free (bool) which parameters shall vary in fits?
+    Output:
+        lmfit.Minimizer with fit information / parameters
+    """
+    p = lmfit.Parameters()
+    p.add('mu', value=mu, vary=mu_free)
+    p.add('B0', value=B0, min=1e-6, max=1e-2, vary=B0_free)
+    p.add('eta2', value=eta2, min=0, max=1e5, vary=eta2_free)
+    # Since I patched width_dump to use advective solution when eta2 is small
+    # eta2=0 should not be singular
+    res = lmfit.minimize(objectify(width_dump), p,
+                             args=(data, eps, kevs, snr),
+                             method='leastsq')
+    return res
+
+def full_fit(snr, kevs, data, eps, mu, eta2=1, B0=150e-6,
+             mu_free=False, eta2_free=False, B0_free=True,
+             rminarc=None, verbose=True, **lsq_kws):
+    """Perform full model fit (equation 12; Table 8 of Ressler et al.)
+    Default fit: B0 free; mu, eta2 fixed
+
+    Inputs:
+        kevs, data, eps (np.ndarray) as usual
+        mu, B0, eta2 (float) initial guesses, but mu fixed
+        mu_free, eta2_free (bool) which parameters shall vary in fits?
+        Probably should set epsfcn via **lsq_kws
+    Output:
+        lmfit.Minimizer with fit information / parameters
+    """
+    # TODO ARBITRARY/MAGIC NUMBERS FOR LIMITS...
+    p = lmfit.Parameters()
+    p.add('mu', value=mu, vary=mu_free)
+    p.add('B0', value=B0, min=1e-6, max=1e-2, vary=B0_free)
+    p.add('eta2', value=eta2, min=5e-16, max=1e5, vary=eta2_free)
+
+    # TODO: allow kws to width_cont?... function to get kwargs dict
+    # would be more powerful / simple...
+    # THEN, update all methods calling full_fit
+    res = lmfit.minimize(objectify(width_cont), p, args=(data, eps, kevs, snr),
+                         kws={'icut':1, 'verbose':verbose, 'rminarc':rminarc},
+                         method='leastsq', **lsq_kws)
+    return res
+
+def full_width(snr, kevs, mu, eta2, B0, **kwargs):
+    """Full model FWHMs for given SNR, input parameters, energy bands
+    Input:
+        snr (snrcat.SupernovaRemnant): container w/various physical parameters
+        kevs (np.ndarray): energies at which to compute profile FWHMs
+        mu, eta2, B0 (scalars): diffusion parameters, magnetic field
+        **kwargs: passed to width_cont(...), many important twiddle-ables
+    Output:
+        np.ndarray of simple model FWHMs
+    """
+    p = lmfit.Parameters()
+    p.add('mu', value=mu)
+    p.add('eta2',value=eta2)
+    p.add('B0', value=B0)
+    return width_cont(p, kevs, snr, **kwargs)
+
+def simple_width(snr, kevs, mu, eta2, B0):
+    """Simple model FWHMs for given SNR, input parameters, energy bands
+    Input:
+        snr (snrcat.SupernovaRemnant): container w/various physical parameters
+        kevs (scalar, np.ndarray): energies at which to compute profile FWHMs
+        mu, eta2, B0 (scalars): diffusion parameters, magnetic field
+    Output:
+        np.ndarray of simple model FWHMs
+    """
+    p = lmfit.Parameters()
+    p.add('mu', value=mu)
+    p.add('eta2',value=eta2)
+    p.add('B0', value=B0)
+    return width_dump(p, kevs, snr)
 
 # =============================
 # Model functions, objectify(f)
 # =============================
 
+# TODO Default resolutions may not be ideal, but are used EVERYWHERE
+# Address this (soon) by determining how resolution must vary (likely to be
+# parameter, SNR dependent)
+
 def width_cont(params, kevs, snr, verbose=True, rminarc=None, icut=1,
                irmax=400, iradmax=100, ixmax=500):
-    """Width function, wraps numerical computation in fm.fullefflengthsub
-    which solves continuous loss model (equation 12)
-
-    Be careful -- rminarc depends on snr being fitted.
-    If not provided, rminarc is set by an SNR "default"
-    (e.g., SN 1006 has default rminarc=60)
+    """Width function, wrapper for Python port of full model (equation 12)
 
     Inputs:
         params: lmfit.Parameters object with entries B0, eta2, mu
@@ -608,48 +592,35 @@ def width_cont(params, kevs, snr, verbose=True, rminarc=None, icut=1,
     rsarc = snr.rsarc
     s = snr.s
 
-    # Case handling for rminarc, keep old methods from breaking
-    def is_num(x):  # SUPER SKETCH BUT OH WELL
+    # Handle scalar / np.ndarray cases for rminarc
+    def is_num(x):
+        """Check for ints, floats (obviously not exhaustive)"""
         return isinstance(x, int) or isinstance(x, float)
-
-    if rminarc is None:
+    if rminarc is None:  # Use default rminarc
         rminarc = snr.rminarc
         if is_num(snr.rminarc):
             rminarc = rminarc * np.ones(len(kevs))
     elif is_num(rminarc):
         rminarc = rminarc * np.ones(len(kevs))
-    # else: rminarc is already an array
+    # else: rminarc is already an array, use as is
 
     if verbose:
         print ('\tFunction call with B0 = {:0.3f} muG; eta2 = {:0.3f}; '
                'mu = {:0.3f}; rminarc = {}').format(B0*1e6, eta2, mu, rminarc)
 
-    # FORTRAN subroutine call signature:
-    #     Fullefflengthsub(kevs, inumax, widtharc, B0, eta2, mu, vs, v0, rs,
-    #                      rsarc, s, rminarc, icut, irmax, iradmax, ixmax)
-    # f2py sets widtharc as output and inumax optional; call signature is:
-    #     fullefflengthsub(kevs, B0, eta2, mu, vs, v0, rs, rsarc, s, rminarc
-    #                      icut, irmax, iradmax, ixmax, [inumax])
-
-    #fwhms = fm.fullefflengthsub(kevs, B0, eta2, mu, vs, v0, rs, rsarc, s,
-    #                            rminarc, icut, irmax, iradmax, ixmax)
-
-    # Python port call signature:
-    # def fefflen(kevs, B0, eta2, mu, vs, v0, rs, rsarc, s, rminarc, icut, irmax,
-    #             iradmax, ixmax):
-
+    # Python full model port
     fwhms = fmp.fefflen(kevs, B0, eta2, mu, vs, v0, rs, rsarc, s,
                         rminarc, icut, irmax, iradmax, ixmax)
 
-    reserr = fwhms < np.finfo(float).eps * 2
-    boxerr = fwhms > (rminarc - np.finfo(float).eps * 2)
+    # Check for errors
+    reserr = fwhms < np.finfo(float).eps * 2  # Any fwhms = 0 (error output)
+    boxerr = fwhms > (rminarc - np.finfo(float).eps * 2)  # Any FWHMs = 1
     if any(reserr):
         print 'Resolution error! at {}'.format(kevs[np.where(reserr)[0]])
     if any(boxerr):
         print 'Box error! at {}'.format(kevs[np.where(boxerr)[0]])
 
     return fwhms
-
 
 def width_dump(params, kevs, snr):
     """Width function from catastrophic dump model (equation 6), code taken
@@ -671,10 +642,12 @@ def width_dump(params, kevs, snr):
     eta2 = params['eta2'].value
     mu = params['mu'].value
 
+    # SNR parameters
     v0 = snr.v0()
     rs = snr.rs()
     rsarc = snr.rsarc
 
+    # "universal" constants
     b = snrcat.SYNCH_B
     cm = snrcat.SYNCH_CM
     Cd = snrcat.CD
@@ -692,9 +665,10 @@ def width_dump(params, kevs, snr):
 
     # Equation 6, width = beta * a
     # Note that D, tsynch, nus, E, etc.. are vectors
-    
     width = beta * 2*D/v0 / (np.sqrt(1 + (4*D/v0**2/tsynch)) - 1)
 
+    # If diffusion is small, use advection only solution
+    # similar to full model code (here, prevents blowup in simple model fits)
     msk = D / (v0**2 / tsynch) < 1./900
     try:
         width[msk] = v0*tsynch[msk]
@@ -704,15 +678,14 @@ def width_dump(params, kevs, snr):
 
     return width*rsarc/rs  # Convert width (cm) to arcsec
 
-
 def objectify(f):
     """Generate objective function g(params, data, eps_data, *args, **kwargs)
     from model function f(params, *args, **kwargs), for lmfit.minimize()
 
-        params is a lmfit.Parameters() object
-        *args typically takes the "x"-coordinates (abscissae) corresponding
-        to the data you seek to fit
-        **kwargs optional parameters, as usual
+    params is a lmfit.Parameters() object
+    *args typically takes the "x"-coordinates (abscissae) corresponding
+    to the data you seek to fit
+    **kwargs optional parameters, as usual
 
     Input:
         f: model function for data, signature f(pars, x)
@@ -725,11 +698,9 @@ def objectify(f):
         (f(pars, *args, **kwargs) - data)/eps_data
 
 
-# ======================================================
-# Useful tees -- for code-integrated log file generation
-# ======================================================
-# (in principle we could even parse the logs to recover model FWHMs if
-# something in the code goes wrong -- but we don't want to do that...)
+# ===================================
+# Useful tees for log files in Python
+# ===================================
 
 class TeeStdout(object):
     """From stackoverflow.com/a/616686 and Python mailing list

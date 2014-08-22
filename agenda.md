@@ -60,8 +60,31 @@ introduction:
 Main agenda
 ===========
 
+High level questions to consider
+--------------------------------
+
+From poster session (July 31):
+* Ori -- sanity check on checking luminosity and shock kinetic energy, though
+  Rob/Brian note that the synchrotron radiation is very inefficient (esp.
+  compared to when the remnant cools, H starts recombining and emitting thermal
+  lines, T ~ 10^4 K)
+* Terri/Amy -- why are the shocks so thin, anyways?  don't have a good answer
+  for that...
+* Our analysis, if anything, confirms that the shocks are thin to begin with...
+  but doesn't say "why".  Why shouldn't accelerated particles travel farther
+  back?  Function of time / remnant evolution?
+* Madura -- 3D reconstruction?
+* We really need to quantify the magnetic damping issue -- can we put a lower
+  bound on the relevant damping scale length, given that it basically can't
+  explain the rim dropoff with energy?
+
+
 Pipeline, profile and FWHM calculation and plots
 ------------------------------------------------
+
+(on hiatus while I'm getting full model code to work and spew good results)
+
+### Software engineering blargh
 
 So need to
 1. overhaul specextract pipeline (handle region coordinates correctly, test and
@@ -87,6 +110,8 @@ So need to
 
 * Update pipeline documentation ...
 
+### Actual science
+
 * Add more regions -- can we get the highest 2 energy bands, if the 2-3 keV
   band is going bad due to the sulfur line?
 * GENERATE SET OF REGIONS WITH GOOD 0.7-1 keV FWHM, AND SET OF REGIONS WITH BAD
@@ -104,28 +129,60 @@ Quantify effects on calculation of `m_E`, B0, eta2.
 Models for filament widths
 --------------------------
 
-* Clean up your notes.
 
-Some high level questions / thoughts from poster session (July 31):
-* Ori -- sanity check on checking luminosity and shock kinetic energy, though
-  Rob/Brian note that the synchrotron radiation is very inefficient (esp.
-  compared to when the remnant cools, H starts recombining and emitting thermal
-  lines, T ~ 10^4 K)
-* Terri/Amy -- why are the shocks so thin, anyways?  don't have a good answer
-  for that...
-* Our analysis, if anything, confirms that the shocks are thin to begin with...
-  but doesn't say "why".  Why shouldn't accelerated particles travel farther
-  back?  Function of time / remnant evolution?
-* Madura -- 3D reconstruction?
-* We really need to quantify the magnetic damping issue -- can we put a lower
-  bound on the relevant damping scale length, given that it basically can't
-  explain the rim dropoff with energy?
+### CURRENTLY WORKING TO-DOs
+
+* redesign code (redesign, write skeleton code for other todos (namely, varying
+  various SNR numbers, etc))
+* implement code redesign
+* test new code against SN 1006 values
+
+  Simple unit test: perform some fit and take the error limits
+  verify that they give FWHM values corresponding to residual
+  that is delta-chisqr = 1 away from best fit chisqr
+
+* run code overnight w/ error annealing... get fits + errors for 2 and 3 bands
+
+* how to organize results of resolution checking?
+  I have to know what version of code was used.
+  At each of 12 parameter points in (eta2, mu, B0) space,
+  (determine these values from ACTUAL data values)
+  report: rminarc/iradmax, ixmax, irhomax, pacholczyk table density values
+  necessary to bound fractional change to, say, 1% of FWHM values
+
+* prepare material for Brian/Rob Monday (w/ code redesign, have good
+  numbers+errors, + some discussion of varying other parameters)
+
+
+
+* Full model code -- thorough resolution checking
+  This will tell us how large to set iradmax, rminarc.  Some tradeoff.
+  smaller rminarc allows smaller iradmax, but rminarc harder to set adaptively.
+  larger rminarc requires larger iradmax for same accuracy.
+
+  ALSO -- from results, we can set better defaults for EACH SNR.
+  and, may have to determine resolutions as a function of parameters?...
+  A few different ways to approach it.  Safest is to just pick a good
+  resolution for all parameter space
+
+  ALSO -- this will determine whether we must/should set rminarc intelligently
+  while fitting, or if we can get away w/ fixed default for each SNR
+
+  ALSO -- when looking at resolution, consider that Pacholczyk table
+  has only 100 entries!...
+
+  ALSO -- Update Pacholczyk table, and/or check if finer gridding in e- energy
+  makes any difference?
+
+* We may need error annealing for B0 values separately.
 
 
 ### General (higher level to-dos)
 
-* Tables 7, 8 reproduced for SN 1006, then Tycho.
-  As we have wanted for the last SEVERAL weeks...
+* Tables 7, 8 reproduced for SN 1006, then Tycho.  This is THE high level goal
+  right now.
+
+  For SN 1006, we need 2 and 3 band fits, plots, chisqr values.
 
   Also, print out `m_E` values, point to point and from `width_dump` model...
   see some of the old notebooks in `code-profiles/` (merge functionality
@@ -141,18 +198,7 @@ Some high level questions / thoughts from poster session (July 31):
   6. Generate tables of results, for averaged filaments (using both arithmetic
      and geometric means...)
 
-  A few more remarks
-  ------------------
-  Sean's unobtainable values -- with two bands, his chi-squared values are
-  mostly under 1 except where the fit were unobtainable.
-  chi squared values range from ~2 to 16, with <1 degree of freedom...
-
-  Problem with the error "annealing": I can bound eta2 on left and right,
-  but though I'm running fits at each eta2, I get nonsensical values of B0
-
-  in many cases, the fits on the grid make very little difference.
-
-  iPython parallelization
+* iPython parallelization?  To speed up work.
 
 * ipython notebook with results of varying compression ratio, shock speed,
   remnant distance, any other twiddleables (including/excluding energy cutoff).
@@ -165,7 +211,7 @@ Some high level questions / thoughts from poster session (July 31):
   energy? what happens if you fit a straight power law to that???
 
 * Check all your constants.  `snr_catalog.py`, model fitting code both
-  wrapper and fortran
+  wrapper and fortran.  Go back to Sean's transport eq'n and rederive.
 
 * Update code deep review eventually (discuss: correction to the negative sign
   in electron distribution functions, explain the Ecut scaling / calculation)
@@ -182,6 +228,11 @@ Some high level questions / thoughts from poster session (July 31):
   values of mu).  Brian: yeah, run this by Sean.
   (partially answered)
 
+  Observation:
+  Sean's unobtainable values -- with two bands, his chi-squared values are
+  mostly under 1 except where the fit were unobtainable.
+  chi squared values range from ~2 to 16, with <1 degree of freedom...
+
 * Ask Sean if there was any reason for 1sigma error in Table 7?  I think I was
   seeing larger errors from brute-force chi-square in lmfit, even for 1 sigma
   (so it seemed like the errors in Table 7 came from sqrt of diag elements of
@@ -189,37 +240,18 @@ Some high level questions / thoughts from poster session (July 31):
 
 * Sean used energy cutoff in all his model fits?
 
-* Estimate error as a function of varying resolution.
-  Can we cut resolution in ixmax, iradmax while still getting good FWHMs?
-
-* Some ideas to cut down fitting time:
-  3. iPython parallelizing...
-
 * At what chi-sqr does our simple confidence interval analysis break down/fail?
   I don't understand the theory behind this very well.
 
 
-### General (lower level to-dos)
-
-* SAFETY FEATURE, do NOT let user call maketab if `fullmodel.so` is older than
-  `FullEfflength_mod.f`... or just force it to be recompiled each time, but you
-  have to reload the module in all scripts or something...
-
-* (feature creep) write Makefiles to automate the human aspect of running this
-  pipeline?
-
-* Should we be constraining/checking resolution somehow -- checking that grid
-  is "sufficiently" resolved to get a good fit?  What is the "error" of
-  fractionally changing the grid... thinking of Math 228B here.
-
-* On data structures and stuff:
-  [Mandoline (Clojure)](//github.com/TheClimateCorporation/mandoline),
-  [NetCDF](//www.unidata.ucar.edu/software/netcdf/).
-
-* Sphinx for documentation?...
-
-
 ### Small checks, constants, verification
+
+* Nosetests?
+* Clean notes, organization, code, etc for clarity
+* Write some text / code pipeline explanation, cleanup, docs, modularity, blah
+  blah.  Some parts are pretty good (`models_all.py`), some parts not (ipython
+  notebooks, `models_all_exec.py`).
+* Write some text abt methods / results so far
 
 * CREATE a test case for lmfit, to verify it is doing a least squares fit as I
   would expect (just check against scipy curve fit).
@@ -230,7 +262,6 @@ Some high level questions / thoughts from poster session (July 31):
 * Check numerical prefactor 8.3 TeV for electron cutoff energy
 * Update numbers from Pacholczyk (?), consider adding more entries (can ask
   Sean about this)
-* Check FORTRAN code for memory-efficient array indexing?
 
 
 ### Conceptual/background/physics questions (look up and/or ask)

@@ -14,6 +14,13 @@ import numpy as np
 
 SYNCH_B = 1.57e-3  # Synchrotron cooling time const
 SYNCH_CM = 1.82e18  # Synchrotron characteristic freq const
+SYNCH_C1 = 6.27e18  # for synchrotron emissivity (eq'n 20; see Pacholczyk)
+                    # I believe C_1 = 3e/(4\pi m^3 c^5), in CGS units
+                    # e = e- charge, m = e- mass, c = 3e10 cm/s
+                    # i.e., prefactor for critical freq. as in
+                    # //cv.nrao.edu/course/astr534/SynchrotronSpectrum.html
+                    # anyways this is all one giant TODO that should be typed
+                    # up and thrown into the code deep review PDF
 
 CD = 2.083e19  # Bohm diffusion const; Cd = c/(3e)
 BETA = 4.6  # Projection factor for exponential emissivity (Ballet, 2006)

@@ -18,14 +18,18 @@ import scipy as sp
 import scipy.optimize as spopt
 import scipy.integrate as spint
 
+# Recompile Fortran full model code and load Pacholczyk tables
+import fullmodel_recompile
+fullmodel_recompile.main()
 import fullmodel
 fullmodel.readfglists()  # !! important
+import snr_catalog as snrcat
 
 # Constants
-C_M = 1.82e18  # For max synchrotron frequency
-C_1 = 6.27e18  # For synchrotron emissivity
-A = 1.57e-3  # For synchrotron loss time
-NUKEV = 2.417989e17  # 1 keV photon frequency
+C_M = snrcat.SYNCH_CM
+C_1 = snrcat.SYNCH_C1
+A = snrcat.SYNCH_B  # Variable named A to avoid conflict w/ magnetic field B
+NUKEV = snrcat.NUKEV
 
 def main():
     """Currently used as a debugging testbed"""
