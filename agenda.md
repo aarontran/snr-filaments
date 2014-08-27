@@ -41,6 +41,13 @@ progenitor of the type Ia SN...)
 
 Organize literature collection/review eventually...
 
+Learning (practical stuff)
+--------------------------
+
+Maybe useful...
+[GSL manual, section on nonlinear fitting](https://www.gnu.org/software/gsl/
+manual/html_node/Nonlinear-Least_002dSquares-Fitting.html)
+
 
 THING in TYCHO
 --------------
@@ -129,17 +136,25 @@ Quantify effects on calculation of `m_E`, B0, eta2.
 Models for filament widths
 --------------------------
 
+### MAJOR CORRECTION!
+
+When performing model fits to rim widths, width errors must be 1-sigma for
+correct covariance matrix scaling.
+
+ADMITTEDLY -- this is kind of meaningless in both cases because our fits are
+very often not accurate in a least-squares sense, and the errors may well be
+meaningless.
+
+For now, I DON'T apply the redchi scaling to our covariance matrix, because our
+errors have meaningful magnitude; they are not merely weights.
+
 
 ### CURRENTLY WORKING TO-DOs
 
-* redesign code (redesign, write skeleton code for other todos (namely, varying
-  various SNR numbers, etc))
-* implement code redesign
-* test new code against SN 1006 values
+* Address mysterious bugs at extreme values of B0 and eta2
 
-  Simple unit test: perform some fit and take the error limits
-  verify that they give FWHM values corresponding to residual
-  that is delta-chisqr = 1 away from best fit chisqr
+* Error calculation -- there are three-fold approaches now.
+  Run by Rob/Brian for discussion (if even important, really)
 
 * run code overnight w/ error annealing... get fits + errors for 2 and 3 bands
 
@@ -174,7 +189,6 @@ Models for filament widths
   ALSO -- Update Pacholczyk table, and/or check if finer gridding in e- energy
   makes any difference?
 
-* We may need error annealing for B0 values separately.
 
 
 ### General (higher level to-dos)
@@ -183,6 +197,7 @@ Models for filament widths
   right now.
 
   For SN 1006, we need 2 and 3 band fits, plots, chisqr values.
+  (all infrastructure is in place, essentially)
 
   Also, print out `m_E` values, point to point and from `width_dump` model...
   see some of the old notebooks in `code-profiles/` (merge functionality
@@ -192,20 +207,13 @@ Models for filament widths
   (calculate chisqr interactively).
 
   Agenda
-  4. add some methods to vary vs, compratio, etc...
+  4. add some methods to vary vs, compratio, etc... (done)
   5. add methods to quantify effect of varying fwhm measurements, just to
      see...
   6. Generate tables of results, for averaged filaments (using both arithmetic
      and geometric means...)
 
 * iPython parallelization?  To speed up work.
-
-* ipython notebook with results of varying compression ratio, shock speed,
-  remnant distance, any other twiddleables (including/excluding energy cutoff).
-  Show for both SN 1006 and Tycho.
-  Use this for discussion/commentary on twiddle-able knobs.
-  (methods are in place for this... add methods to display results of changing
-  twiddle-ables specifically)
 
 * Remember brian's suggestion (from Friday july 25): how does mE depend on
   energy? what happens if you fit a straight power law to that???
@@ -252,11 +260,6 @@ Models for filament widths
   blah.  Some parts are pretty good (`models_all.py`), some parts not (ipython
   notebooks, `models_all_exec.py`).
 * Write some text abt methods / results so far
-
-* CREATE a test case for lmfit, to verify it is doing a least squares fit as I
-  would expect (just check against scipy curve fit).
-  During this test -- verify that when I freeze a parameter, chi2red is
-  calculated correctly with one less DOF (if it spits out a chi2red)
 
 * Check transport equation for pure advection case
 * Check numerical prefactor 8.3 TeV for electron cutoff energy

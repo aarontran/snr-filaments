@@ -1,17 +1,18 @@
 """
-Model fitting functions for measured FWHMs
+Functions to call models, fit models to data, and tabulate model FWHMs
 
 Aaron Tran
 2014 July 21
 """
 
+# TODO models_all is a bad module name
+
 from __future__ import division
 
 import cPickle as pickle
 from datetime import datetime
-import matplotlib.pyplot as plt  # For manual (interactive) fitting only
+import matplotlib.pyplot as plt
 import numpy as np
-from numpy import f2py
 import os
 import scipy as sp
 from scipy import optimize
@@ -20,8 +21,7 @@ import sys
 import lmfit
 
 import FullEfflength_port as fmp  # Full model code, Python port
-import snr_catalog as snrcat
-
+from snr_catalog import SYNCH_B, SYNCH_CM, CD, NUKEV, BETA  # Constants
 
 def main():
     pass
@@ -29,6 +29,8 @@ def main():
 # ============================================
 # Interactive manual fitting (full model code)
 # ============================================
+
+# NOTE convenient for some early testing/debugging, but currently not used much
 
 def manual_fit(snr, kevs, data, eps):
     """Interactively prompts user for values of B0, eta2, mu
@@ -128,9 +130,12 @@ def chi_squared(y, y_err, y_model):
 # Tabulate FWHM values from full model code
 # =========================================
 
-# TODO when resolutions/rminarc issue better characterized
-# come back here at start dynamically updating rminarc, and setting
-# resolution appropriately, for more accurate results
+# If I ever change table format... make an n-d numpy array
+# w/ coordinate axes (think meshgrid style)
+# coords = {'eta2':[0, 1, 2, ... 1e5], 'B0':[100e-6, ..., 1e-3], ...}
+# tab = np.ndarray([[[[....],[....],[...]]]])
+# Then I can freely slice and dice.  Put NaNs wherever values aren't sampled.
+# But, not necessary now.
 
 def merge_tables(*args):
     """NOT IMPLEMENTED.  Lower priority at this time,
@@ -147,9 +152,11 @@ def merge_tables(*args):
     # deal with this later.
     pass
 
+# TODO for better tables, when resolutions/rminarc errors are characterized
+# come back here to dynamically update rminarc and set resolutions correctly
+
 def maketab(snr, kevs, data_min, data_max, mu_vals, eta2_vals, n_B0,
-            fname=None, rminarc=None, f_rminarc=1.2, f_B0_init=1.1,
-            f_B0_step=0.15):
+    fname=None, rminarc=None, f_rminarc=1.2, f_B0_init=1.1, f_B0_step=0.15):
     """Tabulate FWHM values for set of SNR parameters in parameter space of
     (mu, eta2, B0), given some energy bands.
 
@@ -467,8 +474,10 @@ def mind_the_gaps(x, yaux, y, dy_max, f):
 # Wrappers for full/simple model functions
 # ========================================
 
-def simple_fit(snr, kevs, data, eps, mu, eta2=1, B0=150e-6,
-               mu_free=False, eta2_free=True, B0_free=True):
+# Input: snr, kevs, data/eps/mu/(eta2,B0);   output: best fit (mu)/eta2/B0
+
+def simple_fit(snr, kevs, data, eps, mu, eta2=None, B0=None,
+    mu_free=False, eta2_free=True, B0_free=True):
     """Perform a simple model fit (equation 6; Table 7 of Ressler et al.)
     A convenience wrapper for lmfit.minimize(objectify(width_dump), ...)
 
@@ -482,19 +491,19 @@ def simple_fit(snr, kevs, data, eps, mu, eta2=1, B0=150e-6,
         lmfit.Minimizer with fit information / parameters
     """
     p = lmfit.Parameters()
-    p.add('mu', value=mu, vary=mu_free)
-    p.add('B0', value=B0, min=1e-6, max=1e-2, vary=B0_free)
-    p.add('eta2', value=eta2, min=0, max=1e5, vary=eta2_free)
-    # Since I patched width_dump to use advective solution when eta2 is small
-    # eta2=0 should not be singular
-    res = lmfit.minimize(objectify(width_dump), p,
-                             args=(data, eps, kevs, snr),
-                             method='leastsq')
+    for pstr in ['mu', 'B0', 'eta2']:
+        pval = locals()[pstr]
+        if pval is None:
+            pval = snr.par_init[pstr]
+        p.add(pstr, value = pval, vary = locals()[pstr+'_free'],
+              min = snr.par_lims[pstr][0], max = snr.par_lims[pstr][1])
+
+    res = lmfit.minimize(objectify(width_dump), p, args=(data, eps, kevs, snr),
+                         method='leastsq')
     return res
 
-def full_fit(snr, kevs, data, eps, mu, eta2=1, B0=150e-6,
-             mu_free=False, eta2_free=False, B0_free=True,
-             rminarc=None, verbose=True, **lsq_kws):
+def full_fit(snr, kevs, data, eps, mu, eta2=None, B0=None, mu_free=False,
+    eta2_free=False, B0_free=True, model_kws=None, **lmf_kws):
     """Perform full model fit (equation 12; Table 8 of Ressler et al.)
     Default fit: B0 free; mu, eta2 fixed
 
@@ -502,23 +511,29 @@ def full_fit(snr, kevs, data, eps, mu, eta2=1, B0=150e-6,
         kevs, data, eps (np.ndarray) as usual
         mu, B0, eta2 (float) initial guesses, but mu fixed
         mu_free, eta2_free (bool) which parameters shall vary in fits?
+        **lmf_kws takes extra kwargs for lmfit.minimize (includes lsq kws)
         Probably should set epsfcn via **lsq_kws
+
+        model_kws={'icut':True, 'verbose':True, 'rminarc':60, ...}
     Output:
         lmfit.Minimizer with fit information / parameters
     """
-    # TODO ARBITRARY/MAGIC NUMBERS FOR LIMITS...
-    p = lmfit.Parameters()
-    p.add('mu', value=mu, vary=mu_free)
-    p.add('B0', value=B0, min=1e-6, max=1e-2, vary=B0_free)
-    p.add('eta2', value=eta2, min=5e-16, max=1e5, vary=eta2_free)
+    if model_kws is None:
+        model_kws = {}
 
-    # TODO: allow kws to width_cont?... function to get kwargs dict
-    # would be more powerful / simple...
-    # THEN, update all methods calling full_fit
+    p = lmfit.Parameters()
+    for pstr in ['mu', 'B0', 'eta2']:
+        pval = locals()[pstr]
+        if pval is None:
+            pval = snr.par_init[pstr]
+        p.add(pstr, value = pval, vary = locals()[pstr+'_free'],
+              min = snr.par_lims[pstr][0], max = snr.par_lims[pstr][1])
+
     res = lmfit.minimize(objectify(width_cont), p, args=(data, eps, kevs, snr),
-                         kws={'icut':1, 'verbose':verbose, 'rminarc':rminarc},
-                         method='leastsq', **lsq_kws)
+                         kws=model_kws, method='leastsq', **lmf_kws)
     return res
+
+# Input: snr, kevs, mu/eta2/B0; output: model FWHMs
 
 def full_width(snr, kevs, mu, eta2, B0, **kwargs):
     """Full model FWHMs for given SNR, input parameters, energy bands
@@ -554,14 +569,13 @@ def simple_width(snr, kevs, mu, eta2, B0):
 # =============================
 # Model functions, objectify(f)
 # =============================
+# Input: params, kevs, snr, **kwargs; output: model FWHMs
 
-# TODO Default resolutions may not be ideal, but are used EVERYWHERE
-# Address this (soon) by determining how resolution must vary (likely to be
-# parameter, SNR dependent)
-
-def width_cont(params, kevs, snr, verbose=True, rminarc=None, icut=1,
-               irmax=400, iradmax=100, ixmax=500):
+def width_cont(params, kevs, snr, verbose=True, rminarc=None, icut=None,
+               irmax=None, iradmax=None, ixmax=None):
     """Width function, wrapper for Python port of full model (equation 12)
+
+    All **kwargs not specified (excepting verbose) are taken from snr object
 
     Inputs:
         params: lmfit.Parameters object with entries B0, eta2, mu
@@ -573,8 +587,8 @@ def width_cont(params, kevs, snr, verbose=True, rminarc=None, icut=1,
                  units arcsec, profile computed on [rsarc - rminarc, rsarc]
                  distance should be slightly greater than computed FWHMs
                  (and rsarc > rminarc, of course)
-                 either np.ndarray, or a numeric type
-        icut: 0 or 1; toggle electron spectrum cutoff for f(E,x)
+                 np.ndarray, int, or float
+        icut: boolean; toggle energy cutoff in injected e- energy spectrum
         irmax: resolution on intensity profile (radial coordinate)
         iradmax: resolution on tabulated e- distribution (radial coordinate)
                  (energy resolution for e- distr. set by fglists.dat)
@@ -592,17 +606,18 @@ def width_cont(params, kevs, snr, verbose=True, rminarc=None, icut=1,
     rsarc = snr.rsarc
     s = snr.s
 
-    # Handle scalar / np.ndarray cases for rminarc
-    def is_num(x):
-        """Check for ints, floats (obviously not exhaustive)"""
-        return isinstance(x, int) or isinstance(x, float)
     if rminarc is None:  # Use default rminarc
-        rminarc = snr.rminarc
-        if is_num(snr.rminarc):
-            rminarc = rminarc * np.ones(len(kevs))
-    elif is_num(rminarc):
+        rminarc = snr.rminarc * np.ones(len(kevs))
+    elif isinstance(rminarc, int) or isinstance(rminarc, float):
         rminarc = rminarc * np.ones(len(kevs))
-    # else: rminarc is already an array, use as is
+    if icut is None:  # Lulz...
+        icut = snr.icut
+    if irmax is None:
+        irmax = snr.irmax
+    if iradmax is None:
+        iradmax = snr.iradmax
+    if ixmax is None:
+        ixmax = snr.ixmax
 
     if verbose:
         print ('\tFunction call with B0 = {:0.3f} muG; eta2 = {:0.3f}; '
@@ -616,9 +631,13 @@ def width_cont(params, kevs, snr, verbose=True, rminarc=None, icut=1,
     reserr = fwhms < np.finfo(float).eps * 2  # Any fwhms = 0 (error output)
     boxerr = fwhms > (rminarc - np.finfo(float).eps * 2)  # Any FWHMs = 1
     if any(reserr):
-        print 'Resolution error! at {}'.format(kevs[np.where(reserr)[0]])
+        print '\t\tResolution error! at {}'.format(kevs[np.where(reserr)[0]])
     if any(boxerr):
-        print 'Box error! at {}'.format(kevs[np.where(boxerr)[0]])
+        print '\t\tBox error! at {}'.format(kevs[np.where(boxerr)[0]])
+
+    # For debugging
+    #if verbose:
+    #    print '\t\t', fwhms
 
     return fwhms
 
@@ -648,11 +667,11 @@ def width_dump(params, kevs, snr):
     rsarc = snr.rsarc
 
     # "universal" constants
-    b = snrcat.SYNCH_B
-    cm = snrcat.SYNCH_CM
-    Cd = snrcat.CD
-    nu2 = snrcat.NUKEV * 2.0
-    beta = snrcat.BETA
+    b = SYNCH_B
+    cm = SYNCH_CM
+    Cd = CD
+    nu2 = NUKEV * 2.0
+    beta = BETA
     
     # eta = eta2 * (2 keV)**(1-mu)
     # eta in code maps to \eta*(E_h)^(1-\mu) in paper

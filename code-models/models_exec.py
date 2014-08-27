@@ -19,7 +19,7 @@ import lmfit
 
 from fplot import fplot
 from np2latex import LatexTable
-import models_all as models
+import models
 
 # TODO not sure of best way to store/hold this
 # Table from Press et al., Section 14.5 (1st ed.),
@@ -36,17 +36,8 @@ def main():
     """For debugging/testing stuff.  Not currently in use"""
     pass
 
-#TODO: fitting methods should spit to simple np.ndarray, instead of wrangling
-#      with all of this display / plotting stuff
-#
-#      Input: snr, kevs, data+eps, tab, mus
-#      Output: np.ndarray of [mu, eta2, eta2 errors, B0, B0 errors, chisqr]
-#
-#      Then, write methods (another module) to generate
-#      LaTeX, iPython notebook tables from np.ndarrays
-
 # ===========================
-# Full model fitting/plotting
+# Full model fitting/plotting (DISPLAY/FORMATTING not copied over)
 # ===========================
 
 def table_full(snr, kevs, data, eps, tab, mus, fmts, ax=None, inds=None,
@@ -117,7 +108,7 @@ def table_full(snr, kevs, data, eps, tab, mus, fmts, ax=None, inds=None,
     return table, ax, ltab
 
 # ========================================================
-# Grid fitting and parameter space checking for full model
+# Grid fitting and parameter space checking for full model (copied over)
 # ========================================================
 
 def get_table_fit(snr, kevs, data, eps, mu, tab, inds=None,
@@ -146,8 +137,8 @@ def get_table_fit(snr, kevs, data, eps, mu, tab, inds=None,
     # Now, fit from best grid point
     # TODO: save lmfit standard error estimates, for comparison...
     res = models.full_fit(snr, kevs, data, eps, mu, eta2=eta2, B0=B0,
-                          eta2_free=True, verbose=verbose,
-                          #rminarc=fwhms*f_rmin,
+                          eta2_free=True, model_kws={'verbose':verbose},
+                          # rminarc:fwhms*f_rmin},
                           epsfcn=1e-6, **lsq_kws)  # TODO epsfcn magic number
     if verbose:
         print 'new chisqr = {}, grid chisqr = {}'.format(res.chisqr, chisqr)
@@ -172,6 +163,7 @@ def get_table_fit(snr, kevs, data, eps, mu, tab, inds=None,
 # (this isn't an issue if you anneal more than one point)
 # I won't fix this yet -- will redesign code first.
 
+# TODO A lot of functionality duplicated from get_bounds(...) below, rewrite?
 def get_table_err(eta2, B0, chisqr_min, snr, kevs, data, eps, mu, tab,
                   inds=None, verbose=True, anneal=True, conf_intv=0.683):
     """Estimate error in eta2, B0 from pre-tabulated grid.
@@ -223,7 +215,7 @@ def get_table_err(eta2, B0, chisqr_min, snr, kevs, data, eps, mu, tab,
             # rminarc = fwhmsgrid[idx] * f_rmin
             res = models.full_fit(snr, kevs, data, eps, mu, eta2=eta2_test,
                                   B0=self.B0_prev, eta2_free=False,
-                                  verbose=verbose)
+                                  model_kws={'verbose':verbose})
             self.B0_prev = res.params['B0'].value  # Store previous value
             return chisqr_thresh(res.chisqr)
 
@@ -244,13 +236,13 @@ def get_table_err(eta2, B0, chisqr_min, snr, kevs, data, eps, mu, tab,
     return ci
 
 def err_from_grid(idx, sgn, fobj, vprint, eta2grid, eta2_search_bound):
-    """Get error"""
+    """Get error, starting search from idx"""
     sgn = np.sign(sgn)
     if sgn < 0:
         vprint('Annealing on left')
     else:
         vprint('Annealing on right')
-    idx = anneal_grid(idx, sgn, eta2grid, fobj.eta2_thresh)
+    idx = one_dir_root_grid(fobj.eta2_thresh, idx, sgn, eta2grid)
     vprint('Done annealing')
     if idx is None:  # Hit grid edge
         edge = 0 if sgn<0 else -1
@@ -268,17 +260,24 @@ def err_from_grid(idx, sgn, fobj, vprint, eta2grid, eta2_search_bound):
                                 eta2grid[max(idx, idx - sgn)])
     return eta2_lim, fobj.B0_prev
 
-def anneal_grid(ind, sgn, eta2_vals, f_thresh):
-    """Find grid index just above threshold; return None if not found"""
-    f_res = f_thresh(eta2_vals[ind])  # Check first index, ind
+def one_dir_root_grid(f, ind, sgn, xgrid):
+    """Find zero-crossing of f in xgrid, in direction of sgn starting from ind
+
+    Analogous to np.where(np.diff(np.ndarray(map(f,xgrid))))
+    Output:
+        first index left/right of ind s.t. f(xgrid[ind]) > 0, inclusive of ind
+        else, None if no crossing was found
+    """
+    sgn = np.sign(sgn)
+    f_res = f(grid[ind])  # Do check first index
     while f_res <= 0 and (0 < ind < len(eta2_vals)-1):
-        print 'Moved threshold by one'
-        ind += np.sign(sgn)
-        f_res = f_thresh(eta2_vals[ind])
+        print 'Moved threshold by one'  # if verbose
+        ind += sgn
+        f_res = f(grid[ind])
     return ind if f_res > 0 else None
 
 # ===========================================================
-# Grid manipulation -- compute chisqrs and find best grid pts
+# Grid manipulation -- compute chisqrs and find best grid pts (copied over)
 # ===========================================================
 
 def grid_best(data, eps, eta2_dict, inds=None):
@@ -328,9 +327,8 @@ def fwhm_scan(data, eps, fwhms, inds=None):
 
     return map(lambda x: models.chi_squared(data, eps, x), fwhms)
 
-
 # ========================
-# Fitting for simple model
+# Fitting for simple model (DISPLAY/FORMATTING not copied over)
 # ========================
 
 def table_simp(snr, kevs, data, eps, mus, fmts, inds=None):
@@ -361,10 +359,10 @@ def table_simp(snr, kevs, data, eps, mus, fmts, inds=None):
         tr = ['{:0.2f}'.format(mu)]
         tr.append('{:0.2g} &plusmn; {:0.2g} (or, +{:0.2g}/-{:0.2g})'.format(
                   p['eta2'].value, p['eta2'].stderr,
-                  p['eta2'].better_err[1], p['eta2'].better_err[0]))
+                  p['eta2'].better_err[0], p['eta2'].better_err[1]))
         tr.append('{:0.3g} &plusmn; {:0.2g} (or, +{:0.2g}/-{:0.2g})'.format(
                   p['B0'].value * 1e6, p['B0'].stderr * 1e6,
-                  p['B0'].better_err[1]*1e6, p['B0'].better_err[0]*1e6))
+                  p['B0'].better_err[0]*1e6, p['B0'].better_err[1]*1e6))
         tr.append('{:0.4f}'.format(res.chisqr))
         table.append(tr)
 
@@ -382,16 +380,16 @@ def table_simp(snr, kevs, data, eps, mus, fmts, inds=None):
     return table, ax, ltab
 
 # =========================
-# Errors, simple model fits
+# Errors, simple model fits (copied over)
 # =========================
 # Similar to `lmfit.conf_interval(...)`, but different metric for conf intvs
 
 def get_ci_errors(ci_dict, par_name, ci_val=0.683):
-    """Read out +/- errors from dict of CI bounds"""
+    """Read out +/- errors from dict of CI bounds (output is +/- order)"""
     x_bnds = ci_dict[par_name]
     x_lo, x_hi = np.sort([tup[1] for tup in x_bnds if tup[0] == ci_val])
     x = [tup[1] for tup in x_bnds if tup[0] == 0.][0]
-    return x - x_lo, x_hi - x
+    return x_hi - x, x - x_lo
 
 def get_ci_bounds(res, ci_vals=(0.683, 0.9)):
     """Manually compute confidence interval parameter values, for free
@@ -440,7 +438,7 @@ def get_bounds(conf_intv, res, pstr, **kwargs):
     # WARNING: other free parameters are constrained by their own limits!
     def chisqr_thresh(x):
         # Reset parameters to initial best fits, every time
-        # seems like this reduces errors... but very ad hoc patch
+        # seems like this reduces bugs?... but very ad hoc patch
         lmfit.confidence.restore_vals(orig, res.params)
         res.params[pstr].value = x
         res.prepare_fit()
@@ -472,7 +470,7 @@ def one_dir_root(f, x_init, x_lim, eps=None, adapt=True, verbose=False):
     Output: root within 2x machine precision, else x_lim if root was not found
     """
     if eps is None:
-        eps = abs(0.01 * x_init) * np.sign(x_lim - x_init)
+        eps = abs(0.01 * (x_lim - x_init)) * np.sign(x_lim - x_init)
     else:
         eps = abs(eps) * np.sign(x_lim - x_init)
 
@@ -519,7 +517,7 @@ def one_dir_root(f, x_init, x_lim, eps=None, adapt=True, verbose=False):
     return sp.optimize.brentq(f, min(x_init,x), max(x_init,x))
 
 # ========================
-# Parameter space checking
+# Parameter space checking (copied over)
 # ========================
 
 def check_eta2_grid(data, eps, tab, mus, fmts, inds=None):

@@ -19,8 +19,8 @@ import scipy.optimize as spopt
 import scipy.integrate as spint
 
 # Recompile Fortran full model code and load Pacholczyk tables
-import fullmodel_recompile
-fullmodel_recompile.main()
+#import fullmodel_recompile
+#fullmodel_recompile.main()
 import fullmodel
 fullmodel.readfglists()  # !! important
 import snr_catalog as snrcat

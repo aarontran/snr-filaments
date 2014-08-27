@@ -46,7 +46,7 @@ def kpc2cm(x):
 # ================================
 
 def make_tycho():
-    """Physical parameters for Tycho's SNR
+    """Physical parameters, model/fit settings for Tycho's SNR
     WARNING: if darc is changed, must change vs as well!
     """
     tycho = SupernovaRemnant('Tycho')
@@ -60,15 +60,24 @@ def make_tycho():
     # Mean of velocs from nonthermal regions, Williams et al. 2013
     tycho.cratio = 4.0  # Compression ratio, strong adiabatic shock (R-H)
 
-    tycho.rminarc = 12  # Default rminarc, arcsec
-    #tycho.kevs = [0.7, 1., 2., 3., 4.5]  # Photon energies
-    #tycho.inds = None  # None implies use all bands
+    # Model grid settings, resolutions
+    tycho.icut = True
+    tycho.rminarc = 20  # Default rminarc, arcsec
+    tycho.irmax = 400  # Currently unchanged from SN 1006
+    tycho.iradmax = 100
+    tycho.ixmax = 500
+
+    # Fitting default initial guesses, bounds
+    tycho.par_init = {'mu': 1.0, 'eta2': 1.0, 'B0': 300e-6}
+    tycho.par_lims = {'mu': (0., 2.),
+                      'eta2': (0., 1e6),
+                      'B0': (1e-6, 1e-2)}
 
     return tycho
 
 
 def make_SN1006():
-    """Physical parameters for SN 1006"""
+    """Physical parameters, model/fit settings for SN 1006"""
     sn1006 = SupernovaRemnant('SN 1006')
 
     sn1006.dkpc = 2.2  # Distance to remnant in kpc (!!)
@@ -79,9 +88,18 @@ def make_SN1006():
     sn1006.vs = 5e8  # Shock velocity, cm/s (Satoru et al., 2009, 2013)
     sn1006.cratio = 4.0  # Compression ratio, strong adiabatic shock (R-H)
 
+    # Model grid settings, resolutions
+    sn1006.icut = True
     sn1006.rminarc = 60  # Default rminarc, arcsec
-    #sn1006.kevs = [0.7, 1., 2.]  # Photon energies
-    #sn1006.inds = None  # None implies use all bands
+    sn1006.irmax = 400
+    sn1006.iradmax = 100
+    sn1006.ixmax = 500
+
+    # Fitting default initial guesses, bounds
+    sn1006.par_init = {'mu': 1.0, 'eta2': 1.0, 'B0': 150e-6}
+    sn1006.par_lims = {'mu': (0., 2.),
+                       'eta2': (0., 1e6),
+                       'B0': (1e-6, 1e-2)}
 
     return sn1006
 
@@ -101,10 +119,6 @@ class SupernovaRemnant(object):
     def rs(self):
         """Shock radius (cm)"""
         return arcsec2rad(self.rsarc) * kpc2cm(self.dkpc)
-
-
-def main():
-    pass
 
 
 if __name__ == '__main__':
