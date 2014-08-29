@@ -24,7 +24,7 @@ Table of contents
 * Week 11 - one week break
 * Week 12 - code for LaTeX tables; more precise manual error calculations
             debug/test new full model
-* Week 13 - 
+* Week 13 - refactor model exec/disp code.  Debug erro calculations
 
 (week 10 included for continuity)
 
@@ -748,8 +748,6 @@ I have now changed the step size for `one_dir_root`-finding, testing it out now
 on SN 1006 (at high mu values only)).
 
 
-(merge/synthesize discussion from yesterday)
-
 Oh my goodness I'm so tempted to say it's not worth it.
 But I must have some numbers so that we can compare, first, and say that
 scaled stderrs are tolerable.  I don't have that yet.
@@ -872,18 +870,18 @@ Okay, this has to be fixed.  Sigh.
 Bad initial guesses kill rootfinding
 ------------------------------------
 
-As we search outside the grid, we keep performing new fits; these are
-intialized from previous best fit parameters.  But, once we've found parameter
-values that bracket our error threshold, we must often make a large jump in
-parameter space.
+Searching outside pre-tabulated grid requires new fits, initialized from
+previous best fit parameters.  But, once we find parameter values bracketing
+our error threshold, we must often make a large jump in parameter space.
 
-Example consequence, filament 1, mu=0.33: best fit is B0=127.45 muG, eta2=5.678
-Bounding B0 from below was easy (B0 = 100.454 muG lower limit), but bounding B0
-from above fails.  We hit grid edge with B0 = 231.068 muG, eta2=99.018;
-we search until B0 = 523.554, eta2=16641.  Then, we search between grid edge
-and this new bound (from `one_dir_root`).
+Example (filament 1, mu=0.33): best fit is B0=127.45 muG, eta2=5.678
+Bounding B0 from below was easy (B0 = 100.454 muG lower limit),
+but bounding B0 from above fails.
+We hit grid edge with B0 = 231.068 muG, eta2=99.018; we search until
+point B0 = 523.554, eta2=16641.  Then, we search between grid edge and new
+bound (from `one_dir_root`).
 
-But, starting fit with B0=231.068 muG, eta2=16641 = FUCK.
+But, starting fit with B0=231.068 muG, eta2=16641 fails horribly!
 
 The obvious contrast is to search between two adjacent search points, 1 which
 was found to be below threshold, 1 which was found above.
@@ -900,7 +898,6 @@ Ad hoc solutions:
   the fitter w/ these values whenever we must jump backwards.
   (when feeding numbers to brentq, feed numbers for 1st limit pt
   then PRAY that brentq can find the right fit on 2nd limit pt...)
-
 
 
 Modifying `lmfit.conf_interval` for our use
@@ -965,7 +962,8 @@ Summary
 Verify / check covariance matrix scaling
 ----------------------------------------
 
-If we're going to consider using fit standard errors (i.e., sqrt of diag elements of covariance matrix), we need to know how it's calculated.
+If we're going to consider using fit standard errors (i.e., sqrt of diag of
+covariance matrix), we need to know how it's calculated.
 Scipy tells us:
 * "cov\_x is a Jacobian approximation to the Hessian of the least squares
    objective function."
@@ -1030,6 +1028,7 @@ GNU software library:
 
 Wednesday 2014 August 27
 ========================
+(needs cleanup)
 
 Summary
 -------
@@ -1048,7 +1047,76 @@ Welp.  Well, it works nicely now, and I think the documentation is pretty clear
 and robust.  So it's easier to jump up/down levels of abstraction.
 
 Here I `git commit` before moving to another debugging round (trying hard
-to make error calculation more robust
+to make error calculation more robust).
+
+
+Debug "extreme-eta2-glitchiness"
+--------------------------------
+See Monday August 25 for notes on identification
+
+
+More robust error finding
+-------------------------
+This should partially sidestep the extreme values bug...
+but, no matter what, it will be a killer if encountered.
+
+Refactored code; brentq now searches only between two closest points at first.
+Then, if fails, it tries again with backup points.
+Then, if fails, it prints a warning, returns ZERO error, and moves on.
+
+1. if fitting between two GRID points
+
+....
+long pause of coding 
+
+Did a lot of grid point twiddling.
+The approach is now to use the smallest bracketing interval possible
+
+
+So, I changed the bracketing behavior of brentq...
+Simple fit is using initial step size None (defaults to 1% of dist between
+initial and limit x).
+Full fit, following lmfit somewhat, uses the parameter stderr to start.
+
+
+Thursday 2014 August 28
+=======================
+
+Summary
+-------
+* Picked up GSFC badge
+* Post mortem of overnight attempt at error computation
+* Parallelizing iPython (led to even cleaner code, now!)
+
+Note: when possible, try to clear easily-regenerated iPython output cells
+I will still keep longer outputs (>10 minutes or so), which may be worth having
+backups of anyways.
+
+
+Overnight error annealing run
+-----------------------------
+Last night I tried running SN 1006 computations.  An incomparable trainwreck
+ensued.  I went through verbose output and took notes for next round of
+debugging (if necessary...) (notes not included in today's commit).
+
+iPython parallelization
+-----------------------
+With some twiddling, code runs nicely in parallel (spent a few hours hacking
+around with this).  Need `pip install dill`, mind you.
+
+DirectView's `map` (or, `map_sync`/`map_async`) does not play nice with inline
+matplotlib plots.  Compare to line magic `%px` which manages to make it work.
+I don't really understand why, and it's a bit much to dig into.
+The best I can do is to display plots in separate windows.
+
+Workaround -- don't plot in parallel code.  Save the numbers as output, and
+plot after the fact
+
+
+Friday 2014 august 29
+=====================
+
+
 
 
 

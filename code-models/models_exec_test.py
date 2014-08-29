@@ -16,7 +16,7 @@ from nose.tools import eq_, ok_
 from nose.tools import assert_almost_equal as aeq_
 from unittest import TestCase
 
-import models_exec_rewrite as mae
+import models_exec as mex
 import snr_catalog as snrcat
 
 # ==================
@@ -71,7 +71,7 @@ class TestSimpModelErrorsSN1006(object):
     @classmethod
     def setUpClass(self):
         snr = snrcat.make_SN1006()
-        self.fobj = mae.Fitter(snr, KEVS, DATA, EPS, TAB)
+        self.fobj = mex.Fitter(snr, KEVS, DATA, EPS, TAB)
 
 
     def test_fit_params(self):
@@ -125,7 +125,8 @@ class TestSimpModelErrorsSN1006(object):
             
             res = self.fobj.fitter_simp(mu)
             chisqr_best = res.chisqr
-            ci_dict = mae.get_ci_bounds(res, ci_vals=(0.683,))
+            ci_dict = self.fobj.get_errs(res, 'simp', method='manual',
+                                         ci_vals=(0.683,))
 
             for pstr in ci_dict:
                 dstr = ('Simple fit errors have correct chisqrs; '
@@ -143,7 +144,7 @@ class TestSimpModelErrorsSN1006(object):
 
 
 class TestErrorRootFinderGrid(TestCase):
-    """Test mae.one_dir_root_grid"""
+    """Test mex.one_dir_root_grid"""
     def f_poly(self, x):
         return x**2 - 9
 
@@ -158,8 +159,8 @@ class TestErrorRootFinderGrid(TestCase):
         """Error root finder on grid: +/- crossings on polynomial"""
         ind = np.searchsorted(self.xmesh, 0.5)
 
-        pos_x = mae.one_dir_root_grid(self.f_poly, ind, +1, self.xmesh, True)
-        neg_x = mae.one_dir_root_grid(self.f_poly, ind, -1, self.xmesh, True)
+        pos_x = mex.one_dir_root_grid(self.f_poly, ind, +1, self.xmesh, True)
+        neg_x = mex.one_dir_root_grid(self.f_poly, ind, -1, self.xmesh, True)
 
         aeq_(pos_x, np.searchsorted(self.xmesh, 3))  # Idx of 1st x > 3
         aeq_(neg_x, np.searchsorted(self.xmesh, -3) - 1)  # Idx of last x < -3
@@ -168,45 +169,45 @@ class TestErrorRootFinderGrid(TestCase):
         """Error root finder on grid: crossings not found on grid"""
         ind = np.searchsorted(self.xmesh_sm, 0.5)
 
-        pos_x = mae.one_dir_root_grid(self.f_poly, ind, +1, self.xmesh_sm, True)
-        neg_x = mae.one_dir_root_grid(self.f_poly, ind, -1, self.xmesh_sm, True)
+        pos_x = mex.one_dir_root_grid(self.f_poly, ind, +1, self.xmesh_sm, True)
+        neg_x = mex.one_dir_root_grid(self.f_poly, ind, -1, self.xmesh_sm, True)
 
         eq_(pos_x, None)
         eq_(neg_x, None)
 
     def test_edge(self):
         """Error root finder on grid: start on grid edge"""
-        pos_x = mae.one_dir_root_grid(self.f_poly, len(self.xmesh_sm)-1, +1,
+        pos_x = mex.one_dir_root_grid(self.f_poly, len(self.xmesh_sm)-1, +1,
                                       self.xmesh_sm, True)
-        neg_x = mae.one_dir_root_grid(self.f_poly, 0, -1, self.xmesh_sm, True)
+        neg_x = mex.one_dir_root_grid(self.f_poly, 0, -1, self.xmesh_sm, True)
 
         eq_(pos_x, None)
         eq_(neg_x, None)
 
 class TestErrorRootfinder(TestCase):
-    """Test mae.one_dir_root"""
+    """Test mex.one_dir_root"""
 
     def f_poly(self, x):
         return x**2 - 9
 
     def test_crossings(self):
         """Error root finder: +/- crossings on polynomial"""
-        aeq_(3.0, mae.one_dir_root(self.f_poly, 0., 10., verbose=True))
-        aeq_(-3.0, mae.one_dir_root(self.f_poly, 2.5, -10., verbose=True))
+        aeq_(3.0, mex.one_dir_root(self.f_poly, 0., 10., verbose=True))
+        aeq_(-3.0, mex.one_dir_root(self.f_poly, 2.5, -10., verbose=True))
 
     def test_limits(self):
         """Error root finder: crossings not found"""
-        eq_(1., mae.one_dir_root(self.f_poly, -2., 1., verbose=True))
-        eq_(-2.9, mae.one_dir_root(self.f_poly, 2.9, -2.9, verbose=True))
+        eq_(1., mex.one_dir_root(self.f_poly, -2., 1., verbose=True))
+        eq_(-2.9, mex.one_dir_root(self.f_poly, 2.9, -2.9, verbose=True))
 
     def test_start_on_crossing(self):
         """Error root finder: edge cases (search start on crossing, limit)"""
         # Initialize search ON crossing
-        eq_(3., mae.one_dir_root(self.f_poly, 3., 4., verbose=True))
+        eq_(3., mex.one_dir_root(self.f_poly, 3., 4., verbose=True))
         # Initialize search AND limit on crossing
-        eq_(3., mae.one_dir_root(self.f_poly, 3., 3., verbose=True))
+        eq_(3., mex.one_dir_root(self.f_poly, 3., 3., verbose=True))
         # Initialize search on limit (search direction ambiguous)
-        eq_(10., mae.one_dir_root(self.f_poly, 10., 10., verbose=True))
+        eq_(10., mex.one_dir_root(self.f_poly, 10., 10., verbose=True))
 
 
 if __name__ == '__main__':

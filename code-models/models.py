@@ -32,6 +32,11 @@ def main():
 
 # NOTE convenient for some early testing/debugging, but currently not used much
 
+# NOTE move this to another module, separate plotting/interactive functionality
+
+# I may need another module for manual/interactive error finding
+# given the problems I'm encountering w/ automated error finding...
+
 def manual_fit(snr, kevs, data, eps):
     """Interactively prompts user for values of B0, eta2, mu
     Prints FWHMs, residuals, and chi-squared values in the process
@@ -530,7 +535,7 @@ def full_fit(snr, kevs, data, eps, mu, eta2=None, B0=None, mu_free=False,
               min = snr.par_lims[pstr][0], max = snr.par_lims[pstr][1])
 
     res = lmfit.minimize(objectify(width_cont), p, args=(data, eps, kevs, snr),
-                         kws=model_kws, method='leastsq', **lmf_kws)
+                         kws=model_kws, **lmf_kws)
     return res
 
 # Input: snr, kevs, mu/eta2/B0; output: model FWHMs

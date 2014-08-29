@@ -151,12 +151,29 @@ errors have meaningful magnitude; they are not merely weights.
 
 ### CURRENTLY WORKING TO-DOs
 
+To-dos for Thursday, August 28:
+* Code for interactive session, to manually get error estimates.
+  Get an estimate of how long it takes, how accurate my error estimate is.
+  (note, that, with knowledge of best fit values... we can also just get
+  error that is "good enough", no need for the heavy guns of brentq
+
+* Refactor parallelization code to yet another module...
+
+* Need to... clean up a lot of misc. files (on desktop etc).
+  Some don't necessarily need to be VC'ed but should be placed somewhere
+  sensible.
+
+* Note: as designed, varying SNR parameters is now trivial (one-liner and
+  re-run).  Hooray.  I won't leave the code sitting around, but when it comes
+  time to get results it can be re-run on the fly.
+
+* Idea: maybe useful to compute advection/diffusion lengths from fits?
+
+
 * Address mysterious bugs at extreme values of B0 and eta2
 
 * Error calculation -- there are three-fold approaches now.
   Run by Rob/Brian for discussion (if even important, really)
-
-* run code overnight w/ error annealing... get fits + errors for 2 and 3 bands
 
 * how to organize results of resolution checking?
   I have to know what version of code was used.
@@ -164,10 +181,6 @@ errors have meaningful magnitude; they are not merely weights.
   (determine these values from ACTUAL data values)
   report: rminarc/iradmax, ixmax, irhomax, pacholczyk table density values
   necessary to bound fractional change to, say, 1% of FWHM values
-
-* prepare material for Brian/Rob Monday (w/ code redesign, have good
-  numbers+errors, + some discussion of varying other parameters)
-
 
 
 * Full model code -- thorough resolution checking
@@ -190,7 +203,6 @@ errors have meaningful magnitude; they are not merely weights.
   makes any difference?
 
 
-
 ### General (higher level to-dos)
 
 * Tables 7, 8 reproduced for SN 1006, then Tycho.  This is THE high level goal
@@ -207,16 +219,17 @@ errors have meaningful magnitude; they are not merely weights.
   (calculate chisqr interactively).
 
   Agenda
-  4. add some methods to vary vs, compratio, etc... (done)
   5. add methods to quantify effect of varying fwhm measurements, just to
      see...
   6. Generate tables of results, for averaged filaments (using both arithmetic
      and geometric means...)
 
-* iPython parallelization?  To speed up work.
-
 * Remember brian's suggestion (from Friday july 25): how does mE depend on
   energy? what happens if you fit a straight power law to that???
+
+* Look at azimuthal dependence of B field, robustness of numbers from approx
+  python model. Brian asked, does B field scale with stronger energy
+  dependence? (NOT ADDRESSED as of July 30)
 
 * Check all your constants.  `snr_catalog.py`, model fitting code both
   wrapper and fortran.  Go back to Sean's transport eq'n and rederive.
@@ -224,9 +237,6 @@ errors have meaningful magnitude; they are not merely weights.
 * Update code deep review eventually (discuss: correction to the negative sign
   in electron distribution functions, explain the Ecut scaling / calculation)
 
-* Look at azimuthal dependence of B field, robustness of numbers from approx
-  python model. Brian asked, does B field scale with stronger energy
-  dependence? (NOT ADDRESSED as of July 30)
 
 
 ### General (high-level questions)

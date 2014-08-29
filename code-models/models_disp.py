@@ -24,13 +24,16 @@ import models_exec as mex
 
 from fplot import fplot
 
+# ==================================
+# Functions to control, display fits
+# ==================================
 
 def build_dataf(fit_type, conf_intv=0.683, fit_kws=None, err_kws=None):
     """Build function f to perform fits/errs; f(mu) returns res obj with information (see src)
-    
+
     At core, a wrapper function for fobj.get_fit(...), fobj.get_err(...)
     Make internal functionality changes in those methods, please
-    
+
     Inputs:
         fit_type: 'simp' or 'full'
         conf_intv: please don't set above 0.683 or your life will suck, I guarantee
@@ -38,8 +41,9 @@ def build_dataf(fit_type, conf_intv=0.683, fit_kws=None, err_kws=None):
             mu_free=False, B0_free=True (don't twiddle these)
             model_kws (dict):
                 rminarc, icut, irmax, iradmax, ixmax
-            scale_covar=False (!) (lmfit.minimize kwarg)
-            epsfcn, factor, diag, ftol, xtol, etc... (scipy.optimize.leastsq kwargs)
+            scale_covar=False (!) (lmfit.minimize)
+            method='leastsq'
+            epsfcn, maxfev, factor, diag, ftol, xtol, etc... (scipy leastsq)
         err_kws:
             method='manual' ('lmfit', 'stderr')
             if using 'manual':
@@ -76,43 +80,42 @@ def build_dataf(fit_type, conf_intv=0.683, fit_kws=None, err_kws=None):
         res.params['B0'].value = B0
         res.params['B0'].stderr = B0_stderr
         res.params['B0'].fullerr = B0_err
-        
+
         # Hacky workaround to send fit information downstream
-        res.fit_type = fit_type
-        res.fit_kws = fit_kws
+        # Using params because it's pickle-able for iPython's parallel stuff
+        # semantically illogical, but it works...
+        res.params.fit_type = fit_type
+        res.params.fit_kws = fit_kws
 
         return res
-    
+
     return assmb_data
 
-
-def generate_tabs_plots(f_data, fobj, title, mu_vals, fmt_vals):
+def generate_tabs(f_data, fobj, title, mu_vals):
     """f_data takes mu, Fitter(...) as arguments, return lmfit.Minimizer() w/fits+errors
     Yes it's stupid but it will do the job...
     LaTeX tables will NOT include standard errors
     """
     table = ListTable()
     table.append(['mu', 'eta2', 'B0', 'chisqr'])
-    
-    ltab = LatexTable([r'$\mu$ (-)', r'$\eta_2$ (-)', r'$B_0$ ($\mu$G)', r'$\chi^2$'],
+    ltab = LatexTable([r'$\mu$ (-)', r'$\eta_2$ (-)', r'$B_0$ ($\mu$G)',
+                       r'$\chi^2$'],
                       ['{:0.2f}', 2, 2, '{:0.4f}'], title)
-    
-    # Plot data
-    ax = plt.gca()
-    ax.errorbar(fobj.kevs, fobj.data, yerr=fobj.eps, fmt='ok')
-    
-    for mu, fmt in zip(mu_vals, fmt_vals):
-        
+    plist = []
+
+    for mu in mu_vals:
         # Get fit/error data
+        print '{} computation stdout'.format(title)
         res = f_data(mu, fobj)
         p = res.params
-        
+
         # Edit B0 parameter for table formatting
-        p['B0'].min, p['B0'].max = None, None
+        B0_min, p['B0'].min = p['B0'].min, None  # scrub but save B0 limits
+        B0_max, p['B0'].max = p['B0'].max, None
         p['B0'].value *= 1e6
         p['B0'].stderr *= 1e6
         p['B0'].fullerr = 1e6 * np.array(p['B0'].fullerr)  # Hackish workaround
-        
+
         # Build iPython table
         tr = ['{:0.2f}'.format(mu)]
         tr.append(('{0.value:0.3f} +{1[0]:0.2f}/-{1[1]:0.2f} '
@@ -123,55 +126,75 @@ def generate_tabs_plots(f_data, fobj, title, mu_vals, fmt_vals):
                   p['B0'], p['B0'].fullerr))
         tr.append('{:0.4f}'.format(res.chisqr))
         table.append(tr)
-        
+
         # Build LaTeX table
         ltab.add_row(mu,
                      p['eta2'].value, p['eta2'].fullerr[0], p['eta2'].fullerr[1],
                      p['B0'].value, p['B0'].fullerr[0], p['B0'].fullerr[1],
                      res.chisqr)
-        
-        # Plot best fit model
-        p['B0'].value *= 1e-6  # Reset parameter value for calculations
-        if res.fit_type == 'simp':
+
+        # Reset B0 value, errors
+        p['B0'].value *= 1e-6
+        p['B0'].stderr *= 1e-6
+        p['B0'].fullerr *= 1e-6
+        p['B0'].min = B0_min  # Must follow value resetting
+        p['B0'].max = B0_max
+        plist.append(p)
+
+    return table, ltab, plist, fobj  # plist, fobj for convenience...
+
+def generate_plots(plist, fobj, title, mu_vals, fmt_vals):
+    """Makes plots.  Yeah.  Logical follow-on to generate_tabs"""
+    plt.figure()
+    ax = plt.gca()
+    ax.errorbar(fobj.kevs, fobj.data, yerr=fobj.eps, fmt='ok',
+                label='Data')
+
+    for p, mu, fmt in zip(plist, mu_vals, fmt_vals):
+        if p.fit_type == 'simp':
             kevs_m = np.linspace(fobj.kevs[0]-0.2, fobj.kevs[-1]+0.2, 100)
             fwhms_m = models.width_dump(p, kevs_m, fobj.snr)
-        elif res.fit_type == 'full':
+        elif p.fit_type == 'full':
             fill_kevs = np.linspace(fobj.kevs[0]-0.2, fobj.kevs[-1]+0.2, 5)
             kevs_m = np.sort(np.hstack((fobj.kevs, fill_kevs)))
-            if res.fit_kws is not None and 'model_kws' in res.fit_kws:
+            if p.fit_kws is not None and 'model_kws' in p.fit_kws:
                 model_kws = res.fit_kws['model_kws']
             else:
                 model_kws = {}
             fwhms_m = models.width_cont(p, kevs_m, fobj.snr, **model_kws)
-        ax.plot(kevs_m, fwhms_m, fmt)
-    
+        ax.plot(kevs_m, fwhms_m, fmt, label=r'$\mu = {:0.2f}$'.format(mu))
+
     # Prepare composite plot
     fplot('Energy (keV)', 'FWHM (arcsec)', axargs='tight')
-    ax.legend(tuple(['Measured data'] +
-                    [r'$\mu = {:0.2f}$'.format(mu) for mu in mu_vals]),
-              loc='best')
-    
-    return table, ltab, ax
+    ax.legend(loc='best')
+    ax.set_title(title)
+    plt.show()
 
+# ==============================================
+# Functions for iPython parallelization (stdout,
+# non-blocking table/plot display, etc...
+# ==============================================
+
+# TODO refactor code from ipython notebooks down into here
 
 # ===============
 # Utility classes
 # ===============
 
 class ListTable(list):
-    """ Overridden list class which takes a 2-dimensional list of 
+    """ Overridden list class which takes a 2-dimensional list of
     the form [[1,2,3],[4,5,6]], and renders an HTML Table in ipynb.
     Source: http://calebmadrigal.com/display-list-as-table-in-ipython-notebook/
     """
-    
+
     def _repr_html_(self):
         html = ["<table style='font-family: monospace; font-size: 10pt'>"]
         for row in self:
             html.append("<tr>")
-            
+
             for col in row:
                 html.append("<td>{0}</td>".format(col))
-            
+
             html.append("</tr>")
         html.append("</table>")
         return ''.join(html)
@@ -274,7 +297,7 @@ class LatexTable(object):
 
     def get_table(self):
         return self.header + self.rows + self.footer
-    
+
     def add_row(self, *args):
         """Add row to table, using rspec.
         If giving two errors, positive err comes first..."""

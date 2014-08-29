@@ -1,11 +1,11 @@
 """
 Code to execute model fits for measured FWHMs
-
 Compute best-fit parameters and errors
-Generate tables, figures, check effects of various parameters.
+
+Responsibility for various kwargs split between here and models.py
 
 Aaron Tran
-2014 July 26
+August 2014
 """
 
 from __future__ import division
@@ -17,9 +17,9 @@ from scipy import optimize as spopt
 
 import lmfit
 
-from fplot import fplot
-from np2latex import LatexTable
 import models
+
+from fplot import fplot
 
 # TODO not sure of best way to store/hold this
 # Table from Press et al., Section 14.5 (1st ed.),
@@ -31,373 +31,493 @@ CI_2_CHISQR[0.90] = 2.71
 CI_2_CHISQR[0.9545] = 4.0
 CI_2_CHISQR[0.99] = 6.63
 
-
 def main():
-    """For debugging/testing stuff.  Not currently in use"""
-    pass
+    """Temporary utility method to quickly get out some numbers for SN 1006"""
+    import cPickle as pickle
+    import snr_catalog as snrcat
+    SN1006_KEVS = np.array([0.7, 1.0, 2.0])
+    SN1006_DATA = {}
+    SN1006_DATA[1] = np.array([35.5, 31.94, 25.34]), np.array([1.73, .97, 1.71])
+    SN1006_DATA[2] = np.array([23.02, 17.46, 15.3]), np.array([.35,.139, .559])
+    SN1006_DATA[3] = np.array([49.14, 42.76,29.34]), np.array([1.5, .718, .767])
+    SN1006_DATA[4] = np.array([29, 23.9, 16.6]), np.array([.9, .39, .45])
+    SN1006_DATA[5] = np.array([33.75, 27.2, 24.75 ]), np.array([2.37,.62,.61])
 
-# ===========================
-# Full model fitting/plotting (DISPLAY/FORMATTING not copied over)
-# ===========================
+    with open('tables/sn1006_grid-6-100-20_2014-07-25.pkl', 'r') as fpkl:
+        TAB = pickle.load(fpkl)
 
-def table_full(snr, kevs, data, eps, tab, mus, fmts, ax=None, inds=None,
-               verbose=True):
-    """Perform full model fits, make tables and plots of outputs
+    return Fitter(snrcat.make_SN1006(), SN1006_KEVS,
+                  SN1006_DATA[1][0], SN1006_DATA[1][1],
+                  TAB, inds=None, verbose=True)
 
-    Find best grid value (could interp B0 here)
-    Fit from best grid value, with multiple steps
-    Anneal errors
-    Spit out tables
-    """
-    table = []
-    table.append(['mu', 'eta2', 'B0', 'chisqr'])
 
-    ltab = LatexTable([r'$\mu$ (-)', r'$\eta_2$ (-)', r'$B_0$ ($\mu$G)',
-                       r'$\chi^2$'],
-                      ['{:0.2f}', 2, 2, '{:0.4f}'],
-                       'LaTeX table')  # BAD...
+class Fitter(object):
 
-    if ax is None:
-        ax = plt.gca()
-    ax.errorbar(kevs, data, yerr=eps, fmt='ok')
+    def __init__(self, snr, kevs, data, eps, tab, inds=None, verbose=True):
+        """Fitter w/SNR and measured data to run full/simple model fits.
+        
+        Use setters to update any of kevs/data/eps (does indexing for you)
+        Updating kevs requires new indices as well
+        """
+        self.snr = snr
+        self.tab = tab
 
-    for mu, fmt in zip(mus, fmts):
-        # Fit from best grid value NOTE FITTING SWITCH
-        eta2, B0, chisqr = get_table_fit(snr, kevs, data, eps, mu, tab,
-                                         inds=inds, verbose=verbose)
-        #print 'only using best grid value'
-        #eta2, B0, asdfjkl_dont_care, chisqr = grid_best(data,eps,tab[mu],inds)
+        self._okevs = kevs
+        self._odata = data
+        self._oeps = eps
 
+        self.set_inds(inds)
+        self.set_verbose(verbose)
+    # self.snr, self.inds, self.kevs, self.data, self.eps
+    # self._verbose, self._vprint
+    # Fitter doesn't keep a record of previous fits
+
+    # -------
+    # Setters
+    # -------
+
+    # Could improve these using hooks (similar to lmfit parameters.py)
+    # but, really not important
+
+    def set_inds(self, inds=None):
+        """Update energy band indices to be used.  None resets to all"""
+        self.inds = inds
+        if inds is not None:
+            self.kevs = self._okevs[inds]
+            self.data = self._odata[inds]
+            self.eps = self._oeps[inds]
+        else:
+            self.kevs = self._okevs
+            self.data = self._odata
+            self.eps = self._oeps
+
+    def set_data_err(self, data, eps):
+        """Update data/eps to be fitted, respecting inds"""
+        self._odata = data
+        self._oeps = eps
+        self.set_inds(self.inds)
+
+    def set_kevs(self, kevs, inds=None):
+        """Update kevs; resets inds by default"""
+        self._okevs = kevs
+        self.set_inds(inds)
+
+    def set_verbose(self, verbose):
+        """Set verbosity (_verbose, _vprint)"""
+        self._verbose = verbose
         if verbose:
-            print 'Best fit values: eta2={:0.4f}, B0={:0.4f}'.format(eta2,B0*1e6)
+            def _vprint(*args):
+                for arg in args:
+                    print arg,
+                print
+            self._vprint = _vprint
+        else:
+            self._vprint = lambda *a: None
 
-        # Get annealed errors
-        print 'computing errors'
-        ci = get_table_err(eta2, B0, chisqr, snr, kevs, data, eps, mu, tab,
-                           conf_intv=0.683, inds=inds, verbose=verbose,
-                           anneal=True)  # NOTE ANNEALING SWITCH
-        err_eta2 = get_ci_errors(ci, 'eta2', ci_val=0.683)
-        err_B0 = get_ci_errors(ci, 'B0', ci_val=0.683)
+    # -----------------------------
+    # Wrappers for fitting routines
+    # -----------------------------
 
-        # Assemble table for pretty-printing
-        tr = ['{:0.2f}'.format(mu)]
-        tr.append('{:0.3f} (+{:0.3f}/-{:0.3f})'.format(
-                   eta2, err_eta2[1], err_eta2[0]))
-        tr.append('{:0.2f} (+{:0.2f}/-{:0.2f})'.format(
-                   B0*1e6, err_B0[1]*1e6, err_B0[0]*1e6))
-        tr.append('{:0.4f}'.format(chisqr))
-        table.append(tr)
+    def fitter_full(self, mu, **kwargs):
+        """Full model fit (see models.full_fit for available **kwargs)"""
+        return models.full_fit(self.snr, self.kevs, self.data, self.eps,
+                               mu, **kwargs)
 
-        # Assemble LaTeX table
-        ltab.add_row(mu, eta2, err_eta2[1], err_eta2[0],
-                     B0*1e6, err_B0[1]*1e6, err_B0[0]*1e6,
-                     chisqr)
+    def fitter_simp(self, mu, **kwargs):
+        """Simple model fit (see models.simple_fit for available **kwargs)"""
+        return models.simple_fit(self.snr, self.kevs, self.data, self.eps,
+                                 mu, **kwargs)
 
-        # Plot
-        p = lmfit.Parameters()
-        p.add('B0',value=B0)
-        p.add('eta2',value=eta2)
-        p.add('mu',value=mu)
-        fwhms_m = models.width_cont(p, kevs, snr)  # Here's a function call
-        print fwhms_m
-        ax.plot(kevs, fwhms_m, fmt)
-        ax.legend(tuple(['Data'] + [r'$\mu = {:0.2f}$'.format(mu) for
-                                    mu in mus]), loc='best')
-        fplot('Energy (keV)', 'FWHM (arcsec)', ax=ax, axargs='tight')
+    # TODO rminarc issue to be addressed (!)
+    # TODO stderr scaling issue to be addressed (!!)
 
-    return table, ax, ltab
+    def get_fit(self, mu, appr, **kwargs):
+        """Simple or full fit + manual 1-sigma errors
+        **kwargs passed to models.full_fit, if appr='full'
+        In particular, kws include: model_kws, method, epsfcn, maxfev, etc.
 
-# ========================================================
-# Grid fitting and parameter space checking for full model (copied over)
-# ========================================================
+        Here, I specifically disable redchi-scaling for the covar matrix
+        """
+        if 'scale_covar' not in kwargs:
+            kwargs['scale_covar'] = False
 
-def get_table_fit(snr, kevs, data, eps, mu, tab, inds=None,
-                   verbose=True, **lsq_kws):
-    """Find best fit eta2, B0 for given mu value (need mu for fit)"""
-    f_rmin = 1.2  # TODO MAGIC...
+        self._vprint('Best {} fit, mu = {}'.format(appr, mu))
 
-    # Initialize with best grid values
-    eta2, B0, fwhms, chisqr = grid_best(data, eps, tab[mu], inds=inds)
-    if verbose:
-        print 'chisqr from tabulated fwhms: {}'.format(chisqr)
+        if appr == 'simp':
+            res = self.fitter_simp(mu)
+        elif appr == 'full':
+            self._vprint('Starting from best grid value')
+            eta2, B0, fwhms, chisqr = self.grid_best(mu)
+            res = self.fitter_full(mu, eta2=eta2, B0=B0, eta2_free=True,
+                                   **kwargs)
+        else:
+            raise Exception('Invalid model choice')
+        
+        self._vprint('Done fitting')
 
-    # methods for scanning grid incorporate inds.  But, full_fit/width_cont
-    # do not do so. (THIS MUST COME AFTER grid_best(...) call...
-    # TODO BAD DESIGN)
-    if inds is not None:
-        kevs = kevs[inds]
-        data, eps = data[inds], eps[inds]
+        return res
 
-    # Update fwhms, chisqr as table values may be inaccurate/out-of-date
-    fwhms = models.full_width(snr, kevs, mu, eta2, B0, verbose=False)
-    chisqr = models.chi_squared(data, eps, fwhms)
-    if verbose:
-        print 'chisqr w/ more accurate fwhms: {}'.format(chisqr)
+    # TODO rminarc issue must also be addressed by error searching...
 
-    # Now, fit from best grid point
-    # TODO: save lmfit standard error estimates, for comparison...
-    res = models.full_fit(snr, kevs, data, eps, mu, eta2=eta2, B0=B0,
-                          eta2_free=True, model_kws={'verbose':verbose},
-                          # rminarc:fwhms*f_rmin},
-                          epsfcn=1e-6, **lsq_kws)  # TODO epsfcn magic number
-    if verbose:
-        print 'new chisqr = {}, grid chisqr = {}'.format(res.chisqr, chisqr)
-    if res.chisqr < chisqr:
-        eta2 = res.params['eta2'].value
-        B0 = res.params['B0'].value
-        chisqr = res.chisqr
-        print 'Found better fit at eta2={:0.4f}, B0={:0.4f}'.format(eta2,B0*1e6)
-    else:
-        if verbose:
-            print 'Error: failed to improve best grid values (?!)'
+    def get_errs(self, res, appr, method='manual', ci_vals=(0.683,), **kwargs):
+        """Find dictionary of confidence intervals
 
-    return eta2, B0, chisqr
+        Input:
+            res = lmfit.Minimizer() from fit
+            appr = 'full' or 'simp'
+            method = 'manual' (default), 'lmfit', or 'stderr'
 
-# TODO ASSUMPTION -- extreme values of eta2 also give correct B0 bounds
-# But this has a good chance of being incorrect.  Should repeat this process
-# for B0... argh :(
+            **kwargs are passed to relevant functions
+                method='lmfit': maxiter=200, prob_func=None
+                                (see lmfit.conf_interval docstring)
+                method='manual': eps=None, adapt=True, anneal=True
+                                 (anneal keyword only if appr='full')
+        Output:
+            confidence interval dictionary
+        """
+        self._vprint('Finding {} fit errors; method={}'.format(appr, method))
 
-# NOTE currently, spopt in between "bracketing" values FAILS because
-# pre-cached FWHMs are old and give inaccurate FWHMs.  Thus, grid bracketing
-# values may not bracket the threshold when tables are recalculated.
-# (this isn't an issue if you anneal more than one point)
-# I won't fix this yet -- will redesign code first.
+        if method == 'lmfit':
+            return lmfit.conf_interval(res, sigmas=ci_vals,
+                                       verbose=self._verbose, **kwargs)
+        if method == 'stderr':
+            def f(conf_intv, res, pstr):
+                if conf_intv != 0.683:
+                    print ('Warning: requested CI={}. But, stderr only '
+                           'gives 68.3% errors').format(conf_intv)
+                return res.params[pstr].stderr, res.params[pstr].stderr
+        elif method == 'manual':
+            f = lambda *args: self.get_bounds(*args, appr=appr,
+                                verbose=self._verbose, **kwargs)
+        else:
+            raise Exception('ERROR: method must be one of lmfit/stderr/manual')
 
-# TODO A lot of functionality duplicated from get_bounds(...) below, rewrite?
-def get_table_err(eta2, B0, chisqr_min, snr, kevs, data, eps, mu, tab,
-                  inds=None, verbose=True, anneal=True, conf_intv=0.683):
-    """Estimate error in eta2, B0 from pre-tabulated grid.
+        ci = build_ci_dict(res, f, ci_vals=ci_vals)
+        if self._verbose:
+            self._vprint('Finished finding fit errors:')
+            print lmfit.printfuncs.ci_report(ci)
+            self._vprint('')
+        return ci
 
-    Threshold eta2-chisqr space based on given best fit eta2 + chisqr, and
-    find most extreme points in grid bracketing this threshold.
-    "Anneal" errors by fitting for best B0.  If this drops chisqr below
-    threshold, move to next eta2 (on left or right)
 
-    mu, tab passed in separately (instead of as eta2_dict) because
-    we need access to mu value for full model calculations/fitting
+    # ----------------------------
+    # Model specific error finding
+    # ----------------------------
 
-    Input:
-    Output:
-    """
-    # Ad hoc patch (stackoverflow.com/a/5980173)
-    if verbose:
-        def vprint(*args):
-            for arg in args:
-                print arg,
-            print
-    else:
-        vprint = lambda *a: None
+    # TODO: review TODOs throughout error seeking method.
 
-    # Load grid, locate search start point
-    eta2grid, B0grid, fwhmsgrid, chisqrgrid = grid_scan(data,eps,tab[mu],inds)
-    idx = np.searchsorted(eta2grid, eta2)  # Location of best eta2
-    def chisqr_thresh(x):
-        return x - (chisqr_min + CI_2_CHISQR[conf_intv])
+    def get_bounds(self, conf_intv, res, pstr, appr='full', anneal=True,
+                   **kwargs):
+        """Estimate error in eta2, B0 from pre-tabulated grid.
 
-    # Find where conf_intv chisqr threshold is bracketed in eta2 grid
-    # If crossings are not found, start from grid edges
-    sgns = np.sign(chisqr_thresh(chisqrgrid))
-    crossings = np.where(np.diff(sgns))[0]  # Left indices of crossings
-    idx_left = crossings[0] if any(crossings < idx) else 0
-    # crossings[-1]+1 gets right index of crossing
-    idx_right = crossings[-1]+1 if any(crossings+1 > idx) else len(eta2grid)-1
+        Threshold eta2-chisqr space based on given best fit eta2 + chisqr, and
+        find most extreme points in grid bracketing this threshold.
+        "Anneal" errors by fitting for best B0.  If this drops chisqr below
+        threshold, move to next eta2 (on left or right)
 
-    # Check (anneal) grid chisqrs and find bracketing (eta2,B0) pts, then
-    # use one_dir_root(...) or spopt.brentq(...) to get more precise limit
-    eta2bnd = (0., 1e5)  # TODO ARBITRARY/MAGIC LIMITS on eta2 search
+        Input: res is best fit lmfit.Minimizer
+            **kwargs passed through to one_dir_root
+        Output: limits on parameter pstr
+        """
+        orig = lmfit.confidence.copy_vals(res.params)
+        best_chisqr = res.chisqr
 
-    class Fitter(object):  # Define here to access snr/kevs/etc
-        """Stores prev B0 value for next thresh fit; inits with best fit B0"""
-        def __init__(self):
-            self.B0_prev = B0
-        def eta2_thresh(self, eta2_test):
-            # TODO set rminarc, epsfcn, iradmax, resolution etc appropriately
-            # rminarc = fwhmsgrid[idx] * f_rmin
-            res = models.full_fit(snr, kevs, data, eps, mu, eta2=eta2_test,
-                                  B0=self.B0_prev, eta2_free=False,
-                                  model_kws={'verbose':verbose})
-            self.B0_prev = res.params['B0'].value  # Store previous value
+        res.params[pstr].vary = False
+        def chisqr_thresh(x):
+            return x - (best_chisqr + CI_2_CHISQR[conf_intv])
+        # Objective function for root-finding.  Modifies res, doesn't restore
+        # so, when stepping on grid / root-finding, it keeps memory
+        # of its previous fit state
+        def f_thresh(x):  # TODO other free params constrained by limits!
+            res.params[pstr].value = x
+            res.prepare_fit(pstr)
+            res.leastsq()
             return chisqr_thresh(res.chisqr)
 
-    if anneal:  # TODO err_from_grid design is bad, just checking that it works
-        eta2_L, B0_L = err_from_grid(idx_left, -1, Fitter(), vprint,
-                                     eta2grid, eta2bnd[0])
-        eta2_R, B0_R = err_from_grid(idx_right, +1, Fitter(), vprint,
-                                     eta2grid, eta2bnd[1])
-    else:
-        vprint('Using naive grid bounds (no annealing)')
-        eta2_L, B0_L = eta2grid[idx_left], B0grid[idx_left]
-        eta2_R, B0_R = eta2grid[idx_right], B0grid[idx_right]
+        # Best fit quantities
+        p_init = res.params[pstr].value
+        p_stderr = res.params[pstr].stderr
+        p_min, p_max = res.params[pstr].min, res.params[pstr].max
+
+        self._vprint('Finding error bounds on {} = {}'.format(pstr, p_init))
+
+        if appr == 'simp':
+            self._vprint('Bounding below, limit = {}'.format(p_min))
+            p_lo = one_dir_root(f_thresh, p_init, p_min, eps=p_stderr,**kwargs)
+
+            self._vprint('Bounding above, limit = {}'.format(p_max))
+            lmfit.confidence.restore_vals(orig, res.params)
+            p_hi = one_dir_root(f_thresh, p_init, p_max, eps=p_stderr,**kwargs)
+
+        elif appr == 'full':
+            # Get xgrid from self.tab + lo/hi indices to search from
+            xgrid, idx_lo, idx_hi = self.prep_grid_anneal(chisqr_thresh, res, pstr)
+
+            if anneal:
+                self._vprint('Bounding below, limit = {}'.format(p_min))
+                p_lo = self.anneal(f_thresh, p_init, idx_lo, xgrid, p_min,
+                                   eps=p_stderr, **kwargs)
+
+                self._vprint('Bounding above, limit = {}'.format(p_max))
+                lmfit.confidence.restore_vals(orig, res.params)
+                p_hi = self.anneal(f_thresh, p_init, idx_hi, xgrid, p_max,
+                                   eps=p_stderr, **kwargs)
+            else:
+                self._vprint('Using naive grid bounds (no annealing!)')
+                p_lo = xgrid[idx_lo]
+                p_hi = xgrid[idx_hi]
+        else:
+            raise Exception('ERROR: fit type {} must be '
+                            '\'full\' or \'simp\''.format(appr))
+
+        # Restore values/chisqr in lmfit.Minimizer object
+        lmfit.confidence.restore_vals(orig, res.params)
+        res.params[pstr].vary = True
+        res.chisqr = best_chisqr
+
+        return p_lo, p_hi
+
+    def prep_grid_anneal(self, chisqr_thresh, res, pstr):
+        """Bracketing indices of chisqr_thresh in self.tab for pstr mesh"""
+
+        mu = res.params['mu'].value
+        eta2_grid, B0_grid, fwhms_grid, chisqr_grid = self.grid_scan(mu)
+
+        if pstr == 'eta2':
+            xgrid = eta2_grid  # Already sorted
+        elif pstr == 'B0':
+            msk = np.argsort(B0_grid)
+            chisqr_grid = chisqr_grid[msk]
+            xgrid = B0_grid[msk]
+        else:
+            raise Exception('Bad parameter name for full model errors')
+
+        idx = np.searchsorted(xgrid, res.params[pstr].value)
         
-    # Output in format analogous to lmfit.conf_interval
-    ci = {}
-    ci['eta2'] = [(conf_intv, eta2_L), (conf_intv, eta2_R), (0., eta2)]
-    ci['B0'] = [(conf_intv, B0_L), (conf_intv, B0_R), (0., B0)]
-    return ci
+        # Find chisqr crossings in pre-tabulated grid (may be incorrect)
+        sgns = np.sign(chisqr_thresh(chisqr_grid))
+        crossings = np.where(np.diff(sgns))[0]  # Left indices
+        idx_lo = crossings[0] if any(crossings < idx) else 0
+        # crossings[-1]+1 gets right index of crossing
+        idx_hi = crossings[-1]+1 if any(crossings+1 > idx) else len(chisqr_grid)-1
 
-def err_from_grid(idx, sgn, fobj, vprint, eta2grid, eta2_search_bound):
-    """Get error, starting search from idx"""
-    sgn = np.sign(sgn)
-    if sgn < 0:
-        vprint('Annealing on left')
-    else:
-        vprint('Annealing on right')
-    idx = one_dir_root_grid(fobj.eta2_thresh, idx, sgn, eta2grid)
-    vprint('Done annealing')
-    if idx is None:  # Hit grid edge
-        edge = 0 if sgn<0 else -1
-        vprint('Hit grid edge {}'.format(eta2grid[edge]))
-        eta2_lim = one_dir_root(fobj.eta2_thresh, eta2grid[edge],
-                                eta2_search_bound, verbose=True)
-        if eta2_lim == eta2_search_bound:
-            print 'Warning: hit search bound {}'.format(eta2_lim)
-    else:
-        vprint('Found bracketing values')
-        # On left (sgn=-1) we want idx, idx+1
-        # on right(sgn=+1) we want idx-1, idx
-        eta2_lim = spopt.brentq(fobj.eta2_thresh,
-                                eta2grid[min(idx, idx - sgn)],
-                                eta2grid[max(idx, idx - sgn)])
-    return eta2_lim, fobj.B0_prev
+        return xgrid, idx_lo, idx_hi
 
-def one_dir_root_grid(f, ind, sgn, xgrid):
-    """Find zero-crossing of f in xgrid, in direction of sgn starting from ind
+    def anneal(self, f, x0, idx_init, xgrid, x_lim, **kwargs):
+        """Find root of f; search on/past grid from xgrid[idx_init] to x_lim
 
-    Analogous to np.where(np.diff(np.ndarray(map(f,xgrid))))
-    Output:
-        first index left/right of ind s.t. f(xgrid[ind]) > 0, inclusive of ind
-        else, None if no crossing was found
-    """
-    sgn = np.sign(sgn)
-    f_res = f(grid[ind])  # Do check first index
-    while f_res <= 0 and (0 < ind < len(eta2_vals)-1):
-        print 'Moved threshold by one'  # if verbose
-        ind += sgn
-        f_res = f(grid[ind])
-    return ind if f_res > 0 else None
+        Input:
+            f is threshold function
+            x0 is the best fit parameter value (not necessarily in xgrid)
+            xgrid[idx_init] is where to start searching, first exhausting grid
+            then searching outside if needed (up to x_lim)
+            **kwargs passed to one_dir_root(...)
+        Output:
+            bounding parameter (a root of f)
+        """
+        sgn = np.sign(x_lim - xgrid[idx_init])
+        self._vprint('Annealing grid in {} direction'.format(sgn))
+        idx = one_dir_root_grid(f, idx_init, sgn, xgrid, verbose=self._verbose)
 
-# ===========================================================
-# Grid manipulation -- compute chisqrs and find best grid pts (copied over)
-# ===========================================================
+        if idx is None:  # Hit grid edge
+            x = xgrid[0] if sgn < 0 else xgrid[-1]
+            self._vprint('Hit grid edge {}'.format(x))
+            x_ret = one_dir_root(f, x, x_lim, **kwargs)
 
-def grid_best(data, eps, eta2_dict, inds=None):
-    """Find best fit to data/eps in (eta2, B0) grid of pretabulated FWHMs
+        else:
+            self._vprint('Found error crossing on grid')
+            idx_adj = idx - sgn  # Move backwards
 
-    Input:
-        data, eps (np.ndarray): data and errors to fit
-        inds (np.ndarray): use only a subset of energy bands if desired
-    Output:
-        eta2 (float), B0 (float), fwhms (np.ndarray), chisqr (float)
-    """
-    eta2s, B0s, fwhms, chisqrs = grid_scan(data, eps, eta2_dict, inds)
-    ind = np.argmin(chisqrs)
-    return eta2s[ind], B0s[ind], fwhms[ind], chisqrs[ind]
+            # Need to verify bracketing points; move backwards if needed
+            if idx == idx_init:
+                self._vprint('Did not move on grid, checking backwards')
+                while xgrid[idx_adj] > x0 and f(xgrid[idx_adj]) > 0:
+                    self._vprint('Moved threshold back by one')
+                    idx_adj -= sgn
+                    idx -= sgn
+                self._vprint('Done checking backwards')
 
-def grid_scan(data, eps, eta2_dict, inds=None):
-    """Find best-fit B0s, FWHMs, chisqrs for eta2 grid
+            # Brentq limits
+            x_in = xgrid[idx_adj]
+            x_out = xgrid[idx]
+            # To get 2nd pair of limits -- step index by +/-1 in each direction
+            # if hit grid edge, increment by last grid interval; if hit x0, x0
+            try:
+                x_lo = xgrid[idx_adj - sgn]
+            except IndexError:
+                x_lo = x_in - (xgrid[idx_adj+sgn] - xgrid[idx_adj])
 
-    Compute chisqr over (eta2, B0) grid for provided data/eps,
-    subset with inds if necessary.  Cull best B0 value for each eta2.
+            try:
+                x_hi = xgrid[idx + sgn]
+            except IndexError:
+                x_hi = x_out + (xgrid[idx_adj+sgn] - xgrid[idx_adj])
 
-    Input: data, eps (np.ndarray); eta2_dict (dict) grid of eta2, B0, FWHMs
-    Output: SORTED eta2 values with best B0, fwhms, chisqr
-    """
-    eta2_vals = np.sort(eta2_dict.keys())
-    B0_vals = np.array([])
-    fwhm_vals = []  # Easier to build up, but not efficient
-    chisqr_vals = np.array([])
+            # Stupid way to bound parameters, but oh well
+            if (sgn > 0 and x_in < x0) or (sgn < 0 and x_in > x0):
+                x_in = x0
+            if (sgn > 0 and x_lo < x0) or (sgn < 0 and x_lo > x0):
+                x_lo = x0
 
-    for eta2 in eta2_vals:
-        B0_pts, fwhms = eta2_dict[eta2]
-        chisqr_pts = fwhm_scan(data, eps, fwhms, inds)
+            lims = [x_lo, x_in, x_out, x_hi]
+            if sgn < 0:
+                lims.reverse()
 
-        # Previously tried interpolating better B0 fit, now scrapped
-        ind_min = np.argmin(chisqr_pts)
-        B0_vals = np.append(B0_vals, B0_pts[ind_min])
-        fwhm_vals.append(fwhms[ind_min])
-        chisqr_vals = np.append(chisqr_vals, chisqr_pts[ind_min])
+            try:
+                x_ret = stubborn_brentq(f, *lims)
+            except ValueError:
+                print ('WARNING: brentq failed, reporting guess; limit = {}, '
+                       'bracketing step = {}').format(x_out, abs(x_out-x_in))
+                x_ret = x_out
+                     
 
-    return eta2_vals, B0_vals, np.array(fwhm_vals), chisqr_vals
 
-def fwhm_scan(data, eps, fwhms, inds=None):
-    """Compute chisqr values over pre-computed FWHMs (from B0 mesh)"""
-    if inds is not None:  # Subset if needed
-        data, eps = data[inds], eps[inds]
-        fwhms = fwhms[:,inds]
+        return x_ret
 
-    return map(lambda x: models.chi_squared(data, eps, x), fwhms)
+    # -----------------------
+    # Grid/table manipulation
+    # -----------------------
 
-# ========================
-# Fitting for simple model (DISPLAY/FORMATTING not copied over)
-# ========================
+    def grid_best(self, mu):
+        """Find best fit to data/eps in (eta2, B0) grid of pretabulated FWHMs
 
-def table_simp(snr, kevs, data, eps, mus, fmts, inds=None):
-    """Generate Table 7 of Sean's paper with better 1-sigma errors + plot"""
+        Input:
+            data, eps (np.ndarray): data and errors to fit
+            inds (np.ndarray): use only a subset of energy bands if desired
+        Output:
+            eta2 (float), B0 (float), fwhms (np.ndarray), chisqr (float)
+        """
+        eta2s, B0s, fwhms, chisqrs = self.grid_scan(mu)
+        ind = np.argmin(chisqrs)
+        return eta2s[ind], B0s[ind], fwhms[ind], chisqrs[ind]
 
-    table = []  # To be used with ListTable in iPython notebook output
-    table.append(['mu', 'eta2', 'B0', 'chisqr'])
+    def grid_scan(self, mu):
+        """Find best-fit B0s, FWHMs, chisqrs for eta2 grid
 
-    ltab = LatexTable([r'$\mu$ (-)', r'$\eta_2$ (-)', r'$B_0$ ($\mu$G)',
-                       r'$\chi^2$'],
-                      ['{:0.2f}', 1, 1, '{:0.4f}'],
-                       'LaTeX table')  # BAD...
+        Compute chisqr over (eta2, B0) grid for provided data/eps,
+        subset with inds if necessary.  Cull best B0 value for each eta2.
 
-    ax = plt.gca()
-    ax.errorbar(kevs, data, yerr=eps, fmt='ok')
+        Input: data, eps (np.ndarray); eta2_dict (dict) grid of eta2, B0, FWHMs
+        Output: SORTED eta2 values with best B0, fwhms, chisqr
+        """
+        if mu not in self.tab:
+            mu_dist = np.abs(np.array(self.tab.keys()) - mu)
+            mu2 = self.tab.keys()[mu_dist.argmin()]
+            self._vprint('WARNING: mu ({:0.3f}) not in table; '
+                         'using closest table value ({:0.3f}) ').format(mu,mu2)
+            mu = mu2
+            
+        eta2_vals = np.sort(self.tab[mu].keys())
+        B0_vals = np.array([])
+        fwhm_vals = []  # Easier to build up, but not efficient
+        chisqr_vals = np.array([])  # note: ugly code, oh well
 
-    if inds is not None:
-        kevs, data, eps = kevs[inds], data[inds], eps[inds]
+        for eta2 in eta2_vals:
+            B0_pts, fwhms = self.tab[mu][eta2]
+            chisqr_pts = self.fwhm_scan(fwhms)
 
-    for mu, fmt in zip(mus, fmts):
-        # Actual computations / fitting
-        res = models.simple_fit(snr, kevs, data, eps, mu)
-        p = res.params
-        ci2 = get_ci_bounds(res, ci_vals=(0.683,))
-        p['eta2'].better_err = get_ci_errors(ci2, 'eta2', ci_val=0.683)
-        p['B0'].better_err = get_ci_errors(ci2, 'B0', ci_val=0.683)
+            # Previously tried interpolating better B0 fit, now scrapped
+            ind_min = np.argmin(chisqr_pts)
+            B0_vals = np.append(B0_vals, B0_pts[ind_min])
+            fwhm_vals.append(fwhms[ind_min])
+            chisqr_vals = np.append(chisqr_vals, chisqr_pts[ind_min])
 
-        tr = ['{:0.2f}'.format(mu)]
-        tr.append('{:0.2g} &plusmn; {:0.2g} (or, +{:0.2g}/-{:0.2g})'.format(
-                  p['eta2'].value, p['eta2'].stderr,
-                  p['eta2'].better_err[0], p['eta2'].better_err[1]))
-        tr.append('{:0.3g} &plusmn; {:0.2g} (or, +{:0.2g}/-{:0.2g})'.format(
-                  p['B0'].value * 1e6, p['B0'].stderr * 1e6,
-                  p['B0'].better_err[0]*1e6, p['B0'].better_err[1]*1e6))
-        tr.append('{:0.4f}'.format(res.chisqr))
-        table.append(tr)
+        return eta2_vals, B0_vals, np.array(fwhm_vals), chisqr_vals
 
-        ltab.add_row(mu, p['eta2'].value, p['eta2'].stderr,
-                     p['B0'].value * 1e6, p['B0'].stderr * 1e6,
-                     res.chisqr)
+    def fwhm_scan(self, fwhms):
+        """Compute chisqr values over pre-computed FWHMs (from B0 mesh)
+        Uses stored data, eps, inds automatically
+        """
+        if self.inds is not None:  # Subset if needed
+            fwhms = fwhms[:, self.inds]
+        return map(lambda x: models.chi_squared(self.data, self.eps, x), fwhms)
 
-        kevs_m = np.linspace(kevs[0]-0.2, kevs[-1]+0.2, 100)
-        fwhms_m = models.width_dump(p, kevs_m, snr)
-        ax.plot(kevs_m, fwhms_m, fmt)
+    # ------------------------
+    # Parameter space checking
+    # ------------------------
 
-    fplot('Energy (keV)', 'FWHM (arcsec)', axargs='tight')
-    ax.legend(tuple(['Data'] + [r'$\mu = {:0.2f}$'.format(mu)
-                                 for mu in mus]), loc='best')
-    return table, ax, ltab
+    def check_eta2_grid(self, mus, fmts):
+        """Plot chisqr-eta2 space from (eta2,B0) grids for multiple mu values
+        JACKSON POLLOCK DOES ASTROPHYSICS
 
-# =========================
-# Errors, simple model fits (copied over)
-# =========================
+        Input:
+            mus: list of mu values to check/plot
+            fmts: list of linespec strings for plots
+        Output:
+            matplotlib.Axis object
+        """
+        ax = plt.gca()
+        for mu, fmt in zip(mus, fmts):
+            eta2s, B0s, fwhms, chisqrs = self.grid_scan(mu)
+            ax.plot(eta2s, chisqrs, fmt)
+        ax.set_xscale('log')
+        ax.set_yscale('log')
+        ax.legend(tuple(r'$\mu={:0.2f}$'.format(mu) for mu in mus), loc='best')
+        return ax
+
+    def check_B0_grid(self, eta2, mus, fmts):
+        """Plot chisqr(B0) from grid for fixed eta2, multiple mu values
+
+        Verify that we can resolve chisq minimum in B0 grid
+        
+        Input:
+            eta2: where in grid shall we slice?
+            mus: list of mu values to check/plot
+            fmts: list of linespec strings for plots
+        Output:
+            matplotlib.Axis object
+        """
+        ax = plt.gca()
+        for mu, fmt in zip(mus, fmts):
+            B0_vals, fwhms = self.tab[mu][eta2]
+            chisqr_vals = self.fwhm_scan(fwhms)
+            ax.plot(B0_vals*1e6, chisqr_vals, fmt)
+        return ax
+
+    def check_eta2_simp(self, eta2_vals, mus, fmts):
+        """Plot chi-squared space for eta2, based on simple model"""
+        ax = plt.gca()
+
+        for mu, fmt in zip(mus, fmts):
+            b0_vals = []
+            chisqr_vals = []
+            for eta2 in eta2_vals:
+                res = self.fitter_simp(mu, eta2=eta2, eta2_free=False)
+                b0_vals.append(res.params['B0'])
+                chisqr_vals.append(res.chisqr)
+
+            ax.plot(eta2_vals, chisqr_vals, fmt, lw=2)
+
+        fplot(r'$\eta_2$ (-)', r'Best fit $\chi^2$', scales=('log','log'))
+        ax.legend( tuple(r'$\mu = {:0.2f}$'.format(mu) for mu in mus),
+                    loc='best')
+        return ax
+
+
+# ============================
+# Confidence intervals, errors
+# ============================
 # Similar to `lmfit.conf_interval(...)`, but different metric for conf intvs
 
-def get_ci_errors(ci_dict, par_name, ci_val=0.683):
-    """Read out +/- errors from dict of CI bounds (output is +/- order)"""
-    x_bnds = ci_dict[par_name]
+# NOTE could put inside Fitter? but, only instance variable used is verbose
+# otherwise these are (almost) purely functional
+
+# -----------------------------
+# Formatting / wrangling output
+# -----------------------------
+
+def get_ci_errors(ci_dict, pstr, ci_val=0.683):
+    """Read out +/- errors from dict of CI bounds (output in +/- order)"""
+    x_bnds = ci_dict[pstr]
     x_lo, x_hi = np.sort([tup[1] for tup in x_bnds if tup[0] == ci_val])
     x = [tup[1] for tup in x_bnds if tup[0] == 0.][0]
     return x_hi - x, x - x_lo
 
-def get_ci_bounds(res, ci_vals=(0.683, 0.9)):
-    """Manually compute confidence interval parameter values, for free
-    parameters in res (lmfit.Minimizer)
+def build_ci_dict(res, f_bounds, ci_vals=(0.683, 0.9)):
+    """Confidence limits for free parameters in res (lmfit.Minimizer)
 
     Input:
         res is the output from lmfit.minimize(...), ALREADY MINIMIZED
-        f is the objective function being minimized
+        f_bounds is a function that takes CI, res, pstr; returns low/hi bounds
     Output:
         dict of ci bounds, structured like lmfit.conf_interval(...) output
     """
@@ -407,8 +527,7 @@ def get_ci_bounds(res, ci_vals=(0.683, 0.9)):
         ci2[pstr] = [(0., res.params[pstr].value)]
 
         for ci_val in ci_vals:
-            p_lo, p_hi = get_bounds(ci_val, res, pstr, eps=None, adapt=True,
-                                    verbose=True)
+            p_lo, p_hi = f_bounds(ci_val, res, pstr)
             ci2[pstr].append((ci_val, p_lo))
             ci2[pstr].append((ci_val, p_hi))
 
@@ -416,176 +535,120 @@ def get_ci_bounds(res, ci_vals=(0.683, 0.9)):
 
     return ci2
 
-def get_bounds(conf_intv, res, pstr, **kwargs):
-    """Bounds for confidence interval conf_intv, within res.params[pstr] limits
-    res must be already fitted, with fit parameters to vary in chisqr
-    analysis already free.
-    res will be modified in this process!
+# --------------
+# Finding bounds
+# --------------
 
-    Input: **kwargs are passed to one_dir_root(...)
-    Output: lower, upper bounds on parameter res.params[pstr]
-    """
+def stubborn_brentq(f, a2, a, b, b2, **kwargs):
+    """brentq that tries 2x; if 2nd attempt fails you deal with it"""
+    try:
+        x = sp.optimize.brentq(f, a, b, **kwargs)
+    except ValueError:
+        print ('Inconsistent fit behavior; previously good values no '
+               'longer bracket threshold. Making one more attempt...')
+        x = sp.optimize.brentq(f, a2, b2, **kwargs)
+    return x
 
-    # Rerun fit, store parameter values, stderrs, chisqr
-    res.prepare_fit()
-    res.leastsq()
-    orig = lmfit.confidence.copy_vals(res.params)
-    best_chisqr = res.chisqr
-
-    # Fix parameter to be bounded throughout manual stepping
-    res.params[pstr].vary = False
-    # Objective function for root finding.  Modifies res...
-    # WARNING: other free parameters are constrained by their own limits!
-    def chisqr_thresh(x):
-        # Reset parameters to initial best fits, every time
-        # seems like this reduces bugs?... but very ad hoc patch
-        lmfit.confidence.restore_vals(orig, res.params)
-        res.params[pstr].value = x
-        res.prepare_fit()
-        res.leastsq()
-        return (res.chisqr - best_chisqr) - CI_2_CHISQR[conf_intv]
-
-    # Find bounds if possible, using stored limits
-    p_init = res.params[pstr].value
-    p_lims = res.params[pstr].min, res.params[pstr].max
-    p_lo = one_dir_root(chisqr_thresh, p_init, p_lims[0], **kwargs)
-    p_hi = one_dir_root(chisqr_thresh, p_init, p_lims[1], **kwargs)
-
-    # Restore values/chisqr in lmfit.Minimizer object
-    lmfit.confidence.restore_vals(orig, res.params)
-    res.params[pstr].vary = True
-    res.chisqr = best_chisqr
-
-    return p_lo, p_hi
-
-# TODO can be optimized, look inside this method if folded
 def one_dir_root(f, x_init, x_lim, eps=None, adapt=True, verbose=False):
     """Find root in function f from starting x with max/min limit
     Naive, brute force search in one direction, set by sgn(x_lim - x_init)
     If zero crossing is found, uses scipy.optimize.brentq to get root
 
     Designed specifically for chisqr bounds to compute confidence intervals
+    Assumes monotonicity: if f(x_lim) doesn't cross, then you're SOL.
+    But, code intended only for simple chisqr cases.  Beware of using elsewhere
+
+    Adaptive search: if absolute change in f (chisqr) < 0.1, multiply step size
+    by 1.5.  If above 0.5, divide step size by 1.5.
 
     Input: f has call signature f(x)
     Output: root within 2x machine precision, else x_lim if root was not found
     """
-    if eps is None:
+    if eps is None:  # Default is 1% of gap between initial/limit x
         eps = abs(0.01 * (x_lim - x_init)) * np.sign(x_lim - x_init)
     else:
+        if abs(eps) > abs(x_lim - x_init):  # eps too big will overshoot!
+            eps = abs(x_lim - x_init) * 0.5  # at least 2 steps to limit
         eps = abs(eps) * np.sign(x_lim - x_init)
 
-    prev_x = x_init
-    prev_dist = f(x_init)
-    start_sgn = np.sign(prev_dist)  # Allow crossings in either direction
-    if start_sgn == 0:
+    x = x_init
+    dist = f(x_init)
+    start_sgn = np.sign(dist)  # Allow crossings in either direction
+    if start_sgn == 0:  # Edge case: we started right on crossing
         return x_init
 
-    while np.sign(prev_dist) == start_sgn:
-        # Break if we hit parameter limit without crossing threshold
-        if np.abs(prev_x - x_lim) <= np.finfo(float).eps * 2:  # brentq rtol
+    # Iterate until crossing is found (sign change)
+    while np.sign(dist) == start_sgn:
+        if x == x_lim:
             break
+        elif verbose:
+            print '\tIncrementing x, step size {}'.format(eps)
 
-        x = prev_x + eps
+        # Store previous pt (for brentq, adaptive stepping)
+        prev_x = x
+        prev_dist = dist
+        # Increment x and compute new distance
+        x += eps
         if (eps > 0 and x > x_lim) or (eps < 0 and x < x_lim):
-            if verbose:
-                print 'Hit parameter limit {}'.format(x_lim)
             x = x_lim
-
         dist = f(x)
 
-        # Update step size if desired... arbitrary picks for adaptive step
+        # Update step size if desired
         if adapt:
             if abs(dist - prev_dist) < 0.1:
                 eps *= 1.5
-            elif abs(dist - prev_dist) > 1:
+            elif abs(dist - prev_dist) > 0.5:
                 eps /= 1.5
 
-        # Go back to start, where we can check if crossing was found or not
-        prev_dist = dist
-        prev_x = x
-
-    # Broke out of loop (x = x_lim, prev_dist < 0),
-    # or hit crossing right on (prev_dist == 0)
-    if np.sign(prev_dist) == start_sgn:
+    # Broke out of loop (x = x_lim, dist < 0),
+    # or hit crossing right on (dist == 0)
+    if np.sign(dist) == start_sgn:  # Didn't pass crossing
         if verbose:
-            print 'Crossing not found, hit limit at {}'.format(x)
+            print '\tCrossing not found, hit limit at {}'.format(x)
         return x
+    elif verbose:
+        print '\tCrossing found, attempting to bracket'
 
-    # TODO instead of searching between x and x_init, search btwn x and prev x,
-    # which should also bracket threshold.  Slightly more efficient/faster
-    # (especially if using one_dir_root for full model error analysis)
-    return sp.optimize.brentq(f, min(x_init,x), max(x_init,x))
+    # Brentq limits (first try [prev_x, x], then [x_lo, x_hi])
+    x_lo = prev_x - 2*eps
+    if (eps > 0 and x_lo < x_init) or (eps < 0 and x_lo > x_init):
+        x_lo = x_init
+    x_hi = x + eps
 
-# ========================
-# Parameter space checking (copied over)
-# ========================
+    lims = [x_lo, prev_x, x, x_hi]
+    if eps < 0:
+        lims.reverse()
 
-def check_eta2_grid(data, eps, tab, mus, fmts, inds=None):
-    """Plot chisqr-eta2 space from (eta2,B0) grids for multiple mu values
-    JACKSON POLLOCK DOES ASTROPHYSICS
+    try:
+        x_ret = stubborn_brentq(f, *lims)
+    except ValueError:
+        print ('WARNING: brentq failed; reporting guess; '
+               'limit = {}, last step size eps={}'.format(x, eps))
+        x_ret = x
 
-    Input:
-        data, eps, tab: as usual
-        mus: list of mu values to check/plot
-        fmts: list of linespec strings for plots
-        inds: subset if desired
-    Output:
-        matplotlib.Axis object
-    """
-    ax = plt.gca()
-    for mu, fmt in zip(mus, fmts):
-        eta2s, B0s, fwhms, chisqrs = grid_scan(data, eps, tab[mu], inds)
-        ax.plot(eta2s, chisqrs, fmt)
+    return x_ret
 
-    ax.set_xscale('log')
-    ax.set_yscale('log')
-    ax.legend(tuple(r'$\mu = {:0.2f}$'.format(mu) for mu in mus), loc='best')
-    return ax
-
-def check_B0_grid(data, eps, tab, eta2, mus, fmts, inds=None):
-    """Plot chisqr(B0) from grid for fixed eta2, multiple mu values
-
-    Verify that we can resolve chisq minimum in B0 grid
+def one_dir_root_grid(f, ind, sgn, xgrid, verbose=False):
+    """Find upward-zero-crossing of f in xgrid, starting from ind in sgn dir.
+    Assumed that f(xgrid[ind]) <= 0 to start
     
-    Input:
-        data, eps, tab: as usual
-        eta2: where in grid shall we slice?
-        mus: list of mu values to check/plot
-        fmts: list of linespec strings for plots
-        inds: subset if desired
+    Does NOT accept ind = -1, or other negative numbers
+
+    Analogous to np.where(np.diff(np.ndarray(map(f,xgrid))))
     Output:
-        matplotlib.Axis object
+        first index left/right of ind s.t. f(xgrid[ind]) > 0, inclusive of ind
+        else, None if no crossing was found
     """
-    ax = plt.gca()
-    for mu, fmt in zip(mus, fmts):
-        B0_vals, fwhms = tab[mu][eta2]
-        chisqr_vals = fwhm_scan(data, eps, fwhms, inds=inds)
-        ax.plot(B0_vals*1e6, chisqr_vals, fmt)
-    return ax
-
-def check_eta2_simp(snr, kevs, data, eps, eta2_vals, mus, fmts, inds=None):
-    """Plot chi-squared space for eta2, based on simple model"""
-    ax = plt.gca()
-
-    if inds is not None:
-        kevs, data, eps = kevs[inds], data[inds], eps[inds]
-
-    for mu, fmt in zip(mus, fmts):
-        b0_vals = []
-        chisqr_vals = []
-        for eta2 in eta2_vals:
-            res = models.simple_fit(snr, kevs, data, eps, mu,
-                                    eta2=eta2, eta2_free=False)
-            b0_vals.append(res.params['B0'])
-            chisqr_vals.append(res.chisqr)
-
-        ax.plot(eta2_vals, chisqr_vals, fmt, lw=2)
-
-    fplot(r'$\eta_2$ (-)', r'Best fit $\chi^2$', scales=('log','log'))
-    ax.legend( tuple(r'$\mu = {:0.2f}$'.format(mu) for mu in mus),
-                loc='best')
-    return ax
+    sgn = np.sign(sgn)
+    f_res = f(xgrid[ind])  # Do check first index
+    while f_res <= 0 and (0 < ind < len(xgrid)-1):
+        if verbose:
+            print 'Moved threshold by one'
+        ind += sgn
+        f_res = f(xgrid[ind])
+    return ind if f_res > 0 else None
 
 
 if __name__ == '__main__':
     main()
+

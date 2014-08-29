@@ -20,6 +20,7 @@ merged_evt.fits
 *.wrmf
 
 # Exclude some derived data products... and pdfs (plots etc)
+*.so
 *.npz
 *.json
 *.pkl
