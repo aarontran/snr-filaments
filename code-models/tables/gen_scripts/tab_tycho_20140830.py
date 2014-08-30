@@ -55,7 +55,7 @@ def main():
 
     # Set grid (values should be, preferably, sorted)
     mu_vals = [0, 1./3, 1./2, 1, 1.5, 2]  # Following Sean
-    eta2_vals = np.logspace(-2, 2, 50, base=10)
+    eta2_vals = np.logspace(-2, 3, 60, base=10)
     eta2_vals = np.sort(np.append(eta2_vals, np.linspace(0, 10, 50)))
     n_B0 = 20  # In practice, you'll usually get ~1.5 to 2x as many points
                # as code tries to achieve good spacing

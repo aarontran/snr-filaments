@@ -1141,6 +1141,22 @@ even spacing for points in [4.50e8, 5.20e8].  Generate with code snippet:
 This should give slightly closer spacing overall; of previously generate
 tables, the lowest shock veloc. was never used by my regions.
 
+### Gridding parameters, time
+
+Currently covering 4 decades in eta2 ( the log spacing) w/ 50 points.
+Try covering 5 decades, -2 to 3, w/ let's say 60 points.
+Testing out eta2 = 1e3 on Tycho, looks okay, I'll go ahead and do it.
+
+* 6 mu, 110 eta2, 20+ B0
+* 4 shock velocity values
+* 4 sec/call  (being pretty conservative)
+ = `6*110*40*4*4 / 3` (parallel) = 140800 sec = 39.1 hrs (!)
+
+Expect to be done Sunday evening (8:30pm ish), possibly earlier since I think
+this should be a conservative time estimate.  All right, here goes.
+Once tables are generated, merge them together and let error annealing run
+overnight.  Do the same for SN 1006.
+
 ### Table generation procedure (2014 August 30 tables)
 
 Grid generation procedure has changed since 2014 July 30.
@@ -1162,8 +1178,8 @@ small (`width_dump` function goes singular?).  Not to worry, code will adapt.
 5. Move tables and log files to /tables and set as read-only
 6. Merge tables if needed (can do this manually, or whatever)
 
-Start: 2014 August 30 
-Finish: 
+Start: 2014 August 30, 05:30am
+Finish: ???
 
 
 
