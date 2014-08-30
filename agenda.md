@@ -93,11 +93,9 @@ Pipeline, profile and FWHM calculation and plots
 
 ### Software engineering blargh
 
-So need to
 1. overhaul specextract pipeline (handle region coordinates correctly, test and
    ensure it works correctly with my adjustments)
-2. rehaul data structuring for FWHMs because it's a pain in the ass to plot /
-   organize
+2. rehaul data structuring for FWHMs because it's a pain to plot / organize
 3. include switches to test different measurements/procedures, for
    reproducibility.
 4. proper config files / cmd line arguments for fitting/FWHM analysis scripts?
@@ -151,56 +149,41 @@ errors have meaningful magnitude; they are not merely weights.
 
 ### CURRENTLY WORKING TO-DOs
 
-To-dos for Thursday, August 28:
-* Code for interactive session, to manually get error estimates.
-  Get an estimate of how long it takes, how accurate my error estimate is.
-  (note, that, with knowledge of best fit values... we can also just get
-  error that is "good enough", no need for the heavy guns of brentq
+* NEW TABLES, then this weekend RUN ERROR CALCULATIONS, PLEASE...
+  Debug the extreme value bug first, while you're at it.  So nothing
+  messes up the table calculations...
+  Let's just say if any fit runs to eta2 = 1e5, or B0 = 10mG, call it
+  unconstrained...
 
-* Refactor parallelization code to yet another module...
+* Writing - spend some time explaining why we selected what we did.
+  Outline + methods within next week
+
+* Perform calculations with eta2 fixed to 1 (or 0.1--10... same thing, just
+  shut up and do it)
+
+* Ask Keith Arnaud about error statistics... but, lower priority
+
+* Generate outputs for several different data-sets.
+  1. all 13 regions.  try averaging best fit parameters within filaments,
+     explore the spread of numbers, whatever...
+  2. arithmetic means of FWHMs in the filaments (5 data sets)
+  3. geometric means of FWHMs in the filaments (5 data sets)
 
 * Need to... clean up a lot of misc. files (on desktop etc).
   Some don't necessarily need to be VC'ed but should be placed somewhere
   sensible.
 
-* Note: as designed, varying SNR parameters is now trivial (one-liner and
-  re-run).  Hooray.  I won't leave the code sitting around, but when it comes
-  time to get results it can be re-run on the fly.
-
 * Idea: maybe useful to compute advection/diffusion lengths from fits?
+  ALSO we need `m_E` from this, and the data...
+  (Rob, Brian: report this in the results, and make it clear
+   what's going on...
+   I also want to report `m_E` as estimated from MODEL fits, which to be
+   clear is a separate "observable" that I expect to be more robust
+   than the point-to-point measurements)
 
-
-* Address mysterious bugs at extreme values of B0 and eta2
-
-* Error calculation -- there are three-fold approaches now.
-  Run by Rob/Brian for discussion (if even important, really)
-
-* how to organize results of resolution checking?
-  I have to know what version of code was used.
-  At each of 12 parameter points in (eta2, mu, B0) space,
-  (determine these values from ACTUAL data values)
-  report: rminarc/iradmax, ixmax, irhomax, pacholczyk table density values
-  necessary to bound fractional change to, say, 1% of FWHM values
-
-
-* Full model code -- thorough resolution checking
-  This will tell us how large to set iradmax, rminarc.  Some tradeoff.
-  smaller rminarc allows smaller iradmax, but rminarc harder to set adaptively.
-  larger rminarc requires larger iradmax for same accuracy.
-
-  ALSO -- from results, we can set better defaults for EACH SNR.
-  and, may have to determine resolutions as a function of parameters?...
-  A few different ways to approach it.  Safest is to just pick a good
-  resolution for all parameter space
-
-  ALSO -- this will determine whether we must/should set rminarc intelligently
-  while fitting, or if we can get away w/ fixed default for each SNR
-
-  ALSO -- when looking at resolution, consider that Pacholczyk table
-  has only 100 entries!...
-
-  ALSO -- Update Pacholczyk table, and/or check if finer gridding in e- energy
-  makes any difference?
+* Full model code -- check resolution error due to Pacholczyk tables (!)
+  Might also be worth double checking some of the internal numerical integrals.
+  But, lower priority...
 
 
 ### General (higher level to-dos)
@@ -210,6 +193,7 @@ To-dos for Thursday, August 28:
 
   For SN 1006, we need 2 and 3 band fits, plots, chisqr values.
   (all infrastructure is in place, essentially)
+  (most of it... just, ERRORS!...)
 
   Also, print out `m_E` values, point to point and from `width_dump` model...
   see some of the old notebooks in `code-profiles/` (merge functionality
@@ -264,12 +248,11 @@ To-dos for Thursday, August 28:
 
 ### Small checks, constants, verification
 
-* Nosetests?
 * Clean notes, organization, code, etc for clarity
 * Write some text / code pipeline explanation, cleanup, docs, modularity, blah
   blah.  Some parts are pretty good (`models_all.py`), some parts not (ipython
   notebooks, `models_all_exec.py`).
-* Write some text abt methods / results so far
+* Write some text abt methods / results so far (!!!!!)
 
 * Check transport equation for pure advection case
 * Check numerical prefactor 8.3 TeV for electron cutoff energy

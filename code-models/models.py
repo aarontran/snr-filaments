@@ -5,8 +5,6 @@ Aaron Tran
 2014 July 21
 """
 
-# TODO models_all is a bad module name
-
 from __future__ import division
 
 import cPickle as pickle
@@ -22,6 +20,8 @@ import lmfit
 
 import FullEfflength_port as fmp  # Full model code, Python port
 from snr_catalog import SYNCH_B, SYNCH_CM, CD, NUKEV, BETA  # Constants
+
+np.set_printoptions(precision=2)  # NOTE modifies numpy print options globally!
 
 def main():
     pass
@@ -577,7 +577,8 @@ def simple_width(snr, kevs, mu, eta2, B0):
 # Input: params, kevs, snr, **kwargs; output: model FWHMs
 
 def width_cont(params, kevs, snr, verbose=True, rminarc=None, icut=None,
-               irmax=None, iradmax=None, ixmax=None):
+               irmax=None, iradmax=None, ixmax=None,
+               irad_adapt=True, irad_adapt_f=1.2):
     """Width function, wrapper for Python port of full model (equation 12)
 
     All **kwargs not specified (excepting verbose) are taken from snr object
@@ -598,9 +599,20 @@ def width_cont(params, kevs, snr, verbose=True, rminarc=None, icut=None,
         iradmax: resolution on tabulated e- distribution (radial coordinate)
                  (energy resolution for e- distr. set by fglists.dat)
         ixmax: resolution on line of sight for emissivity integration
+
+        irad_adapt: boolean, run two calculations to improve model FWHM precision
+                    (slower but should be significantly more precise and is
+                    comparatively faster than increasing grid resolution)
+        irad_adapt_f: float, should be > 1; margin-of-error for rminarc in
+                      adaptive calculation
+
     Outputs:
         np.array of modeled FWHMs (arcsec) for each energy in 'kevs'
     """
+    # -----------------------
+    # Load parameter/settings
+    # -----------------------
+
     B0 = params['B0'].value
     eta2 = params['eta2'].value
     mu = params['mu'].value
@@ -615,6 +627,8 @@ def width_cont(params, kevs, snr, verbose=True, rminarc=None, icut=None,
         rminarc = snr.rminarc * np.ones(len(kevs))
     elif isinstance(rminarc, int) or isinstance(rminarc, float):
         rminarc = rminarc * np.ones(len(kevs))
+    # else: supplied rminarc should be np.array
+
     if icut is None:  # Lulz...
         icut = snr.icut
     if irmax is None:
@@ -624,27 +638,61 @@ def width_cont(params, kevs, snr, verbose=True, rminarc=None, icut=None,
     if ixmax is None:
         ixmax = snr.ixmax
 
-    if verbose:
-        print ('\tFunction call with B0 = {:0.3f} muG; eta2 = {:0.3f}; '
-               'mu = {:0.3f}; rminarc = {}').format(B0*1e6, eta2, mu, rminarc)
+    # ------------------------
+    # Begin actual computation
+    # ------------------------
+
+    if irad_adapt:
+        iradmax_prelim = int(iradmax / 2.)  # Just a rough calculation
+
+        fwhms_prelim = fmp.fefflen(kevs, B0, eta2, mu, vs, v0, rs, rsarc, s,
+                                   rminarc, icut, irmax, iradmax_prelim, ixmax)
+
+        # Replace error-code values
+        res_msk, box_msk = _check_calc_errs(fwhms_prelim, rminarc)
+        nan_msk = np.logical_not(np.isfinite(fwhms_prelim))
+        big_msk = np.logical_or(box_msk, nan_msk)
+        # box resolution errors + any NaNs/infs (unlikely, but in case)
+        if any(big_msk):  
+            fwhms_prelim[big_msk] = rminarc[big_msk]
+        # Resolution errors, take the smallest fwhm
+        if all(res_msk):  # Extreme edge case...
+            fwhms_prelim = rminarc / (irad_adapt_f**2)  # Hacky solution
+        elif any(res_msk):
+            fwhms_prelim[res_msk] = min(fwhms_prelim[np.logical_not(res_msk)])
+
+        # Construct adapted rminarc
+        rminarc2 = irad_adapt_f * fwhms_prelim
+
+    # Print settings, set rminarc to new adaptive value
+    if irad_adapt and verbose:
+        print ('\tFull model: B0 = {:0.3f} muG; eta2 = {:0.3f}; '
+               'mu = {:0.3f}; ').format(B0*1e6, eta2, mu)
+        print '\tinit rminarc = {}; adapted = {}'.format(rminarc, rminarc2)
+        rminarc = rminarc2
+    elif verbose:
+        print ('\tFull model: B0 = {:0.3f} muG; eta2 = {:0.3f}; mu = {:0.3f}; '
+               'rminarc = {}').format(B0*1e6, eta2, mu, rminarc)
 
     # Python full model port
     fwhms = fmp.fefflen(kevs, B0, eta2, mu, vs, v0, rs, rsarc, s,
                         rminarc, icut, irmax, iradmax, ixmax)
 
+    res_msk, box_msk = _check_calc_errs(fwhms, rminarc)
     # Check for errors
-    reserr = fwhms < np.finfo(float).eps * 2  # Any fwhms = 0 (error output)
-    boxerr = fwhms > (rminarc - np.finfo(float).eps * 2)  # Any FWHMs = 1
-    if any(reserr):
-        print '\t\tResolution error! at {}'.format(kevs[np.where(reserr)[0]])
-    if any(boxerr):
-        print '\t\tBox error! at {}'.format(kevs[np.where(boxerr)[0]])
+    if any(res_msk):
+        print '\t\tResolution error! at {}'.format(kevs[res_msk])
+    if any(box_msk):
+        print '\t\tBox error! at {}'.format(kevs[box_msk])
 
-    # For debugging
-    #if verbose:
-    #    print '\t\t', fwhms
 
     return fwhms
+
+def _check_calc_errs(fwhms, rminarc):
+    """Check for resolution or box errors (as in Sean's code)"""
+    reserr = fwhms < np.finfo(float).eps * 2  # Any fwhms = 0 (error output)
+    boxerr = fwhms > (rminarc - np.finfo(float).eps * 2)  # Any FWHMs = 1
+    return reserr, boxerr
 
 def width_dump(params, kevs, snr):
     """Width function from catastrophic dump model (equation 6), code taken

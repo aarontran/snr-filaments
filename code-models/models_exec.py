@@ -32,24 +32,7 @@ CI_2_CHISQR[0.9545] = 4.0
 CI_2_CHISQR[0.99] = 6.63
 
 def main():
-    """Temporary utility method to quickly get out some numbers for SN 1006"""
-    import cPickle as pickle
-    import snr_catalog as snrcat
-    SN1006_KEVS = np.array([0.7, 1.0, 2.0])
-    SN1006_DATA = {}
-    SN1006_DATA[1] = np.array([35.5, 31.94, 25.34]), np.array([1.73, .97, 1.71])
-    SN1006_DATA[2] = np.array([23.02, 17.46, 15.3]), np.array([.35,.139, .559])
-    SN1006_DATA[3] = np.array([49.14, 42.76,29.34]), np.array([1.5, .718, .767])
-    SN1006_DATA[4] = np.array([29, 23.9, 16.6]), np.array([.9, .39, .45])
-    SN1006_DATA[5] = np.array([33.75, 27.2, 24.75 ]), np.array([2.37,.62,.61])
-
-    with open('tables/sn1006_grid-6-100-20_2014-07-25.pkl', 'r') as fpkl:
-        TAB = pickle.load(fpkl)
-
-    return Fitter(snrcat.make_SN1006(), SN1006_KEVS,
-                  SN1006_DATA[1][0], SN1006_DATA[1][1],
-                  TAB, inds=None, verbose=True)
-
+    pass
 
 class Fitter(object):
 
@@ -113,6 +96,16 @@ class Fitter(object):
             self._vprint = _vprint
         else:
             self._vprint = lambda *a: None
+
+    # -------------------------------------
+    # Wrappers for quick width computations
+    # -------------------------------------
+
+    def width_full(self, mu, eta2, B0, **kwargs):
+        return models.full_width(self.snr, self.kevs, mu, eta2, B0, **kwargs)
+
+    def width_simp(self, mu, eta2, B0):
+        return models.simple_width(self.snr, self.kevs, mu, eta2, B0)
 
     # -----------------------------
     # Wrappers for fitting routines
@@ -253,6 +246,9 @@ class Fitter(object):
             # Get xgrid from self.tab + lo/hi indices to search from
             xgrid, idx_lo, idx_hi = self.prep_grid_anneal(chisqr_thresh, res, pstr)
 
+            # TODO also get grid values of "other" param... just for starting.
+            # will make fits more robust
+
             if anneal:
                 self._vprint('Bounding below, limit = {}'.format(p_min))
                 p_lo = self.anneal(f_thresh, p_init, idx_lo, xgrid, p_min,
@@ -315,8 +311,14 @@ class Fitter(object):
         Output:
             bounding parameter (a root of f)
         """
-        sgn = np.sign(x_lim - xgrid[idx_init])
-        self._vprint('Annealing grid in {} direction'.format(sgn))
+        sgn = np.sign(x_lim - x0)
+        self._vprint('Annealing grid in {} direction;'.format(sgn),
+                     'start: {:0.4e},'.format(xgrid[idx_init]),
+                     'limit: {:0.4e}'.format(x_lim))
+        if sgn == 0:
+            self._vprint('Warning: sgn == 0 (?!), returning limit')
+            return x_lim
+
         idx = one_dir_root_grid(f, idx_init, sgn, xgrid, verbose=self._verbose)
 
         if idx is None:  # Hit grid edge
@@ -331,7 +333,9 @@ class Fitter(object):
             # Need to verify bracketing points; move backwards if needed
             if idx == idx_init:
                 self._vprint('Did not move on grid, checking backwards')
-                while xgrid[idx_adj] > x0 and f(xgrid[idx_adj]) > 0:
+                while (((sgn > 0 and xgrid[idx_adj] > x0)
+                        or (sgn < 0 and xgrid[idx_adj] < x0))
+                       and f(xgrid[idx_adj]) > 0):  # Yuck
                     self._vprint('Moved threshold back by one')
                     idx_adj -= sgn
                     idx -= sgn
@@ -342,17 +346,21 @@ class Fitter(object):
             x_out = xgrid[idx]
             # To get 2nd pair of limits -- step index by +/-1 in each direction
             # if hit grid edge, increment by last grid interval; if hit x0, x0
-            try:
-                x_lo = xgrid[idx_adj - sgn]
-            except IndexError:
-                x_lo = x_in - (xgrid[idx_adj+sgn] - xgrid[idx_adj])
+            idx_lo = idx_adj - sgn
+            idx_hi = idx + sgn
 
-            try:
+            if 0 <= idx_lo < len(xgrid):
+                x_lo = xgrid[idx_lo]
+            else:
+                x_lo = x_in - (xgrid[idx] - xgrid[idx_adj])
+
+            if 0 <= idx_hi < len(xgrid):
                 x_hi = xgrid[idx + sgn]
-            except IndexError:
-                x_hi = x_out + (xgrid[idx_adj+sgn] - xgrid[idx_adj])
+            else:
+                x_hi = x_out + (xgrid[idx] - xgrid[idx_adj])
 
             # Stupid way to bound parameters, but oh well
+            # Note that this is not necessary for x_out, x_hi
             if (sgn > 0 and x_in < x0) or (sgn < 0 and x_in > x0):
                 x_in = x0
             if (sgn > 0 and x_lo < x0) or (sgn < 0 and x_lo > x0):
@@ -360,16 +368,14 @@ class Fitter(object):
 
             lims = [x_lo, x_in, x_out, x_hi]
             if sgn < 0:
-                lims.reverse()
+                lims.sort()
 
             try:
                 x_ret = stubborn_brentq(f, *lims)
             except ValueError:
-                print ('WARNING: brentq failed, reporting guess; limit = {}, '
+                print ('WARNING: brentq failed, reporting guess = {}, '
                        'bracketing step = {}').format(x_out, abs(x_out-x_in))
                 x_ret = x_out
-                     
-
 
         return x_ret
 

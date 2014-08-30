@@ -22,9 +22,10 @@ Table of contents
 * Week 10 - full model grid-best-"fits" (test fits, error annealing w/ SN 1006)
             port full model code to Python, optimize for speed
 * Week 11 - one week break
-* Week 12 - code for LaTeX tables; more precise manual error calculations
-            debug/test new full model
-* Week 13 - refactor model exec/disp code.  Debug erro calculations
+* Week 12 - code for LaTeX tables; more precise manual error calculations.
+            Debug/test new full model
+* Week 13 - refactor model exec/disp code.  Debug error calculations
+            extensively.
 
 (week 10 included for continuity)
 
@@ -449,13 +450,13 @@ One more, let us compare single fit vs. multiple fits directly.
 
 Filament 1, 3 bands, one fit (epsfcn = 1e-6)
 
-    mu	    eta2	                B0	                    chisqr
+    mu	    eta2	                B0	                chisqr
     0.00	24.028 (+44.637/-22.396)181.97 (+45.19/-71.29)	0.1162
     0.33	5.777 (+77.087/-4.553)	127.88 (+96.44/-26.04)	0.0568
     0.50	3.811 (+79.053/-2.713)	115.78 (+94.34/-16.76)	0.0742
     1.00	2.596 (+5.771/-1.686)	102.52 (+19.46/-9.48)	0.1415
     1.50	2.466 (+3.861/-1.367)	97.11 (+11.45/-4.54)	0.2221
-    2.00	2.646 (+2.865/-1.320)	94.19 (+5.01/-2.28)	    0.3021
+    2.00	2.646 (+2.865/-1.320)	94.19 (+5.01/-2.28)	0.3021
 
 Filament 1, 3 bands, multiple rounds of fitting (varying epsfcn)
 (taken from Wednesday notes)
@@ -786,85 +787,8 @@ usages... really ad hoc :/
 
 Mysterious resolution errors (sizable B0/eta2, mu=0)
 ----------------------------------------------------
-(whether error occurs at other mu values is TBD...)
-
-Filament 1, finding upper bound on B0, using stderr causes massive overstep.
-And, in general, the fitting (esp. at large B0) value just makes eta2 blow up
-too fast.  Well, okay, no surprises.
-
-But this resolution error I'm seeing below is really unexpected.
-
-    Function call with B0 = 2203.167 muG; eta2 = 3187.787; mu = 0.000;
-    rminarc = [ 60.  60.  60.]
-		[ 1.90655254  1.61373412  1.20575015]
-	Function call with B0 = 2203.167 muG; eta2 = 4220.534; mu = 0.000;
-	rminarc = [ 60.  60.  60.]
-		Resolution error! at [ 2.]
-		[ 1.91005909  1.61616922  0.        ]
-
-YES, this is reproducible and has some systematic behavior.  As I ramp up eta2,
-more and more energy bands fall prey to the bug.  I guess that's a good sign,
-that something is amiss and should be caught.
-
-    >>> import numpy as np
-    >>> import models_all as models
-    >>> import models_all_exec_rewrite as mae
-    >>> import snr_catalog as snrcat
-
-    >>> f = mae.Fitter(snrcat.make_SN1006(), np.array([0.7, 1.0, 2.0]),
-                       np.array([35.5, 31.94, 25.34]),
-                       np.array([1.73, .97, 1.71]), 'tab')
-
-    >>> models.full_width(f.snr, f.kevs, 0.0, 3187.787, 2203.167e-6)
-    [ 1.9065526   1.61373416  1.20575018]
-    >>> models.full_width(f.snr, f.kevs, 0.0, 3187.787, 2203.167e-6, rminarc=3)
-    [ 1.98160087  1.65946649  1.17435883]
-
-OOF, errors are order 3-7% with default SN1006 resolutions!
-The FWHMs are just too narrow for rminarc = 60.
-
-    >>> models.full_width(f.snr, f.kevs, 0.0, 4220.534, 2203.167e-6, rminarc=3)
-    [ 1.98451644  1.66150468  0.        ]
-
-Resolution error!  This is really unexpected.  We expect that with larger eta2,
-the FWHMs will be larger.  But the whole thing just disappears ?!
-(!!!) this will prevent fits from converging properly, and prevent root finding
-from working correctly.  Damnation.
-Example (Filament 1, upper bound on B0, mu=0, 3 energy bands):
-
-    Function call with B0 = 862.015 muG; eta2 = 1544.835; mu = 0.000;
-    rminarc = [ 60.  60.  60.]
-		[ 8.03680808  6.76010475  4.77354712]
-	Function call with B0 = 862.015 muG; eta2 = 2428.126; mu = 0.000;
-	rminarc = [ 60.  60.  60.]
-		[ 8.0839789   6.79035685  4.78658061]
-	Function call with B0 = 862.015 muG; eta2 = 2428.127; mu = 0.000;
-	rminarc = [ 60.  60.  60.]
-		[ 8.08397893  6.79035687  4.78658062]
-	Function call with B0 = 862.015 muG; eta2 = 3511.341; mu = 0.000;
-	rminarc = [ 60.  60.  60.]
-		Resolution error! at [ 2.]
-		[ 8.10423357  6.80516313  0.        ]
-
-Here the code tries to increase eta2 to get better FWHMs, closer to data.
-But, runs into this strange/annoying error.
-Therefore it thinks that B0 = 862.015 muG gives a TERRIBLE fit, when in fact
-there may be an okay fit in parameter space, for even larger eta2.
-
-ANOTHER very strange occurrence:
-    Function call with B0 = 324.985 muG; eta2 = 3298.089; mu = 0.000;
-    rminarc = [ 60.  60.  60.]
-		[ 35.17726269  29.43171963  20.9445493 ]
-    Function call with B0 = 324.985 muG; eta2 = 3301.938; mu = 0.000;
-    rminarc = [ 60.  60.  60.]
-            Box error! at [ 2.]
-            [  35.17750267   29.43188739  899.66139881]
-		
-(?!) Python full model code didn't print an error as it normally would have done
-And, usually the full width error would be 900. right on the dot.
-
-This bug (these bugs?) drive the rootfinder nuts.  What the hell is wrong?!
-Okay, this has to be fixed.  Sigh.
+See debugging log for information on this. Bug identified 2014 August 25,
+but not addressed until a bit later.
 
 
 Bad initial guesses kill rootfinding
@@ -1113,46 +1037,76 @@ Workaround -- don't plot in parallel code.  Save the numbers as output, and
 plot after the fact
 
 
-Friday 2014 august 29
+Friday 2014 August 29
 =====================
 
+Summary
+-------
+* ipynb to check resolution errors
+* Re-lowered eta2 upper limit (now: eta2 max = 1e5, B0 max = 1e-2)
+
+Remark: the 'I' in IPython is supposed to be capitalized.  Woops.
+
+Meeting
+-------
+* Write (you should have started weeks ago, or done it meanwhile)
+  Send material anytime (goal: outline + methods within a week)
+* Perhaps, ask Keith Arnaud about errors -- low priority...
+* Push off magnetic damping until later (address when we touch on it in
+  discussion)
+
+More friggin debugging
+----------------------
+Finished code post-mortem.  Fixed some egregious bugs in error root finding.
+
+Resolution analysis
+-------------------
+Can't put it off any longer, because I need new tables for error computation.
+
+Happily, with some refactoring while coding (and some thought to how it will be
+used/reused)... it wasn't so bad.  Helpful to think of the iPython notebook as
+just that, a notebook.
+
+Observation: the largest errors are associated with highest energy bands
+and negligible diffusion (eta2 = 1e-16), interesting.  Why?
+Hypothesis: we're probably not resolving FWHMs as well (high energy, low
+diffusion --> narrowest possible FWHMs).
+
+In Tycho, this is a problem.  Default rminarc of 20, when some of the smallest
+FWHMs are about 1-2 arcsec, drives the errors way up.
+
+Possible solutions/improvements, for Tycho's SNR:
+* double Tycho iradmax to 200.  Set rminarc default to tighter values,
+  e.g., `[20., 16.5, 13.5, 14., 14.]`.
+* adaptively tighten `rminarc` in `models.py`.  Leave `iradmax = 100` and
+  `rminarc=20` (now rminarc doesn't matter so much)
+
+Adaptive rminarc
+----------------
+
+Updated `models.py`.  Procedure:
+* compute FWHMs with specifid `rminarc`, but use 1/2 `iradmax` resolution
+* set `rminarc = fwhms * fudge_factor` (I take 1.2 as default)
+* recompute FWHMs with new `rminarc` at full `iradmax` resolution
+
+The idea is that, compared to e.g., doubling `iradmax` naively, this is
+slightly faster and achieves better precision.
+Side benefit that it may be more robust too!
+
+The code will be slower than before, but I hope it's worthwhile.
+We couldn't do this before with the strange Fortran floating point (?) bug.
+But, now we can!
+
+Testing on the resolution analysis code, drops the MAX resolution error from
+initially ~10-30% (iradmax=100, rminarc=20) to 0.1-0.5%, (iradmax=100).
+This is ~2 orders of magnitude improvement, but not even doubling the
+computation time (a pinch below).  Hallelujah!
+
+
+New tables
+----------
 
 
 
-
-
-
-
-
-Rigorously check model convergence (pushed down to whenever)
-------------------------------------------------------------
-(wrote this 2014 August 19, but haven't done tests yet)
-
-Are our resolutions fine enough to give consistent answers?
-Approach: vary the resolution and check how the answer changes.
-
-Ideally, we should plot change in absolute error as a function of resolution
-(i.e., step size) on a log-log scale.  If truncation error = absolute error
-scales as (step size)^n, the change in error also scales as (step size)^n.
-See my old Math 228B homework / notes for more on convergence and stuff.
-BUT, I think this is overkill.
-
-### Procedure
-For a given SNR and a set of energy bands:
-* Pick a few sets of (B0, eta2, mu).  Check mu<1, mu=1, mu>1;
-  check large/small B0 with eta2 small; check large/small B0 with eta2 large.
-  This gives 12 points which mark out a parallelepiped-like shape in parameter
-  space (prismatoid? according to wikipedia)
-* For each point in parameter space, vary rminarc, iradmax, ixmax.
-  (VERIFY that doubling rminarc is now equivalent to halving iradmax, since
-   our FWHM calculation is not directly affected by rminarc and irmax any more)
-* Find resolution values at each point such that the fractional change in
-  output FWHMs, at all energies, is at most 1% (maybe 0.1% to be paranoid)
-
-
-Nowadays, we do have a resolution error.
-But, unlike Sean's code, resolution error is not due to irmax; resolution error
-is due to iradmax and rminarc.  This we can not easily detect, hence the
-need to verify convergence.
 
 

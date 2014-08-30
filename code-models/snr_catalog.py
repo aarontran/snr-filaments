@@ -70,7 +70,7 @@ def make_tycho():
     # Fitting default initial guesses, bounds
     tycho.par_init = {'mu': 1.0, 'eta2': 1.0, 'B0': 300e-6}
     tycho.par_lims = {'mu': (0., 2.),
-                      'eta2': (0., 1e6),
+                      'eta2': (1e-16, 1e5),  # model code div by zero on eta2=0
                       'B0': (1e-6, 1e-2)}
 
     return tycho
@@ -98,7 +98,7 @@ def make_SN1006():
     # Fitting default initial guesses, bounds
     sn1006.par_init = {'mu': 1.0, 'eta2': 1.0, 'B0': 150e-6}
     sn1006.par_lims = {'mu': (0., 2.),
-                       'eta2': (0., 1e6),
+                       'eta2': (1e-16, 1e5),  # model divides by zero on eta2=0
                        'B0': (1e-6, 1e-2)}
 
     return sn1006
