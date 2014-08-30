@@ -9,6 +9,7 @@ from __future__ import division
 
 import cPickle as pickle
 from datetime import datetime
+import inspect
 import matplotlib.pyplot as plt
 import numpy as np
 import os
@@ -140,6 +141,9 @@ def chi_squared(y, y_err, y_model):
 # Then I can freely slice and dice.  Put NaNs wherever values aren't sampled.
 # But, not necessary now.
 
+# This could be split into a separate module, and make use of Fitter() and
+# various convenience methods/wrappers.  Low priority.
+
 def merge_tables(*args):
     """NOT IMPLEMENTED.  Lower priority at this time,
     but would be a nice feature to have.
@@ -155,11 +159,8 @@ def merge_tables(*args):
     # deal with this later.
     pass
 
-# TODO for better tables, when resolutions/rminarc errors are characterized
-# come back here to dynamically update rminarc and set resolutions correctly
-
 def maketab(snr, kevs, data_min, data_max, mu_vals, eta2_vals, n_B0,
-    fname=None, rminarc=None, f_rminarc=1.2, f_B0_init=1.1, f_B0_step=0.15):
+    fname=None, f_B0_init=1.1, f_B0_step=0.15, **kwargs):
     """Tabulate FWHM values for set of SNR parameters in parameter space of
     (mu, eta2, B0), given some energy bands.
 
@@ -170,16 +171,7 @@ def maketab(snr, kevs, data_min, data_max, mu_vals, eta2_vals, n_B0,
     TODO: Verify that results are independent of input FWHMs (mins, maxs, etc)
         Generate two tables w/ slightly different FWHM inputs/ranges
         Fit procedure should give results consistent within error
-
-    Think about full model fit errors?  Once we have best fit B0, eta2, mu for a
-    given region/filament, then deal with error.  Here we're just making
-    a table of possible/candidate values.
     """
-
-    # Mildly convenient to define rminarc here
-    if rminarc is None:
-        rminarc = data_max * f_rminarc
-
     # Start logging to files (search for errors...)
     if fname is None:
         fname = '{}_gen_{}_grid_{}-{}-{}.pkl'.format(snr.name,
@@ -191,59 +183,66 @@ def maketab(snr, kevs, data_min, data_max, mu_vals, eta2_vals, n_B0,
     errlog = fname_b + '.errlog'
     stdout = TeeStdout(log, 'w')
     stderr = TeeStderr(errlog, 'w')
-    np.set_printoptions(precision=2)
+    np.set_printoptions(precision=3)
 
     # Spew a bunch of configuration parameters
     print '\nTabulating full model code FWHMs for SNR: {}'.format(snr.name)
-    print '\nStarted: {}'.format(datetime.now())
-    print 'SNR parameters are (rminarc will be modified):'
-    for v in vars(snr):
-        print '\t{} = {}'.format(v, vars(snr)[v])
+    print 'Started: {}'.format(datetime.now())
+
+    print '\nSNR parameters are:'
+    for v in vars(snr).items():
+        print '\t{} = {}'.format(*v)
     print '\tDerived SNR parameters:'
     print '\tv0 = {}'.format(snr.v0())
     print '\trs = {}'.format(snr.rs())
 
+    print '\nDefault full model (width_cont) settings are:'
+    args, _, _, dfltargs = inspect.getargspec(width_cont)
+    for v in zip(args[-len(dfltargs):], dfltargs):
+        print '\t{} = {}'.format(*v)
+    print "'None' usually indicates kwarg is obtained from SNR object"
+    print 'Overriding the following full model settings with:'
+    for v in kwargs.items():
+        print '\t{} = {}'.format(*v)
+
     print '\nGridding parameters are:'
-    print 'Resolution in mu, eta2, B0: {}, {}, {}+'.format(len(mu_vals),
+    print 'Num grid points in mu, eta2, B0: {}, {}, {}+'.format(len(mu_vals),
             len(eta2_vals), n_B0)
     print 'Mu values are {}'.format(mu_vals)
-    print 'eta2 values are {}'.format(eta2_vals)
+    print 'eta2 values are:'
+    print eta2_vals
+    print 'B0 limits (for initial fitting) are {}'.format(snr.par_lims['B0'])
     print 'Gridding with FWHM limits:'
     print 'min: {}'.format(data_min)
     print 'max: {}'.format(data_max)
-    print 'rminarc: {}'.format(rminarc)
 
     print '\nAdditional parameters:'
     print 'File output stem: {}'.format(fname)
-    print 'f_rminarc = {}'.format(f_rminarc)
     print 'f_B0_init = {}'.format(f_B0_init)
     print 'f_B0_step = {}'.format(f_B0_step) # This is getting ridiculous
 
-    # Loop over mu, eta2 grid
+    # Loop over mu, eta2 grid; build up mu_dict, eta2_dict
     mu_dict = {}
     for mu in mu_vals:
         mu_dict[mu] = eta2_dict = {}
-        p = lmfit.Parameters()
-        p.add('mu', value=mu, vary=False)
 
         for eta2 in eta2_vals:
-            print '\n(mu, eta2) = ({:0.2f}, {:0.2f})'.format(mu, eta2)
-            print '---------------------------------'
-
-            p.add('eta2', value=eta2, vary=False)
-            p.add('B0', value=150e-6, min = 1e-6, max=1e-2)
+            headstr = '(mu, eta2) = ({:0.2f}, {:0.2f})'.format(mu, eta2)
+            print '\n', headstr, '\n', '-' * len(headstr)
 
             # Use simple model fit to set initial guess for B0
-            # This does fail badly for eta2 = 0, so the value of B0 above
+            # This fails badly for eta2 = 0, so the value of B0 above
             # had better be decent as a fallback.
             dmid = (data_max + data_min)/2
-            res = lmfit.minimize(objectify(width_dump), p, method='leastsq',
-                                 args=(dmid, np.ones(len(dmid)), kevs, snr))
+            res = simple_fit(snr, kevs, dmid, np.ones(len(dmid)),
+                             mu, eta2=eta2, B0=150e-6,
+                             mu_free=False, eta2_free=False, B0_free=True)
+            p = res.params
 
             # Do the heavy work of computing FWHMs for many B0 values
             eta2_dict[eta2] = maketab_gridB0(snr, p, kevs, data_min, data_max,
-                                             rminarc, n_B0, f_B0_init,
-                                             f_B0_step)
+                                             n_B0, f_B0_init, f_B0_step,
+                                             **kwargs)
 
             # Save data regularly, but keep tabulating if save fails...
             try:
@@ -262,8 +261,8 @@ def maketab(snr, kevs, data_min, data_max, mu_vals, eta2_vals, n_B0,
 
     return mu_dict
 
-def maketab_gridB0(snr, pars, kevs, fwhms_min, fwhms_max, rminarc, n_tot,
-                   f_B0_init=1.1, f_B0_step=0.15):
+def maketab_gridB0(snr, pars, kevs, fwhms_min, fwhms_max, n_tot,
+                   f_B0_init=1.1, f_B0_step=0.15, **kwargs):
     """Grid over B0 at fixed eta2, mu (passed in via pars)
 
     1. Check that initial guess for B0 gives FWHMs in range of fwhms_min/max
@@ -278,13 +277,15 @@ def maketab_gridB0(snr, pars, kevs, fwhms_min, fwhms_max, rminarc, n_tot,
         pars (lmfit.Parameters): contains mu, eta2, initial B0 guess
 
         kevs (np.array): energy bands, same ones used to generate fwhms_min/max
-        fwhms_min, fwhms_max, rminarc: must be numpy arrays
+        fwhms_min, fwhms_max: must be numpy arrays
 
         n_tot (float): minimum number of evenly spaced data points.  In
             practice, this sets the max interval between rescaled mean widths
         f_B0_init (float): factor to change B0_init, if bad init guess
             must be greater than 1
         f_B0_step (float): max span_intv(...) step as fraction of initial B0
+
+        **kwargs: passed straight to width_cont(...)
 
     Outputs:
         list of B0 values, list of FWHM value lists (for each B0)
@@ -297,15 +298,8 @@ def maketab_gridB0(snr, pars, kevs, fwhms_min, fwhms_max, rminarc, n_tot,
     def f_rscale(grid_B0):
         """Rescale model width function"""
         pars.add('B0', value=grid_B0)  # Vary B0, other parameters same
-
-        fwhms = width_cont(pars, kevs, snr, rminarc = rminarc)
-
-        if any(fwhms <= 1e-5):
-            print "Resolution error!"
-        if any(fwhms >= snr.rsarc - 1e-5):
-            print "Box length error!"
-        print '\tModel fwhms = {}'.format(fwhms)
-
+        fwhms = width_cont(pars, kevs, snr, **kwargs)
+        print '\t\tModel fwhms = {}'.format(fwhms)
         return rscale(fwhms), fwhms
 
     # Get FWHMs from initial guess, reinitialize B0 if initial guess is bad
@@ -320,7 +314,7 @@ def maketab_gridB0(snr, pars, kevs, fwhms_min, fwhms_max, rminarc, n_tot,
     elif all(fwhms_init < fwhms_min):
         pars.add('B0', value=B0_init / f_B0_init)
         return maketab_gridB0(snr, pars, kevs, fwhms_min, fwhms_max, n_tot,
-                              f_B0_init, f_B0_step)  # KEEP UPDATED... ugh
+                              f_B0_init, f_B0_step)
     print 'Initial guess accepted'
 
     # Grid evenly over rescaling of FWHMS (rscale)
@@ -332,7 +326,7 @@ def maketab_gridB0(snr, pars, kevs, fwhms_min, fwhms_max, rminarc, n_tot,
     print 'Now finding B0 values with FWHMs in range.'
     print 'Require {} values above, {} below initial B0'.format(n_thin, n_wide)
 
-    # Now, actually calculate B0 values.  Only want values in/near r=[0,1]
+    # Calculate B0 values.  Only want values within or near r=[0,1], roughly
     if r_init < 1:
         print 'Computing values below initial B0'  # Increasing r towards 1
         B0_wide, r_wide, fwhms_wide = span_intv(B0_init, fwhms_init, r_init, 1,

@@ -36,11 +36,11 @@ def main():
     #B0 = raw_input('Enter B0 (Gauss): ')
     #eta2 = raw_input('Enter eta2: ')
     #mu = raw_input('Enter mu: ')
-    B0 = 300e-6
-    eta2 = 1.
+    B0 = 151.5e-6
+    eta2 = 1e0
     mu = 1.5
 
-    irmax, iradmax, ixmax = 100, 50, 500
+    irmax, iradmax, ixmax = 100, 100, 500
     print 'irmax, iradmax, ixmax = {},{},{}'.format(irmax, iradmax, ixmax)
 
     kevs = np.array([0.7, 1., 2., 3., 4.5])

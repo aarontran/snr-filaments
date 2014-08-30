@@ -1116,7 +1116,54 @@ computation time (a pinch below).  Hallelujah!
 New tables
 ----------
 
+We could move to ipynb to take advantage of notebook interface, esp. for
+parallelization (benefit from, e.g., load balancing would be fairly marginal).
+Main benefit would be the nicer interactive interface.
 
+But, current code/procedure works all right.  It ain't broke, don't fix it.
+I cleaned/updated the code slightly, but it's mostly unchanged.
+It seems to work like a charm.
+
+### Shock velocites to tabulate
+
+Previously used shock velocities:
+4.21e8, 4.52e8, 4.83e8, 5.14e8
+
+Min, max shock velocities from regions-4 assuming d = 3 kpc:
+4.50e8, 5.20e8
+
+Today, let's use: [4.59e8, 4.76e8, 4.94e8, 5.11e8] which should give roughly
+even spacing for points in [4.50e8, 5.20e8].  Generate with code snippet:
+
+    f = np.array([1., 3., 5., 7.]) / 8
+    v = 4500 + f * (5200 - 4500)
+
+This should give slightly closer spacing overall; of previously generate
+tables, the lowest shock veloc. was never used by my regions.
+
+### Table generation procedure (2014 August 30 tables)
+
+Grid generation procedure has changed since 2014 July 30.
+New procedure looks like (adapted from `rsch-notes.md`):
+1. Write script to call table generation method w/ desired parameters
+2. Check activity monitor for processes hogging CPU, etc.
+   Change energy settings so that computer doesn't sleep (display off only).
+3. Call code as:
+
+    python fullmodel_recompile.py
+    git add -A
+    git commit
+    python one_time_script.py  # whatever you want to call it
+
+Note: initial guess for eta2 always fails badly on eta2 = 0, or eta2 extremely
+small (`width_dump` function goes singular?).  Not to worry, code will adapt.
+
+4. Search log files for errors (ignore caps)
+5. Move tables and log files to /tables and set as read-only
+6. Merge tables if needed (can do this manually, or whatever)
+
+Start: 2014 August 30 
+Finish: 
 
 
 
