@@ -21,8 +21,6 @@ import lmfit
 import FullEfflength_port as fmp  # Full model code, Python port
 from snr_catalog import SYNCH_B, SYNCH_CM, CD, NUKEV, BETA  # Constants
 
-np.set_printoptions(precision=2)  # NOTE modifies numpy print options globally!
-
 def main():
     pass
 

@@ -1044,6 +1044,8 @@ Summary
 -------
 * ipynb to check resolution errors
 * Re-lowered eta2 upper limit (now: eta2 max = 1e5, B0 max = 1e-2)
+* Fixed misc. error finding bugs; FWHM calculation uses bisect over brentq now
+* Adaptive rminarc calculation in full model code
 
 Remark: the 'I' in IPython is supposed to be capitalized.  Woops.
 
@@ -1058,6 +1060,14 @@ Meeting
 More friggin debugging
 ----------------------
 Finished code post-mortem.  Fixed some egregious bugs in error root finding.
+
+Extreme value bug
+-----------------
+See log.  Solution is to replace `scipy.optimize.brentq` with
+`scipy.optimize.bisect` for rootfinding.  However, the code easily goes bonkers
+at such extreme values (intensity values rapidly hit the limit on representable
+numbers...).  So, better to limit parameter values appropriately, as much as
+possible...
 
 Resolution analysis
 -------------------
@@ -1105,6 +1115,7 @@ computation time (a pinch below).  Hallelujah!
 
 New tables
 ----------
+
 
 
 

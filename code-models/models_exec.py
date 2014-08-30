@@ -102,6 +102,11 @@ class Fitter(object):
     # -------------------------------------
 
     def width_full(self, mu, eta2, B0, **kwargs):
+        """kwargs are passed directly to full model code
+        Options (as of 2014 Aug 30):
+            verbose, rminarc, icut, irmax, iradmax, ixmax,
+            irad_adapt, irad_adapt_f
+        """
         return models.full_width(self.snr, self.kevs, mu, eta2, B0, **kwargs)
 
     def width_simp(self, mu, eta2, B0):

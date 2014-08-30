@@ -360,7 +360,8 @@ def fwhm(rmesh, intensity, f_int):
     """Compute fwhm precisely from starting grid.
     For extreme values of B0/eta2 (extremely smeared, no peak exists),
     code prints error messages and returns FWHM = 1 (max possible value)"""
-    eps2 = np.finfo(float).eps * 2  # Brentq tolerance, 1 ~= 1+eps2/2.
+    # Tolerance for finding intensity max position
+    eps2 = np.finfo(float).eps * 2  # Tolerance, 1 ~= 1+eps2/2.
 
     # Compute half max from grid initial guess
     idxmax = np.argmax(intensity)
@@ -381,6 +382,8 @@ def fwhm(rmesh, intensity, f_int):
         rpk_b = rmesh[idxmax + 1]
 
     # option 'xatol' requires SciPy 0.14.0
+    # 'xatol' -- absolute error in res.x acceptable for convergence
+    # (as res.x is order 1, eps2 should be appropriate)
     res = spopt.minimize_scalar(lambda x: -1*f_int(x), method='bounded',
                                 bounds=(rpk_a, rpk_b), options={'xatol':eps2})
     pk = f_int(res.x)
@@ -392,7 +395,7 @@ def fwhm(rmesh, intensity, f_int):
     inds_rmin = np.where(cross > 0)[0]  # Left (neg to pos)
     inds_rmax = np.where(cross < 0)[0]  # Right (pos to neg)
 
-    def f_thrsh(r):  # For brentq rootfinding
+    def f_thrsh(r):  # For rootfinding
         return f_int(r) - halfpk
 
     if inds_rmin.size == 0:  # No left crossing found
@@ -412,16 +415,8 @@ def fwhm(rmesh, intensity, f_int):
         rmax_a = rmesh[inds_rmax[0]]  # Crossing closest to peak
         rmax_b = rmesh[inds_rmax[0] + 1]
 
-    rmin = spopt.brentq(f_thrsh, rmin_a, rmin_b)
-    rmax = spopt.brentq(f_thrsh, rmax_a, rmax_b)
-
-    #print 'DEBUGGING:'
-    #print 'res debug success={}, nfev={}, message={}'.format(res.success,
-    #        res.nfev, res.message)
-    #print ''
-    #print 'Grid peak @ {}, {}, {}, {}'.format(rpk_a, rmesh[-1], res.x, rpk_b)
-    #print 'intensity {}, {}, {}, {}'.format(f_int(rpk_a), f_int(rmesh[-1]), pk,
-    #                                        f_int(rpk_b))
+    rmin = spopt.bisect(f_thrsh, rmin_a, rmin_b)
+    rmax = spopt.bisect(f_thrsh, rmax_a, rmax_b)
 
     return rmax - rmin
 

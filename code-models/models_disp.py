@@ -40,7 +40,7 @@ def build_dataf(fit_type, conf_intv=0.683, fit_kws=None, err_kws=None):
         fit_kws (only used for full fit):
             mu_free=False, B0_free=True (don't twiddle these)
             model_kws (dict):
-                rminarc, icut, irmax, iradmax, ixmax
+                rminarc, icut, irmax, iradmax, ixmax, irad_adapt, irad_adapt_f
             scale_covar=False (!) (lmfit.minimize)
             method='leastsq'
             epsfcn, maxfev, factor, diag, ftol, xtol, etc... (scipy leastsq)
