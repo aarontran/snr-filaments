@@ -158,7 +158,7 @@ def generate_plots(plist, fobj, title, mu_vals, fmt_vals):
             fill_kevs = np.linspace(fobj.kevs[0]-0.2, fobj.kevs[-1]+0.2, 5)
             kevs_m = np.sort(np.hstack((fobj.kevs, fill_kevs)))
             if p.fit_kws is not None and 'model_kws' in p.fit_kws:
-                model_kws = res.fit_kws['model_kws']
+                model_kws = p.fit_kws['model_kws']
             else:
                 model_kws = {}
             fwhms_m = models.width_cont(p, kevs_m, fobj.snr, **model_kws)

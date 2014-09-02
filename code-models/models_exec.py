@@ -463,6 +463,7 @@ class Fitter(object):
         ax.set_xscale('log')
         ax.set_yscale('log')
         ax.legend(tuple(r'$\mu={:0.2f}$'.format(mu) for mu in mus), loc='best')
+        fplot(r'$\eta_2$', r'$\chi^2$', axargs='tight')
         return ax
 
     def check_B0_grid(self, eta2, mus, fmts):
@@ -482,6 +483,7 @@ class Fitter(object):
             B0_vals, fwhms = self.tab[mu][eta2]
             chisqr_vals = self.fwhm_scan(fwhms)
             ax.plot(B0_vals*1e6, chisqr_vals, fmt)
+        fplot(r'$B_0$ ($\mu$G)', r'$\chi^2$', axargs='tight')
         return ax
 
     def check_eta2_simp(self, eta2_vals, mus, fmts):
