@@ -149,12 +149,41 @@ errors have meaningful magnitude; they are not merely weights.
 
 ### CURRENTLY WORKING TO-DOs
 
-* NEW TABLES, then this weekend RUN ERROR CALCULATIONS, PLEASE...
-  Let's just say if any fit runs to eta2 = 1e5, or B0 = 10mG, call it
-  unconstrained...
+Agenda:
+* debug index error (ughsdf)
+* would also be nice to figure out, wtf happened to all of our logging output
+* why did it disappear, are our results still okay/valid?  did it get dumped
+  around piecemeal (check this by going through logs)
+* start SN 1006 running, should be much quicker
+* start putting together some text (set aside formatting to later)
+* cobble together some kind of tycho results (decide how to store/update data)
+
+* in SN 1006, full fits from grid + stderrs -- the tabulated stderrs appeared
+  off (from a notebook run last week).  Why?!  Double check this, briefly.
 
 * Writing - spend some time explaining why we selected what we did.
   Outline + methods within next week
+
+* Possibly -- put out format in code-friendly format, so I can just aggregate
+  all the tables together in iPython and customize the display or something
+  like that?  I'm not sure.
+  Could just pickle it.  I need to easily regenerate tables/plots on the fly,
+  without having to redo the whole calculation again (given that it's so
+  time-consuming).
+
+
+passing idea: store pkl w/ best fits + chisqrs found to date...
+or just maintain my own table?!  this is obscenely ad hoc.
+No, too much inconsistency
+
+Think -- how am I best going to keep track of fit/error numbers?
+It is very inefficient to be constantly regenerating them (hence this mess,
+and the very slow debuggin over the last ~2 weeks).  Would be good to have
+stored numbers for full model unit tests, now, too.
+(write some unit tests for SN 1006 -- this is just part of our validation
+process)
+
+
 
 * Perform calculations with eta2 fixed to 1 (or 0.1--10... same thing, just
   shut up and do it)
@@ -166,10 +195,6 @@ errors have meaningful magnitude; they are not merely weights.
      explore the spread of numbers, whatever...
   2. arithmetic means of FWHMs in the filaments (5 data sets)
   3. geometric means of FWHMs in the filaments (5 data sets)
-
-* Need to... clean up a lot of misc. files (on desktop etc).
-  Some don't necessarily need to be VC'ed but should be placed somewhere
-  sensible.
 
 * Idea: maybe useful to compute advection/diffusion lengths from fits?
   ALSO we need `m_E` from this, and the data...

@@ -1,0 +1,371 @@
+\documentclass[manuscript]{aastex}  % one-column, double-spaced
+% \documentclass[12pt,preprint]{aastex}  % one-column, single-spaced
+% \documentclass[preprint2]{aastex}  % double-column, single-spaced
+% \documentclass[preprint2,longabstract]{aastex}  % if abstract doesn't fit
+
+% \documentclass[apjl]{emulateapj}
+% \documentclass[apj]{emulateapj}
+
+\shorttitle{Synchrotron Rims in Tycho's SNR}  % <~ 44 char
+\shortauthors{XXX et al.}  % Max three
+\slugcomment{Not to appear in Nonlearned J., 45.}  % short title pg comment
+
+%% ==================================================================== %%
+%% README for track changes                                             %%
+%% To add/remove text or add comments, use the following commands:      %%
+%%                                                                      %%
+%%       \note[editor]{The note}                                        %%
+%%     \annote[editor]{Text to annotate}{The note}                      %%
+%%        \add[editor]{Text to add}                                     %%
+%%     \remove[editor]{Text to remove}                                  %%
+%%     \change[editor]{Text to remove}{Text to add}                     %%
+%%                                                                      %%
+%% Using trackchanges.sty (http://trackchanges.sourceforge.net/)        %%
+%%                                                                      %%
+%% If you prefer to just edit directly, that works as well.             %%
+%% ==================================================================== %%
+
+\usepackage[inline]{trackchanges}
+
+% Up to 5 editors
+\addeditor{Rob}
+\addeditor{Sean}
+\addeditor{Steve}
+\addeditor{Aaron}
+\addeditor{Brian}
+
+%% ============
+%% Bibliography
+%% ============
+%\biboptions{semicolon}  % natbib options
+
+%% ===============
+%% Custom packages
+%% ===============
+
+% aas.org/authors/author-names-non-roman-alphabets
+% \usepackage{CJK}
+
+% Manuscript formatting
+%\usepackage{lineno}
+
+% Math, symbols, links, inline typesetting
+%\usepackage{amsthm, amsmath, amssymb}
+%\usepackage{amsmath}
+%\usepackage{enumerate}  % For use of (a), (b), etc.
+%\usepackage{hyperref}
+
+% Figures, tables, floats, page layout (see also deluxetable)
+%\usepackage[pdftex]{graphicx}
+\usepackage{booktabs}
+%\usepackage[labelfont=bf, labelsep=period]{caption}  % Custom float captions
+%\usepackage{pdflscape}  % rotate pages (Texlive)
+
+%% ==============
+%% Extra commands
+%% ==============
+\newcommand{\mt}{\mathrm}
+\newcommand{\unit}[1]{\;\mt{#1}}  % http://vemod.net/typesetting-units-in-latex
+\newcommand{\abt}{\mathord{\sim}} % http://tex.stackexchange.com/q/55701
+
+% Sets, operators
+\newcommand{\ints}{\mathbb{Z}}
+\newcommand{\ptl}{\partial}
+\newcommand{\del}{\nabla}
+
+%% =====================
+%% AASTeX utilities etc.
+%% =====================
+
+% Object linking: https://aas.org/object-linking/introduction-object-linking
+% \objectname[SNR G120.2+01.4]{Tycho's SNR}
+% \objectname[M1]{Crab nebula}
+% \object{NGC 6397}
+
+% Dataset linking: https://aas.org/data-sets/data-set-linking
+% \dataset{ADS/Sa.ASCA\#X/86008020}
+% \dataset[ADS/Sa.HST#Y0Q70101T]{HST FOS spectrum}
+
+% Possibly useful items:
+% \footnote{footnote}
+% \notetoeditor{note}  % Appears in manuscript footnotes, not in preprints
+% \begin{mathletters}  % Add lettering to -eqnarrays- align, eqns
+% \end{mathletters}  % e.g., number (4a), (4b) vs. (4), (5)
+% \url{http://google.com}
+
+% AASTeX symbol macros
+% A 90\degr~angle, an ion: \ion{Ca}{2}, \slantfrac{40}{59} (why slantfrac?).
+
+% Figures, tables
+% AASTeX provides \plotone{z.eps}, \plottwo{a.eps}{b.eps}, \plotfiddle (?!)
+
+% Tables -- refer to author guide / sample.tex when needed.
+
+
+\begin{document}
+
+% ========================
+% Title, authors, abstract
+% ========================
+\title{Energy Dependent X-Ray Rim Width in Tycho's Supernova Remnant}
+
+%\begin{CJK*}{UTF8}{gbsn}
+\author{
+Robert Petre\altaffilmark{1},
+Sean M. Ressler\altaffilmark{2},
+Stephen P. Reynolds\altaffilmark{3},
+Aaron Tran\altaffilmark{1,4},
+Brian J. Williams\altaffilmark{1,5}
+}
+%\end{CJK*}
+
+\altaffiltext{1}{NASA Goddard Space Flight Center, Greenbelt, MD 20771, USA}
+\altaffiltext{2}{Dept. Physics, University of California,
+    Berkeley, CA 94720, USA}
+\altaffiltext{3}{Dept. Physics, North Carolina State University,
+    Raleigh, NC 27695, USA}
+\altaffiltext{4}{CRESST, University of Maryland, College Park, MD 20742}
+\altaffiltext{5}{NASA Postdoctoral Program Fellow}
+
+\begin{abstract}
+\note[Aaron]{Copy pasted from NASA abstract, not reviewed}
+Young supernova remnants may exhibit thin (~1--10\% of shock radius) X-ray rims
+of synchrotron radiation from forward shock-accelerated electrons that travel
+downstream of the shock and quickly cease to radiate. Rim widths limited by
+radiative energy losses should decrease with energy and require magnetic field
+amplification $10$--$100\times$ that expected from adiabatic shock compression.
+Damped magnetic fields behind rims may produce thin rims without strong field
+amplification but require energy-independent rim widths. We measured rim widths
+around Tycho's supernova remnant in 5 energy bands using a 750 ks Chandra
+observation. Rims narrow with increasing energy, favoring loss-limited
+radiation over magnetic damping. Observed widths are best fit by electron
+transport models requiring amplified magnetic fields $\abt0.1$--$1$ mG and
+particle diffusion $\abt1$--$10\times$ Bohm values, consistent with prior work.
+Inferred magnetic fields, diffusion coefficients, and diffusion-energy scaling
+may constrain models for cosmic ray acceleration in supernova remnants and
+plasma turbulence in astrophysical shocks.
+\note[Aaron]{Keywords from Sean's paper}
+\end{abstract}
+
+\keywords{acceleration of particles ---
+    ISM: individual objects (Tycho's SNR) ---
+    ISM: magnetic fields ---
+    ISM: supernova remnants ---
+    X-rays: ISM}
+
+% ============
+% Introduction
+% ============
+\note[Aaron]{a lot of preliminary text copy-pasted from poster or my own
+notes, so explanations may be a bit simplistic}
+
+\section{Introduction}
+
+\note[Aaron]{most text below is copy-pasted from my own notes -- explanation
+may be too simplistic}
+
+Accelerating ISM/CSM particles in the forward shocks of supernovae emit
+synchrotron radiation.  Emission is strong in the shock's immediate wake, but
+dies off quickly downstream as particles radiate and lose energy. The radiation
+from a spherical blast wave, then, is shell-like with bright X-ray and radio
+rims/filaments due to line-of-sight projection.  These filaments have finite
+and energy-dependent widths, set by:
+\begin{itemize}
+  \item \emph{synchrotron losses}.  At the shock, high energy electrons
+  efficiently radiate harder x-ray photons.  As electrons are advected
+  downstream while radiating, they radiate at lower energies and lose energy
+  more slowly.  Synchrotron losses depend on (1) the initial electron energy
+  distribution, and (2) the gradual decrease of electron energies downstream of
+  the shock.
+  \item \emph{diffusion}.  Random motion with respect to bulk plasma advection.
+  Higher energy electrons diffuse and travel further downstream than would be
+  expected from pure advection; hence, higher energy radiation may be seen
+  farther downstream of the shock than expected.
+  Higher energy particles may also diffuse \emph{ahead} of the shock, possibly
+  giving rise to a so-called ``cosmic-ray shock precursor''.  Note that this is
+  distinct from radiative precursors \citep[e.g.,][]{ghavamian2000}.
+\end{itemize}
+
+\subsection{Abbreviated review of prior work for context}
+
+Basic observables \citep[e.g.,][]{bamba2003, bamba2005-hist, bamba2005-vela,
+parizot2006} and consequences.
+
+Testable model predictions of magnetic damping \citep{pohl2005}.
+
+\citet{ressler2014} found rim narrowing in the remnant of SN 1006,
+
+Equivocal results by \citet{araya2010} for Cas A.
+
+\subsection{Our work}
+
+We make measurements to distinguish between these two end member scenarios.
+\note[Aaron]{paper roadmap} First we review our measurements,
+explain the relevant model physics and governing equations,
+explain our fitting procedure.
+
+Then we discuss the implications of our fits and models
+
+% ============
+% Observations
+% ============
+\section{Observations}
+
+
+
+We used archival \textit{Chandra} observations of Tycho
+(\dataset[ADS/Sa.CXO\#obs/10093--10097]{ObsIDs 10093--10097},
+\dataset[ADS/Sa.CXO\#obs/10902]{10902--10906})
+obtained with the ACIS-I CCD between 2009 Apr 11 and 2009 May 5.
+The total exposure time is $734 \unit{ks}$.
+The data are divided into five energy bands:
+0.7--1 keV, 1--1.7 keV, 2--3 keV, 3--4.5 keV, and 4.5--7 keV.
+We excise counts between 1.7--2 keV to avoid \ion{Si}{13} (He$\alpha$) line
+emission prevalent in the remnant's thermal ejecta.
+
+Thirteen regions were selected with the following criteria in mind:
+\note[Aaron]{itemized lists are just for outlining}
+\begin{itemize}
+    \item Nonthermal filaments should be singular and localized (i.e., either
+        no overlapping or completely overlapping rims -- this rules out parts
+        of NE limb)
+    \item Nonthermal filaments should have sufficient signal-to-noise ratio
+        that we can identify a clear FWHM in all bands (rules out a lot of
+        faint southern wisps)
+    \item Avoid plumes of thermal emission: identify spatially from images,
+        esp. in lower energy bands (0.7--1 keV, 1--2 keV)
+        (e.g.,~\ref{fig:snr}, eastern side), identify spectrally from emission
+        lines.
+\end{itemize}
+
+\begin{figure}
+    \plotone{figures/f0-snr.eps}
+    \caption{RGB image of Tycho with region selections overlaid.  Bands are
+    0.7--1 keV (red), 1--2 keV (green) and 2--7 keV (blue)}
+    \label{fig:snr}
+\end{figure}
+
+Discuss point-spread function if that may be a point of contention.
+Show that it is not a problem for us (simply say that all rims are at
+least ~1 arcsec and hence are spatially resolved? Compare,
+\citet{bamba2005-hist} measured upstream/downstream scale widths separately?)
+
+\subsection{Filament width measurements}
+\begin{figure*}
+    \plotone{figures/f0-prfs.pdf}
+    \caption{Some semblance of a caption.}
+    \label{fig:profiles}
+\end{figure*}
+
+\subsection{Filament spectra}
+
+And we shall purify the remnant's rims
+that they may show us how they do thin
+discriminating damped models.
+
+\begin{figure}
+    \plotone{figures/f0-spec.pdf}
+    \caption{Another caption \citep{fermi1949}}
+    \label{fig:spec}
+\end{figure}
+
+Finally, here are some numbers!
+
+%\begin{table}
+%\end{table}
+
+% =======================
+% Filament width modeling
+% =======================
+\section{Filament width models}
+
+Cite \citet{ressler2014} vigorously here.  Just present the governing transport
+equations (with variables), namely that from:
+\[
+  \frac{\ptl f}{\ptl t} + \del \cdot \left( f \vec{v} \right)
+  = C + \del \cdot \left( D \del f \right)
+\]
+we obtain (1-D time-independent flow, neglect compressible flow?!,
+space-independent diffusion coefficient):
+\[
+    v \frac{\ptl f}{\ptl x} - D \frac{\ptl^2 f}{\ptl x^2} = C
+\]
+and by random selection of the source/sink term $C$ we obtain either a
+simplified model:
+\begin{equation}
+    v \frac{\ptl f}{\ptl x} - D \frac{\ptl^2 f}{\ptl x^2} +
+    \frac{f}{\tau_{\mt{synch}}} = 0
+\end{equation}
+where this is equation (6) of \citet{ressler2014}; we also look at
+\begin{equation}
+    v \frac{\ptl f}{\ptl x} - D \frac{\ptl^2 f}{\ptl x^2} =
+    K_0 E^{-s} e^{-E/E_{\mt{cut}}} \delta(x) + \frac{\ptl}{\ptl E}
+      \left(bB^2E^2f\right)
+\end{equation}
+which is equation (12) of \citet{ressler2014}.
+
+
+% ===================
+% Results (best fits)
+% ===================
+
+\section{Results}
+
+Let's just say if any fit runs to $\eta_2 = 10^5$ or $B_0 = 10$ mG (for Tycho),
+we deem it effectively unconstrained.
+
+\begin{table}
+% Here I'm following the AASTeX sample...
+%\tabletypesize{\scriptsize}
+\caption{Full model best fit parameters, region 1.\label{tab:fit1}}
+\begin{tabular}{@{}rllr@{}}
+\toprule
+{} & \multicolumn{3}{c}{Region 1} \\
+\cmidrule(l){2-4}
+$\mu$ (-) & $\eta_2$ (-) & $B_0$ ($\mu$G) & $\chi^2$\\
+\midrule
+0.00 & ${19.1}^{+19}_{-7.1}$ & ${784}^{+1.2 \times 10^{2}}_{-72}$ & 57.5590\\
+0.33 & ${56}^{+75}_{-29}$ & $930^{+190}_{-140}$ & 34.6006\\
+0.50 & ${92}^{+160}_{-54}$ & ${1010}^{+260}_{-180}$ & 25.5737\\
+1.00 & ${370}^{+3300}_{-310}$ & ${1260}^{+4500}_{-440}$ & 9.7750\\
+1.50 & ${23}^{+32}_{-10}$ & ${623}^{+130}_{-67}$ & 8.7937\\
+2.00 & ${11.4}^{+5.2}_{-3.3}$ & ${512}^{+34}_{-26}$ & 9.5862\\
+\bottomrule
+\end{tabular} 
+\end{table}
+
+Table reference goes here~\ref{tab:fit1}.
+
+% ==========
+% Discussion
+% ==========
+\section{Discussion}
+
+What do all these numbers with their errors mean?
+
+
+% ==========
+% Conclusion
+% ==========
+\section{Conclusions}
+
+In conclusion, crazy B field amplification is not that weird.  Magnetic damping
+can be ruled out and our result is robust throughout the remnant.
+
+\acknowledgments
+
+The scientific results reported in this article are based on data obtained from
+the Chandra Data Archive.
+
+{\it Facilities:} \facility{CXO (ACIS-I)}
+
+\appendix
+
+\section{Appendix material}
+
+Appendix text if so desired.
+
+\bibliographystyle{apj}  % AASTeX journal macros (for abbrevs) supplied by ADS
+\bibliography{refs-snr}
+
+\end{document}

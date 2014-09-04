@@ -3,7 +3,6 @@ README
 
 Aaron Tran (supervisors: Rob Petre, Brian J. Williams)<br>
 CRESST, NASA GSFC<br>
-Summer 2014
 
 Analysis of thin synchrotron emitting filaments in historical supernova
 remnants.  Pipeline to generate and fit radial intensity profiles from Chandra
@@ -11,8 +10,7 @@ observations of Tycho's SNR.  Model code (Sean Ressler and Steve Reynolds) to
 compute magnetic fields and diffusion coefficients/scaling consistent with
 observed rim width - energy relationships.
 
-Work largely follows Ressler, Katsuda, Reynolds et al., ApJ, in press.,
-preprint at arXiv:1406.3630.
+Work largely follows Ressler, Katsuda, Reynolds et al., ApJ, 2014
 
 Repository
 ----------

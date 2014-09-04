@@ -1182,5 +1182,137 @@ Start: 2014 August 30, 05:30am
 Finish: ???
 
 
+Monday 2014 September 1
+=======================
 
+Tables finished ~7pm, just about as expected.
+
+Tested out Tycho fits from new grid, looked okay. Started error annealing
+calculation running overnight.
+
+For some reason, after ~7 hrs one of the cores stopped.  Weird behavior going
+on -- mu values are jumping around in the output log?!  I'm not sure what's up.
+Wait until all cores done and look at display output, tables to see...
+
+
+Tuesday 2014 September 2
+========================
+
+Summary
+-------
+
+* New SN 1006 grid, Tycho error calculations running (start-to-finish trial)
+* Start some paper text
+
+Misc: installed Pathogen, ConqueTerm for MacVim usage.  iTerm2 or something
+else probably makes more sense, but this works for now.
+Cleaned misc. files, repository structure. General housekeeping.
+
+
+New tables, calculations
+------------------------
+
+Start generating new SN 1006 grid around 11am. `rminarc`-too-small errors are
+popping up at the preliminary step (calculation w/ small `iradmax`), but the
+output FWHMs look okay (no weird numbers).
+
+Expected time? 6 x 60 x 40 x 3 sec/call = 12 hours (not running in parallel).
+Still running Tycho error calculations so making use of 3 available CPUs.
+
+Tycho errors 
+
+Quick tally: region 1, mu=0.
+* Fit from grid:        20 function calls
+* B0, lower bound:      186 function calls (moved 1x on grid)
+* B0, upper bound:      125 function calls (moved 1x backwards on grid)
+* eta2, lower bnd:      150 function calls (moved 1x on grid)
+* eta2, upper bnd:      181 function calls (moved 1x backwards on grid)
+* Total:                662 function calls = 55.17 minutes (@ 5 seconds/call)
+
+* Best fit: 784.180 muG, eta2=13.664
+* B0 lower bound: 711.870 muG (eta2=12.051)
+* B0 upper bound: 908.343 muG (eta2=38.075)
+* eta2 lower bnd: 12.023 (B0 = 720.636)
+* eta2 upper bnd: 38.253 (B0 = 916.589)
+
+Time: 13 regions x 6 mu values x 662 calls x 5 sec/call = 258180 sec,
+divide by 3 for parallel set-up (maybe, 2 since some cores stopped/died?!)
+Expect: 24 to 36 hrs (!).  Holy smokes.  So it should be done by tomorrow
+morning...
+
+
+Manuscript
+----------
+
+LaTeX/BibTeX setup ([relevant](http://www.astrobetter.com/install-latex)).
+BibDesk, latexdiff are included w/MacTeX.  
+* AASTeX, emulateapj, `apj.bst` (fr. AstroNat).
+* J. Sick's adsbibdesk (3.2.0); Automator for OS X + command line
+* BibDesk, latexdiff included w/ MacTeX.
+
+I use cite key format `%a1%Y%u0` (e.g., `\citep{ressler2014}`).
+Disable pdf downloads with adsbibdesk (in `~/.adsbibdesk`).
+Do not link files to BibTeX file -- messes up plaintext output and further
+clutters git diffs.
+Imported most (i.e., relevant) references from Sean's paper
+
+Auto-generated BibTeX files are going to be ugly as sin -- obviously, will be
+uglier than doing by hand.  Accept the trade-off: no need to prettify when it
+is parsed fine by BibTeX and looks okay in final paper.
+
+Utilities for collaborative editing:
+* trackchanges (F. Salfner, [sourceforge](http://trackchanges.sourceforge.net))
+* commands for collaborators to markup document
+  ([ex.](http://emckiernan.wordpress.com/2012/11/28/tracking-changes-in-latex))
+* latexdiff for indiv. revisions (I keep track)
+* ShareLaTeX (10 collaborators @ $6/mo, would need to get people on board)
+
+Tentative workflow -- work directly in `paper.tex`, no jumping between files.
+Use adsbibdesk, BibDesk to interface with `.bib` (avoid temptation to manually
+twiddle).  Using `trackchanges.sty` by F. Salfner.
+
+Best practices:
+* commit @ every iteration emailed out for comments (mention in commit)
+* commit after all comments are added
+
+
+Wednesday 2014 September 03
+===========================
+
+Summary
+-------
+* Stuff
+
+
+Tycho error annealing post-mortem
+---------------------------------
+
+Finished, though I neglected to record the time it finished.  Doesn't matter
+since we hit an error in the last engine (index 3, of 0--3).
+
+Added annotation to help in debugging... (determine why the index error is
+occurring).  Currently, recomputing errors for region 11 to try to trace error.
+
+I'm perplexed because I genuinely don't expect an IndexError where the
+exception popped up.
+
+From another calculation (run through today) -- it looks like the error finding
+just dies?!  But everything else behaves...
+
+SN 1006 new grid, full model/error calculation
+----------------------------------------------
+
+I count 1019 logged ERRORs in code, all identical -- correspond to the initial
+estimated calculation that allows us to refine our guess for `rminarc`.
+No instances of "Error!", which would indicate that the 2nd FWHM computation
+(the final result) went awry.
+
+So, the new SN1006 table looks good to go.
+Start error annealing, allow to run overnight (3 bands first).
+
+Paper outlining
+---------------
+Finished infrastructure / set-up / messing around with AASTeX.
+Started sketching out introduction, methods, moving text over from
+poster/notes.
 

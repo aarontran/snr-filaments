@@ -39,6 +39,8 @@ def build_dataf(fit_type, conf_intv=0.683, fit_kws=None, err_kws=None):
         conf_intv: please don't set above 0.683 or your life will suck, I guarantee
         fit_kws (only used for full fit):
             mu_free=False, B0_free=True (don't twiddle these)
+            eta2, B0: if you wish to provide custom (non-grid) initial guesses
+                      MUST provide guesses for both, else ignored!
             model_kws (dict):
                 rminarc, icut, irmax, iradmax, ixmax, irad_adapt, irad_adapt_f
             scale_covar=False (!) (lmfit.minimize)
@@ -161,7 +163,8 @@ def generate_plots(plist, fobj, title, mu_vals, fmt_vals):
                 model_kws = p.fit_kws['model_kws']
             else:
                 model_kws = {}
-            fwhms_m = models.width_cont(p, kevs_m, fobj.snr, **model_kws)
+            fwhms_m = models.width_cont(p, kevs_m, fobj.snr, verbose=False,
+                                        **model_kws)
         ax.plot(kevs_m, fwhms_m, fmt, label=r'$\mu = {:0.2f}$'.format(mu))
 
     # Prepare composite plot
@@ -169,13 +172,6 @@ def generate_plots(plist, fobj, title, mu_vals, fmt_vals):
     ax.legend(loc='best')
     ax.set_title(title)
     plt.show()
-
-# ==============================================
-# Functions for iPython parallelization (stdout,
-# non-blocking table/plot display, etc...
-# ==============================================
-
-# TODO refactor code from ipython notebooks down into here
 
 # ===============
 # Utility classes

@@ -20,8 +20,9 @@ filenames, numbers/ordering, etc..., which generally hold if you follow the
 pipeline.  Manually moving files a lot is not the best idea (best to rerun the
 pipeline).  Numbering/ordering follows region file order, starting from 1.
 
+
 Pipeline 1: radial profiles and fits
-==================================
+====================================
 
 ## Prerequisites
 Generate energy band images, in both intensity flux units and in uncorrected
@@ -52,7 +53,7 @@ Input:  `regions-n.reg`, `regions-n.physreg`
 Output: `fwhms/fwhms.[txt, pkl, log]`
 
 Pipeline 2: extract and fit spectra
-=================================
+===================================
 Prerequisite: 1
 
 ## Prep/split regions based on profile fits
@@ -79,13 +80,13 @@ Code:   `../code-specs/[newregion,newspectrum,mergespectra].sh`
 Input:  `regions-n-[up,down].ciaoreg` (WCS fk5 coords)
 Output: `spectra/[up,down]/*.[pi,rmf,arf]`
 
-## Link spectra to 
+## Link spectra to backgrounds
 
 Code:   `../code/spec_linkbg.py`
 Input:  spectra, `regions-n.ciaoreg`, `backgrounds-n.ciaoreg`
 Output: N/A (modifies spectra in place)
 
-## Fit spectra to absorbed powerlaw with Si line
+## Fit spectra to absorbed powerlaw with(out) Si line
 Run with 32 bit python (`arch -i386 python`), `heainit` (not in same window as
 CIAO), and run in same directory as spectra files (to resolve links)
 
@@ -103,15 +104,36 @@ Pipeline 3: fit FWHM data to filament models
 ============================================
 Prerequisite: 1
 
-## Fit to catastrophic dump transport model
-Equation (6) of Ressler paper
+## Add SNR information
 
-Code:   `../code-models/fwhms_process.ipynb`
+Code:   `code-models/snr_catalog.py`
 
-Still in development
+Add a method that initializes a `SupernovaRemnant` with appropriate constants.
+Also stores a number of constants/magic numbers for fits
+
+## Generate pre-cached table of FWHMs over parameter space
+Let run overnight or so.  Clone generating script (basically your config file,
+don't lose it) into `code-models` so it can import `models.py`.  When complete,
+move outputs to `./tables/` and `chmod a-w [names]`.
+
+For Tycho, it's set up to generate grids at fixed shock velocity (specify a few
+different values and just run in separate terminal sessions)
+
+Code:   `code-models/models.py`, called from `code-models/tables/gen-scripts/*`
+Input:  bunch of magic numbers, settings, SNR object from `snr_catalog.py`
+Output: `*_gen_2014-*_grid_*-*-*.[pkl,log,errlog]`
+
+## Fit to simple/full models
+See Ressler et al. 2014 for exposition of models, calculations
+
+Code:   `code-models/*-fit-tables.ipynb`
+Input:  `./tables/*.pkl`, `data/fwhms/*.pkl` or what have you
+Output: plots, tables, LaTeX tables within ipynb (copy-paste, currently...)
+
+Still somewhat in works
 
 
-Pipeline 4: plotting (for paper/review/disc/etc)
+Pipeline 4: plotting FWHM measurements, profiles
 ================================================
 Prerequisite: 1, 2 (so far)
 

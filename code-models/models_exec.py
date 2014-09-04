@@ -144,10 +144,15 @@ class Fitter(object):
         if appr == 'simp':
             res = self.fitter_simp(mu)
         elif appr == 'full':
-            self._vprint('Starting from best grid value')
-            eta2, B0, fwhms, chisqr = self.grid_best(mu)
-            res = self.fitter_full(mu, eta2=eta2, B0=B0, eta2_free=True,
-                                   **kwargs)
+            if ('eta2' in kwargs) and ('B0' in kwargs):
+                self._vprint('Starting from provided initial guesses:',
+                             'eta2 = {:0.3f},'.format(kwargs['eta2']),
+                             'B0 = {:0.3f}'.format(kwargs['B0']*1e6))
+            else:
+                self._vprint('Starting from best grid value')
+                eta2, B0, fwhms, chisqr = self.grid_best(mu)
+                res = self.fitter_full(mu, eta2=eta2, B0=B0, eta2_free=True,
+                                       **kwargs)
         else:
             raise Exception('Invalid model choice')
         
@@ -332,23 +337,31 @@ class Fitter(object):
             x_ret = one_dir_root(f, x, x_lim, **kwargs)
 
         else:
-            self._vprint('Found error crossing on grid')
+            self._vprint('Found error crossing on grid;',
+                         'idx = {} in [0,{}]'.format(idx, len(xgrid)-1))
             idx_adj = idx - sgn  # Move backwards
 
             # Need to verify bracketing points; move backwards if needed
             if idx == idx_init:
                 self._vprint('Did not move on grid, checking backwards')
-                while (((sgn > 0 and xgrid[idx_adj] > x0)
-                        or (sgn < 0 and xgrid[idx_adj] < x0))
-                       and f(xgrid[idx_adj]) > 0):  # Yuck
-                    self._vprint('Moved threshold back by one')
+                while ((sgn > 0 and (idx_adj >= 0 and x0 < xgrid[idx_adj])) or
+                      (sgn < 0 and (idx_adj < len(xgrid) and xgrid[idx_adj] < x0))):  # YUCK
+                    check_f_adj = f(xgrid[idx_adj])
+                    if check_f_adj < 0:
+                        break  # We found crossing
                     idx_adj -= sgn
                     idx -= sgn
+                    self._vprint('Moved threshold back by one;',
+                                 'idx = {}, idx_adj = {}'.format(idx, idx_adj))
+                if check_f_adj >= 0:
+                    self._vprint('Could not bracket crossing w/grid resolution?!')
+                    # Edge cases should be caught by checks for x_in, x_lo below...
                 self._vprint('Done checking backwards')
 
             # Brentq limits
             x_in = xgrid[idx_adj]
             x_out = xgrid[idx]
+
             # To get 2nd pair of limits -- step index by +/-1 in each direction
             # if hit grid edge, increment by last grid interval; if hit x0, x0
             idx_lo = idx_adj - sgn
