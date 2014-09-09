@@ -1,7 +1,7 @@
 #!/bin/sh
 
-pdflatex ${1}.tex
-bibtex ${1}
-pdflatex ${1}.tex
-pdflatex ${1}.tex
-open ${1}.pdf
+pdflatex tycho-paper.tex
+bibtex tycho-paper
+pdflatex tycho-paper.tex
+pdflatex tycho-paper.tex
+open tycho-paper.pdf

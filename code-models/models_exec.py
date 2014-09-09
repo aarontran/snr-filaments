@@ -126,9 +126,6 @@ class Fitter(object):
         return models.simple_fit(self.snr, self.kevs, self.data, self.eps,
                                  mu, **kwargs)
 
-    # TODO rminarc issue to be addressed (!)
-    # TODO stderr scaling issue to be addressed (!!)
-
     def get_fit(self, mu, appr, **kwargs):
         """Simple or full fit + manual 1-sigma errors
         **kwargs passed to models.full_fit, if appr='full'
@@ -160,8 +157,6 @@ class Fitter(object):
 
         return res
 
-    # TODO rminarc issue must also be addressed by error searching...
-
     def get_errs(self, res, appr, method='manual', ci_vals=(0.683,), **kwargs):
         """Find dictionary of confidence intervals
 
@@ -173,7 +168,7 @@ class Fitter(object):
             **kwargs are passed to relevant functions
                 method='lmfit': maxiter=200, prob_func=None
                                 (see lmfit.conf_interval docstring)
-                method='manual': eps=None, adapt=True, anneal=True
+                method='manual': adapt=True, anneal=True
                                  (anneal keyword only if appr='full')
         Output:
             confidence interval dictionary
@@ -188,7 +183,8 @@ class Fitter(object):
                 if conf_intv != 0.683:
                     print ('Warning: requested CI={}. But, stderr only '
                            'gives 68.3% errors').format(conf_intv)
-                return res.params[pstr].stderr, res.params[pstr].stderr
+                v, s = res.params[pstr].value, res.params[pstr].stderr
+                return v - s, v + s
         elif method == 'manual':
             f = lambda *args: self.get_bounds(*args, appr=appr,
                                 verbose=self._verbose, **kwargs)
@@ -206,8 +202,6 @@ class Fitter(object):
     # ----------------------------
     # Model specific error finding
     # ----------------------------
-
-    # TODO: review TODOs throughout error seeking method.
 
     def get_bounds(self, conf_intv, res, pstr, appr='full', anneal=True,
                    **kwargs):
@@ -239,35 +233,36 @@ class Fitter(object):
 
         # Best fit quantities
         p_init = res.params[pstr].value
-        p_stderr = res.params[pstr].stderr
         p_min, p_max = res.params[pstr].min, res.params[pstr].max
 
         self._vprint('Finding error bounds on {} = {}'.format(pstr, p_init))
 
         if appr == 'simp':
             self._vprint('Bounding below, limit = {}'.format(p_min))
-            p_lo = one_dir_root(f_thresh, p_init, p_min, eps=p_stderr,**kwargs)
+            p_lo = one_dir_root(f_thresh, p_init, p_min, **kwargs)
 
             self._vprint('Bounding above, limit = {}'.format(p_max))
             lmfit.confidence.restore_vals(orig, res.params)
-            p_hi = one_dir_root(f_thresh, p_init, p_max, eps=p_stderr,**kwargs)
+            p_hi = one_dir_root(f_thresh, p_init, p_max, **kwargs)
 
         elif appr == 'full':
             # Get xgrid from self.tab + lo/hi indices to search from
-            xgrid, idx_lo, idx_hi = self.prep_grid_anneal(chisqr_thresh, res, pstr)
-
-            # TODO also get grid values of "other" param... just for starting.
-            # will make fits more robust
+            _stuff = self.prep_grid_anneal(chisqr_thresh, res, pstr)
+            xgrid, idx_lo, idx_hi, others_lo, others_hi = _stuff  # yeah...
 
             if anneal:
                 self._vprint('Bounding below, limit = {}'.format(p_min))
+                for opstr, op in others_lo.items():  # Load other params
+                    res.params[opstr].value = op
                 p_lo = self.anneal(f_thresh, p_init, idx_lo, xgrid, p_min,
-                                   eps=p_stderr, **kwargs)
+                                   **kwargs)
 
                 self._vprint('Bounding above, limit = {}'.format(p_max))
-                lmfit.confidence.restore_vals(orig, res.params)
+                lmfit.confidence.restore_vals(orig, res.params)  # Reset
+                for opstr, op in others_hi.items():  # Load other params
+                    res.params[opstr].value = op
                 p_hi = self.anneal(f_thresh, p_init, idx_hi, xgrid, p_max,
-                                   eps=p_stderr, **kwargs)
+                                   **kwargs)
             else:
                 self._vprint('Using naive grid bounds (no annealing!)')
                 p_lo = xgrid[idx_lo]
@@ -284,8 +279,12 @@ class Fitter(object):
         return p_lo, p_hi
 
     def prep_grid_anneal(self, chisqr_thresh, res, pstr):
-        """Bracketing indices of chisqr_thresh in self.tab for pstr mesh"""
-
+        """Bracketing indices of chisqr_thresh in self.tab for pstr mesh
+        
+        This method only allows pstr = eta2, B0; i.e., application specific
+        Output:
+            xgrid for pstr, idx_lo/hi, pars_lo/hi
+        """
         mu = res.params['mu'].value
         eta2_grid, B0_grid, fwhms_grid, chisqr_grid = self.grid_scan(mu)
 
@@ -293,8 +292,9 @@ class Fitter(object):
             xgrid = eta2_grid  # Already sorted
         elif pstr == 'B0':
             msk = np.argsort(B0_grid)
-            chisqr_grid = chisqr_grid[msk]
             xgrid = B0_grid[msk]
+            eta2_grid = eta2_grid[msk]
+            chisqr_grid = chisqr_grid[msk]
         else:
             raise Exception('Bad parameter name for full model errors')
 
@@ -307,95 +307,58 @@ class Fitter(object):
         # crossings[-1]+1 gets right index of crossing
         idx_hi = crossings[-1]+1 if any(crossings+1 > idx) else len(chisqr_grid)-1
 
-        return xgrid, idx_lo, idx_hi
+        # Return values of "other" parameters @ lo/hi indices to ease fitting
+        if pstr == 'eta2':
+            pars_lo = {'B0': B0_grid[idx_lo]}
+            pars_hi = {'B0': B0_grid[idx_hi]}
+        elif pstr == 'B0':
+            pars_lo = {'eta2': eta2_grid[idx_lo]}
+            pars_hi = {'eta2': eta2_grid[idx_hi]}
 
-    def anneal(self, f, x0, idx_init, xgrid, x_lim, **kwargs):
+        return xgrid, idx_lo, idx_hi, pars_lo, pars_hi
+
+    def anneal(self, f, x0, idx, xgrid, x_lim, **kwargs):
         """Find root of f; search on/past grid from xgrid[idx_init] to x_lim
 
         Input:
             f is threshold function
             x0 is the best fit parameter value (not necessarily in xgrid)
-            xgrid[idx_init] is where to start searching, first exhausting grid
+            xgrid[idx] is where to start searching
             then searching outside if needed (up to x_lim)
-            **kwargs passed to one_dir_root(...)
+            **kwargs passed to one_dir_root(...) (eps, verbose already set)
         Output:
-            bounding parameter (a root of f)
+            parameter bound for x0 (a root of f)
         """
-        sgn = np.sign(x_lim - x0)
-        self._vprint('Annealing grid in {} direction;'.format(sgn),
-                     'start: {:0.4e},'.format(xgrid[idx_init]),
+        sgn = int(np.sign(x_lim - x0))
+        self._vprint('Seeking error in {} direction;'.format(sgn),
+                     'start: {:0.4e},'.format(xgrid[idx]),
                      'limit: {:0.4e}'.format(x_lim))
         if sgn == 0:
             self._vprint('Warning: sgn == 0 (?!), returning limit')
             return x_lim
 
-        idx = one_dir_root_grid(f, idx_init, sgn, xgrid, verbose=self._verbose)
-
-        if idx is None:  # Hit grid edge
-            x = xgrid[0] if sgn < 0 else xgrid[-1]
-            self._vprint('Hit grid edge {}'.format(x))
-            x_ret = one_dir_root(f, x, x_lim, **kwargs)
-
-        else:
-            self._vprint('Found error crossing on grid;',
-                         'idx = {} in [0,{}]'.format(idx, len(xgrid)-1))
-            idx_adj = idx - sgn  # Move backwards
-
-            # Need to verify bracketing points; move backwards if needed
-            if idx == idx_init:
-                self._vprint('Did not move on grid, checking backwards')
-                while ((sgn > 0 and (idx_adj >= 0 and x0 < xgrid[idx_adj])) or
-                      (sgn < 0 and (idx_adj < len(xgrid) and xgrid[idx_adj] < x0))):  # YUCK
-                    check_f_adj = f(xgrid[idx_adj])
-                    if check_f_adj < 0:
-                        break  # We found crossing
-                    idx_adj -= sgn
-                    idx -= sgn
-                    self._vprint('Moved threshold back by one;',
-                                 'idx = {}, idx_adj = {}'.format(idx, idx_adj))
-                if check_f_adj >= 0:
-                    self._vprint('Could not bracket crossing w/grid resolution?!')
-                    # Edge cases should be caught by checks for x_in, x_lo below...
-                self._vprint('Done checking backwards')
-
-            # Brentq limits
-            x_in = xgrid[idx_adj]
-            x_out = xgrid[idx]
-
-            # To get 2nd pair of limits -- step index by +/-1 in each direction
-            # if hit grid edge, increment by last grid interval; if hit x0, x0
-            idx_lo = idx_adj - sgn
-            idx_hi = idx + sgn
-
-            if 0 <= idx_lo < len(xgrid):
-                x_lo = xgrid[idx_lo]
-            else:
-                x_lo = x_in - (xgrid[idx] - xgrid[idx_adj])
-
-            if 0 <= idx_hi < len(xgrid):
-                x_hi = xgrid[idx + sgn]
-            else:
-                x_hi = x_out + (xgrid[idx] - xgrid[idx_adj])
-
-            # Stupid way to bound parameters, but oh well
-            # Note that this is not necessary for x_out, x_hi
-            if (sgn > 0 and x_in < x0) or (sgn < 0 and x_in > x0):
-                x_in = x0
-            if (sgn > 0 and x_lo < x0) or (sgn < 0 and x_lo > x0):
-                x_lo = x0
-
-            lims = [x_lo, x_in, x_out, x_hi]
-            if sgn < 0:
-                lims.sort()
-
+        def get_eps(sgn_srch):
+            """Safe forward/backwards step depending on sgn_src"""
             try:
-                x_ret = stubborn_brentq(f, *lims)
-            except ValueError:
-                print ('WARNING: brentq failed, reporting guess = {}, '
-                       'bracketing step = {}').format(x_out, abs(x_out-x_in))
-                x_ret = x_out
+                xstep = xgrid[idx + sgn_srch]
+            except IndexError:
+                xstep = xgrid[idx - sgn_srch]
+            return abs(xgrid[idx] - xstep)
 
-        return x_ret
+
+        f_init = f(xgrid[idx])
+
+        if f_init < 0:
+            self._vprint('Not crossed error bound, moving forward')
+            return one_dir_root(f, xgrid[idx], x_lim, eps=get_eps(sgn),
+                                **kwargs)
+        elif f_init > 0:
+            self._vprint('Found error crossing on grid, moving back')
+            return one_dir_root(f, xgrid[idx], x0, eps=get_eps(-1*sgn),
+                                **kwargs)
+        else:
+            self._vprint('A miracle has occurred, we are at crossing (?!)')
+            return xgrid[idx]
 
     # -----------------------
     # Grid/table manipulation
@@ -594,7 +557,7 @@ def one_dir_root(f, x_init, x_lim, eps=None, adapt=True, verbose=False):
         eps = abs(0.01 * (x_lim - x_init)) * np.sign(x_lim - x_init)
     else:
         if abs(eps) > abs(x_lim - x_init):  # eps too big will overshoot!
-            eps = abs(x_lim - x_init) * 0.5  # at least 2 steps to limit
+            eps = abs(x_lim - x_init) * 0.25  # at least 4 steps to limit
         eps = abs(eps) * np.sign(x_lim - x_init)
 
     x = x_init
@@ -653,26 +616,6 @@ def one_dir_root(f, x_init, x_lim, eps=None, adapt=True, verbose=False):
         x_ret = x
 
     return x_ret
-
-def one_dir_root_grid(f, ind, sgn, xgrid, verbose=False):
-    """Find upward-zero-crossing of f in xgrid, starting from ind in sgn dir.
-    Assumed that f(xgrid[ind]) <= 0 to start
-    
-    Does NOT accept ind = -1, or other negative numbers
-
-    Analogous to np.where(np.diff(np.ndarray(map(f,xgrid))))
-    Output:
-        first index left/right of ind s.t. f(xgrid[ind]) > 0, inclusive of ind
-        else, None if no crossing was found
-    """
-    sgn = np.sign(sgn)
-    f_res = f(xgrid[ind])  # Do check first index
-    while f_res <= 0 and (0 < ind < len(xgrid)-1):
-        if verbose:
-            print 'Moved threshold by one'
-        ind += sgn
-        f_res = f(xgrid[ind])
-    return ind if f_res > 0 else None
 
 
 if __name__ == '__main__':

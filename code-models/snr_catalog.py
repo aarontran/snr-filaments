@@ -45,6 +45,39 @@ def kpc2cm(x):
 # Set SNR physical parameters here
 # ================================
 
+def make_kepler():
+    """Physical parameters, model/fit settings for Tycho's SNR
+    WARNING: if darc is changed, must change vs as well!
+    """
+    k = SupernovaRemnant('Kepler')
+    
+    kepler.dkpc = 4.0  # Distance to remnant in kpc (!) TODO verify
+                       # 4kpc from Vink (2008) kinematic study
+                       # Could be up to 7 kpc?!?!?! (Patnaude et al., 2012)
+    kepler.rsarc = 180 # Shock radius (arcsec) from Green's SNR catalog
+    kepler.s = 2.28  # e- spectrum index, 2.3 = 2*0.65 + 1;
+                     # 0.64 = radio spectral index, Green's SNR catalog
+                     # TODO get a source on this?!
+
+    kepler.vs = 4.2e8  # Shock velocity, cm/s
+                       # TODO verify, 4.2e8 from Vink (2008) kinematic study
+    kepler.cratio = 4.0  # Compression ratio, strong adiabatic shock (R-H)
+
+    # Model grid settings, resolutions
+    kepler.icut = True
+    #kepler.rminarc = 20  # Default rminarc, arcsec
+    kepler.irmax = 400  # Currently unchanged from SN 1006
+    kepler.iradmax = 100
+    kepler.ixmax = 500
+
+    # Fitting default initial guesses, bounds
+    #kepler.par_init = {'mu': 1.0, 'eta2': 1.0, 'B0': 300e-6}
+    #kepler.par_lims = {'mu': (0., 2.),
+    #                  'eta2': (1e-16, 1e5),  # model code div by zero on eta2=0
+    #                  'B0': (1e-6, 1e-2)}
+
+    return kepler
+
 def make_tycho():
     """Physical parameters, model/fit settings for Tycho's SNR
     WARNING: if darc is changed, must change vs as well!
@@ -55,6 +88,12 @@ def make_tycho():
     tycho.rsarc = 240  # Shock radius (arcsec) from Green's SNR catalog
     tycho.s = 2.3  # e- spectrum index, 2.3 = 2*0.65 + 1;
                    # 0.65 = radio spectral index
+                   # TODO is this right?  One src. is Eriksen et al. 2011
+                   # which cites Kothes et al. 2006, for alpha=0.65
+                   # for the ENTIRE remnant (mean).
+                   # Katz-Stone et al. (2000) suggest 0.5 for various
+                   # "filaments" within the remnant?
+                   # And, Green's SNR catalog gives 0.58, not 0.65.  DAMMIT.
 
     tycho.vs = 3.6e8 * tycho.dkpc/2.3  # Shock velocity, cm/s
     # Mean of velocs from nonthermal regions, Williams et al. 2013
@@ -78,7 +117,7 @@ def make_tycho():
 
 def make_SN1006():
     """Physical parameters, model/fit settings for SN 1006"""
-    sn1006 = SupernovaRemnant('SN 1006')
+    sn1006 = SupernovaRemnant('SN1006')
 
     sn1006.dkpc = 2.2  # Distance to remnant in kpc (!!)
     sn1006.rsarc = 900  # Shock radius (arcsec) from Green's SNR catalog

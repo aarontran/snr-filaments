@@ -1,14 +1,10 @@
 \documentclass[manuscript]{aastex}  % one-column, double-spaced
 % \documentclass[12pt,preprint]{aastex}  % one-column, single-spaced
-% \documentclass[preprint2]{aastex}  % double-column, single-spaced
-% \documentclass[preprint2,longabstract]{aastex}  % if abstract doesn't fit
-
-% \documentclass[apjl]{emulateapj}
-% \documentclass[apj]{emulateapj}
+% \documentclass[iop, apj, twocolappendix]{emulateapj}
 
 \shorttitle{Synchrotron Rims in Tycho's SNR}  % <~ 44 char
 \shortauthors{XXX et al.}  % Max three
-\slugcomment{Not to appear in Nonlearned J., 45.}  % short title pg comment
+\slugcomment{Draft, \today}  % short title pg comment
 
 %% ==================================================================== %%
 %% README for track changes                                             %%
@@ -20,93 +16,35 @@
 %%     \remove[editor]{Text to remove}                                  %%
 %%     \change[editor]{Text to remove}{Text to add}                     %%
 %%                                                                      %%
-%% Using trackchanges.sty (http://trackchanges.sourceforge.net/)        %%
-%%                                                                      %%
-%% If you prefer to just edit directly, that works as well.             %%
 %% ==================================================================== %%
 
-\usepackage[inline]{trackchanges}
-
-% Up to 5 editors
+\usepackage[inline]{trackchanges}  % trackchanges.sourceforge.net
 \addeditor{Rob}
 \addeditor{Sean}
 \addeditor{Steve}
 \addeditor{Aaron}
 \addeditor{Brian}
 
-%% ============
-%% Bibliography
-%% ============
-%\biboptions{semicolon}  % natbib options
-
-%% ===============
-%% Custom packages
-%% ===============
-
-% aas.org/authors/author-names-non-roman-alphabets
-% \usepackage{CJK}
-
-% Manuscript formatting
-%\usepackage{lineno}
-
-% Math, symbols, links, inline typesetting
-%\usepackage{amsthm, amsmath, amssymb}
-%\usepackage{amsmath}
-%\usepackage{enumerate}  % For use of (a), (b), etc.
-%\usepackage{hyperref}
-
-% Figures, tables, floats, page layout (see also deluxetable)
-%\usepackage[pdftex]{graphicx}
+\usepackage{amsmath}  % amsthm, amssymb
+\usepackage{hyperref}
+% \usepackage{CJK}  % aas.org/authors/author-names-non-roman-alphabets
 \usepackage{booktabs}
 %\usepackage[labelfont=bf, labelsep=period]{caption}  % Custom float captions
 %\usepackage{pdflscape}  % rotate pages (Texlive)
 
-%% ==============
-%% Extra commands
-%% ==============
 \newcommand{\mt}{\mathrm}
 \newcommand{\unit}[1]{\;\mt{#1}}  % http://vemod.net/typesetting-units-in-latex
 \newcommand{\abt}{\mathord{\sim}} % http://tex.stackexchange.com/q/55701
-
-% Sets, operators
-\newcommand{\ints}{\mathbb{Z}}
 \newcommand{\ptl}{\partial}
 \newcommand{\del}{\nabla}
 
-%% =====================
-%% AASTeX utilities etc.
-%% =====================
-
-% Object linking: https://aas.org/object-linking/introduction-object-linking
-% \objectname[SNR G120.2+01.4]{Tycho's SNR}
-% \objectname[M1]{Crab nebula}
-% \object{NGC 6397}
-
-% Dataset linking: https://aas.org/data-sets/data-set-linking
-% \dataset{ADS/Sa.ASCA\#X/86008020}
-% \dataset[ADS/Sa.HST#Y0Q70101T]{HST FOS spectrum}
-
-% Possibly useful items:
-% \footnote{footnote}
-% \notetoeditor{note}  % Appears in manuscript footnotes, not in preprints
-% \begin{mathletters}  % Add lettering to -eqnarrays- align, eqns
-% \end{mathletters}  % e.g., number (4a), (4b) vs. (4), (5)
-% \url{http://google.com}
-
-% AASTeX symbol macros
-% A 90\degr~angle, an ion: \ion{Ca}{2}, \slantfrac{40}{59} (why slantfrac?).
-
-% Figures, tables
-% AASTeX provides \plotone{z.eps}, \plottwo{a.eps}{b.eps}, \plotfiddle (?!)
-
-% Tables -- refer to author guide / sample.tex when needed.
-
+% This paper
+\newcommand{\tsup}{\textsuperscript}
+\newcommand{\Chandra}{\textit{Chandra}\ }
+\defcitealias{ressler2014}{R14}
 
 \begin{document}
 
-% ========================
-% Title, authors, abstract
-% ========================
 \title{Energy Dependent X-Ray Rim Width in Tycho's Supernova Remnant}
 
 %\begin{CJK*}{UTF8}{gbsn}
@@ -119,11 +57,17 @@ Brian J. Williams\altaffilmark{1,5}
 }
 %\end{CJK*}
 
-\altaffiltext{1}{NASA Goddard Space Flight Center, Greenbelt, MD 20771, USA}
-\altaffiltext{2}{Dept. Physics, University of California,
-    Berkeley, CA 94720, USA}
-\altaffiltext{3}{Dept. Physics, North Carolina State University,
-    Raleigh, NC 27695, USA}
+\affil{
+\tsup{1}NASA Goddard Space Flight Center, Greenbelt, MD 20771, USA \\
+\tsup{2}Dept. Physics, University of California, Berkeley, CA 94720, USA \\
+\tsup{3}Dept. Physics, North Carolina State University, Raleigh, NC 27695, USA
+}
+
+%\altaffiltext{1}{NASA Goddard Space Flight Center, Greenbelt, MD 20771, USA}
+%\altaffiltext{2}{Dept. Physics, University of California,
+%    Berkeley, CA 94720, USA}
+%\altaffiltext{3}{Dept. Physics, North Carolina State University,
+%    Raleigh, NC 27695, USA}
 \altaffiltext{4}{CRESST, University of Maryland, College Park, MD 20742}
 \altaffiltext{5}{NASA Postdoctoral Program Fellow}
 
@@ -136,7 +80,7 @@ radiative energy losses should decrease with energy and require magnetic field
 amplification $10$--$100\times$ that expected from adiabatic shock compression.
 Damped magnetic fields behind rims may produce thin rims without strong field
 amplification but require energy-independent rim widths. We measured rim widths
-around Tycho's supernova remnant in 5 energy bands using a 750 ks Chandra
+around Tycho's supernova remnant in 5 energy bands using a 750 ks \Chandra
 observation. Rims narrow with increasing energy, favoring loss-limited
 radiation over magnetic damping. Observed widths are best fit by electron
 transport models requiring amplified magnetic fields $\abt0.1$--$1$ mG and
@@ -144,25 +88,32 @@ particle diffusion $\abt1$--$10\times$ Bohm values, consistent with prior work.
 Inferred magnetic fields, diffusion coefficients, and diffusion-energy scaling
 may constrain models for cosmic ray acceleration in supernova remnants and
 plasma turbulence in astrophysical shocks.
-\note[Aaron]{Keywords from Sean's paper}
 \end{abstract}
 
+% Six keywords, alphabetical order
 \keywords{acceleration of particles ---
     ISM: individual objects (Tycho's SNR) ---
     ISM: magnetic fields ---
     ISM: supernova remnants ---
+    shock waves ---
     X-rays: ISM}
 
 % ============
 % Introduction
 % ============
-\note[Aaron]{a lot of preliminary text copy-pasted from poster or my own
-notes, so explanations may be a bit simplistic}
-
 \section{Introduction}
 
+% -------------------
+% Background / review
+% -------------------
+\subsection{What are thin rims?}
+
+Define thin rims (hereafter, thin rims).
 \note[Aaron]{most text below is copy-pasted from my own notes -- explanation
 may be too simplistic}
+
+Somewhere here, define upstream/downstream of shock (makes sense in reference
+frame of shock).
 
 Accelerating ISM/CSM particles in the forward shocks of supernovae emit
 synchrotron radiation.  Emission is strong in the shock's immediate wake, but
@@ -170,117 +121,93 @@ dies off quickly downstream as particles radiate and lose energy. The radiation
 from a spherical blast wave, then, is shell-like with bright X-ray and radio
 rims/filaments due to line-of-sight projection.  These filaments have finite
 and energy-dependent widths, set by:
-\begin{itemize}
-  \item \emph{synchrotron losses}.  At the shock, high energy electrons
-  efficiently radiate harder x-ray photons.  As electrons are advected
-  downstream while radiating, they radiate at lower energies and lose energy
-  more slowly.  Synchrotron losses depend on (1) the initial electron energy
-  distribution, and (2) the gradual decrease of electron energies downstream of
-  the shock.
-  \item \emph{diffusion}.  Random motion with respect to bulk plasma advection.
-  Higher energy electrons diffuse and travel further downstream than would be
-  expected from pure advection; hence, higher energy radiation may be seen
-  farther downstream of the shock than expected.
-  Higher energy particles may also diffuse \emph{ahead} of the shock, possibly
-  giving rise to a so-called ``cosmic-ray shock precursor''.  Note that this is
-  distinct from radiative precursors \citep[e.g.,][]{ghavamian2000}.
-\end{itemize}
+(1) \emph{synchrotron losses}.  At the shock, high energy electrons efficiently
+radiate harder x-ray photons.  As electrons are advected downstream while
+radiating, they radiate at lower energies and lose energy more slowly.
+Synchrotron losses depend on the initial electron energy distribution and the
+gradual decrease of electron energies downstream of the shock.
+(2) \emph{diffusion}.  Random motion with respect to bulk plasma advection.
+Higher energy electrons diffuse and travel further downstream than would be
+expected from pure advection; hence, higher energy radiation may be seen
+farther downstream of the shock than expected. Higher energy particles may also
+diffuse \emph{ahead} of the shock, possibly giving rise to a so-called
+``cosmic-ray shock precursor''.  Note that this is distinct from radiative
+precursors \citep[e.g.,][]{ghavamian2000}.
 
-\subsection{Abbreviated review of prior work for context}
+Mention relevance to: cosmic ray acceleration, turbulent field amplification,
+(note assumptions in re proton/electron spectra).  Cut-off energy of injected
+electrons?  Broadly, all astrophysical shock processes: AGN jets, galaxy
+clusters \citep{van-weeren2010}, PWNe, et cetera.  Usual background,
+utility spiel.
 
-Basic observables \citep[e.g.,][]{bamba2003, bamba2005-hist, bamba2005-vela,
-parizot2006} and consequences.
+% ------------------------
+% Measurements and meaning
+% ------------------------
+\subsection{Prior measurements and inferred physical parameters}
 
+Models for particle transport.  Bohm, sub-Bohm diffusion.
 Testable model predictions of magnetic damping \citep{pohl2005}.
 
-\citet{ressler2014} found rim narrowing in the remnant of SN 1006,
+Previous measurements of basic observables \citep[e.g.,][]{bamba2003,
+bamba2005-hist, bamba2005-vela, parizot2006} and consequences.
+Conclusion that magnetic fields are amplified.
 
 Equivocal results by \citet{araya2010} for Cas A.
+\citet{ressler2014} found rim narrowing in the remnant of SN 1006.
 
-\subsection{Our work}
+% -----------
+% Tycho's SNR
+% -----------
+\subsection{Tycho's SNR}
+Why Tycho's supernova remnant (hereafter, Tycho)?
 
-We make measurements to distinguish between these two end member scenarios.
-\note[Aaron]{paper roadmap} First we review our measurements,
-explain the relevant model physics and governing equations,
-explain our fitting procedure.
+Like SN 1006, Tycho has well defined synchrotron rims associated with expansion
+into a low-density ISM \note[Aaron]{justification: high density ISM would
+prevent the forward shock from running ahead of the thermal ejecta?}.
+\citet{williams2013} favor mean pre-shock ISM density $\abt 0.2 \unit{cm^{-3}}$
+from \textit{Spitzer} observations of shocked ISM dust emission,
+\note[Aaron]{is this proton or electron density?  Or are they equal pre-shock?
+Text mentions $n_e = 1.2 n_p$ \emph{post}-shock.}
+consistent with Tycho's X-ray expansion \citep{katsuda2010}.
+Compare w/ SN 1006 pre-shock density $n_p \abt 0.15$--$0.3 \unit{cm^{-3}}$
+\citep{raymond2007, heng2007, winkler2013}.
 
-Then we discuss the implications of our fits and models
+Like all historical SNe, Tycho is close enough that we
+can spatially resolve these rims with \Chandra and say something useful.
 
-% ============
-% Observations
-% ============
-\section{Observations}
+Any other remarks? (comparison to core-collapse SNe? no compact object to mess
+things up? or is that flatly trivial)
 
+% -------------
+% Paper roadmap
+% -------------
+\subsection{Our work (paper roadmap)}
 
+We make measurements to distinguish between the two end member scenarios.
+Our procedure, in both measurement and rim width modeling, follows that of
+\citet{ressler2014} (hereafter, \citetalias{ressler2014}) with only slight
+modifications.
+We first select regions around Tycho's forward shock for analysis, measure
+rim widths, and verify that rim spectra are free of thermal line emission.
+Using two models for particle transport, we fit measured widths...
 
-We used archival \textit{Chandra} observations of Tycho
-(\dataset[ADS/Sa.CXO\#obs/10093--10097]{ObsIDs 10093--10097},
-\dataset[ADS/Sa.CXO\#obs/10902]{10902--10906})
-obtained with the ACIS-I CCD between 2009 Apr 11 and 2009 May 5.
-The total exposure time is $734 \unit{ks}$.
-The data are divided into five energy bands:
-0.7--1 keV, 1--1.7 keV, 2--3 keV, 3--4.5 keV, and 4.5--7 keV.
-We excise counts between 1.7--2 keV to avoid \ion{Si}{13} (He$\alpha$) line
-emission prevalent in the remnant's thermal ejecta.
+We discuss the implications of our fits and models for magnetic shock
+amplification (lending credence to previous estimates, in disfavoring magnetic
+field amplification), and discuss particle diffusion/acceleration at the shock.
 
-Thirteen regions were selected with the following criteria in mind:
-\note[Aaron]{itemized lists are just for outlining}
-\begin{itemize}
-    \item Nonthermal filaments should be singular and localized (i.e., either
-        no overlapping or completely overlapping rims -- this rules out parts
-        of NE limb)
-    \item Nonthermal filaments should have sufficient signal-to-noise ratio
-        that we can identify a clear FWHM in all bands (rules out a lot of
-        faint southern wisps)
-    \item Avoid plumes of thermal emission: identify spatially from images,
-        esp. in lower energy bands (0.7--1 keV, 1--2 keV)
-        (e.g.,~\ref{fig:snr}, eastern side), identify spectrally from emission
-        lines.
-\end{itemize}
+Any further results (constraints on precursors, etc).
 
-\begin{figure}
-    \plotone{figures/f0-snr.eps}
-    \caption{RGB image of Tycho with region selections overlaid.  Bands are
-    0.7--1 keV (red), 1--2 keV (green) and 2--7 keV (blue)}
-    \label{fig:snr}
-\end{figure}
+Consequences, implications, why is this worthwhile?
 
-Discuss point-spread function if that may be a point of contention.
-Show that it is not a problem for us (simply say that all rims are at
-least ~1 arcsec and hence are spatially resolved? Compare,
-\citet{bamba2005-hist} measured upstream/downstream scale widths separately?)
+% =============================
+% Transport models, observables
+% =============================
+\section{Transport models}
 
-\subsection{Filament width measurements}
-\begin{figure*}
-    \plotone{figures/f0-prfs.pdf}
-    \caption{Some semblance of a caption.}
-    \label{fig:profiles}
-\end{figure*}
+We first briefly review the models we consider for particle transport; a fuller
+exposition is given by \citetalias{ressler2014}.
 
-\subsection{Filament spectra}
-
-And we shall purify the remnant's rims
-that they may show us how they do thin
-discriminating damped models.
-
-\begin{figure}
-    \plotone{figures/f0-spec.pdf}
-    \caption{Another caption \citep{fermi1949}}
-    \label{fig:spec}
-\end{figure}
-
-Finally, here are some numbers!
-
-%\begin{table}
-%\end{table}
-
-% =======================
-% Filament width modeling
-% =======================
-\section{Filament width models}
-
-Cite \citet{ressler2014} vigorously here.  Just present the governing transport
-equations (with variables), namely that from:
+Just present the governing transport equations.  From:
 \[
   \frac{\ptl f}{\ptl t} + \del \cdot \left( f \vec{v} \right)
   = C + \del \cdot \left( D \del f \right)
@@ -290,51 +217,239 @@ space-independent diffusion coefficient):
 \[
     v \frac{\ptl f}{\ptl x} - D \frac{\ptl^2 f}{\ptl x^2} = C
 \]
-and by random selection of the source/sink term $C$ we obtain either a
+and by selection of the source/sink term $C$ we obtain either a
 simplified model:
-\begin{equation}
+\begin{equation} \label{eq:simp-mod}
     v \frac{\ptl f}{\ptl x} - D \frac{\ptl^2 f}{\ptl x^2} +
     \frac{f}{\tau_{\mt{synch}}} = 0
 \end{equation}
-where this is equation (6) of \citet{ressler2014}; we also look at
-\begin{equation}
+where this is equation (6) of \citetalias{ressler2014}; we also look at
+\begin{equation} \label{eq:full-mod}
     v \frac{\ptl f}{\ptl x} - D \frac{\ptl^2 f}{\ptl x^2} =
     K_0 E^{-s} e^{-E/E_{\mt{cut}}} \delta(x) + \frac{\ptl}{\ptl E}
       \left(bB^2E^2f\right)
 \end{equation}
-which is equation (12) of \citet{ressler2014}.
+which is equation (12) of \citetalias{ressler2014}.
 
+\note[Aaron]{EXPLAIN what the equations mean.  How do we eventually back out a filament
+shape, filament width?  Just a few sentences.}
 
-% ===================
-% Results (best fits)
-% ===================
+Bibdesk -- mark up all the papers I've really gone through and understood.
+Then, add the relevant citations and notes, to be sure I haven't missed or
+misunderstood anything.
 
-\section{Results}
+% ============
+% Observations
+% ============
+\section{Observations}
 
-Let's just say if any fit runs to $\eta_2 = 10^5$ or $B_0 = 10$ mG (for Tycho),
+% TODO go through and double check tenses.
+
+We measured synchrotron rim widths from an archival \Chandra
+ACIS-I observation of Tycho
+(RA: 00\tsup{h}25\tsup{m}19\fs0, dec: +64\arcdeg08\arcmin10\farcs0; J2000)
+between 2009 Apr 11 and 2009 May 5 (PI: John P. Hughes;
+\dataset[ADS/Sa.CXO\#obs/10093--10097]{ObsIDs: 10093--10097},
+\dataset[ADS/Sa.CXO\#obs/10902--10906]{10902--10906}).
+The total exposure time is $734 \unit{ks}$.
+Level 1 \Chandra data were reprocessed with CIAO 4.6 and CALDB 4.6.1.1 and kept
+unbinned with ACIS spatial resolution $0.492\arcsec$.
+Merged and corrected events were divided into five energy bands:
+0.7--1 keV, 1--1.7 keV, 2--3 keV, 3--4.5 keV, and 4.5--7 keV;
+we excluded 1.7--2 keV counts to avoid \ion{Si}{13} (He$\alpha$) line
+emission, prevalent in the remnant's thermal ejecta, which could contaminate
+our nonthermal profile measurements.
+
+We selected 13 regions in 5 distinct filaments around Tycho's shock
+(Figure~\ref{fig:snr}) based on the following criteria:
+(1) filaments should be singular and localized; multiple filaments must not
+overlap or completely overlap (rules out parts of NE limb);
+(2) filaments should have clear FWHMs in all bands, compared to background
+signal or downstream thermal emission (rules out some faint southern wisps);
+(3) filaments should be clear of spatial plumes of thermal ejecta in \Chandra
+images; this rules out, e.g., areas of strong nonthermal and thermal emission
+on Tycho's eastern limb.
+
+\begin{figure}
+    \plotone{figures/f0-snr.eps}
+    \caption{RGB image of Tycho with region selections overlaid.  Bands are
+    0.7--1 keV (red), 1--2 keV (green) and 2--7 keV (blue).
+    \note[Aaron]{Temporary figure; regions need re-numbering.}}
+    \label{fig:snr}
+\end{figure}
+
+Discuss point-spread function if that may be a point of contention.
+Show that it is not a problem for us (simply say that all rims are at
+least ~1 arcsec and hence are spatially resolved? Compare,
+\citet{bamba2005-hist} measured upstream/downstream scale widths separately?)
+
+% --------------------------
+% FWHM measurement procedure
+% --------------------------
+\subsection{Filament width measurements}
+
+We obtained radial intensity profiles by integrating along the shock in each
+region.  Intensity profiles peak sharply at/behind the shock, demarcating our
+thin rims, \note[Aaron]{abt 2--3 arcsec; measure this or report $w_u$?}
+and then fall off until thermal emission from ejecta picks up at Tycho's
+``contact discontinuity'' \citep{warren2005}.
+
+We fit rim profiles, obtained by integrating intensity along the shock in each
+region, to a piecewise two-exponential model:
+\begin{equation} \label{eq:prof}
+    h(x) =
+    \begin{cases}
+        A_u \exp \left(\frac{x_0 - x}{w_u}\right) + C_u, &x \geq x_0 \\
+        A_d \exp \left(\frac{x - x_0}{w_d}\right) + C_d, &x < x_0
+    \end{cases}
+\end{equation}
+where $h(x)$ is profile height and $x$ is radial distance from remnant center.
+The rim model, which we emphasize is strictly empirical, has 6 free parameters
+$A_u, x_0, w_u, w_d, C_u, C_d$ with $A_d = A_u + (C_u - C_d)$ enforcing
+continuity at $x=x_0$. Our model is similar to that of \citet{bamba2003,
+bamba2005-hist} and differs slightly from that of \citetalias{ressler2014}.
+To fit only the nonthermal rim in each intensity profile, we smoothed profiles
+with a 21-point ($\abt 10\arcsec$) Hanning window and bounded the fit
+domain at the first local data minimum downstream of rim peak; the fit domain
+extends upstream to the region's outer edge.
+
+\begin{figure}
+    \plotone{figures/f0-prfs.pdf}
+    \caption{Profile fits for Region 1}
+    \label{fig:profiles}
+\end{figure}
+
+From the fitted profiles we extracted a full width at half maximum (FWHM) for
+each region and each energy band.
+\note[Aaron]{We did NOT subtract out $\min(C_u, C_d)$ before measuring FWHM
+(fix this?).  May mention effect of using slightly different models for FWHMs}
+We could not resolve a FWHM in regions 2, 6, 8, 9, and 11 \note[Aaron]{KEEP
+UPDATED} at 0.7--1 keV (Table~\ref{tab:flmt2} \note[Aaron]{UPDATE depending on
+how we present/tabulate FWHMs}); in these regions, the downstream FWHM bound
+would extend outside the fit domain.  We were able to resolve FWHMs for all
+regions at higher energy bands (1--7 keV).
+
+To estimate FWHM uncertainties, we horizontally stretched each best-fit
+profile by mapping radial coordinate $x$ to
+$x'(x) = x (1 + \xi (x-x_0)/(50\arcsec-x))$ with $\xi$ an arbitrary stretching
+parameter; this yields a new profile $h'(x) = h(x'(x))$.
+We varied $\xi$ (and hence rim FWHM) to vary each profile fit $\chi^2$ by 2.7,
+yielding confidence limits on our measured FWHMs
+
+% ----------------
+% Filament spectra
+% ----------------
+\subsection{Filament spectra}
+
+As a ``back-verification'', we check that our rims' X-ray spectra
+are clear of thermal line emission.
+
+In each radial profile, we select an interval containing FWHM bounds from all
+energy bands.  We 
+
+Each rim is divided into an upstream
+
+From our model fits and we divide the rim into an upstream and downstream region;
+the 
+
+And we shall purify the remnant's rims\\
+that they may show us how they do thin\\
+discriminating damped models.
+
+\begin{figure}
+    \plotone{figures/f0-spec.pdf}
+    \caption{Spectra from Region 1 (I think?)}
+    \label{fig:spec}
+\end{figure}
+
+This also gives a post-hoc / further filter on intermediate results --
+we can quantify the thermal emission...
+
+We further constrain thermal emission by checking that spectral fits
+favor pure continuum emission over continuum with Gaussian components for
+\ion{Si}{13} and \ion{S}{15} He$\alpha$ lines at $\abt 1.8$, $2.4$ keV.
+
+HERE I should mention any upper bounds on spectral lines (Equivalent width or
+what have you).  Since this is not a ``result'', being ancillary to our work.
+
+% -------------
+% Model fitting
+% -------------
+\subsection{Filament model fitting}
+
+Explain why we are fixing $\mu$.
+Explain why we also give results with $\eta_2$ fixed at $1$.
+
+To perform fits, we tabulated a large grid for fixed values of $\mu$ and shock
+velocity $v_s$.
+
+If any fit runs to $\eta_2 = 10^5$ or $B_0 = 10 \unit{mG}$ (for Tycho),
 we deem it effectively unconstrained.
 
+
+A few remnant-specific parameters enter into the model calculations.  We take
+electron spectral index $s = 2.3$ (from radio spectral index $\alpha = 0.65$,
+\citet{kothes2006} \note[Aaron]{not using $0.58$ from Green's catalog?!}),
+remnant distance $3 \unit{kpc}$ \citep[cf.][]{hayato2010}, and
+shock radius $1.08 \times 10^{19} \unit{cm}$ from angular radius $240\arcsec$
+\citep{green2009}.  Tycho's forward shock velocity varies azimuthally by up to
+a factor of 2; we interpolate the data of \citet{williams2013} to estimate
+individual shock velocities for each of our regions.
+
+As the full continuous loss model must be numerically solved, its predicted
+rim widths are subject to resolution error in the numerical integrals.  We
+chose our integration resolutions such that the fractional error associated
+with halving/doubling our resolution is less than $1\%$ for the
+parameter space relevant to our filaments. \note[Aaron]{rewrite -- unclear.
+Need to verify $1\%$ claim + check Pacholczyk table resolution...}
+
+% =======================
+% Results, FWHMs and fits
+% =======================
+\section{Results}
+
+We present results here.  Explain a bit about how we divvy up / present the
+results.  Also, for each region, give the relevant shock velocity value.  Or, a
+range of values.
+We do X to the FWHMs (geometric/arithmetic average) within each filament.
+We also consider global FWHMs average.
+
+% --------------------
+% FWHM results, tables
+% --------------------
+\subsection{Measured FWHMs, energy dependence, etc}
+
+\begin{table*}
+\scriptsize
+\centering
+\caption{Filament 2 full width at half max measurements.
+Exponent $m_E$ estimated point to point.\label{tab:flmt2}}
+\input{tab-fwhms.tex}
+\tablecomments{Mean FWHMs computed by arithmetic mean, errors from blah}
+\end{table*}
+
+Table~\ref{tab:flmt2} lists some numbers from Filament 2.  As previously noted
+we could not resolve FWHMs for some regions in the 0.7--1 keV band.
+
+Error estimates / magnitudes.
+
+Mention the number of counts.  This might impact our decision to go back and
+slice regions smaller (if we do that).
+
+% -------------------------
+% Model fit results, tables
+% -------------------------
+\subsection{Model}
+
+Table reference goes here (Table~\ref{tab:fit1}).
+Explain error values on parameters.
+
 \begin{table}
-% Here I'm following the AASTeX sample...
-%\tabletypesize{\scriptsize}
+\centering
 \caption{Full model best fit parameters, region 1.\label{tab:fit1}}
-\begin{tabular}{@{}rllr@{}}
-\toprule
-{} & \multicolumn{3}{c}{Region 1} \\
-\cmidrule(l){2-4}
-$\mu$ (-) & $\eta_2$ (-) & $B_0$ ($\mu$G) & $\chi^2$\\
-\midrule
-0.00 & ${19.1}^{+19}_{-7.1}$ & ${784}^{+1.2 \times 10^{2}}_{-72}$ & 57.5590\\
-0.33 & ${56}^{+75}_{-29}$ & $930^{+190}_{-140}$ & 34.6006\\
-0.50 & ${92}^{+160}_{-54}$ & ${1010}^{+260}_{-180}$ & 25.5737\\
-1.00 & ${370}^{+3300}_{-310}$ & ${1260}^{+4500}_{-440}$ & 9.7750\\
-1.50 & ${23}^{+32}_{-10}$ & ${623}^{+130}_{-67}$ & 8.7937\\
-2.00 & ${11.4}^{+5.2}_{-3.3}$ & ${512}^{+34}_{-26}$ & 9.5862\\
-\bottomrule
-\end{tabular} 
+\input{tab-fits.tex}
 \end{table}
 
-Table reference goes here~\ref{tab:fit1}.
 
 % ==========
 % Discussion
@@ -343,29 +458,125 @@ Table reference goes here~\ref{tab:fit1}.
 
 What do all these numbers with their errors mean?
 
+Magnetic field amplification numbers -- how do they compare with previous
+studies?  What is the azimuthal variation (and significance thereof)?
+
+Diffusion -- sub-Bohm diffusion?
+
+\subsection{Comparisons to Cas A (pulled from Sean's \LaTeX\ source)}
+
+\note[Aaron]{for my own reference/reading/thinking (temporary)}
+
+A detailed application of our results to other SNRs such as Cas A will
+require much more extensive analysis, but we can use the published
+filament widths of Araya et al. (2010) for Cas A to get preliminary
+estimates of the magnetic field strength and diffusion coefficient by
+applying our model. In their data, it appears that the filaments in
+Cas A shrink by a factor of $\sim 0.8$ between 0.3 and 3 keV, while the
+filament widths appear to be energy-independent between 3 and 6 keV.
+Qualitatively, this is consistent with the loss-limited model, as our
+parameter $m_{\rm E}$ is predicted to decrease with energy.  For the
+lower energy range of 0.3--3 keV, reproducing $m_{\rm E}\sim -0.1$
+(equivalent to the factor of 0.8 drop in size) requires magnetic
+fields on the order of 200-500 $\mu$G and diffusion coefficients about
+$5 \times D_{\rm Bohm}$(3 keV), about an order of magnitude higher
+than the values one obtains by neglecting the energy dependence. One
+can also see directly from Figure~\textbf{?!} that $\mu < 1$ models
+of the diffusion coefficient are excluded for $m_{\rm E}\sim -0.1$.
+
+
+To quickly compare how our results will differ from those of other authors, we
+applied the analytic approximation of Equation 22 and Equation 9 to the FWHMs
+presented by Araya et al. (2010) for Cas A. Here we used $m_{\rm E} = \log(
+{\rm FWHM}(3keV)/{\rm FWHM}(.3keV))/\log(10)$ and fit the filaments at a photon
+energy of 3 keV.  Hence $\eta_3 \equiv D/D_{\rm Bohm}(3 keV)$. Using the same
+parameters, our results are shown in Table~\ref{tab:Araya}. To fit the energy
+dependence of the FWHM (i.e. $m_{\rm E}$), we required higher diffusion
+coefficients and, consequently, magnetic fields about an order of magnitude
+higher than their results. We note here that values of $\mu<1$ were unable to
+reproduce the data and that the diffusion coefficients cited by Araya et al.
+(2010) are below the minimally allowed Bohm value ($\eta_3 = 1$).
+
+We intended this comparison solely as a qualitative analysis, and thus did not
+rigorously keep track of uncertainties or extend the comparison to the full
+numerical calculation. The conclusion is clear, however, which is that
+considering the measured value of $m_{\rm E}$ can have a dramatic effect.
+
+\begin{table*}[h]
+\caption{Best fit parameters for the filaments of Cas A based on data from
+Araya et. al (2010) in varying values of $\mu$ (Approximate Analytic Results)
+Dashes denote places where fits were unobtainable.}
+\centering
+\begin{tabular}{c c c c c c c c c}
+\hline \hline
+  &\multicolumn{2}{c}{$\mu = 1$} & \multicolumn{2}{c}{$\mu = 1.5$} & \multicolumn{2}{c}{$\mu = 2$} & \multicolumn{2}{c}{Araya et. al} \\
+  & & & & & &  &\multicolumn{2}{c}{($\mu = 1$)} \\
+$Filament$ &$\eta_{3}$ & $B_{0}$ &$\eta_{3}$ & $B_{0}$ & $\eta_{3}$ & $B_{0}$& $\eta_{3}$ & $B_{0}$ \\ [.5ex]
+1 & 6.5  & 750 $\mu$G & 2 & 567 $\mu$G & 1.1 & 506 $\mu$G & 0.12 & 72 $\mu$G \\
+2 & 3.6 & 710 $\mu$G & 1.4 & 582 $\mu$G & - & - & 0.02 & 37 $\mu$G\\
+3 & 3.2 &  710 $\mu$G& 1.3 & 589 $\mu$G& - & - & 0.02 & 53 $\mu$G\\
+4 & 3.1& 515 $\mu$G & 1.3 & 430 $\mu$G & -& - & 0.02 & 40 $\mu$G \\
+5 & 10.7 & 1163 $\mu$G & 2.5 & 809 $\mu$G & 1.3&  706 $\mu$G & 0.025 & 52 $\mu$G \\
+6 & 5.7 & 844 $\mu$G & 1.9 & 650 $\mu$G  & 1 & 583 $\mu$G & 0.1 & 56 $\mu$G \\
+7 & 8.3 & 872 $\mu$G & 2.2 & 635 $\mu$G& 1.2 & 560 $\mu$G & 0.15 & 66 $\mu$G\\
+8 & 13 & 1010 $\mu$G & 2.7 & 738 $\mu$G & 1.4 & 639 $\mu$G & 0.02 & 35 $\mu$G\\
+9 & 4.7 & 605 $\mu$G & 1.7 & 479 $\mu$G & - & -& 0.02 & 29 $\mu$G\\
+
+\hline
+\hline
+\end{tabular}
+\label{tab:Araya}
+\end{table*}
+
+\subsection{End of Sean's Cas A analysis}
+
+Lalala.
 
 % ==========
 % Conclusion
 % ==========
 \section{Conclusions}
 
-In conclusion, crazy B field amplification is not that weird.  Magnetic damping
-can be ruled out and our result is robust throughout the remnant.
+In conclusion, crazy B field amplification is not that weird.
+Magnetic damping can be ruled out and our result is robust throughout the remnant.
 
+% ================
+% Acknowledgements
+% ================
 \acknowledgments
 
 The scientific results reported in this article are based on data obtained from
-the Chandra Data Archive.
+the \Chandra Data Archive.
+This research has made use of NASA's Astrophysics Data System.
 
 {\it Facilities:} \facility{CXO (ACIS-I)}
 
+% ========
+% Appendix
+% ========
 \appendix
 
-\section{Appendix material}
+For comparison to \citetalias{ressler2014}, we present our full model results
+employing 2 energy bands (as in \citetalias{ressler2014}) and all 3 energy
+bands (0.7--1, 1--2, 2--7 keV).  The simple model results are identical,
+although the errors obtained from my procedure are larger.
 
-Appendix text if so desired.
+\section{SN 1006 results, 2 energy bands}  % Use numberedappendix option for emulateapj
 
-\bibliographystyle{apj}  % AASTeX journal macros (for abbrevs) supplied by ADS
+Tables tables tables tables
+
+\section{SN 1006 results, 3 energy bands}
+
+Tables tables tables tables
+
+\section{Discussion}
+
+Lalalalala.  Beautiful numbers!
+
+% ==========
+% References
+% ==========
+\bibliographystyle{apj}  % AASTeX journal macros are supplied in ADS entries
 \bibliography{refs-snr}
 
 \end{document}

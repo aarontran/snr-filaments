@@ -26,6 +26,8 @@ Table of contents
             Debug/test new full model
 * Week 13 - refactor model exec/disp code.  Debug error calculations
             extensively.
+* Week 14 - run suite of error calculations
+* Week 15 - 
 
 (week 10 included for continuity)
 
@@ -37,7 +39,7 @@ On vacation
 
 
 (Week 12) Monday 2014 August 18
-=====================
+===============================
 
 Summary
 -------
@@ -1182,8 +1184,10 @@ Start: 2014 August 30, 05:30am
 Finish: ???
 
 
-Monday 2014 September 1
-=======================
+(Week 14) Monday 2014 September 1
+=================================
+
+(Labor Day)
 
 Tables finished ~7pm, just about as expected.
 
@@ -1281,7 +1285,9 @@ Wednesday 2014 September 03
 
 Summary
 -------
-* Stuff
+* Tycho error annealing finished, investigated bugs
+* Start SN 1006 error annealing
+* Paper outlining
 
 
 Tycho error annealing post-mortem
@@ -1307,7 +1313,7 @@ estimated calculation that allows us to refine our guess for `rminarc`.
 No instances of "Error!", which would indicate that the 2nd FWHM computation
 (the final result) went awry.
 
-So, the new SN1006 table looks good to go.
+So, new SN1006 table looks good (`sn1006_gen_2014-09-02_grid_6-110-20.pkl`).
 Start error annealing, allow to run overnight (3 bands first).
 
 Paper outlining
@@ -1315,4 +1321,56 @@ Paper outlining
 Finished infrastructure / set-up / messing around with AASTeX.
 Started sketching out introduction, methods, moving text over from
 poster/notes.
+
+
+Thursday 2014 September 4
+=========================
+
+Summary
+-------
+* More paper writing/outlining (messing w/ tables, text, etc)
+* SN 1006 tables (started yesterday) failed on error (edge case)
+  I believe `check_f_init` wasn't initialized.
+
+Friday 2014 September 5
+=======================
+
+Ran by Brian's office.  Discussion of moving forward with numbers, Kepler
+(stick to the South), writing (just mark up with red pen).
+
+A good deal of JVGR stuff today.
+
+Went back to the advective solution -- maybe important, esp. as we have large
+errors in advective case.
+
+
+(Week 15) Monday 2014 September 8
+=================================
+
+JVGR...
+
+Tuesday 2014 September 9
+========================
+
+Summary
+-------
+* Rewrite error annealing code, much simpler now...
+* 
+
+More error annealing debugging
+------------------------------
+
+Annealing -- no longer use parameter stderr as initial step size.  Too large,
+often.  Let the rootfinder start w/ small guess, and adapt step.
+(observed in Tycho, at edge cases, steps too large)
+
+Annealing -- stop with the grid stepping.  Now, only use the grid with chi-sqr
+values to get the place to try and start searching.
+
+Completely revamped and simplified annealing now.  No longer actually anneals,
+truth be told.
+
+SN 1006 output
+--------------
+Went through and pulled out all useful numbers
 

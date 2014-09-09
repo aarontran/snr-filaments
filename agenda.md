@@ -146,23 +146,38 @@ meaningless.
 For now, I DON'T apply the redchi scaling to our covariance matrix, because our
 errors have meaningful magnitude; they are not merely weights.
 
+When I review FWHM computation, change errors to be more reflective of FWHM
+variability.  The global/averaged FWHMs I will use a different procedure and
+that will also give larger errors
+This increases our uncertainty, BUT will pull down the chi-squared values of
+our model fits.
+
 
 ### CURRENTLY WORKING TO-DOs
 
+* Discussion with Brian -- yes, go ahead and don't worry about errors...
+  you can let it run in the background, right?
+
+!!! WE NEED:
+* best fits for each region.
+* best fit parameters for each region, averaged over each filament + a stdev if
+  at all possible (not really doable w/ 2 regions... can I slice the regions
+  smaller? we have so many counts!)
+* best fit parameters for arithmetic mean of region FWHMs, within filament
+  best fit parameters for geometric mean of region FWHMs, within filament
+* best fit parameters for arithmetic/geometric mean of ALL FWHMs (!)
+
+* best fit parameters, with `\eta_2` fixed at 1 (!!!)
+
+WHAT DO WE NEED MOVING FORWARD?
+* I have a ton of numbers.  Now I'm trying to generate some errors too
+
 Agenda:
-* debug index error (ughsdf)
+* writing -- send tonight w/ tables, numbers
 * would also be nice to figure out, wtf happened to all of our logging output
-* why did it disappear, are our results still okay/valid?  did it get dumped
+  why did it disappear, are our results still okay/valid?  did it get dumped
   around piecemeal (check this by going through logs)
-* start SN 1006 running, should be much quicker
-* start putting together some text (set aside formatting to later)
 * cobble together some kind of tycho results (decide how to store/update data)
-
-* in SN 1006, full fits from grid + stderrs -- the tabulated stderrs appeared
-  off (from a notebook run last week).  Why?!  Double check this, briefly.
-
-* Writing - spend some time explaining why we selected what we did.
-  Outline + methods within next week
 
 * Possibly -- put out format in code-friendly format, so I can just aggregate
   all the tables together in iPython and customize the display or something
@@ -171,32 +186,16 @@ Agenda:
   without having to redo the whole calculation again (given that it's so
   time-consuming).
 
+  passing idea: store pkl w/ best fits + chisqrs found to date...
+  or just maintain my own table?!  this is obscenely ad hoc.
+  No, too much inconsistency
 
-passing idea: store pkl w/ best fits + chisqrs found to date...
-or just maintain my own table?!  this is obscenely ad hoc.
-No, too much inconsistency
-
-Think -- how am I best going to keep track of fit/error numbers?
-It is very inefficient to be constantly regenerating them (hence this mess,
-and the very slow debuggin over the last ~2 weeks).  Would be good to have
-stored numbers for full model unit tests, now, too.
-(write some unit tests for SN 1006 -- this is just part of our validation
-process)
-
-
-
-* Perform calculations with eta2 fixed to 1 (or 0.1--10... same thing, just
-  shut up and do it)
+* Kepler's SNR -- start picking out regions, soon.  Skim Kepler literature
+  (group in Bibdesk)
 
 * Ask Keith Arnaud about error statistics... but, lower priority
 
-* Generate outputs for several different data-sets.
-  1. all 13 regions.  try averaging best fit parameters within filaments,
-     explore the spread of numbers, whatever...
-  2. arithmetic means of FWHMs in the filaments (5 data sets)
-  3. geometric means of FWHMs in the filaments (5 data sets)
-
-* Idea: maybe useful to compute advection/diffusion lengths from fits?
+* maybe useful to compute advection/diffusion lengths from fits?
   ALSO we need `m_E` from this, and the data...
   (Rob, Brian: report this in the results, and make it clear
    what's going on...
@@ -208,6 +207,10 @@ process)
   Might also be worth double checking some of the internal numerical integrals.
   But, lower priority...
 
+* Remnant radio spectral indices?!
+  See [ppt slides](http://www.astro.le.ac.uk/~cbp1/cta/Talks/TonyBell.pdf),
+  just pick some numbers and report in text (saave in SNR catalog, w/ sources
+  and explanation for choices).
 
 ### General (higher level to-dos)
 

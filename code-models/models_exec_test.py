@@ -142,48 +142,6 @@ class TestSimpModelErrorsSN1006(object):
         f_assert.description = ('Simple fit errors have correct chisqrs; '
                                 'SN 1006')
 
-
-class TestErrorRootFinderGrid(TestCase):
-    """Test mex.one_dir_root_grid"""
-    def f_poly(self, x):
-        return x**2 - 9
-
-    @classmethod
-    def setUpClass(self):
-        xm = np.linspace(-10,10,100)
-        xm2 = xm[np.abs(xm) < 2.7]  # all(f_poly(xm2) < 0), no crossings
-        self.xmesh = xm
-        self.xmesh_sm = xm2
-
-    def test_crossings(self):
-        """Error root finder on grid: +/- crossings on polynomial"""
-        ind = np.searchsorted(self.xmesh, 0.5)
-
-        pos_x = mex.one_dir_root_grid(self.f_poly, ind, +1, self.xmesh, True)
-        neg_x = mex.one_dir_root_grid(self.f_poly, ind, -1, self.xmesh, True)
-
-        aeq_(pos_x, np.searchsorted(self.xmesh, 3))  # Idx of 1st x > 3
-        aeq_(neg_x, np.searchsorted(self.xmesh, -3) - 1)  # Idx of last x < -3
-
-    def test_limits(self):
-        """Error root finder on grid: crossings not found on grid"""
-        ind = np.searchsorted(self.xmesh_sm, 0.5)
-
-        pos_x = mex.one_dir_root_grid(self.f_poly, ind, +1, self.xmesh_sm, True)
-        neg_x = mex.one_dir_root_grid(self.f_poly, ind, -1, self.xmesh_sm, True)
-
-        eq_(pos_x, None)
-        eq_(neg_x, None)
-
-    def test_edge(self):
-        """Error root finder on grid: start on grid edge"""
-        pos_x = mex.one_dir_root_grid(self.f_poly, len(self.xmesh_sm)-1, +1,
-                                      self.xmesh_sm, True)
-        neg_x = mex.one_dir_root_grid(self.f_poly, 0, -1, self.xmesh_sm, True)
-
-        eq_(pos_x, None)
-        eq_(neg_x, None)
-
 class TestErrorRootfinder(TestCase):
     """Test mex.one_dir_root"""
 
