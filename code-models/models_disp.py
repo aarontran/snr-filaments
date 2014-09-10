@@ -310,51 +310,67 @@ class LatexTable(object):
                 ind += 1
         self.rows.append(self.rspec.format(*args))
 
-    # TODO this code is pretty gross
-    # Both the 2-err and 1-err case.  But it kinda does what I want.
+    # TODO this code is very gross
+    # Sept. 10 -- forget the precision business.  Let the user deal with
+    # proper rounding, report more than needed in floating pt form
 
     def fmt_num_2err(self, num, errpos, errneg):
-        """Format number w/error nicely.
-        It's imperfect and doesn't agree w/ rounding of Ressler,
-        but it's simpler this way...
-        DEAR GOD THIS CODE IS DISGUSTING
-        """
-        num_exp = int(np.floor(np.log10(num))) if num != 0. else 0
-        err_min = abs(min(errpos, errneg))
-        err_exp = int(np.floor(np.log10(err_min))) if err_min != 0. else 0
+        nstr = '{:0.3g}',format(num)
+        estr_pos = '{:0.2g}'.format(errpos)
+        estr_neg = '{:0.2g}'.format(errneg)
 
-        prec = num_exp - err_exp + 2 # Print to precision + 1, allowed by error
-        if prec <= 0:
-            prec = 1  # Enforce minimum precision
-
-        # Use string formatting to handle rounding
-        numstr = ('{:0.'+str(prec)+'g}').format(num)
-        errstr_pos = ('+{:0.2g}').format(errpos)
-        errstr_neg = ('-{:0.2g}').format(errneg)
-
-        numstr = self.expstr2latex(numstr)
-        errstr_pos = self.expstr2latex(errstr_pos)
-        errstr_neg = self.expstr2latex(errstr_neg)
-        return numstr, errstr_pos, errstr_neg
-
+        return strfl(nstr), strfl(estr_pos), strfl(estr_neg)
+    
     def fmt_numerr(self, num, err):
-        """Format number w/error nicely.
-        It's imperfect and doesn't agree w/ rounding of Ressler,
-        but it's simpler this way...
-        """
-        num_exp = int(np.floor(np.log10(num))) if num != 0. else 0
-        err_exp = int(np.floor(np.log10(err))) if err != 0. else 0
-        prec = num_exp - err_exp + 2 # Print to precision + 1, allowed by error
-        if prec <= 0:
-            prec = 1  # Enforce minimum precision
+        nstr = '{:0.3g}'.format(num)
+        estr = '{:0.2g}'.format(err)
+        return strfl(nstr), strfl(estr)
 
-        # Use string formatting to handle rounding
-        numstr = ('{:0.'+str(prec)+'g}').format(num)
-        errstr = ('{:0.2g}').format(err)
+    def strfl(x):  # Yes, really.  See http://stackoverflow.com/q/3410976
+        return str(float(x))
 
-        numstr = self.expstr2latex(numstr)
-        errstr = self.expstr2latex(errstr)
-        return numstr, errstr
+#    def fmt_num_2err(self, num, errpos, errneg):
+#        """Format number w/error nicely.
+#        It's imperfect and doesn't agree w/ rounding of Ressler,
+#        but it's simpler this way...
+#        DEAR GOD THIS CODE IS DISGUSTING
+#        """
+#        num_exp = int(np.floor(np.log10(num))) if num != 0. else 0
+#        err_min = abs(min(errpos, errneg))
+#        err_exp = int(np.floor(np.log10(err_min))) if err_min != 0. else 0
+#
+#        prec = num_exp - err_exp + 2 # Print to precision + 1, allowed by error
+#        if prec <= 0:
+#            prec = 1  # Enforce minimum precision
+#
+#        # Use string formatting to handle rounding
+#        numstr = ('{:0.'+str(prec)+'g}').format(num)
+#        errstr_pos = ('+{:0.2g}').format(errpos)
+#        errstr_neg = ('-{:0.2g}').format(errneg)
+#
+#        numstr = self.expstr2latex(numstr)
+#        errstr_pos = self.expstr2latex(errstr_pos)
+#        errstr_neg = self.expstr2latex(errstr_neg)
+#        return numstr, errstr_pos, errstr_neg
+#
+#    def fmt_numerr(self, num, err):
+#        """Format number w/error nicely.
+#        It's imperfect and doesn't agree w/ rounding of Ressler,
+#        but it's simpler this way...
+#        """
+#        num_exp = int(np.floor(np.log10(num))) if num != 0. else 0
+#        err_exp = int(np.floor(np.log10(err))) if err != 0. else 0
+#        prec = num_exp - err_exp + 2 # Print to precision + 1, allowed by error
+#        if prec <= 0:
+#            prec = 1  # Enforce minimum precision
+#
+#        # Use string formatting to handle rounding
+#        numstr = ('{:0.'+str(prec)+'g}').format(num)
+#        errstr = ('{:0.2g}').format(err)
+#
+#        numstr = self.expstr2latex(numstr)
+#        errstr = self.expstr2latex(errstr)
+#        return numstr, errstr
 
     def expstr2latex(self, numstr):
         """Convert a Python string-formatted number to nicer LaTeX"""

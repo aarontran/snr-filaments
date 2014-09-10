@@ -331,7 +331,7 @@ class Fitter(object):
         """
         sgn = int(np.sign(x_lim - x0))
         self._vprint('Seeking error in {} direction;'.format(sgn),
-                     'start: {:0.4e},'.format(xgrid[idx]),
+                     'start: {:0.4e} (idx={}),'.format(xgrid[idx], idx),
                      'limit: {:0.4e}'.format(x_lim))
         if sgn == 0:
             self._vprint('Warning: sgn == 0 (?!), returning limit')
@@ -345,16 +345,26 @@ class Fitter(object):
                 xstep = xgrid[idx - sgn_srch]
             return abs(xgrid[idx] - xstep)
 
+        # KEY ASSUMPTION:
+        # if sgn < 0, then x_lim < xgrid[idx] < x0
+        # if sgn > 0, then x0 < xgrid[idx] < x_lim
 
-        f_init = f(xgrid[idx])
+        # In practice, don't worry about x_lim
+        if (sgn < 0 and xgrid[idx] < x0) or (sgn > 0 and x0 < xgrid[idx]):
+            x_init = xgrid[idx]  # xgrid[idx] gives a better start position
+        else:
+            self._vprint('Searching outside grid')
+            x_init = x0  # idx at grid edge
+
+        f_init = f(x_init)
 
         if f_init < 0:
             self._vprint('Not crossed error bound, moving forward')
-            return one_dir_root(f, xgrid[idx], x_lim, eps=get_eps(sgn),
+            return one_dir_root(f, x_init, x_lim, eps=get_eps(sgn),
                                 **kwargs)
         elif f_init > 0:
             self._vprint('Found error crossing on grid, moving back')
-            return one_dir_root(f, xgrid[idx], x0, eps=get_eps(-1*sgn),
+            return one_dir_root(f, x_init, x0, eps=get_eps(-1*sgn),
                                 **kwargs)
         else:
             self._vprint('A miracle has occurred, we are at crossing (?!)')

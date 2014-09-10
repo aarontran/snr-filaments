@@ -1,6 +1,8 @@
-\documentclass[manuscript]{aastex}  % one-column, double-spaced
+% \documentclass[manuscript]{aastex}  % one-column, double-spaced
 % \documentclass[12pt,preprint]{aastex}  % one-column, single-spaced
-% \documentclass[iop, apj, twocolappendix]{emulateapj}
+\documentclass[iop, apj, numberedappendix, twocolappendix]{emulateapj}
+% \documentclass[iop, apj, numberedappendix]{emulateapj}
+
 
 \shorttitle{Synchrotron Rims in Tycho's SNR}  % <~ 44 char
 \shortauthors{XXX et al.}  % Max three
@@ -45,7 +47,7 @@
 
 \begin{document}
 
-\title{Energy Dependent X-Ray Rim Width in Tycho's Supernova Remnant}
+\title{Energy Dependent X-Ray Rim Widths in Tycho's Supernova Remnant}
 
 %\begin{CJK*}{UTF8}{gbsn}
 \author{
@@ -170,13 +172,13 @@ from \textit{Spitzer} observations of shocked ISM dust emission,
 Text mentions $n_e = 1.2 n_p$ \emph{post}-shock.}
 consistent with Tycho's X-ray expansion \citep{katsuda2010}.
 Compare w/ SN 1006 pre-shock density $n_p \abt 0.15$--$0.3 \unit{cm^{-3}}$
-\citep{raymond2007, heng2007, winkler2013}.
+\citep{raymond2007, heng2007, winkler2013}.  \note[Aaron]{ISM gradients?}
 
 Like all historical SNe, Tycho is close enough that we
 can spatially resolve these rims with \Chandra and say something useful.
 
-Any other remarks? (comparison to core-collapse SNe? no compact object to mess
-things up? or is that flatly trivial)
+Previous estimates of Tycho fields/diffusion (something similar to Sean's table
+for SN 1006?).  CR acceleration.
 
 % -------------
 % Paper roadmap
@@ -231,12 +233,17 @@ where this is equation (6) of \citetalias{ressler2014}; we also look at
 \end{equation}
 which is equation (12) of \citetalias{ressler2014}.
 
-\note[Aaron]{EXPLAIN what the equations mean.  How do we eventually back out a filament
-shape, filament width?  Just a few sentences.}
+Explain how the transport models constrain diffusion via $m_E$, define $m_E$.
+Explain how we back out a filament shape/width from these models
 
-Bibdesk -- mark up all the papers I've really gone through and understood.
-Then, add the relevant citations and notes, to be sure I haven't missed or
-misunderstood anything.
+\subsection{Magnetic damping}
+
+We also consider a magnetically damped field of form
+\[
+    B(x) = B_{\mt{min}} + \left(B_0 + B_{\mt{min}}\right) \exp\left(-x / a_b\right) ,
+\]
+following \citetalias[Section 3.2]{ressler2014}.
+
 
 % ============
 % Observations
@@ -244,14 +251,14 @@ misunderstood anything.
 \section{Observations}
 
 % TODO go through and double check tenses.
-
+\note[Aaron]{inconsistent present/past tense usage}
 We measured synchrotron rim widths from an archival \Chandra
 ACIS-I observation of Tycho
 (RA: 00\tsup{h}25\tsup{m}19\fs0, dec: +64\arcdeg08\arcmin10\farcs0; J2000)
 between 2009 Apr 11 and 2009 May 5 (PI: John P. Hughes;
 \dataset[ADS/Sa.CXO\#obs/10093--10097]{ObsIDs: 10093--10097},
 \dataset[ADS/Sa.CXO\#obs/10902--10906]{10902--10906}).
-The total exposure time is $734 \unit{ks}$.
+The total exposure time was $734 \unit{ks}$.
 Level 1 \Chandra data were reprocessed with CIAO 4.6 and CALDB 4.6.1.1 and kept
 unbinned with ACIS spatial resolution $0.492\arcsec$.
 Merged and corrected events were divided into five energy bands:
@@ -271,7 +278,9 @@ images; this rules out, e.g., areas of strong nonthermal and thermal emission
 on Tycho's eastern limb.
 
 \begin{figure}
-    \plotone{figures/f0-snr.eps}
+    %\plotone{figures/f0-snr.pdf}
+    \centering
+    \includegraphics[width=0.35\textwidth]{figures/f0-snr.pdf}
     \caption{RGB image of Tycho with region selections overlaid.  Bands are
     0.7--1 keV (red), 1--2 keV (green) and 2--7 keV (blue).
     \note[Aaron]{Temporary figure; regions need re-numbering.}}
@@ -313,12 +322,6 @@ with a 21-point ($\abt 10\arcsec$) Hanning window and bounded the fit
 domain at the first local data minimum downstream of rim peak; the fit domain
 extends upstream to the region's outer edge.
 
-\begin{figure}
-    \plotone{figures/f0-prfs.pdf}
-    \caption{Profile fits for Region 1}
-    \label{fig:profiles}
-\end{figure}
-
 From the fitted profiles we extracted a full width at half maximum (FWHM) for
 each region and each energy band.
 \note[Aaron]{We did NOT subtract out $\min(C_u, C_d)$ before measuring FWHM
@@ -334,58 +337,54 @@ profile by mapping radial coordinate $x$ to
 $x'(x) = x (1 + \xi (x-x_0)/(50\arcsec-x))$ with $\xi$ an arbitrary stretching
 parameter; this yields a new profile $h'(x) = h(x'(x))$.
 We varied $\xi$ (and hence rim FWHM) to vary each profile fit $\chi^2$ by 2.7,
-yielding confidence limits on our measured FWHMs
+yielding confidence limits on our measured FWHMs.
 
 % ----------------
 % Filament spectra
 % ----------------
 \subsection{Filament spectra}
 
-As a ``back-verification'', we check that our rims' X-ray spectra
-are clear of thermal line emission.
+We extracted and fitted spectra for all regions to confirm that our rim width
+measurements are not contaminated by thermal line emission.
+We divided each region into an upstream and downstream band.  The upstream band
+is the smallest sub-region containing FWHM bounds from all energy bands.
+The downstream band extends from the back of the rim (where the upstream band
+ends) to the rim model fit's (equation~\eqref{eq:prof}) downstream limit.
+Figure~\ref{fig:spec} plots an example profile (Region 1, 4.5--7 keV) with the
+downstream/upstream selections highlighted in light blue/gray respectively.
+We fitted spectra from each region to an absorbed power law between $0.5$ and $7$
+keV in XSPEC.
 
-In each radial profile, we select an interval containing FWHM bounds from all
-energy bands.  We 
+TODO?! We also fit the spectra to absorbed power law models with 1 and 2
+additional Gaussian components for \ion{Si}{13} and \ion{S}{15} He$\alpha$
+lines at $\abt 1.8$, $2.4$ keV.  We compute some equivalent width, or compare
+the goodness-of-fit with and without the additional lines, to rule out the
+presence of a line (but, cf. \citet{protassov2002} on line detection
+statistics!).
 
-Each rim is divided into an upstream
-
-From our model fits and we divide the rim into an upstream and downstream region;
-the 
-
-And we shall purify the remnant's rims\\
-that they may show us how they do thin\\
-discriminating damped models.
-
-\begin{figure}
-    \plotone{figures/f0-spec.pdf}
-    \caption{Spectra from Region 1 (I think?)}
-    \label{fig:spec}
-\end{figure}
-
-This also gives a post-hoc / further filter on intermediate results --
-we can quantify the thermal emission...
-
-We further constrain thermal emission by checking that spectral fits
-favor pure continuum emission over continuum with Gaussian components for
-\ion{Si}{13} and \ion{S}{15} He$\alpha$ lines at $\abt 1.8$, $2.4$ keV.
-
-HERE I should mention any upper bounds on spectral lines (Equivalent width or
-what have you).  Since this is not a ``result'', being ancillary to our work.
 
 % -------------
 % Model fitting
 % -------------
 \subsection{Filament model fitting}
 
+We fitted the two transport models given by Equations~\eqref{eq:simp-mod} and
+\eqref{eq:full-mod} to the measured data.  Here we present only the full
+model (equation~\eqref{eq:full-mod}) fits.  \note[Aaron]{Could we present the
+full model alone, given that the numbers / qualitative trends for both models
+are fairly similar?  In \citetalias{ressler2014} Sean used the simple model to
+build intuition and gain physical insight, to great effect.  But, will we need
+that here?}
+
 Explain why we are fixing $\mu$.
 Explain why we also give results with $\eta_2$ fixed at $1$.
 
 To perform fits, we tabulated a large grid for fixed values of $\mu$ and shock
-velocity $v_s$.
-
-If any fit runs to $\eta_2 = 10^5$ or $B_0 = 10 \unit{mG}$ (for Tycho),
-we deem it effectively unconstrained.
-
+velocity $v_s$.  If any fit runs to $\eta_2 = 10^5$ or $B_0 = 10 \unit{mG}$,
+we deem it effectively unconstrained (only a few fits do so, and only to the
+$\eta_2$ limit).
+Note that we do not allow / consider fits with $\eta_2$ negative (may be
+trivial, just note parameter bounds).
 
 A few remnant-specific parameters enter into the model calculations.  We take
 electron spectral index $s = 2.3$ (from radio spectral index $\alpha = 0.65$,
@@ -408,18 +407,27 @@ Need to verify $1\%$ claim + check Pacholczyk table resolution...}
 % =======================
 \section{Results}
 
-We present results here.  Explain a bit about how we divvy up / present the
-results.  Also, for each region, give the relevant shock velocity value.  Or, a
-range of values.
+Explain a bit about how we divvy up / present the results.  What values are we
+averaging, where do our errors come from?
+For each region, give the relevant shock velocity value (and a range of
+values?).
 We do X to the FWHMs (geometric/arithmetic average) within each filament.
-We also consider global FWHMs average.
 
 % --------------------
 % FWHM results, tables
 % --------------------
-\subsection{Measured FWHMs, energy dependence, etc}
+\subsection{Rim fits, spectra, and width measurements}
 
-\begin{table*}
+We give figures and tables with rim profile fit information.
+
+\begin{figure}
+    \plotone{figures/f0-prfs.pdf}
+    \caption{Profile fits for Region 1}
+    \label{fig:profiles}
+\end{figure}
+
+
+\begin{table*}[h]
 \scriptsize
 \centering
 \caption{Filament 2 full width at half max measurements.
@@ -436,20 +444,67 @@ Error estimates / magnitudes.
 Mention the number of counts.  This might impact our decision to go back and
 slice regions smaller (if we do that).
 
+
+\begin{figure}
+    \plotone{figures/f0-spec.pdf}
+    \caption{Spectra from Region 1 (I think?)}
+    \label{fig:spec}
+\end{figure}
+
+Here, mention any upper bounds on spectral lines (equivalent width or w/e).
+Since this is not a ``result'', being ancillary to our work.
+
+Table of best fit chi-squares, power law indices for spectral fits...
+
 % -------------------------
 % Model fit results, tables
 % -------------------------
-\subsection{Model}
+\subsection{Model fit results}
 
-Table reference goes here (Table~\ref{tab:fit1}).
-Explain error values on parameters.
+Here are some fit results for a subset of regions, just those contained in
+Filament 1 (Table~\ref{tab:fit}).  Errors are estimated by 
+Explain error values on parameters
 
-\begin{table}
+\begin{table*}
+\scriptsize
 \centering
-\caption{Full model best fit parameters, region 1.\label{tab:fit1}}
-\input{tab-fits.tex}
-\end{table}
+\caption{Full model best fit parameters, Filament 1.
+    \label{tab:fit}}
+\input{tab-fits-flmt1.tex}
+\end{table*}
 
+Table~\ref{tab:fit-avg-fwhm} shows best fits to averaged FWHMs (averaged FWHMs
+not shown).  For FWHM errors, I use the standard error of the mean (with some
+minor nuances; I am using sample standard deviation).
+
+\begin{table*}
+\scriptsize
+\centering
+\caption{Full model best fit parameters for filament-averaged FWHMs.
+    \label{tab:fit-avg-fwhm}}
+\input{tab-fits-avg.tex}
+\end{table*}
+
+Finally, Table~\ref{tab:fit-avg-par} shows averaged best-fit parameters for
+Filament 1 only, at this time.  The parameter errors are standard errors from
+the averaging process and may reflect the presence of outliers.
+
+\begin{table*}
+\scriptsize
+\centering
+\caption{Average of best-fit parameters for individual regions
+    \label{tab:fit-avg-par}}
+\input{tab-fits-par-avg.tex}
+\end{table*}
+
+\begin{table*}
+\scriptsize
+\centering
+\caption{Full model best fit parameters, Filament ??, with $\eta_2 = 1$ fixed}
+%    \label{tab:fit-avg-par}}
+%\input{tab-fits-par-avg.tex}
+Coming soon...
+\end{table*}
 
 % ==========
 % Discussion
@@ -457,80 +512,18 @@ Explain error values on parameters.
 \section{Discussion}
 
 What do all these numbers with their errors mean?
+Can we favor a value of $\mu$ (and hence a turbulent energy spectrum)?
+
+How meaningful are our parameter estimates and errors?
 
 Magnetic field amplification numbers -- how do they compare with previous
 studies?  What is the azimuthal variation (and significance thereof)?
 
-Diffusion -- sub-Bohm diffusion?
+Diffusion -- sub-Bohm diffusion in Filament 4?
 
-\subsection{Comparisons to Cas A (pulled from Sean's \LaTeX\ source)}
+Constraints on diffusion / B field, if any.  What impact this has for models of
+B amplification etc.
 
-\note[Aaron]{for my own reference/reading/thinking (temporary)}
-
-A detailed application of our results to other SNRs such as Cas A will
-require much more extensive analysis, but we can use the published
-filament widths of Araya et al. (2010) for Cas A to get preliminary
-estimates of the magnetic field strength and diffusion coefficient by
-applying our model. In their data, it appears that the filaments in
-Cas A shrink by a factor of $\sim 0.8$ between 0.3 and 3 keV, while the
-filament widths appear to be energy-independent between 3 and 6 keV.
-Qualitatively, this is consistent with the loss-limited model, as our
-parameter $m_{\rm E}$ is predicted to decrease with energy.  For the
-lower energy range of 0.3--3 keV, reproducing $m_{\rm E}\sim -0.1$
-(equivalent to the factor of 0.8 drop in size) requires magnetic
-fields on the order of 200-500 $\mu$G and diffusion coefficients about
-$5 \times D_{\rm Bohm}$(3 keV), about an order of magnitude higher
-than the values one obtains by neglecting the energy dependence. One
-can also see directly from Figure~\textbf{?!} that $\mu < 1$ models
-of the diffusion coefficient are excluded for $m_{\rm E}\sim -0.1$.
-
-
-To quickly compare how our results will differ from those of other authors, we
-applied the analytic approximation of Equation 22 and Equation 9 to the FWHMs
-presented by Araya et al. (2010) for Cas A. Here we used $m_{\rm E} = \log(
-{\rm FWHM}(3keV)/{\rm FWHM}(.3keV))/\log(10)$ and fit the filaments at a photon
-energy of 3 keV.  Hence $\eta_3 \equiv D/D_{\rm Bohm}(3 keV)$. Using the same
-parameters, our results are shown in Table~\ref{tab:Araya}. To fit the energy
-dependence of the FWHM (i.e. $m_{\rm E}$), we required higher diffusion
-coefficients and, consequently, magnetic fields about an order of magnitude
-higher than their results. We note here that values of $\mu<1$ were unable to
-reproduce the data and that the diffusion coefficients cited by Araya et al.
-(2010) are below the minimally allowed Bohm value ($\eta_3 = 1$).
-
-We intended this comparison solely as a qualitative analysis, and thus did not
-rigorously keep track of uncertainties or extend the comparison to the full
-numerical calculation. The conclusion is clear, however, which is that
-considering the measured value of $m_{\rm E}$ can have a dramatic effect.
-
-\begin{table*}[h]
-\caption{Best fit parameters for the filaments of Cas A based on data from
-Araya et. al (2010) in varying values of $\mu$ (Approximate Analytic Results)
-Dashes denote places where fits were unobtainable.}
-\centering
-\begin{tabular}{c c c c c c c c c}
-\hline \hline
-  &\multicolumn{2}{c}{$\mu = 1$} & \multicolumn{2}{c}{$\mu = 1.5$} & \multicolumn{2}{c}{$\mu = 2$} & \multicolumn{2}{c}{Araya et. al} \\
-  & & & & & &  &\multicolumn{2}{c}{($\mu = 1$)} \\
-$Filament$ &$\eta_{3}$ & $B_{0}$ &$\eta_{3}$ & $B_{0}$ & $\eta_{3}$ & $B_{0}$& $\eta_{3}$ & $B_{0}$ \\ [.5ex]
-1 & 6.5  & 750 $\mu$G & 2 & 567 $\mu$G & 1.1 & 506 $\mu$G & 0.12 & 72 $\mu$G \\
-2 & 3.6 & 710 $\mu$G & 1.4 & 582 $\mu$G & - & - & 0.02 & 37 $\mu$G\\
-3 & 3.2 &  710 $\mu$G& 1.3 & 589 $\mu$G& - & - & 0.02 & 53 $\mu$G\\
-4 & 3.1& 515 $\mu$G & 1.3 & 430 $\mu$G & -& - & 0.02 & 40 $\mu$G \\
-5 & 10.7 & 1163 $\mu$G & 2.5 & 809 $\mu$G & 1.3&  706 $\mu$G & 0.025 & 52 $\mu$G \\
-6 & 5.7 & 844 $\mu$G & 1.9 & 650 $\mu$G  & 1 & 583 $\mu$G & 0.1 & 56 $\mu$G \\
-7 & 8.3 & 872 $\mu$G & 2.2 & 635 $\mu$G& 1.2 & 560 $\mu$G & 0.15 & 66 $\mu$G\\
-8 & 13 & 1010 $\mu$G & 2.7 & 738 $\mu$G & 1.4 & 639 $\mu$G & 0.02 & 35 $\mu$G\\
-9 & 4.7 & 605 $\mu$G & 1.7 & 479 $\mu$G & - & -& 0.02 & 29 $\mu$G\\
-
-\hline
-\hline
-\end{tabular}
-\label{tab:Araya}
-\end{table*}
-
-\subsection{End of Sean's Cas A analysis}
-
-Lalala.
 
 % ==========
 % Conclusion
@@ -551,27 +544,116 @@ This research has made use of NASA's Astrophysics Data System.
 
 {\it Facilities:} \facility{CXO (ACIS-I)}
 
+\clearpage
+
 % ========
 % Appendix
 % ========
 \appendix
 
-For comparison to \citetalias{ressler2014}, we present our full model results
-employing 2 energy bands (as in \citetalias{ressler2014}) and all 3 energy
-bands (0.7--1, 1--2, 2--7 keV).  The simple model results are identical,
-although the errors obtained from my procedure are larger.
+\setcounter{table}{0}
+\renewcommand{\thetable}{A\arabic{table}}
+\setcounter{figure}{0}
+\renewcommand{\thefigure}{A\arabic{figure}}
 
-\section{SN 1006 results, 2 energy bands}  % Use numberedappendix option for emulateapj
+% --------------
+% SN 1006 tables
+% --------------
+\section{Full model validation, SN 1006 (DRAFT ONLY)}
 
-Tables tables tables tables
+For comparison to \citetalias{ressler2014}, we reproduce Sean's table
+(Table~\ref{tab:sean} and present full model fits with 2 and 3 energy bands
+(Tables~\ref{tab:sn1006-2band} and \ref{tab:sn1006-3band}, respectively).
+We don't compare simple model results, as they are identical (only the error
+calculations differ).
+The procedure of Tables~\ref{tab:sean},~\ref{tab:sn1006-2band} are not quite
+the same.  Sean used $m_E$ at 2 keV instead of the $1$--$2$ keV width for
+fitting, whereas I used both widths.  But, it should not matter much as
+the fit often has $\chi^2 \sim 0$, either way (depending on the exact
+measurements and values of $\mu$).
 
-\section{SN 1006 results, 3 energy bands}
+Please take the errors with a grain of salt.  They are automatically
+generated and \textbf{have not been manually validated}.  Some values may be
+invalid, where my error-finding code failed and gave a best, conservative guess
+of the error.
 
-Tables tables tables tables
+\begin{table}[h]
+\scriptsize
+\centering
+\caption{Sean's SN 1006 best fit parameters \citepalias[Table 8]{ressler2014}}
+\label{tab:sean}
+\input{tab-sean.tex}
+\end{table}
 
-\section{Discussion}
+\begin{table*}[h]
+\scriptsize
+\centering
+\caption{SN 1006 best fit parameters, 2 highest energy bands (full model)}
+\label{tab:sn1006-2band}
+\input{tab-sn1006-2band.tex}
+\end{table*}
 
-Lalalalala.  Beautiful numbers!
+\begin{table*}[h]
+\scriptsize
+\centering
+\caption{SN 1006 best fit parameters, 3 energy bands (full model)}
+\label{tab:sn1006-3band}
+\input{tab-sn1006-3band.tex}
+\end{table*}
+
+
+% ------------------
+% Sean's Cas A table
+% ------------------
+\section{Sean's Cas A comparison (DRAFT ONLY)}
+
+This is dredged from the \LaTeX source for Sean's paper, available on arXiv.
+I put this here just for my own reference.
+
+A detailed application of our results to other SNRs such as Cas A will
+require much more extensive analysis, but we can use the published
+filament widths of Araya et al. (2010) for Cas A to get preliminary
+estimates of the magnetic field strength and diffusion coefficient by
+applying our model. In their data, it appears that the filaments in
+Cas A shrink by a factor of $\sim 0.8$ between 0.3 and 3 keV, while the
+filament widths appear to be energy-independent between 3 and 6 keV.
+Qualitatively, this is consistent with the loss-limited model, as our
+parameter $m_{\rm E}$ is predicted to decrease with energy.  For the
+lower energy range of 0.3--3 keV, reproducing $m_{\rm E}\sim -0.1$
+(equivalent to the factor of 0.8 drop in size) requires magnetic
+fields on the order of 200-500 $\mu$G and diffusion coefficients about
+$5 \times D_{\rm Bohm}$(3 keV), about an order of magnitude higher
+than the values one obtains by neglecting the energy dependence. One
+can also see directly from Figure~\textbf{?!} that $\mu < 1$ models
+of the diffusion coefficient are excluded for $m_{\rm E}\sim -0.1$.
+
+To quickly compare how our results will differ from those of other authors, we
+applied the analytic approximation of Equation 22 and Equation 9 to the FWHMs
+presented by Araya et al. (2010) for Cas A. Here we used $m_{\rm E} = \log(
+{\rm FWHM}(3keV)/{\rm FWHM}(.3keV))/\log(10)$ and fit the filaments at a photon
+energy of 3 keV.  Hence $\eta_3 \equiv D/D_{\rm Bohm}(3 keV)$. Using the same
+parameters, our results are shown in Table~\ref{tab:araya}. To fit the energy
+dependence of the FWHM (i.e. $m_{\rm E}$), we required higher diffusion
+coefficients and, consequently, magnetic fields about an order of magnitude
+higher than their results. We note here that values of $\mu<1$ were unable to
+reproduce the data and that the diffusion coefficients cited by Araya et al.
+(2010) are below the minimally allowed Bohm value ($\eta_3 = 1$).
+
+We intended this comparison solely as a qualitative analysis, and thus did not
+rigorously keep track of uncertainties or extend the comparison to the full
+numerical calculation. The conclusion is clear, however, which is that
+considering the measured value of $m_{\rm E}$ can have a dramatic effect.
+
+\begin{table}[h]
+\tiny
+\centering
+\caption{Best fit parameters for the filaments of Cas A based on data from
+Araya et. al (2010) in varying values of $\mu$ (Approximate Analytic Results)
+Dashes denote places where fits were unobtainable.}
+\label{tab:araya}
+\input{tab-sean-casA.tex}
+\end{table}
+
 
 % ==========
 % References

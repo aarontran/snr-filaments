@@ -452,13 +452,13 @@ One more, let us compare single fit vs. multiple fits directly.
 
 Filament 1, 3 bands, one fit (epsfcn = 1e-6)
 
-    mu	    eta2	                B0	                chisqr
-    0.00	24.028 (+44.637/-22.396)181.97 (+45.19/-71.29)	0.1162
-    0.33	5.777 (+77.087/-4.553)	127.88 (+96.44/-26.04)	0.0568
-    0.50	3.811 (+79.053/-2.713)	115.78 (+94.34/-16.76)	0.0742
-    1.00	2.596 (+5.771/-1.686)	102.52 (+19.46/-9.48)	0.1415
-    1.50	2.466 (+3.861/-1.367)	97.11 (+11.45/-4.54)	0.2221
-    2.00	2.646 (+2.865/-1.320)	94.19 (+5.01/-2.28)	0.3021
+    mu      eta2                    B0                  chisqr
+    0.00    24.028 (+44.637/-22.396)181.97 (+45.19/-71.29)  0.1162
+    0.33    5.777 (+77.087/-4.553)  127.88 (+96.44/-26.04)  0.0568
+    0.50    3.811 (+79.053/-2.713)  115.78 (+94.34/-16.76)  0.0742
+    1.00    2.596 (+5.771/-1.686)   102.52 (+19.46/-9.48)   0.1415
+    1.50    2.466 (+3.861/-1.367)   97.11 (+11.45/-4.54)    0.2221
+    2.00    2.646 (+2.865/-1.320)   94.19 (+5.01/-2.28) 0.3021
 
 Filament 1, 3 bands, multiple rounds of fitting (varying epsfcn)
 (taken from Wednesday notes)
@@ -1335,13 +1335,20 @@ Summary
 Friday 2014 September 5
 =======================
 
-Ran by Brian's office.  Discussion of moving forward with numbers, Kepler
-(stick to the South), writing (just mark up with red pen).
+Summary
+-------
+* Disc. w/ Brian -- move forward with numbers, let errors come later
+  For Kepler, stick to the south.  Writing -- just mark up with red pen.
+* Spent a little time on advective solution to transport eq'n.  Maybe
+  important, esp. as large (resolution) errors seem to appear in the advective
+  case.
 
-A good deal of JVGR stuff today.
 
-Went back to the advective solution -- maybe important, esp. as we have large
-errors in advective case.
+Saturday 2014 September 6
+=========================
+
+Following Rob's email -- quick calculation on Tycho to see if rim positions
+have any energy dependence in our data.  Appears not.
 
 
 (Week 15) Monday 2014 September 8
@@ -1355,7 +1362,7 @@ Tuesday 2014 September 9
 Summary
 -------
 * Rewrite error annealing code, much simpler now...
-* 
+* Table formatting galore
 
 More error annealing debugging
 ------------------------------
@@ -1367,10 +1374,76 @@ often.  Let the rootfinder start w/ small guess, and adapt step.
 Annealing -- stop with the grid stepping.  Now, only use the grid with chi-sqr
 values to get the place to try and start searching.
 
-Completely revamped and simplified annealing now.  No longer actually anneals,
-truth be told.
+Completely revamped and simplified annealing now.  No longer actually anneals.
 
 SN 1006 output
 --------------
-Went through and pulled out all useful numbers
 
+Went through and pulled out relevant numbers.  Data storage organization
+pending...
+
+
+SN 1006, two band fitting
+-------------------------
+
+Now generating new tables/errors for SN 1006 with two bands, using new error
+computation code.
+How long did this take?
+
+    [u'ok', u'ok', u'ok', u'ok']
+    16347.85151
+    4:26:20.616579
+    2:43:13.325094
+    2:31:40.705533
+    2:17:11.627385
+
+How many function calls were needed?  Compare to my old approach.
+Filament 1, mu = 0, 2 energy bands
+
+* fit from grid: 48 calls
+* lower bound on B0: 205 calls (18+15 to move 1x from grid, 172 bracket)
+* upper bound on B0: 132 calls (18+18 to move 1x from grid, 96 to bracket)
+* lower bound, eta2: 163 calls (16+13, move 1x from grid; 134 to bracket)
+* upper bound, eta2: 245 calls (14+11, move 1x from grid; 220 to bracket)
+
+Total calls: 48 + 205 + 132 + 163 + 245 = 793 calls
+
+At ~2 sec/call, 6 mu values; 1 filament takes ~9500 sec = 2.64 hr.
+In fact it's a bit faster -- maybe fits at higher mu are easier.
+But the estimate is in the right ballpark.
+Compared to my previous estimate, of 662 calls/filament/mu (Tycho), using 662
+calls here actually gives about the right amount of time (at 2 seconds/call).
+
+Conclusion: new error annealing (rather, searching instead of annealing) is
+likely the same speed as before, and seems about as good -- and is much less
+error prone.
+
+
+Tycho, fitting filament-averaged FWHMs
+--------------------------------------
+
+Time (stderr only):
+
+    [u'ok', u'ok', u'ok', u'ok']
+    1660.824469
+    0:23:50.932605
+    0:12:00.476653
+    0:13:22.696450
+    0:07:46.230326
+
+Skimmed stdout log, looks good (I think) but I didn't look very carefully.
+Mainly no explosions of errors... just a few while fitting.
+
+
+Typesetting nice tables
+-----------------------
+
+Dear goodness this is a bit tedious
+
+Vim snippets for manual table spacing (this is _bad_ practice).
+Adds more space between best fit value and super/sub-scripted errors:
+
+    %s/\^{+/^{\\,+/g
+    %s/_{-/_{\\,-/g
+
+Okay.  See committed version of paper for a bunch of tables.

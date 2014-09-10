@@ -122,6 +122,7 @@ Pipeline, profile and FWHM calculation and plots
 * GENERATE SET OF REGIONS WITH GOOD 0.7-1 keV FWHM, AND SET OF REGIONS WITH BAD
   0.7-1 keV FWHM -- as discussed previously.
 * Shift region numbering to be more logical (instead of 1, 10-13).
+* Slice smaller regions
 
 * Eventually: run whole pipeline on one set of ALL regions, sampled all around
   SNR, save the output.  Use this to argue/show why regions are good/bad.
@@ -158,50 +159,73 @@ our model fits.
 * Discussion with Brian -- yes, go ahead and don't worry about errors...
   you can let it run in the background, right?
 
+Bibdesk -- mark up all the papers I've really gone through and understood.
+Then, add the relevant citations and notes, to be sure I haven't missed or
+misunderstood anything.
+
+* Thought -- in regards to the overshooting matter -- yes, it could overshoot,
+  but the total integrated flux should be the same.  I think that tells us,
+  there is a limit to how much it can overshoot.
+
 !!! WE NEED:
 * best fits for each region.
-* best fit parameters for each region, averaged over each filament + a stdev if
-  at all possible (not really doable w/ 2 regions... can I slice the regions
-  smaller? we have so many counts!)
+* average best fit params for each region, give stdev...
+
 * best fit parameters for arithmetic mean of region FWHMs, within filament
   best fit parameters for geometric mean of region FWHMs, within filament
 * best fit parameters for arithmetic/geometric mean of ALL FWHMs (!)
-
 * best fit parameters, with `\eta_2` fixed at 1 (!!!)
 
-WHAT DO WE NEED MOVING FORWARD?
-* I have a ton of numbers.  Now I'm trying to generate some errors too
+
+How to best store intermediate numbers?
+1. copy paste into plain text file
+   need to include some critical metadata:
+   * what pre-generated table was used?
+   * what SNR settings (numbers etc) were used?
+   * what error keywords / args were used?
+   * which commit should we go back to?
+   * have I modified the data from its original/raw state?
+2. store pkl of numpy array (The one that gets fed into tables), with
+   string table output, etc.  Also needs metadata (as above)
+   But, easier to manipulate, plot again, etc.
+3. spreadsheet of data (+ metadata of course)
 
 Agenda:
 * writing -- send tonight w/ tables, numbers
 * would also be nice to figure out, wtf happened to all of our logging output
-  why did it disappear, are our results still okay/valid?  did it get dumped
-  around piecemeal (check this by going through logs)
-* cobble together some kind of tycho results (decide how to store/update data)
-
-* Possibly -- put out format in code-friendly format, so I can just aggregate
-  all the tables together in iPython and customize the display or something
-  like that?  I'm not sure.
-  Could just pickle it.  I need to easily regenerate tables/plots on the fly,
-  without having to redo the whole calculation again (given that it's so
-  time-consuming).
-
-  passing idea: store pkl w/ best fits + chisqrs found to date...
-  or just maintain my own table?!  this is obscenely ad hoc.
-  No, too much inconsistency
-
+  why did it disappear, are our results still okay/valid?
 * Kepler's SNR -- start picking out regions, soon.  Skim Kepler literature
   (group in Bibdesk)
 
-* Ask Keith Arnaud about error statistics... but, lower priority
+  Later -- routine to manually verify data...
+  routine to save config files
+  routine to merge tables together
+
+
+  Separate plotting routines from data generating routines, throughout my data
+  pipeline... or else it will be a real pain in the neck to generate / play
+  with figures, if I have to regenerate new data alongside.
+
+  Argh, maybe I should even separate the number computation and table output.
+  Compute best-fit numbers,
+  compute errors for best-fit numbers (separately!)
+  THEN
+  generate a table / plots.
+
 
 * maybe useful to compute advection/diffusion lengths from fits?
+  Better yet -- ratio of advection/diffusion lengthscales
+  problem is that this IS energy dependent.
   ALSO we need `m_E` from this, and the data...
   (Rob, Brian: report this in the results, and make it clear
    what's going on...
    I also want to report `m_E` as estimated from MODEL fits, which to be
    clear is a separate "observable" that I expect to be more robust
    than the point-to-point measurements)
+
+### Various checks
+
+* Ask Keith Arnaud about error statistics... but, lower priority
 
 * Full model code -- check resolution error due to Pacholczyk tables (!)
   Might also be worth double checking some of the internal numerical integrals.
@@ -216,10 +240,6 @@ Agenda:
 
 * Tables 7, 8 reproduced for SN 1006, then Tycho.  This is THE high level goal
   right now.
-
-  For SN 1006, we need 2 and 3 band fits, plots, chisqr values.
-  (all infrastructure is in place, essentially)
-  (most of it... just, ERRORS!...)
 
   Also, print out `m_E` values, point to point and from `width_dump` model...
   see some of the old notebooks in `code-profiles/` (merge functionality
