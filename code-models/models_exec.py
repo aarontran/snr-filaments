@@ -100,16 +100,35 @@ class Fitter(object):
     # -------------------------------------
     # Wrappers for quick width computations
     # -------------------------------------
+    # Useful for one-off debugging, interactive work, etc.
+
+    def chisqr_full(self, mu, eta2, B0, **kwargs):
+        """chisqr for specified full model, for stored SNR and FWHM data
+
+        **kwargs passed directly to full model code. kws (as of 2014 Sep 12):
+            verbose, rminarc, icut, irmax, iradmax, ixmax,
+            irad_adapt, irad_adapt_f
+        """
+        fwhm_m = width_full(mu, eta2, B0, **kwargs)
+
+        return models.chi_squared(self.data, self.eps, fwhm_m)
+
+    def chisqr_simp(self, mu, eta2, B0):
+        """chisqr for specified simple model, for stored SNR/FWHM data"""
+        fwhm_m = width_simp(mu, eta2, B0)
+        return models.chi_squared(self.data, self.eps, fwhm_m)
 
     def width_full(self, mu, eta2, B0, **kwargs):
-        """kwargs are passed directly to full model code
-        Options (as of 2014 Aug 30):
+        """Full model widths for stored SNR and energy bands
+
+        **kwargs passed directly to full model code. kws (as of 2014 Sep 12):
             verbose, rminarc, icut, irmax, iradmax, ixmax,
             irad_adapt, irad_adapt_f
         """
         return models.full_width(self.snr, self.kevs, mu, eta2, B0, **kwargs)
 
     def width_simp(self, mu, eta2, B0):
+        """Simple model widths for stored SNR and energy bands"""
         return models.simple_width(self.snr, self.kevs, mu, eta2, B0)
 
     # -----------------------------
@@ -139,17 +158,39 @@ class Fitter(object):
         self._vprint('Best {} fit, mu = {}'.format(appr, mu))
 
         if appr == 'simp':
-            res = self.fitter_simp(mu)
+            res = self.fitter_simp(mu, **kwargs)
+
         elif appr == 'full':
-            if ('eta2' in kwargs) and ('B0' in kwargs):
-                self._vprint('Starting from provided initial guesses:',
-                             'eta2 = {:0.3f},'.format(kwargs['eta2']),
-                             'B0 = {:0.3f}'.format(kwargs['B0']*1e6))
+
+            if ('eta2' not in kwargs) or ('B0' not in kwargs):
+
+                eta2_vals, B0_vals, fwhm_vals, chisqr_vals = self.grid_scan(mu)
+
+                if 'eta2' in kwargs:
+                    self._vprint('Starting from provided eta2, best grid B0')
+                    ind = np.searchsorted(eta2_vals, kwargs['eta2'])
+                    kwargs['B0'] = B0_vals[ind]
+                elif 'B0' in kwargs:
+                    self._vprint('Starting from best grid eta2, provided B0')
+                    msk = np.argsort(B0_vals)
+                    eta2_vals = eta2_vals[msk]
+                    B0_vals = B0_vals[msk]
+                    ind = np.searchsorted(B0_vals, kwargs['B0'])
+                    kwargs['eta2'] = eta2_vals[ind]
+                else:
+                    self._vprint('Starting from best grid eta2, B0')
+                    ind = np.argmin(chisqr_vals)
+                    kwargs['eta2'] = eta2_vals[ind]
+                    kwargs['B0'] = B0_vals[ind]
+
             else:
-                self._vprint('Starting from best grid value')
-                eta2, B0, fwhms, chisqr = self.grid_best(mu)
-                res = self.fitter_full(mu, eta2=eta2, B0=B0, eta2_free=True,
-                                       **kwargs)
+                self._vprint('Starting from user provided eta2, B0')
+
+            self._vprint('Initial guesses:',
+                         'eta2 = {:0.3f},'.format(kwargs['eta2']),
+                         'B0 = {:0.3f}'.format(kwargs['B0']*1e6))
+            res = self.fitter_full(mu, **kwargs)
+
         else:
             raise Exception('Invalid model choice')
         
@@ -197,7 +238,6 @@ class Fitter(object):
             print lmfit.printfuncs.ci_report(ci)
             self._vprint('')
         return ci
-
 
     # ----------------------------
     # Model specific error finding

@@ -51,9 +51,10 @@ def make_kepler():
     """
     k = SupernovaRemnant('Kepler')
     
-    kepler.dkpc = 4.0  # Distance to remnant in kpc (!) TODO verify
+    kepler.dkpc = 3.3  # Distance to remnant in kpc (!) TODO verify
                        # 4kpc from Vink (2008) kinematic study
                        # Could be up to 7 kpc?!?!?! (Patnaude et al., 2012)
+                       # 3.3kpc from Katsuda et al. (2008)
     kepler.rsarc = 180 # Shock radius (arcsec) from Green's SNR catalog
     kepler.s = 2.28  # e- spectrum index, 2.3 = 2*0.65 + 1;
                      # 0.64 = radio spectral index, Green's SNR catalog
@@ -61,6 +62,9 @@ def make_kepler():
 
     kepler.vs = 4.2e8  # Shock velocity, cm/s
                        # TODO verify, 4.2e8 from Vink (2008) kinematic study
+                       # Katsuda et al assumed 1.6e8 (?!)
+                       # if shock velocity is truly higher, then distance
+                       # estimate of Katsuda et al. should be revised up...
     kepler.cratio = 4.0  # Compression ratio, strong adiabatic shock (R-H)
 
     # Model grid settings, resolutions

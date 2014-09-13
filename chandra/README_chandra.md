@@ -50,7 +50,7 @@ The exposure times are as follows:
 * 6718, 110.0  ks (repro 2014 July 11)
 * 7366,  52.0  ks (repro 2014 July 1)
 
-Reprojected images in `out_kepler/` generated with CIAO 4.6 as:
+Reprojected images in `kepler_reproj/` generated with CIAO 4.6 as:
 
     ciao
     punlearn ardlib

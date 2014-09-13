@@ -1447,3 +1447,118 @@ Adds more space between best fit value and super/sub-scripted errors:
     %s/_{-/_{\\,-/g
 
 Okay.  See committed version of paper for a bunch of tables.
+Emailed first round draft to Brian/Rob
+
+
+Wednesday 2014 September 10
+===========================
+
+Summary
+-------
+* ...
+
+Tycho, average filaments
+------------------------
+Started error computation around 6:05 am
+expect it will take ~4 hours... sigh.  x2 because 4 engines for 5 filaments, so
+one engine is gonna work overtime.  
+
+(edit: 10.5 hours?! dammit.  Well, close enough to my estimate of 8 hours.  But
+probably closer to 5-6 hrs/filament it seems)
+
+Misc things
+-----------
+* Started playing with Kepler, picking very fine regions -- looks like we can get
+  some good data, I think.
+* Considering error calculation, presentation for FWHMs...
+  my plan is to use a geometric average, which preserves energy dependence.
+  estimates of B field, etc may be less meaningful?  Not certain.
+* Error on geometric average is tricky.
+* Short UMD trip
+
+
+Thursday 2014 September 11
+==========================
+
+Summary
+-------
+* Kepler and JVGR...
+* Misc paper writing
+
+Kepler region picking
+---------------------
+This is relaxing work...
+
+Quick thoughts:
+* could we smooth images to get more robust rims -- reduce count fluctuation?
+* select one region, then generate a whole bunch with artificially varied pixel
+  offsets, rotation angles -- then we get an ensemble of profile fits and FWHMs
+
+Finished selecting regions
+
+
+Friday 2014 September 12
+========================
+
+Summary
+-------
+* Consolidate / add more table outputs
+* Averaging FWHMs and getting statistically meaningful errors
+* Cleaned agenda to-dos (why is there so much backlogged crud on here)
+* Start running geometric FWHM + error calculations
+
+Tycho fits with eta2=1 fixed
+----------------------------
+
+Updated / patched code to work with either eta2 or B0 fixed.
+Now running on Tycho averaged filaments, for paper draft presentation
+
+Realization -- does it make sense to give errors when there is only one free
+parameter?  Not really... so don't waste time computing error, actually.
+Because the results won't really make sense (and they let eta2 run free cuz I
+haven't fixed the code).  Made note in code docstring
+
+Some engines appear stuck/hung up on error finding.  Terminating and re-running
+without error calculations...
+
+Exercise (sanity check of error fit)
+------------------------------------
+
+Try plugging numbers into full model, manually, on Tycho Filament 1 data
+(arithmetic average of FWHMs) with mu=2, using recent output data.
+
+Assuming the given best fit is indeed the best, the numbers look pretty good.
+
+
+Averaging FWHMs and computing errors
+------------------------------------
+
+I discussed this over with Brian a few times but I'm really uncertain as how to
+move forward -- this is where we should throw it in the paper, so that we can
+discuss with Steve/Sean better...
+
+Typed up short justification for geometric error
+Added explanation of error calculation to tex file.
+
+Determined how to get error on geometric means (after some fumbling, staring at
+older papers, etc), as follows:
+for small sample sizes, mean of n samples follows (n-1) student's t-distr.
+Using this distr, we get new 1,2,3-sigma errors from stderr by adding a
+multiplicative factor. (these correspond to locations of %-spread on
+t-distribution, but are farther out because of the small sample size).
+In fact, this is important/relevant for our arithmetic means too.
+
+Geometric FWHM + error calculations
+-----------------------------------
+Git commit settings, started running tonight at 01:00a, 2014 Saturday Sept. 13.
+
+
+
+
+
+
+
+
+
+
+

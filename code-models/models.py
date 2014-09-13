@@ -377,7 +377,7 @@ def mind_the_gaps(x, yaux, y, dy_max, f):
 # Input: snr, kevs, data/eps/mu/(eta2,B0);   output: best fit (mu)/eta2/B0
 
 def simple_fit(snr, kevs, data, eps, mu, eta2=None, B0=None,
-    mu_free=False, eta2_free=True, B0_free=True):
+    mu_free=False, eta2_free=True, B0_free=True, **lmf_kws):
     """Perform a simple model fit (equation 6; Table 7 of Ressler et al.)
     A convenience wrapper for lmfit.minimize(objectify(width_dump), ...)
 
@@ -387,6 +387,7 @@ def simple_fit(snr, kevs, data, eps, mu, eta2=None, B0=None,
         kevs, data, eps (np.array) as usual
         mu, B0, eta2 (float) initial guesses, but mu fixed
         mu_free, eta2_free (bool) which parameters shall vary in fits?
+        **lmf_kws takes extra kwargs for lmfit.minimize (includes lsq kws)
     Output:
         lmfit.Minimizer with fit information / parameters
     """
@@ -399,11 +400,11 @@ def simple_fit(snr, kevs, data, eps, mu, eta2=None, B0=None,
               min = snr.par_lims[pstr][0], max = snr.par_lims[pstr][1])
 
     res = lmfit.minimize(objectify(width_dump), p, args=(data, eps, kevs, snr),
-                         method='leastsq')
+                         **lmf_kws)
     return res
 
 def full_fit(snr, kevs, data, eps, mu, eta2=None, B0=None, mu_free=False,
-    eta2_free=False, B0_free=True, model_kws=None, **lmf_kws):
+    eta2_free=True, B0_free=True, model_kws=None, **lmf_kws):
     """Perform full model fit (equation 12; Table 8 of Ressler et al.)
     Default fit: B0 free; mu, eta2 fixed
 
@@ -472,8 +473,7 @@ def simple_width(snr, kevs, mu, eta2, B0):
 # Input: params, kevs, snr, **kwargs; output: model FWHMs
 
 def width_cont(params, kevs, snr, verbose=True, rminarc=None, icut=None,
-               irmax=None, iradmax=None, ixmax=None,
-               irad_adapt=True, irad_adapt_f=1.2):
+    irmax=None, iradmax=None, ixmax=None, irad_adapt=True, irad_adapt_f=1.2):
     """Width function, wrapper for Python port of full model (equation 12)
 
     All **kwargs not specified (excepting verbose) are taken from snr object
@@ -560,10 +560,11 @@ def width_cont(params, kevs, snr, verbose=True, rminarc=None, icut=None,
         rminarc2 = irad_adapt_f * fwhms_prelim
 
     # Print settings, set rminarc to new adaptive value
-    if irad_adapt and verbose:
-        print ('\tFull model: B0 = {:0.3f} muG; eta2 = {:0.3f}; '
-               'mu = {:0.3f}; ').format(B0*1e6, eta2, mu)
-        print '\tinit rminarc = {}; adapted = {}'.format(rminarc, rminarc2)
+    if irad_adapt:
+        if verbose:
+            print ('\tFull model: B0 = {:0.3f} muG; eta2 = {:0.3f}; '
+                   'mu = {:0.3f}; ').format(B0*1e6, eta2, mu)
+            print '\tinit rminarc = {}; adapted = {}'.format(rminarc, rminarc2)
         rminarc = rminarc2
     elif verbose:
         print ('\tFull model: B0 = {:0.3f} muG; eta2 = {:0.3f}; mu = {:0.3f}; '

@@ -29,18 +29,28 @@ from fplot import fplot
 # ==================================
 
 def build_dataf(fit_type, conf_intv=0.683, fit_kws=None, err_kws=None):
-    """Build function f to perform fits/errs; f(mu) returns res obj with information (see src)
+    """Build function f to perform fits/errs; f(mu) returns res obj with
+    fits, errors, fit properties, etc... (see src)
 
-    At core, a wrapper function for fobj.get_fit(...), fobj.get_err(...)
-    Make internal functionality changes in those methods, please
+    f is a wrapper function for fobj.get_fit(...), fobj.get_err(...)
+    Please see the methods in `models_exec.py`, to understand how they work
+    more deeply.
+
+    Notes: fitting w/ one free param may not give sensible (manual) errors;
+    lmfit may balk.  Input options are not all fully tested, but most should
+    work (some unit tests would be nice to demonstrate that error finding does
+    what I expect it to do).
 
     Inputs:
         fit_type: 'simp' or 'full'
         conf_intv: please don't set above 0.683 or your life will suck, I guarantee
-        fit_kws (only used for full fit):
-            mu_free=False, B0_free=True (don't twiddle these)
-            eta2, B0: if you wish to provide custom (non-grid) initial guesses
-                      MUST provide guesses for both, else ignored!
+        fit_kws, *simple and full models*
+            eta2_free=True, B0_free=True
+            eta2, B0: provide custom (non-grid) initial guesses. For full
+                      model, MUST provide guesses for both, else ignored!
+            mu_free=False (I recommend not to change, esp. if using full model!
+                           likely to hit bugs, not tested)
+        fit_kws, *full model only*
             model_kws (dict):
                 rminarc, icut, irmax, iradmax, ixmax, irad_adapt, irad_adapt_f
             scale_covar=False (!) (lmfit.minimize)
@@ -71,8 +81,18 @@ def build_dataf(fit_type, conf_intv=0.683, fit_kws=None, err_kws=None):
 
         # Get better errors
         ci_man = fobj.get_errs(res, fit_type, ci_vals=(conf_intv,), **err_kws)
-        eta2_err = mex.get_ci_errors(ci_man, 'eta2', ci_val=conf_intv)
-        B0_err = mex.get_ci_errors(ci_man, 'B0', ci_val=conf_intv)
+
+        # Quick patch -- since assmb_data / etc rely on manipulating B0, eta2
+        # specifically already
+        if 'eta2_free' in fit_kws and not fit_kws['eta2_free']:
+            eta2_err = (0., 0.)
+        else:
+            eta2_err = mex.get_ci_errors(ci_man, 'eta2', ci_val=conf_intv)
+
+        if 'B0_free' in fit_kws and not fit_kws['B0_free']:
+            B0_err = (0., 0.)
+        else:
+            B0_err = mex.get_ci_errors(ci_man, 'B0', ci_val=conf_intv)
 
         # (re)Store all data in res object
         res.chisqr = chisqr
@@ -315,18 +335,18 @@ class LatexTable(object):
     # proper rounding, report more than needed in floating pt form
 
     def fmt_num_2err(self, num, errpos, errneg):
-        nstr = '{:0.3g}',format(num)
-        estr_pos = '{:0.2g}'.format(errpos)
-        estr_neg = '{:0.2g}'.format(errneg)
+        nstr = '{:0.3g}'.format(num)
+        estr_pos = '+{:0.2g}'.format(errpos)
+        estr_neg = '-{:0.2g}'.format(errneg)
 
-        return strfl(nstr), strfl(estr_pos), strfl(estr_neg)
+        return self.strfl(nstr), self.strfl(estr_pos), self.strfl(estr_neg)
     
     def fmt_numerr(self, num, err):
         nstr = '{:0.3g}'.format(num)
         estr = '{:0.2g}'.format(err)
-        return strfl(nstr), strfl(estr)
+        return self.strfl(nstr), self.strfl(estr)
 
-    def strfl(x):  # Yes, really.  See http://stackoverflow.com/q/3410976
+    def strfl(self, x):  # Yes, really.  See http://stackoverflow.com/q/3410976
         return str(float(x))
 
 #    def fmt_num_2err(self, num, errpos, errneg):

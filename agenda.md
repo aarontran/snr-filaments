@@ -39,8 +39,6 @@ Possibly useful link on most recent galactic SNR
 The arc in the SE -- see doi:10.1088/0004-637X/732/1/11 (evidence for
 progenitor of the type Ia SN...)
 
-Organize literature collection/review eventually...
-
 Learning (practical stuff)
 --------------------------
 
@@ -89,8 +87,6 @@ From poster session (July 31):
 Pipeline, profile and FWHM calculation and plots
 ------------------------------------------------
 
-(on hiatus while I'm getting full model code to work and spew good results)
-
 ### Software engineering blargh
 
 1. overhaul specextract pipeline (handle region coordinates correctly, test and
@@ -131,53 +127,114 @@ On using different calculations of the FWHM: how do I show the effect of these
 different procedures?  Some kind of normalization? (Figure 10 of Ressler).
 Quantify effects on calculation of `m_E`, B0, eta2.
 
-
-Models for filament widths
---------------------------
-
-### MAJOR CORRECTION!
-
-When performing model fits to rim widths, width errors must be 1-sigma for
-correct covariance matrix scaling.
-
-ADMITTEDLY -- this is kind of meaningless in both cases because our fits are
-very often not accurate in a least-squares sense, and the errors may well be
-meaningless.
-
-For now, I DON'T apply the redchi scaling to our covariance matrix, because our
-errors have meaningful magnitude; they are not merely weights.
-
-When I review FWHM computation, change errors to be more reflective of FWHM
-variability.  The global/averaged FWHMs I will use a different procedure and
-that will also give larger errors
-This increases our uncertainty, BUT will pull down the chi-squared values of
-our model fits.
-
-
-### CURRENTLY WORKING TO-DOs
-
-* Discussion with Brian -- yes, go ahead and don't worry about errors...
-  you can let it run in the background, right?
-
 Bibdesk -- mark up all the papers I've really gone through and understood.
 Then, add the relevant citations and notes, to be sure I haven't missed or
 misunderstood anything.
 
-* Thought -- in regards to the overshooting matter -- yes, it could overshoot,
-  but the total integrated flux should be the same.  I think that tells us,
-  there is a limit to how much it can overshoot.
 
-!!! WE NEED:
-* best fits for each region.
-* average best fit params for each region, give stdev...
+Models for filament widths
+--------------------------
 
-* best fit parameters for arithmetic mean of region FWHMs, within filament
-  best fit parameters for geometric mean of region FWHMs, within filament
-* best fit parameters for arithmetic/geometric mean of ALL FWHMs (!)
-* best fit parameters, with `\eta_2` fixed at 1 (!!!)
+### Main / high-level TO-DOs
+
+* Start geometric average FWHM computation, w/ appropriate errors
+* Start running Kepler pipeline (will help organize code, refresh mind)
+  Data structure/storage / pipeline review, how to store output FWHM data?
+  Clean up current data in limbo
+* When tired/sleepy, make big tables for appendix... and fix rounding/precision
+
+* send new copy to Rob/Brian whenever/if ready, before monday...
+* Bring some kepler data/images on monday...
 
 
-How to best store intermediate numbers?
+### Weekend plan
+
+* Keep generating tables, and putting together tables into paper
+  (some tonight)
+* Make plots of geometric FWHMs, errors, and fits
+* Finish writing through rest of methods and results, send to Rob/Brian
+  BEFORE SUNDAY.
+
+* Review pipeline layout, code, READMEs.  Draw it out on paper.
+  **address coordinate system inconsistency in ds9, check mergeobs docs**
+  Write the code to save fitting data.  Write code to generate and merge tables
+  automatically (FWHM tables from Fitter object; best fit tables of
+  parameters/errors).  Human intervention only for final cleanup etc.
+
+* Start running Kepler pipeline Saturday night.  Specextract needs several
+  hours, and there will probably be minor issues associated w/ adapting code to
+  Kepler
+
+
+### List of plots/subplots/tables
+See my email to Rob/Brian!
+
+Main text:
+* table, geometric average FWHMS + errs + m\_E for each filament
+  *done, needs to be formatted*
+* table, best fits for each filament
+  *computing, 2014 Sep 13*
+* plots, best fits for each filament
+  *computing, 2014 Sep 13*
+* (table, average over flmts of best fits for each region)
+  *need flmts 2-5*
+* (table, best fit for each filament with eta2 = 1)
+  *done, LaTeXed*
+* (table, best simple model fits for each filament -- highlight differences)
+* (table, best fit for global average)
+* (plot, best fits for global average of FWHMs)
+
+Supplement/appendix:
+* table, profile widths & chi-squared & m\_E for each region
+  *done but needs to be formatted*
+* plots, profile widths/fits for each region
+  *rerun regions 11-13*
+* table, spectral fit params + line detection/width for each region
+* (table, best fit parameters for each region)
+  *rerun regions 11-13*
+* (table, plots, best fits w/ different averaging method)
+  *need FWHM table; fits, plots done (arithmetic averaging)*
+* (table, best fit parameters w/ different FWHM calculation method)
+* (SN 1006 comparison to Sean's data)
+  *rerun SN1006, flmt 4, 3 energy bands for completeness*
+
+
+### Paper/table to-dos
+* LATEX TABLE GENERATING -- List number of DOFs where relevant.
+  or report chisqr red directly.
+* NOTE my automated rounding is kinda sucking... ugh.  Trust the first 2 or 3
+  digits (3 for numbers, 2 for errors), everything else is suspect.
+  Fix this...
+
+* maybe useful to compute advection/diffusion lengths from fits?
+  Better yet -- ratio of advection/diffusion lengthscales
+  problem is that this IS energy dependent.
+
+* ALSO we need `m_E` from this, and the data...
+  (Rob, Brian: report this in the results, and make it clear
+   what's going on...
+   I also want to report `m_E` as estimated from MODEL fits, which to be
+   clear is a separate "observable" that I expect to be more robust
+   than the point-to-point measurements)
+
+  Also, print out `m_E` values, point to point and from `width_dump` model...
+  see some of the old notebooks in `code-profiles/` (merge functionality
+  together and throw out old / unused things)
+
+
+### Code to do this better
+
+I need a data structure to store best fit parameters + errors if available.
+Critical for data access, manipulation, formatting (stitching tables together
+nicely), checking precision, further python operations, etc.
+
+In particular, separate data structure allows us to split data generation and
+plot/table generation completely.  Keep the methods to spew out stuff in
+iPython notebook, for interactive usage / immediate checking while generating.
+(at least, for now, until we can get plotting/stuff working nicely -- once
+the data is saved to a usable format then it's easy to separate)
+
+How to best store intermediate numbers?  Some options I'm considering:
 1. copy paste into plain text file
    need to include some critical metadata:
    * what pre-generated table was used?
@@ -190,69 +247,62 @@ How to best store intermediate numbers?
    But, easier to manipulate, plot again, etc.
 3. spreadsheet of data (+ metadata of course)
 
-Agenda:
-* writing -- send tonight w/ tables, numbers
-* would also be nice to figure out, wtf happened to all of our logging output
-  why did it disappear, are our results still okay/valid?
-* Kepler's SNR -- start picking out regions, soon.  Skim Kepler literature
-  (group in Bibdesk)
-
-  Later -- routine to manually verify data...
-  routine to save config files
-  routine to merge tables together
+Later, more stuff for pipeline:
+* routine to manually verify data and errors...
+* routine to save config files (for fitting numbers...)
+* routine to merge tables together
 
 
-  Separate plotting routines from data generating routines, throughout my data
-  pipeline... or else it will be a real pain in the neck to generate / play
-  with figures, if I have to regenerate new data alongside.
+### VARIOUS CORRECTIONS, QUESTIONS, ETC
 
-  Argh, maybe I should even separate the number computation and table output.
-  Compute best-fit numbers,
-  compute errors for best-fit numbers (separately!)
-  THEN
-  generate a table / plots.
+* FWHM errors must be 68.3% CI errors, not 90% CI, for covariance matrix /
+  chisqr from fits to individual regions.
+  ALSO, for nonlinear fit we are not guaranteed a correspondence between
+  Delta-chi-squared and CI errors; I note that Satoru didn't mention a
+  confidence interval % explicitly.  So better just to say
+  Delta-chi-squared = 1.
+* Averaging FWHMS -- must take error following Student's t, not just stderr
+  Same problem, actually, if averaging fitted `B0`, `eta_2` values.
+  Need to fix that too...
+* Does it matter that we are placing the data points at the BOTTOM of the
+  energy band?  Intuitively makes sense, esp. as energies fall off.
+  I remember discussing this w/Brian at some point.
+  But, would the 0.7-1 keV and 1-1.7 keV bands be better centered elsewhere?
+  Especially relevant for fitting.  But maybe better to just be consistent.
+* Thought -- in regards to the overshooting matter -- yes, it could overshoot,
+  but the total integrated flux should be the same.  I think that tells us,
+  there is a limit to how much it can overshoot. (FOR PROFILE FITTING)
 
+Key question underlying all of my error fretting:
+what's the correct way to think about the statistics and measurements, so that
+we can interpret our model fit results correctly?...
 
-* maybe useful to compute advection/diffusion lengths from fits?
-  Better yet -- ratio of advection/diffusion lengthscales
-  problem is that this IS energy dependent.
-  ALSO we need `m_E` from this, and the data...
-  (Rob, Brian: report this in the results, and make it clear
-   what's going on...
-   I also want to report `m_E` as estimated from MODEL fits, which to be
-   clear is a separate "observable" that I expect to be more robust
-   than the point-to-point measurements)
 
 ### Various checks
 
-* Ask Keith Arnaud about error statistics... but, lower priority
-
 * Full model code -- check resolution error due to Pacholczyk tables (!)
   Might also be worth double checking some of the internal numerical integrals.
-  But, lower priority...
-
+  And, check how accurate/correct Pacholczyk's Bessel function values are now.
+  (ASK SEAN -- ANY REASON FOR TABLE SELECTIONS?)
+* Ask Keith Arnaud about error statistics... but, lower priority
+  At what chi-sqr does our simple confidence interval analysis break down/fail?
+  I don't understand the theory behind this very well.
 * Remnant radio spectral indices?!
   See [ppt slides](http://www.astro.le.ac.uk/~cbp1/cta/Talks/TonyBell.pdf),
   just pick some numbers and report in text (saave in SNR catalog, w/ sources
   and explanation for choices).
+* Check all constants.  `snr_catalog.py`, model fitting code both
+  wrapper and fortran.  Go back to Sean's transport eq'n and rederive.
+* Update code deep review eventually (discuss: correction to the negative sign
+  in electron distribution functions, explain the Ecut scaling / calculation)
+
+* Check transport equation for pure advection case
+* Check numerical prefactor 8.3 TeV for electron cutoff energy
+
+* Check: sean used energy cutoff in all his model fits? (table 8)
+
 
 ### General (higher level to-dos)
-
-* Tables 7, 8 reproduced for SN 1006, then Tycho.  This is THE high level goal
-  right now.
-
-  Also, print out `m_E` values, point to point and from `width_dump` model...
-  see some of the old notebooks in `code-profiles/` (merge functionality
-  together and throw out old / unused things)
-
-  Alternate: with a priori knowledge, manually fit to estimate errors
-  (calculate chisqr interactively).
-
-  Agenda
-  5. add methods to quantify effect of varying fwhm measurements, just to
-     see...
-  6. Generate tables of results, for averaged filaments (using both arithmetic
-     and geometric means...)
 
 * Remember brian's suggestion (from Friday july 25): how does mE depend on
   energy? what happens if you fit a straight power law to that???
@@ -260,50 +310,17 @@ Agenda:
 * Look at azimuthal dependence of B field, robustness of numbers from approx
   python model. Brian asked, does B field scale with stronger energy
   dependence? (NOT ADDRESSED as of July 30)
-
-* Check all your constants.  `snr_catalog.py`, model fitting code both
-  wrapper and fortran.  Go back to Sean's transport eq'n and rederive.
-
-* Update code deep review eventually (discuss: correction to the negative sign
-  in electron distribution functions, explain the Ecut scaling / calculation)
+  (answer: yes, basically, for roughly constant FWHMs. more energy dependence
+  requires more B field, less eta2)
 
 
+### Kepler, CIAO stuff
 
-### General (high-level questions)
-
-* How does Sean define unobtainable, in Table 8? E.g., for mu = 0.5 I can
-  manually fit and get a chi-squared value of 6.2 (compared to ~4 for the higher
-  values of mu).  Brian: yeah, run this by Sean.
-  (partially answered)
-
-  Observation:
-  Sean's unobtainable values -- with two bands, his chi-squared values are
-  mostly under 1 except where the fit were unobtainable.
-  chi squared values range from ~2 to 16, with <1 degree of freedom...
-
-* Ask Sean if there was any reason for 1sigma error in Table 7?  I think I was
-  seeing larger errors from brute-force chi-square in lmfit, even for 1 sigma
-  (so it seemed like the errors in Table 7 came from sqrt of diag elements of
-  covariance matrix, which would be inaccurate here)
-
-* Sean used energy cutoff in all his model fits?
-
-* At what chi-sqr does our simple confidence interval analysis break down/fail?
-  I don't understand the theory behind this very well.
-
-
-### Small checks, constants, verification
-
-* Clean notes, organization, code, etc for clarity
-* Write some text / code pipeline explanation, cleanup, docs, modularity, blah
-  blah.  Some parts are pretty good (`models_all.py`), some parts not (ipython
-  notebooks, `models_all_exec.py`).
-* Write some text abt methods / results so far (!!!!!)
-
-* Check transport equation for pure advection case
-* Check numerical prefactor 8.3 TeV for electron cutoff energy
-* Update numbers from Pacholczyk (?), consider adding more entries (can ask
-  Sean about this)
+* sanity check that when I run CIAO `merge_obs`, I get the same files that
+  Brian has been sending me...
+* Question: looks like `reproject_obs` will give evt file (which can then be
+  partitioned by `dmcopy`, is that good enough....
+* Read `merge_obs` documentation, play with outputs
 
 
 ### Conceptual/background/physics questions (look up and/or ask)
@@ -335,6 +352,7 @@ Agenda:
   naturally?
 * Is mu restricted to fall within `[0, 2]`, as suggested by equations for
   turbulent spectrum and diffusion coefficient?  Seems legit...
+  (need to read more on e- diffusion)
 * How do you rule out magnetic damping?  E.g., looking at figure 4 with ab =
   5 percent of shock radius, seems like it would give a decent energy dropoff.
   How did Sean get that mE must be of order -0.1 for damping? (Brian: maybe
@@ -348,14 +366,10 @@ Agenda:
   field, but what would those effects be?)
 
 
-More supernova remnants
------------------------
+### Extra
 
-Read about work on Kepler / Cas A sometime, when you have time
+Write/find short scripts / hooks to git, to clear out ipynb output cells or
+something... 
 
-* sanity check that when I run CIAO `merge_obs`, I get the same files that
-  Brian has been sending me...
-* Question: looks like `reproject_obs` will give evt file (which can then be
-  partitioned by `dmcopy`, is that good enough....
 
-Read `merge_obs` documentation, play with outputs
+

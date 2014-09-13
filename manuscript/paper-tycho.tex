@@ -1,6 +1,6 @@
-% \documentclass[manuscript]{aastex}  % one-column, double-spaced
-% \documentclass[12pt,preprint]{aastex}  % one-column, single-spaced
-\documentclass[iop, apj, numberedappendix, twocolappendix]{emulateapj}
+% \documentclass[manuscript]{aastex}  % one-column, double-spaced GENERATE BIB
+\documentclass[12pt,preprint]{aastex}  % one-column, single-spaced
+% \documentclass[iop, apj, numberedappendix, twocolappendix]{emulateapj}
 % \documentclass[iop, apj, numberedappendix]{emulateapj}
 
 
@@ -28,21 +28,22 @@
 \addeditor{Brian}
 
 \usepackage{amsmath}  % amsthm, amssymb
-\usepackage{hyperref}
 % \usepackage{CJK}  % aas.org/authors/author-names-non-roman-alphabets
 \usepackage{booktabs}
 %\usepackage[labelfont=bf, labelsep=period]{caption}  % Custom float captions
 %\usepackage{pdflscape}  % rotate pages (Texlive)
+\usepackage{hyperref}
 
-\newcommand{\mt}{\mathrm}
-\newcommand{\unit}[1]{\;\mt{#1}}  % http://vemod.net/typesetting-units-in-latex
-\newcommand{\abt}{\mathord{\sim}} % http://tex.stackexchange.com/q/55701
-\newcommand{\ptl}{\partial}
-\newcommand{\del}{\nabla}
+\newcommand*{\mt}{\mathrm}
+\newcommand*{\unit}[1]{\;\mt{#1}}  % http://vemod.net/typesetting-units-in-latex
+\newcommand*{\abt}{\mathord{\sim}} % http://tex.stackexchange.com/q/55701
+\newcommand*{\ptl}{\partial}
+\newcommand*{\del}{\nabla}
 
 % This paper
-\newcommand{\tsup}{\textsuperscript}
-\newcommand{\Chandra}{\textit{Chandra}\ }
+\newcommand*{\tsup}{\textsuperscript}
+\newcommand*{\Chandra}{\textit{Chandra}\ }
+\newcommand*\mean[1]{\bar{#1}}
 \defcitealias{ressler2014}{R14}
 
 \begin{document}
@@ -206,16 +207,22 @@ Consequences, implications, why is this worthwhile?
 % =============================
 \section{Transport models}
 
-We first briefly review the models we consider for particle transport; a fuller
-exposition is given by \citetalias{ressler2014}.
+We briefly review our particle transport models and relevant equations for our
+modeling; a fuller review and exposition is given by \citetalias{ressler2014}.
+\note[Aaron]{is it necessary to give Sean's equation numbers?  How many of the
+derived equations should we give?}
 
-Just present the governing transport equations.  From:
+\note[Aaron]{Double check against Rettig/Pohl}
+The electron distribution which gives rise to the observed synchrotron
+radiation is injected at the forward shock and transported by advection
+and plasma diffusion, following the advection-diffusion equation:
 \[
   \frac{\ptl f}{\ptl t} + \del \cdot \left( f \vec{v} \right)
   = C + \del \cdot \left( D \del f \right)
 \]
 we obtain (1-D time-independent flow, neglect compressible flow?!,
-space-independent diffusion coefficient):
+space-independent diffusion coefficient (did we neglect the spherical
+coordinate terms?)):
 \[
     v \frac{\ptl f}{\ptl x} - D \frac{\ptl^2 f}{\ptl x^2} = C
 \]
@@ -225,7 +232,7 @@ simplified model:
     v \frac{\ptl f}{\ptl x} - D \frac{\ptl^2 f}{\ptl x^2} +
     \frac{f}{\tau_{\mt{synch}}} = 0
 \end{equation}
-where this is equation (6) of \citetalias{ressler2014}; we also look at
+where this is equation (5) of \citetalias{ressler2014}; we also look at
 \begin{equation} \label{eq:full-mod}
     v \frac{\ptl f}{\ptl x} - D \frac{\ptl^2 f}{\ptl x^2} =
     K_0 E^{-s} e^{-E/E_{\mt{cut}}} \delta(x) + \frac{\ptl}{\ptl E}
@@ -235,6 +242,51 @@ which is equation (12) of \citetalias{ressler2014}.
 
 Explain how the transport models constrain diffusion via $m_E$, define $m_E$.
 Explain how we back out a filament shape/width from these models
+
+\subsection{Energy dependent widths, diffusion}
+
+\begin{itemize}
+    \item Bohm diffusion: $D(E) = \eta C_d E / B$
+    \item Generalized diffusion: $D(E) = \eta C_d E^\mu / B = \eta_h D(E_h)
+        (E/E_h)^\mu$
+\end{itemize}
+
+Explain the use of fiducial energy -- this makes sense and eases discussion,
+but linking $E_h$ and $\eta_2$ to $\eta$ and plain Bohm diffusion seems a bit
+murky to me.
+
+For the simple model, we have equation (6) of \citetalias{ressler2014}:
+\[
+    a = \frac{2 D / v_d}{ \sqrt{ 1 + \frac{4D}{v_d^2 \tau_{\mt{synch}}}} - 1}
+\]
+which we relate to full width half max by projection factor $\beta = 4.6$
+so that $w = \beta a$, assuming (1) electron distribution exponential in radial
+coordinate $x$, and (2) spherical source \note[Aaron]{shell?}
+\citep{ballet2006}.
+
+For the full model (equation~\eqref{eq:full-mod}), we numerically solve for
+electron distribution $f(E,x)$ using solutions due to \citet{lerche1980} and
+\citet{rettig2012};
+
+\subsection{Tycho parameters}
+
+Give numbers ($v_s$, $v_d$, $r_s$, etc.).  Give a definition of the cut-off
+energy following Rettig and Pohl (again cite Sean's paper).
+We use an electron spectrum cut-off energy of:
+\[
+    E_{\mt{cut}} =
+        \left(8.3\unit{TeV}\right)^{2/(1+\mu)}
+        \left(\frac{B_0}{100 \unit{\mu G}}\right)^{-1/(1+\mu)}
+        \left(\frac{v_s}{10^8 \unit{cm/s}}\right)^{2/(1+\mu)}
+    \left[
+        \frac{E_h^{\mu - 1}}{\eta}
+    \right]^{1 / (1 + \mu)}
+\]
+which is equation~(19) of \citetalias{ressler2014}.
+\note[Aaron]{This differs from Sean's presentation -- I drew this from the
+Fortran code and it looks consistent w/ Parizot et al., but I haven't vetted
+the prefactor $8.3 \unit{TeV}$.  And, I have an extra exponent $\mu - 1$ on the
+$E_h$ ?!  Come back to this shortly.}
 
 \subsection{Magnetic damping}
 
@@ -298,13 +350,16 @@ least ~1 arcsec and hence are spatially resolved? Compare,
 \subsection{Filament width measurements}
 
 We obtained radial intensity profiles by integrating along the shock in each
-region.  Intensity profiles peak sharply at/behind the shock, demarcating our
+region.  Plotted and fitted profiles are reported in vignetting and
+exposure-corrected \note[Aaron]{double check CIAO guides} intensity units;
+error bars are computed from raw count data assuming Poisson statistics.
+Intensity profiles peak sharply at/behind the shock, demarcating our
 thin rims, \note[Aaron]{abt 2--3 arcsec; measure this or report $w_u$?}
 and then fall off until thermal emission from ejecta picks up at Tycho's
 ``contact discontinuity'' \citep{warren2005}.
 
-We fit rim profiles, obtained by integrating intensity along the shock in each
-region, to a piecewise two-exponential model:
+We fitted rim profiles, obtained by integrating intensity along the shock in
+each region, to a piecewise two-exponential model:
 \begin{equation} \label{eq:prof}
     h(x) =
     \begin{cases}
@@ -336,8 +391,91 @@ To estimate FWHM uncertainties, we horizontally stretched each best-fit
 profile by mapping radial coordinate $x$ to
 $x'(x) = x (1 + \xi (x-x_0)/(50\arcsec-x))$ with $\xi$ an arbitrary stretching
 parameter; this yields a new profile $h'(x) = h(x'(x))$.
-We varied $\xi$ (and hence rim FWHM) to vary each profile fit $\chi^2$ by 2.7,
-yielding confidence limits on our measured FWHMs.
+We varied $\xi$ (and hence rim FWHM) to vary each profile fit $\chi^2$ by 2.7
+and the stretched or compressed FWHMs as upper/lower bounds on our reported
+FWHMs.
+
+Finally, we took a geometric average of rim widths $w_i(E)$ in each filament,
+with $i$ indexing each region, as
+\[
+    \mean{w}(E) = \left( \prod_{i=1}^{n} w_i(E) \right)^{1/n}
+\]
+Why?  My (Aaron's) justification:
+\begin{itemize}
+\item Arithmetic mean width is not representative of a filament's
+    spatially varying width (in practice, projected rim emission likely
+    does not arise from a spherical shell \citep[c.f.][]{hester1987}).
+    Our measurements aren't randomly distributed.
+\item I assume / guess that $m_E$ is more likely to be constant over a
+    filament length.  Intuitively, I think of $m_E$ being a proxy for the
+    relative strength of transport mechanisms, as opposed to being a function
+    of the absolute strengths of two mechanisms.  But that's not rigorous,
+    and it doesn't seem obvious $m_E$ should be more robust than width $w$
+    over a filament's length (since we're taking a first derivative, which
+    is usually more painful?).
+\item The geometric mean of FWHMs gives an arithmetic mean of ``sampled''
+    $m_E$ values by definition.  To show this explicitly (just a sanity check)
+    from the equation $w(E) = \alpha E^{m_E}$, where $\alpha$ is a throwaway
+    constant, we have $m_E = \ln(w(E)/\alpha) / \ln(E)$.  Then, $m_E$ computed
+    from geometric mean width $\mean{w}(E)$ is:
+    \begin{align*}
+        \mean{m_E}(E)
+            &= \frac{\ln\left[ \mean{w}(E) \right] - \ln\alpha}{\ln(E)} \\
+            &= \frac{\ln\left[ \left( \prod_{i=1}^{n} w_i(E) \right)^{1/n}
+                        \right] - \ln\alpha}{\ln(E)} \\
+            &= \frac{\frac{1}{n}\left(
+                         \sum_{i=1}^{n} \ln\left[w_i(E)\right]
+                     \right) - \ln\alpha}{\ln(E)} \\
+            &= \frac{\frac{1}{n} \sum_{i=1}^{n}
+                     \left( \ln\left[w_i(E)\right] - \ln\alpha \right)}
+                    {\ln(E)} \\
+            &= \sum_{i=1}^{n} (m_E)_i (E)
+    \end{align*}
+    Or, we could just say that we're taking an arithmetic mean of
+    $\ln(w_i(E))$.
+\item The geometric mean is less sensitive to outliers than the arithmetic
+    mean -- but this may not necessarily be desirable, if it hides
+    real measurement signal.
+\end{itemize}
+The counterpoints are that (1) in practice, it may not make much difference
+(especially as we only have sample size about $1$--$5$ at best), variations
+from changing up calculations are hard to distinguish from plain old
+measurement spread; (2) arithmetic mean is simpler to understand; (3)
+assumption of roughly constant widths does not look terrible in Tycho -- but I
+have not investigated this... (clearly, rims fade at edges, but at bright
+center regions do they swell or vary in width?).
+
+Errors were computed by taking standard errors on $\log w(E)$
+(i.e., $\sigma(w(E)) / \sqrt(n)$, as the CLT applies in log space) and then
+converting back to physical parameter space.  These errors are asymmetric; we
+take the maximum error in either direction as error on our FWHMs for all fits
+(but we report the asymmetric error otherwise).
+\textbf{WARNING:} this procedure is incomplete.  Because our sample sizes are
+tiny (typically, $n \sim 2$), to obtain a true 68.3\% confidence interval /
+1-sigma error, we should compute error from the Student's $t$-distribution.
+The net result is that our errors should be doubled in most cases.
+\emph{I have not yet applied this correction.}
+
+Some problems:
+\begin{itemize}
+    \item Errors are very large, as currently calculated -- they reflect the
+        assumption that $m_E$ is normally distributed, and give a statistical
+        uncertainty on population mean $m_E$.
+        (or if we used the arithmetic mean, same problem for FWHMs)
+        This throws out our very small width errors, and we want to take
+        advantage of our nice photon statistics.
+    \item Since geometric mean is strictly lower than arithmetic mean,
+        this will bias our parameter values downwards -- it's not clear which
+        approach would give more ``correct'' estimates
+\end{itemize}
+
+One approach may be to slice up the regions more thinly and accept a bit more
+uncertainty in FWHM values.  This would make it eaiser to either (1) compute
+fits to regions individually (then, errors are set by profile fitting
+uncertainty alone -- I think our estimates are still a little too small, and we
+should be using 1-sigma errors rather than 90\% CIs), and (2) average many
+FWHMs, in whatever way, and get more robust / lower error filament values.
+
 
 % ----------------
 % Filament spectra
@@ -355,13 +493,18 @@ downstream/upstream selections highlighted in light blue/gray respectively.
 We fitted spectra from each region to an absorbed power law between $0.5$ and $7$
 keV in XSPEC.
 
-TODO?! We also fit the spectra to absorbed power law models with 1 and 2
-additional Gaussian components for \ion{Si}{13} and \ion{S}{15} He$\alpha$
-lines at $\abt 1.8$, $2.4$ keV.  We compute some equivalent width, or compare
-the goodness-of-fit with and without the additional lines, to rule out the
-presence of a line (but, cf. \citet{protassov2002} on line detection
-statistics!).
+Background spectra were extracted from circular regions around the remnant's
+exterior; we matched each selected rim region to the nearest background region
+and subtracted the background spectrum accordingly. \note[Aaron]{rewrite for
+concision/clarity}.
 
+\note[Aaron]{TODO?!} We also fit the spectra to absorbed power law models with
+1 and 2 additional Gaussian components for \ion{Si}{13} and
+\ion{S}{15} He$\alpha$ lines \note[Aaron]{?? I think I got this from AtomDB but
+not certain of details} at $\abt 1.8$, $2.4$ keV.
+We compute some equivalent width, or compare the goodness-of-fit with and
+without the additional lines, to rule out the presence of a line
+(but cf. \citet{protassov2002} on line detection statistics!).
 
 % -------------
 % Model fitting
@@ -391,7 +534,7 @@ electron spectral index $s = 2.3$ (from radio spectral index $\alpha = 0.65$,
 \citet{kothes2006} \note[Aaron]{not using $0.58$ from Green's catalog?!}),
 remnant distance $3 \unit{kpc}$ \citep[cf.][]{hayato2010}, and
 shock radius $1.08 \times 10^{19} \unit{cm}$ from angular radius $240\arcsec$
-\citep{green2009}.  Tycho's forward shock velocity varies azimuthally by up to
+\citep{green2009}.  Tycho's forward shock velocity varies with azimuth by up to
 a factor of 2; we interpolate the data of \citet{williams2013} to estimate
 individual shock velocities for each of our regions.
 
@@ -418,7 +561,43 @@ We do X to the FWHMs (geometric/arithmetic average) within each filament.
 % --------------------
 \subsection{Rim fits, spectra, and width measurements}
 
-We give figures and tables with rim profile fit information.
+To perform fits, we took a geometric average of rim widths in each energy band,
+for each filament; 
+For FWHM errors, I use the standard error of the mean (with some
+minor nuances; I am using sample standard deviation).
+PUT IN METHODS SECTION
+
+
+This contrasts with taking an arithmetic average of the rim widths.  The
+geometric average does not represent the expected value of FWHM measurements,
+along the rim.  However, filaments should vary in width along their lengths in
+response to 
+
+
+A key question is whether we wish to report an average w/ errors, corresponding
+to our specific measurements (if we alter our profile fit function, or take a
+new observation of Tycho with different counts, how will our measurement
+change) -- or, if we wish to report an average w/ error that estimates the
+population spread -- if we have huge resolution / collecting power, and could
+slice up the filament in many locations and sample its FWHMs very well, what
+would be the population spread on that sample?
+
+
+If the FWHMs vary systematically within the filament -- an estimate of
+population spread will give errors that are too large.
+
+We might expect the FWHM energy dependence (our $m_E$) to be consistent across
+the filament, as opposed to the actual FWHM lengths.
+If we expect the FWHM energy dependence
+
+
+But, both values are important -- the FWHM lengths tell us about the magnetic
+field strength
+
+
+In Table~\ref{tab:flmt2} we report averaged widths (data and fits for
+individual filaments are given in \emph{appendix, supplement?}).
+
 
 \begin{figure}
     \plotone{figures/f0-prfs.pdf}
@@ -427,7 +606,7 @@ We give figures and tables with rim profile fit information.
 \end{figure}
 
 
-\begin{table*}[h]
+\begin{table*}
 \scriptsize
 \centering
 \caption{Filament 2 full width at half max measurements.
@@ -443,7 +622,6 @@ Error estimates / magnitudes.
 
 Mention the number of counts.  This might impact our decision to go back and
 slice regions smaller (if we do that).
-
 
 \begin{figure}
     \plotone{figures/f0-spec.pdf}
@@ -461,50 +639,79 @@ Table of best fit chi-squares, power law indices for spectral fits...
 % -------------------------
 \subsection{Model fit results}
 
-Here are some fit results for a subset of regions, just those contained in
-Filament 1 (Table~\ref{tab:fit}).  Errors are estimated by 
-Explain error values on parameters
+\subsubsection{Individual regions}
 
-\begin{table*}
+First, Table~\ref{tab:fits-flmt1} presents full model fit results for the regions
+contained in Filament 1.  As currently presented (preliminary results), errors
+are computed by varying free parameters $B_0$, $\eta_2$ to obtain a
+$\Delta\chi^2 = 1$, corresponding to $1$-$\sigma$ confidence limits on our fit
+parameters.
+
+\begin{table*}[ht]
 \scriptsize
 \centering
-\caption{Full model best fit parameters, Filament 1.
-    \label{tab:fit}}
+\caption{Full model best fits for individual regions, Filament 1.
+\label{tab:fits-flmt1}}
 \input{tab-fits-flmt1.tex}
 \end{table*}
 
-Table~\ref{tab:fit-avg-fwhm} shows best fits to averaged FWHMs (averaged FWHMs
-not shown).  For FWHM errors, I use the standard error of the mean (with some
-minor nuances; I am using sample standard deviation).
+\subsubsection{Combining regions, in various ways}
+
+Now, we present fit results for averaged filament FWHMs, for sanity's sake.
+Table~\ref{tab:fits-avg} presents full model fits to arithmetic average of
+FWHMs in each filament.  The model fit predictions for each filament are
+plotted in Figure~\ref{fig:fits-avg}.
 
 \begin{table*}
 \scriptsize
 \centering
-\caption{Full model best fit parameters for filament-averaged FWHMs.
-    \label{tab:fit-avg-fwhm}}
+\caption{Best fits for each filament's averaged FWHMs.
+\label{tab:fits-avg}}
 \input{tab-fits-avg.tex}
 \end{table*}
 
-Finally, Table~\ref{tab:fit-avg-par} shows averaged best-fit parameters for
-Filament 1 only, at this time.  The parameter errors are standard errors from
-the averaging process and may reflect the presence of outliers.
+\begin{figure}
+\centering
+\plottwo{figures/f0-fits-avg-flmt1.png}{figures/f0-fits-avg-flmt2.png} \\
+\plottwo{figures/f0-fits-avg-flmt3.png}{figures/f0-fits-avg-flmt4.png} \\
+\includegraphics[width=0.25\textwidth]{figures/f0-fits-avg-flmt5.png}
+\caption{Plots of best-fits to averaged FWHMs.\note[Aaron]{Update plots
+for better subplot display in final version, if we want to keep these}}
+\label{fig:fits-avg}
+\end{figure}
+
+Finally, Table~\ref{tab:fits-par-avg} shows averaged best-fit parameters.
+Parameter errors are standard errors from averaging and may reflect the
+presence of outliers (especially as the sample number is $1$--$5$).
 
 \begin{table*}
 \scriptsize
 \centering
-\caption{Average of best-fit parameters for individual regions
-    \label{tab:fit-avg-par}}
+\caption{Filament-wide average of best-fit parameters for constituent regions.
+\label{tab:fits-par-avg}}
 \input{tab-fits-par-avg.tex}
 \end{table*}
 
+We also computed best fits while holding $\eta_2 = 1$; i.e., requiring Bohm
+diffusion at $2 \unit{keV}$.  The results (Table~\ref{tab:fits-avg-eta2-fix})
+are relatively insensitive to $\mu$.
+
 \begin{table*}
 \scriptsize
 \centering
-\caption{Full model best fit parameters, Filament ??, with $\eta_2 = 1$ fixed}
-%    \label{tab:fit-avg-par}}
-%\input{tab-fits-par-avg.tex}
-Coming soon...
+\caption{Best fits with $\eta_2 = 1$ fixed, for filament averaged FWHMs.
+\label{tab:fits-avg-eta2-fix}}
+\input{tab-fits-avg-eta2-fix.tex}
 \end{table*}
+
+\subsubsection{How confidently can we reject B-damping?}
+
+Everything hinges on our error bars -- this is most important.  Our rims do
+thin consistently, in most regions (might be one or two places where they
+don't), but (1) the errors in our individual FWHMs are larger than I'm
+currently reporting because different profile fits will give a larger spread of
+FWHMs (might need to consider reduced chi-squared here, but using chi-sqr to
+select profile fit models is not physically meaningful)
 
 % ==========
 % Discussion
@@ -580,24 +787,24 @@ of the error.
 \begin{table}[h]
 \scriptsize
 \centering
-\caption{Sean's SN 1006 best fit parameters \citepalias[Table 8]{ressler2014}}
-\label{tab:sean}
+\caption{Sean's SN 1006 best fit parameters \citepalias[Table 8]{ressler2014}.
+\label{tab:sean}}
 \input{tab-sean.tex}
 \end{table}
 
 \begin{table*}[h]
 \scriptsize
 \centering
-\caption{SN 1006 best fit parameters, 2 highest energy bands (full model)}
-\label{tab:sn1006-2band}
+\caption{SN 1006 best fit parameters, 2 highest energy bands (full model).
+\label{tab:sn1006-2band}}
 \input{tab-sn1006-2band.tex}
 \end{table*}
 
 \begin{table*}[h]
 \scriptsize
 \centering
-\caption{SN 1006 best fit parameters, 3 energy bands (full model)}
-\label{tab:sn1006-3band}
+\caption{SN 1006 best fit parameters, 3 energy bands (full model).
+\label{tab:sn1006-3band}}
 \input{tab-sn1006-3band.tex}
 \end{table*}
 
@@ -649,8 +856,8 @@ considering the measured value of $m_{\rm E}$ can have a dramatic effect.
 \centering
 \caption{Best fit parameters for the filaments of Cas A based on data from
 Araya et. al (2010) in varying values of $\mu$ (Approximate Analytic Results)
-Dashes denote places where fits were unobtainable.}
-\label{tab:araya}
+Dashes denote places where fits were unobtainable.
+\label{tab:araya}}
 \input{tab-sean-casA.tex}
 \end{table}
 
