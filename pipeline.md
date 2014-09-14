@@ -8,9 +8,8 @@ before using pipeline.  The hope is that it's straightforward enough to make
 sense of, at least (see code documentation / command-line help).
 
 The most fuzzy/hand-wavy part is region selection, see notes in data/ for that.
-A lot of tweaking goes into 1. FWHM fitting, and 2. spectrum fitting.  So you
-need to look at the code for that to see what numbers are being set / frozen /
-thawed / whatever.
+A lot of tweaking goes into 1. FWHM fitting, and 2. spectrum fitting.  Look at
+the code to see what numbers are being set/frozen/thawed/etc.
 
 Below I give an abbreviated version of the pipeline, for quick reference and to
 see where files go / what code does what.
@@ -20,16 +19,94 @@ filenames, numbers/ordering, etc..., which generally hold if you follow the
 pipeline.  Manually moving files a lot is not the best idea (best to rerun the
 pipeline).  Numbering/ordering follows region file order, starting from 1.
 
+Directory structure
+===================
+Idealized, update as needed... (set-up 2014 July 8, somewhat following
+the idea from a Software Carpentry lecture
+[link](http://software-carpentry.org/v4/data/mgmt.html).
+
+Ordered in order of generation (to try to make data dependencies clearer)
+
+    data/ *.fits
+          README.md
+          notes-regions.md  # Describe how regions are selected
+
+          region-ID/ README.md  # Describe how spectra/profiles are derived
+                     regionID.reg      # from region files (scripts, dates, cmds)
+                     *.jpg      # Images of regions on SNR, etc
+
+                     profiles/ *.dat
+                               plots/ *.pdf
+                                      *.png
+
+                     fwhms/ *.pkl
+                            *.txt
+                            #plots/ *.pdf  # e.g. Fig. 10 of Ressler
+                            #model/ *.txt  # Modeling results?
+
+                     spectra/ *.pi  # Both down/up sets
+                              *.rmf
+                              *.arf
+                              plots/ *.pdf   # Plots of spectra/fits
+                                     *.ps
+                              fits/ *.txt  # Fitting information
+                                    *.qdp  # from XSPEC, etc.
+
+                    model-fits/
+
+
+          background-ID/ README.md  # as for regions
+                         *.reg
+                         *.ciaoreg
+                         spectra/ *.pi
+                                  *.rmf
+                                  *.arf
+
+    code/ regions/ ds9projplotter.py
+                   ds9projsplitter.py
+                   ds9proj2box.py
+                   ds9projangle.py
+                   (regparse.py)
+
+          profiles/ profile_process_*.ipynb
+                    (crvfit.py, ffwhm,py, fit_funcs.py, fsmooth.py)
+
+          spec/ newregion.sh
+                newspectrum.sh
+                mergespectra.sh
+                spec_linkbg.py
+                spec_fit.py
+                (spec_clearbg.py)  # For when you mess up
+
+          models/ *-fit-tables.ipynb
+                  models_disp.py  # Still being twiddled
+                  snr_catalog.py  # Contains important information
+                  tables/...  # SNR specific tables -- but this is dependent on
+                              # FWHM measurements!
+                  (models.py, models_exec.py, parutils.py, full model codes)
+
+    # Parentheses denote utility/helper-type modules
+
+The key outputs are profiles, fitted FWHMs, spectra (based on FWHM fitting),
+averaged FWHMs, and model fits.
+
+
+Step-by-step guide to pipeline
+==============================
+
+I have tried to highlight locations where the user might have to intervene,
+twiddle numbers, edit code, etc.
 
 Pipeline 1: radial profiles and fits
 ====================================
 
 ## Prerequisites
-Generate energy band images, in both intensity flux units and in uncorrected
-counts (no exposure/vignetting correction).  These will be used throughout.
+Use CIAO's `reproject_obs`, `flux_obs`, and `dmcopy` to make energy band
+images, in both intensity flux units and in uncorrected counts
+(no exposure/vignetting correction).
 
 ## Region creation, cataloging
-Open RGB image of the Tycho data.
+Open RGB image of SNR data.
 
     ./ds9-tycho-rgb.sh
 
@@ -40,17 +117,19 @@ physical coordinates.
 
 Output: `regions-n.reg`, `regions-n.physreg`
 
-## Generate radial profiles from regions
+## Generate radial profiles from regions, mosaics and count files
 
-Code:   `../code/ds9projplotter.py`
-Input:  `regions-n.reg`
+Code:   `code-reg/ds9projplotter.py`
+Input:  `regions-n.reg`, `*_mosaic.fits`, `*_counts.fits`
 Output: `profiles/prf_[...].dat`, `profiles/prf-cts_[...].dat`
 
 ## Fit radial profiles and obtain FWHMs
 
-Code:   `../code-profiles/profile_process.ipynb`
-Input:  `regions-n.reg`, `regions-n.physreg`
+Code:   `code-profiles/profile_process.ipynb`
+Input:  `regions-n.reg`, `regions-n.physreg`, `profiles/prf_*.dat`
 Output: `fwhms/fwhms.[txt, pkl, log]`
+
+_LOTS OF THINGS TO CHECK, REVISE IN IPYTHON NOTEBOOK_
 
 Pipeline 2: extract and fit spectra
 ===================================
@@ -60,21 +139,19 @@ Prerequisite: 1
 
 Code:   `../code/ds9projsplitter.py`
 Input:  `fwhms/fwhms.pkl`, `regions-n.reg`
-Output: `regions-n-[up,down].reg`
+Output: `regions-n_[up,down].reg`
 
-Code:   `../code/ds9proj2ciao.py`
-Input:  `regions-n-[up,down].reg`
-Output: `regions-n-[up,down].ciaoreg`  # oh
+## Then, convert split region files to ds9 boxes
 
-## Extract spectra (from single ObsID)
+Code:   `../code/ds9proj2box.py`
+Input:  `regions-n_[up,down].reg`
+Output: `regions-n_[up,down]_box.reg`
 
-Code:   CIAO specextract (Python wrapper `ciaoreg2spec.py` tbd)
-Input:  `regions-n-[up,down].ciaoreg`
-Output: `spectra/[up,down]/*.[pi,rmf,arf]`
-
-*Repeat procedure to obtain background spectra, before continuing*
+_Here, stop and check that the up/down regions look okay in ds9_
 
 ## Extract spectra (from multiple ObsIDs)
+
+_Edit the shell scripts to use correct ObsIDs, weights, evt2 files!_
 
 Code:   `../code-specs/[newregion,newspectrum,mergespectra].sh`
 Input:  `regions-n-[up,down].ciaoreg` (WCS fk5 coords)

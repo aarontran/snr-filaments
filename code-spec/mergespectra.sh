@@ -15,12 +15,20 @@ then
 fi
 
 # Tycho's SNR, Hughes 2007
-obsids=(10093 10094 10095 10096 10097 10902 10903 10904 10906)
-wghts=(0.1612156 0.1225565 0.2361635 0.1440111 0.1463404 \
-       0.053847516 0.03258367 0.04726812 0.056013404)
+#obsids=(10093 10094 10095 10096 10097 10902 10903 10904 10906)
+#wghts=(0.1612156 0.1225565 0.2361635 0.1440111 0.1463404 \
+#       0.053847516 0.03258367 0.04726812 0.056013404)
+
+# Kepler's SNR, Reynolds 2006
+obsids=(6714 6715 6716 6717 6718 7366)
+# import numpy
+# exps = np.array([157.82, 159.13, 158.02, 106.81, 107.8, 51.46])
+# print np.sum(exps)
+# print exps / np.sum(exps)
+wghts=(0.21297096 0.21473875 0.21324085 0.14413527 0.14547123 0.06944295)
 
 # Check number of regions to process
-nregs=`ls -l "${1}_${obsids[0]}_src*.pi" | wc -l`
+nregs=`ls -l ${1}_${obsids[0]}_src*.pi | wc -l`
 if [ ${nregs} != 0 ]
 then
     echo "${nregs} regions' spectra will be merged"
@@ -44,6 +52,10 @@ do
     done
     # Remove extra '+' operator
     pi_str=${pi_str:1}
+
+    echo $pi_str
+    echo $rmf_str
+    echo $arf_str
 
     # Merge pi, rmf, arf files (FTOOLS)
     mathpha units=C expr=${pi_str} outfil=${1}_src${n}.pi exposure=CALC \

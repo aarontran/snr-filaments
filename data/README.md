@@ -3,19 +3,15 @@ README for data (mosaics, regions, etc)
 Aaron Tran
 2014 June 11
 
-(last modified: 2014 June 26, but still rather out of date)
+(last modified: 2014 Sept 14, updated only data/images, rest VERY out of date)
 
 Data/images
 -----------
 Brian's mosaics of the ~750 ks Hughes observation, 2009.
 
     0.7-1kev_mosaic.fits
-    0.7-1kev_mosaic_bin.fits
     1-2kev_mosaic.fits
-    1-2kev_mosaic_bin.fits
     2-7kev_mosaic.fits
-    2-7kev_mosaic_bin.fits
-    2009_3to7kev.fits
 
 Additional energy bands (breaking 2-7 keV apart)
 
@@ -23,20 +19,25 @@ Additional energy bands (breaking 2-7 keV apart)
     2-4kev_mosaic.fits
     3-4p5kev_mosaic.fits
     4-7kev_mosaic.fits
-    4p5-7kev_mosaic.fits
+    4.5-7kev_mosaic.fits
 
 Single, 3 GB file with all event counts
 
     merged_evt.fits
 
 Count files for all mosaics (no exposure/vignetting correction), generated from
-`merged_evt.fits`.
+`merged_evt.fits` as:
 
-    *_counts.fits
+    dmcopy "merged_evt.fits[EVENTS][energy=700:1000][bin x=3300:4900:1,y=3300:4900:1]" 0.7-1kev_counts.fits
+    dmcopy "merged_evt.fits[EVENTS][energy=1000:2000][bin x=3300:4900:1,y=3300:4900:1]" 1-2kev_counts.fits
+    dmcopy "merged_evt.fits[EVENTS][energy=1000:1700][bin x=3300:4900:1,y=3300:4900:1]" 1-1.7kev_counts.fits
+    dmcopy "merged_evt.fits[EVENTS][energy=2000:7000][bin x=3300:4900:1,y=3300:4900:1]" 2-7kev_counts.fits
+    dmcopy "merged_evt.fits[EVENTS][energy=2000:3000][bin x=3300:4900:1,y=3300:4900:1]" 2-3kev_counts.fits
+    dmcopy "merged_evt.fits[EVENTS][energy=2000:4000][bin x=3300:4900:1,y=3300:4900:1]" 2-4kev_counts.fits
+    dmcopy "merged_evt.fits[EVENTS][energy=3000:4500][bin x=3300:4900:1,y=3300:4900:1]" 3-4.5kev_counts.fits
+    dmcopy "merged_evt.fits[EVENTS][energy=4000:7000][bin x=3300:4900:1,y=3300:4900:1]" 4-7kev_counts.fits
+    dmcopy "merged_evt.fits[EVENTS][energy=4500:7000][bin x=3300:4900:1,y=3300:4900:1]" 4.5-7kev_counts.fits
 
-Raw observations, downloaded from the CXC Webchaser interface.
-
-    chandra/
 
 Data analysis stuff
 -------------------

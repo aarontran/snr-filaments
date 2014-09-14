@@ -32,9 +32,6 @@ spectra from all ObsIDs and merging them together.
 To try reproducing Brian's image mosaics, use xygrid="3300:4900:1,3300:4900:1"
 (see procedure outlined below for Kepler).
 
-Folder `tycho_thermal` just holds CIAO `merge_obs` output for 1.7-2.5 keV
-image, for poster session.
-
 Kepler's SNR observation
 ------------------------
 
@@ -46,9 +43,9 @@ The exposure times are as follows:
 * 6714, 157.82 ks (repro 2014 July 2)
 * 6715, 159.13 ks (repro 2014 July 2)
 * 6716, 158.02 ks (repro 2014 July 11)
-* 6717, 108.0  ks (repro 2014 July 11)
-* 6718, 110.0  ks (repro 2014 July 11)
-* 7366,  52.0  ks (repro 2014 July 1)
+* 6717, 106.81 ks (repro 2014 July 11)
+* 6718, 107.8  ks (repro 2014 July 11)
+* 7366,  51.46 ks (repro 2014 July 1)
 
 Reprojected images in `kepler_reproj/` generated with CIAO 4.6 as:
 
@@ -70,7 +67,7 @@ Flux images in `kepler/` generated with CIAO 4.6 (manually pick xygrid) as:
     pset flux_obs xygrid="3640:4540:1,3630:4530:1"
     flux_obs kepler_reproj/ kepler/
 
-Count images (not created) can be generated as:
+Count images are generated as:
 
     punlearn dmcopy
     dmcopy "merged_evt.fits[EVENTS][energy=1000:1700][bin x=3640:4540:1,y=3630:4530:1]" \

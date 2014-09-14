@@ -1553,11 +1553,67 @@ Geometric FWHM + error calculations
 Git commit settings, started running tonight at 01:00a, 2014 Saturday Sept. 13.
 
 
+Saturday-Sunday 2014 September 13/14
+====================================
 
+Summary
+-------
+* Work on Kepler pipeline
 
+Kepler data work
+----------------
 
+Generated counts files for Kepler (from `merged_evt.fits`).
+Working off of `regions-1/regions-1.reg`.
 
+Now, just retracing pipeline.  Thank goodness for documentation.
+* Generate profile data, for mosaics and counts files:
+* Generate background spectra.  Currently twiddling stuff by hand:
+  set the ObsIDs, set the weights, etc...  Might have to wrestle with it a bit.
+* Copy and modify profile fitting notebook Kepler.
+  Made several ad hoc tweaks to code, Kepler notebook to get it to work
+  (Tycho notebook no longer functional, but easy to fix).
+* Generate region spectra (w/ upstream/downstream cuts)
+  running now
 
+WARNING: CURRENT FWHM PKL FOR KEPLER REGIONS-1 DATA IS TWIDDLED
+ONLY TEMPORARY -- DO NOT USE FOR DERIVED DATA, MODELING, ETC
+
+I changed data in `regdict[n][lab]['meas']['fwhm']` (and limits/errors) to use
+the `fwhmc` data -- i.e., same profile fit, but taking the maximum at the
+highest data point instead of highest fit point.
+Reason -- with default fit settings, one of the regions couldn't find a FWHM in
+any bands (region 13, best fit strongly /undershoots/ peak).
+
+### Sidebar on coordinate inconsistency
+
+I think I've been using inconsistent coordinate systems etc... background
+links, spectra, regions, etc may all be slightly off (physical coords may
+differ w/ single obsID vs. merged obsID...).  Issue identified w/ pipeline from
+back in July or so.
+
+Brian's `merge_spec` scripts do:
+* convert wcs to physical CIAO coords for each ObsID using the tycho imgs.
+* run specextract from phys CIAO coords, on EACH ObsID's `_repro_evt2.fits`
+* merge spectra together w/ `ftools` stuff
+
+Each ObsID has a different physical coords -- WCS transformation.
+
+My region files are WCS (fk5).  When I convert to Chandra physical coordinates,
+I'm using the `merged_evt.fits` physical coordinates. But, feeding these
+physical coordinates into specextract on a single ObsID will give spectra from
+the wrong location!  I believe this was the issue w/ my background spectra,
+taken from only one ObsID; the regular spectra were merged from the 750ks
+exposure.
+
+Maybe there was another issue, who knows... but I think that was the big one.
+
+Anyways, point is -- main solution is to just run the scripts to get spectra
+from ALL ObsIDs, for consistency.  We'd have to do it for publication figures
+anyways, and we're not running this that frequently.
+
+Model fit outputs
+-----------------
 
 
 

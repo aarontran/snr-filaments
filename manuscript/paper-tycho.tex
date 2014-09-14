@@ -389,8 +389,9 @@ regions at higher energy bands (1--7 keV).
 
 To estimate FWHM uncertainties, we horizontally stretched each best-fit
 profile by mapping radial coordinate $x$ to
-$x'(x) = x (1 + \xi (x-x_0)/(50\arcsec-x))$ with $\xi$ an arbitrary stretching
-parameter; this yields a new profile $h'(x) = h(x'(x))$.
+$x'(x) = x (1 + \xi (x-x_0)/(50\arcsec-x_0))$ with $\xi$ an arbitrary stretching
+parameter and $x_0$ the best-fit rim center from equation~\eqref{eq:prof};
+this yields a new profile $h'(x) = h(x'(x))$.
 We varied $\xi$ (and hence rim FWHM) to vary each profile fit $\chi^2$ by 2.7
 and the stretched or compressed FWHMs as upper/lower bounds on our reported
 FWHMs.
@@ -562,7 +563,7 @@ We do X to the FWHMs (geometric/arithmetic average) within each filament.
 \subsection{Rim fits, spectra, and width measurements}
 
 To perform fits, we took a geometric average of rim widths in each energy band,
-for each filament; 
+for each filament;
 For FWHM errors, I use the standard error of the mean (with some
 minor nuances; I am using sample standard deviation).
 PUT IN METHODS SECTION
@@ -571,7 +572,7 @@ PUT IN METHODS SECTION
 This contrasts with taking an arithmetic average of the rim widths.  The
 geometric average does not represent the expected value of FWHM measurements,
 along the rim.  However, filaments should vary in width along their lengths in
-response to 
+response to
 
 
 A key question is whether we wish to report an average w/ errors, corresponding

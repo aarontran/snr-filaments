@@ -89,30 +89,32 @@ Pipeline, profile and FWHM calculation and plots
 
 ### Software engineering blargh
 
-1. overhaul specextract pipeline (handle region coordinates correctly, test and
-   ensure it works correctly with my adjustments)
 2. rehaul data structuring for FWHMs because it's a pain to plot / organize
+   (mainly, break it into smaller pieces.  Save different types of FWHM
+   measurements to different outputs)
+
 3. include switches to test different measurements/procedures, for
-   reproducibility.
+   reproducibility. (will be accomplished by more modular FWHM, model fitting)
+
 4. proper config files / cmd line arguments for fitting/FWHM analysis scripts?
-5. clean up rsch notes document... keep track of what changes/etc I've been
-   making
 
-* overhaul pipeline for profile fit / FWHM processing again -- it's just so
-  messy, and feels hard to work with
-
-* I think I've been using inconsistent coordinate systems etc... background
-  links, spectra, regions, etc may all be slightly off (physical coords may
-  differ w/ single obsID vs. merged obsID...).  Can't remember the exact issue,
-  need to double check.
-
-* Modularize code (separate out components for profile fitting, spectra
-  extraction, region processing, whatever).  Make it easier to keep track of.
-
-* Update pipeline documentation ...
+  TODO: while going through kepler pipeline -- get the plots from Tycho's SNR.
+  I have a new argument as to why it's not physical to be overshooting in our
+  fits (integrated flux must be consistent).
+  And, some examples of where our overshooting gives spurious behavior
+  (e.g., FWHMs widening at increasing energy) -- that, granted, sounds like it
+  could be experimenter bias, and maybe it is -- but in this case it appears to
+  me consistent w/ our methodology giving misleading results (and it's clear in
+  the graphs)
+  
+  PREPARE ALL MATERIAL TO GO OVER...
+  Tycho, Kepler notebooks (show FWHM energy dependence, show work in progress)
+  (show my case for Tycho's SNR, which regions?  Why should capping maximum at
+  data max be reasonable?)
 
 ### Actual science
 
+Tycho-specific
 * Add more regions -- can we get the highest 2 energy bands, if the 2-3 keV
   band is going bad due to the sulfur line?
 * GENERATE SET OF REGIONS WITH GOOD 0.7-1 keV FWHM, AND SET OF REGIONS WITH BAD
@@ -120,62 +122,33 @@ Pipeline, profile and FWHM calculation and plots
 * Shift region numbering to be more logical (instead of 1, 10-13).
 * Slice smaller regions
 
-* Eventually: run whole pipeline on one set of ALL regions, sampled all around
-  SNR, save the output.  Use this to argue/show why regions are good/bad.
-
 On using different calculations of the FWHM: how do I show the effect of these
 different procedures?  Some kind of normalization? (Figure 10 of Ressler).
 Quantify effects on calculation of `m_E`, B0, eta2.
 
-Bibdesk -- mark up all the papers I've really gone through and understood.
-Then, add the relevant citations and notes, to be sure I haven't missed or
-misunderstood anything.
 
 
 Models for filament widths
 --------------------------
 
+
 ### Main / high-level TO-DOs
 
-* Start geometric average FWHM computation, w/ appropriate errors
-* Start running Kepler pipeline (will help organize code, refresh mind)
-  Data structure/storage / pipeline review, how to store output FWHM data?
-  Clean up current data in limbo
-* When tired/sleepy, make big tables for appendix... and fix rounding/precision
-
+* Write the basic code to load/save data, plot data, merge tables from
+  serialized data.  FINISH the methods, results sections (drafts) (!).
+  Clean up current data in limbo...
 * send new copy to Rob/Brian whenever/if ready, before monday...
-* Bring some kepler data/images on monday...
-
-
-### Weekend plan
-
-* Keep generating tables, and putting together tables into paper
-  (some tonight)
-* Make plots of geometric FWHMs, errors, and fits
-* Finish writing through rest of methods and results, send to Rob/Brian
-  BEFORE SUNDAY.
-
-* Review pipeline layout, code, READMEs.  Draw it out on paper.
-  **address coordinate system inconsistency in ds9, check mergeobs docs**
-  Write the code to save fitting data.  Write code to generate and merge tables
-  automatically (FWHM tables from Fitter object; best fit tables of
-  parameters/errors).  Human intervention only for final cleanup etc.
-
-* Start running Kepler pipeline Saturday night.  Specextract needs several
-  hours, and there will probably be minor issues associated w/ adapting code to
-  Kepler
-
+* Prepare Kepler/Tycho figures for mtg.  Questions, points to discuss.
 
 ### List of plots/subplots/tables
-See my email to Rob/Brian!
 
 Main text:
 * table, geometric average FWHMS + errs + m\_E for each filament
-  *done, needs to be formatted*
+  *need to format and save*
 * table, best fits for each filament
-  *computing, 2014 Sep 13*
+  *need to format and save -- SAVE TO A PKL FILE OF SOME KIND*
 * plots, best fits for each filament
-  *computing, 2014 Sep 13*
+  *done... figure out how to save.*
 * (table, average over flmts of best fits for each region)
   *need flmts 2-5*
 * (table, best fit for each filament with eta2 = 1)
@@ -205,17 +178,16 @@ Supplement/appendix:
 * NOTE my automated rounding is kinda sucking... ugh.  Trust the first 2 or 3
   digits (3 for numbers, 2 for errors), everything else is suspect.
   Fix this...
-
 * maybe useful to compute advection/diffusion lengths from fits?
   Better yet -- ratio of advection/diffusion lengthscales
   problem is that this IS energy dependent.
-
 * ALSO we need `m_E` from this, and the data...
   (Rob, Brian: report this in the results, and make it clear
    what's going on...
-   I also want to report `m_E` as estimated from MODEL fits, which to be
-   clear is a separate "observable" that I expect to be more robust
-   than the point-to-point measurements)
+
+* I also want to report `m_E` as estimated from MODEL fits, which to be
+  clear is a separate "observable" that I expect to be more robust
+  than the point-to-point measurements)
 
   Also, print out `m_E` values, point to point and from `width_dump` model...
   see some of the old notebooks in `code-profiles/` (merge functionality
@@ -224,33 +196,29 @@ Supplement/appendix:
 
 ### Code to do this better
 
-I need a data structure to store best fit parameters + errors if available.
-Critical for data access, manipulation, formatting (stitching tables together
-nicely), checking precision, further python operations, etc.
+FWHMS -- we need to keep the averaged FWHMs, errors, kevs, inds that we are
+using.  Then we can parse them and generate tables
 
-In particular, separate data structure allows us to split data generation and
-plot/table generation completely.  Keep the methods to spew out stuff in
-iPython notebook, for interactive usage / immediate checking while generating.
-(at least, for now, until we can get plotting/stuff working nicely -- once
-the data is saved to a usable format then it's easy to separate)
+    fobj.kevs, fobj.data, fobj.eps, fobj.inds, fobj.title
+    # need field for comment on how computed -- averaging process
+    # which regions were averaged into each filament?
 
-How to best store intermediate numbers?  Some options I'm considering:
-1. copy paste into plain text file
-   need to include some critical metadata:
-   * what pre-generated table was used?
-   * what SNR settings (numbers etc) were used?
+Keep this together WITH the model fit numbers
+
+Push to JSON or YAML output, preferably...
+
+store pkl of numpy array (The one that gets fed into tables), with
+string table output, etc.  Also needs metadata (as above)
+But, easier to manipulate, plot again, etc.
+
+need to include some critical metadata:
+   * what pre-generated table was used? (filename)
+   * what SNR settings (numbers etc) were used? (snr config options)
+     (for our fits, which may differ from settings for pre-generated table)
+     (this may differ by region/filament)
+   * what numbers were used (kevs/data/eps/ind, src FWHMS pkl)
    * what error keywords / args were used?
    * which commit should we go back to?
-   * have I modified the data from its original/raw state?
-2. store pkl of numpy array (The one that gets fed into tables), with
-   string table output, etc.  Also needs metadata (as above)
-   But, easier to manipulate, plot again, etc.
-3. spreadsheet of data (+ metadata of course)
-
-Later, more stuff for pipeline:
-* routine to manually verify data and errors...
-* routine to save config files (for fitting numbers...)
-* routine to merge tables together
 
 
 ### VARIOUS CORRECTIONS, QUESTIONS, ETC
@@ -306,12 +274,8 @@ we can interpret our model fit results correctly?...
 
 * Remember brian's suggestion (from Friday july 25): how does mE depend on
   energy? what happens if you fit a straight power law to that???
-
 * Look at azimuthal dependence of B field, robustness of numbers from approx
-  python model. Brian asked, does B field scale with stronger energy
-  dependence? (NOT ADDRESSED as of July 30)
-  (answer: yes, basically, for roughly constant FWHMs. more energy dependence
-  requires more B field, less eta2)
+  python model.
 
 
 ### Kepler, CIAO stuff

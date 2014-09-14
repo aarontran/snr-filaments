@@ -1,0 +1,25 @@
+# Region file format: DS9 version 4.1
+global color=green dashlist=8 3 width=1 font="helvetica 10 normal roman" select=1 highlite=1 dash=0 fixed=0 edit=1 move=1 delete=1 include=1 source=1
+physical
+# projection(3881.497,4099.5078,3850.3735,4114.3791,13.843882) color=magenta width=3
+# projection(3879.2588,4085.2594,3843.9938,4100.2516,16.369472) color=magenta width=3
+# projection(3874.014,4069.7502,3837.2463,4083.2581,13.012927) color=magenta width=3
+# projection(3869.2501,4060.7451,3832.5125,4068.5008,10.47372) color=magenta width=3
+# projection(3865.763,4051.3744,3830.5297,4056.6914,7.7109756) color=magenta width=3
+# projection(3859.0132,4043.9949,3829.6238,4049.3741,9.0952642) color=magenta width=3
+# projection(3857.5117,4035.7832,3827.5839,4039.6378,8.0996341) color=magenta width=3
+# projection(3858.7387,4003.3851,3834.6319,3986.7534,8.0769715) color=magenta width=3
+# projection(3876.499,3986.8848,3855.7404,3965.7421,15.24439) color=magenta width=3
+# projection(3914.2566,3967.7456,3869.5007,3949.7492,10.269106) color=magenta width=3
+# projection(3917.7466,3960.9982,3875.2618,3935.1162,13.4425) color=magenta width=3
+# projection(3944.6113,3937.5065,3960.6131,3902.2444,10.567215) color=magenta width=3
+# projection(4080.9863,3887.6188,4077.4983,3852.6187,16.566341) color=magenta width=3
+# projection(4110.37,3881.379,4122.3666,3851.1349,14.637114) color=magenta width=3
+# projection(4112.7527,3900.383,4113.745,3877.131,6.6403659) color=magenta width=3
+# projection(4134.5072,3900.1182,4137.3709,3875.1181,7.4602033) color=magenta width=3
+# projection(4165.5938,3909.9541,4176.8807,3888.124,9.5589024) color=magenta width=3
+# projection(4226.7469,3925.2532,4249.7481,3913.116,13.102622) color=magenta width=3
+# projection(4291.4948,4044.6336,4310.6387,4026.2559,12.370122) color=magenta width=3
+# projection(4301.736,4195.5057,4303.246,4228.7574,16.811728) color=magenta width=3
+# projection(4210.1318,4247.6332,4233.7391,4259.8662,15.983516) color=magenta width=3
+# projection(3878.9668,4125.9504,3857.9979,4144.1776,18.12561) color=magenta width=3

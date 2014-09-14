@@ -12,10 +12,11 @@ pset specextract weight=yes correct=no
 pset specextract grouptype=NONE binspec=NONE
 pset specextract clobber=yes
 
-obsids=(10093 10094 10095 10096 10097 10902 10903 10904 10906)
+# obsids=(10093 10094 10095 10096 10097 10902 10903 10904 10906)
+obsids=(6714 6715 6716 6717 6718 7366)
 
 # Specextract - this takes 2-4 hours
 for id in "${obsids[@]}";
 do
-    specextract "../../../chandra/${id}/repro/acisf${id}$_repro_evt2.fits[sky=@${1}_${id}.reg]" "spectra/${1}/${id}"
+    specextract "../../chandra/${id}/repro/acisf0${id}_repro_evt2.fits[sky=@${1}_${id}.reg]" "spectra/${1}_${id}"
 done

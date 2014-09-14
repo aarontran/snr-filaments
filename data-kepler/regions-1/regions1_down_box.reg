@@ -1,0 +1,25 @@
+# Region file format: DS9 version 4.1
+global color=green dashlist=8 3 width=1 font="helvetica 10 normal roman" select=1 highlite=1 dash=0 fixed=0 edit=1 move=1 delete=1 include=1 source=1
+fk5
+box(262.70393,-21.490422,1.1146839",6.8111899",154.36993) # color=magenta width=3
+box(262.70517,-21.492236,5.4592808",8.0537802",156.99284) # color=magenta width=3
+box(262.706,-21.494181,3.7470657",6.4023601",159.83558) # color=magenta width=3
+box(262.70645,-21.49557,3.5951683",5.1530702",168.04983) # color=magenta width=3
+box(262.70689,-21.496774,3.5224809",3.7938",171.49027) # color=magenta width=3
+box(262.70689,-21.497993,4.4264933",4.47487",169.65866) # color=magenta width=3
+box(262.70712,-21.499086,2.735484",3.98502",172.67853) # color=magenta width=3
+box(262.70641,-21.503985,1.9448699",3.97387",214.25732) # color=magenta width=3
+box(262.70307,-21.506483,4.3548192",7.5002399",225.59239) # color=magenta width=3
+box(262.69897,-21.509109,4.1133426",5.0524002",201.84685) # color=magenta width=3
+box(262.69723,-21.509864,3.0097412",6.61371",211.04144) # color=magenta width=3
+box(262.69252,-21.512145,2.9274252",5.1990698",294.32993) # color=magenta width=3
+box(262.67223,-21.519587,4.2526365",8.1506398",264.57786) # color=magenta width=3
+box(262.6679,-21.519749,2.9507753",7.2014601",291.9944) # color=magenta width=3
+box(262.6682,-21.517672,3.923975",3.26706",272.44433) # color=magenta width=3
+box(262.66494,-21.517393,1.9078068",3.67042",276.04382) # color=magenta width=3
+box(262.6599,-21.516289,2.2134306",4.70298",297.9682) # color=magenta width=3
+box(262.65092,-21.513245,0.41995297",6.44649",331.2997) # color=magenta width=3
+box(262.64159,-21.497032,1.1675543",6.0861",315.81401) # color=magenta width=3
+box(262.64215,-21.476108,1.8156474",8.2713702",87.873643) # color=magenta width=3
+box(262.65408,-21.468302,1.5806019",7.8638899",27.09189) # color=magenta width=3
+box(262.70444,-21.486834,1.6415948",8.9178001",139.04034) # color=magenta width=3
