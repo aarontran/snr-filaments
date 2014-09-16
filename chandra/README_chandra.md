@@ -47,6 +47,12 @@ The exposure times are as follows:
 * 6718, 107.8  ks (repro 2014 July 11)
 * 7366,  51.46 ks (repro 2014 July 1)
 
+    >>> import numpy as np
+    >>> t = np.array([157.82, 159.13, 158.02, 106.81, 107.8, 51.46]) 
+    >>> print np.sum(t)
+    >>> print t / np.sum(t)
+    [ 0.21297096  0.21473875  0.21324085  0.14413527  0.14547123  0.06944295]
+
 Reprojected images in `kepler_reproj/` generated with CIAO 4.6 as:
 
     ciao
@@ -94,5 +100,29 @@ The exposure times are as follows:
 * 5196,  49.52 ks (repro 2014 July 14)
 * 5319,  42.26 ks (repro 2014 July 14)
 * 5320,  54.37 ks (repro 2014 July 14)
+
+    >>> import numpy as np
+    >>> t = np.array([148.62,135.04,143.48,163.5,164.53,79.05,49.52,42.26,54.37])
+    >>> print np.sum(t)
+    >>> print t / np.sum(t)
+    [ 0.15159583  0.13774391  0.14635291  0.16677377  0.16782439  0.08063282
+      0.05051154  0.04310617  0.05545865]
+
+Reprojected with CIAO 4.6, CALDB 4.6.1.1, with commands:
+
+    ciao
+    punlearn ardlib
+    punlearn reproject_obs
+    reproject_obs infiles="4634,4635,4636,4637,4638,4639,5196,5319,5320" \
+                  outroot="casA_reproj/"
+
+> Warning: the merged event file `casA_reproj/merged_evt.fits`
+>    should not be used to create ARF/RMF/exposure maps because
+>       the `RA_NOM` keyword varies by 0.02409265267 (limit is 0.0003)
+>       the `DEC_NOM` keyword varies by 0.055766248121 (limit is 0.0003)
+>       the `ROLL_NOM` keyword varies by 285.180137433 (limit is 1.0)
+>       the EXPTIME keyword contains: 3.0 3.2
+>         which means that the DTCOR value, and hence LIVETIME/EXPOSURE
+>         keywords are wrong
 
 

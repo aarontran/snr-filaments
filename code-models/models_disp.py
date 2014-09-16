@@ -24,6 +24,75 @@ import models_exec as mex
 
 from fplot import fplot
 
+# ==============================================
+# Functions to save numbers/data from generators
+# ==============================================
+
+def generate_fwhm_tab(labels, fobj_gen, title):
+    """Input: generator function, that makes Fitter() objects
+    and energy labels, Python list of strings
+    Output: something similar to other tables...
+    """
+    #table = ListTable()
+    #table.append([''] + labels)
+    ltab = LatexTable([''] + labels,
+                      ['{}'] + [1]*len(labels),
+                      title, prec=2)
+
+    for fobj in fobj_gen():
+        kevs, data, eps, inds = fobj.kevs, fobj.data, fobj.eps, fobj.inds
+
+        # Compute m_E
+        me = m_expt(kevs, data)
+        meeps = m_expt_err(kevs, data, eps)
+
+        # Build row for latex table
+        ltr_fwhm = [fobj.title]
+        ltr_me = [r'$m_E$']
+
+        # TODO HUGE ASSUMPTION -- only first n indices are dropped
+        # (i.e., once you find a FWHM in some band, you find a FWHM in all
+        # bands above...)  Very fragile code.  Works for Tycho...
+        idx = 0
+        for n in xrange(len(labels)):
+            if n not in inds:
+                ltr_fwhm.extend([float('nan'),float('nan')])
+                ltr_me.extend([float('nan'),float('nan')])
+            else:
+                ltr_fwhm.append(data[idx])
+                ltr_fwhm.append(eps[idx])
+                if idx > 0:
+                    ltr_me.append(me[idx-1])
+                    ltr_me.append(meeps[idx-1])
+                else:
+                    ltr_me.extend([float('nan'),float('nan')])
+                idx += 1
+
+        ltab.add_row(*ltr_fwhm)
+        ltab.add_row(*ltr_me)
+
+    return ltab
+
+
+def m_expt(ens, widths):
+    """Calculated following Ressler et al. [2014]
+    Output array size is one less than that of ens/widths
+    """
+    e2, e1 = ens[1:], ens[:-1]
+    w2, w1 = widths[1:], widths[:-1]
+    return np.log(w2/w1) / np.log(e2/e1)
+
+def m_expt_err(ens, widths, eps):
+    """Propagate filament width errors in quadrature
+    Output array size is one less than that of ens/widths
+    """
+    e2, e1 = ens[1:], ens[:-1]
+    w2, w1 = widths[1:], widths[:-1]
+    w2e, w1e = eps[1:], eps[:-1]
+
+    me = m_expt(ens, widths)
+    return np.abs(me * 1./np.log(e2 / e1) * np.sqrt((w1e/w1)**2 + (w2e/w2)**2))
+
 # ==================================
 # Functions to control, display fits
 # ==================================
@@ -215,7 +284,6 @@ class ListTable(list):
         html.append("</table>")
         return ''.join(html)
 
-
 class LatexTable(object):
     """Format numpy array data with errors in a nice LaTeX'd table.
     Designed for LaTeX package 'booktabs' (what about aastex deluxetable?)
@@ -253,10 +321,11 @@ class LatexTable(object):
     """
 
     # Initializes: header, labels, rows, footer; rspec, types
-    def __init__(self, labs, types, title):
+    def __init__(self, labs, types, title, prec=4):
         """Types specify column types; 0,1,2 = no/single/double +/- errors"""
 
         self.types = types
+        self.prec = prec
 
         # Build table/column spec
         hlst = [r'\begin{tabular}{@{}']
@@ -321,10 +390,10 @@ class LatexTable(object):
         ind = 0
         for t in self.types:
             if t == 1:
-                args[ind:ind+2] = self.fmt_numerr(*args[ind:ind+2])
+                args[ind:ind+2] = self.fmt_numerr(*args[ind:ind+2], prec=self.prec)
                 ind += 2
             elif t == 2:
-                args[ind:ind+3] = self.fmt_num_2err(*args[ind:ind+3])
+                args[ind:ind+3] = self.fmt_num_2err(*args[ind:ind+3], prec=self.prec)
                 ind += 3
             else:
                 ind += 1
@@ -334,20 +403,19 @@ class LatexTable(object):
     # Sept. 10 -- forget the precision business.  Let the user deal with
     # proper rounding, report more than needed in floating pt form
 
-    def fmt_num_2err(self, num, errpos, errneg):
-        nstr = '{:0.3g}'.format(num)
-        estr_pos = '+{:0.2g}'.format(errpos)
-        estr_neg = '-{:0.2g}'.format(errneg)
+    def fmt_num_2err(self, num, errpos, errneg, prec=4):
+        fmt = '{:0.' + str(prec) + 'f}'
+        nstr = fmt.format(num)
+        estr_pos = ('+'+fmt).format(errpos)
+        estr_neg = ('-'+fmt).format(errneg)
 
-        return self.strfl(nstr), self.strfl(estr_pos), self.strfl(estr_neg)
+        return nstr, estr_pos, estr_neg
     
-    def fmt_numerr(self, num, err):
-        nstr = '{:0.3g}'.format(num)
-        estr = '{:0.2g}'.format(err)
-        return self.strfl(nstr), self.strfl(estr)
-
-    def strfl(self, x):  # Yes, really.  See http://stackoverflow.com/q/3410976
-        return str(float(x))
+    def fmt_numerr(self, num, err, prec=4):
+        fmt = '{:0.' + str(prec) + 'f}'
+        nstr = fmt.format(num)
+        estr = fmt.format(err)
+        return nstr, estr
 
 #    def fmt_num_2err(self, num, errpos, errneg):
 #        """Format number w/error nicely.

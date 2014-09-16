@@ -1539,6 +1539,7 @@ discuss with Steve/Sean better...
 
 Typed up short justification for geometric error
 Added explanation of error calculation to tex file.
+(edit: removed Sept 16)
 
 Determined how to get error on geometric means (after some fumbling, staring at
 older papers, etc), as follows:
@@ -1615,6 +1616,91 @@ anyways, and we're not running this that frequently.
 Model fit outputs
 -----------------
 
+Ah, deferring for now... need ad hoc tables first, to have numbers assembled.
+Added very ad hoc code to generate FWHM tables.
+
+But, I must revisit this...
+Not committing for now.  Will revise code tomorrow.
+
+
+(Week ?!) Monday 2014 September 15
+==================================
+
+Summary
+-------
+* Morning meeting - how to best present results, organize text, interpret
+  numbers...
+
+Meeting
+-------
+
+* Lots of comments thanks to Brian
+* Spectra stuff before FWHMs.  Present tables with chi-squares from fits
+  before/after filament.  Did we come to a consensus on how to do the
+  downstream fits?  Maybe not.
+* Simple model -- present results for 1 filament for comparison, then
+  give sentences -- it doesn't make a difference, so might as well use the full 
+  result.
+* Reporting model fit chi-squares and plots -- the chi-square is so large as to
+  be practically meaningless (it doesn't tell us whether our model even makes
+  sense or not, we're just trying to make the shoe fit).  Could we focus on
+  just the plots of best fits, and derived errors?
+* What to do about tables, errors -- move forward by averaging within filament.
+* Magnetic field -- we have strong fields, no matter what we do.
+
+* Kepler -- focus on one good filament.  Show some other regions for
+  comparison, see how they are similar/differ.
+
+But, paper is absolutely first priority.  Get a more complete version to
+Rob/Brian asap (Rob refrained from commenting since it was so un-fleshed out at
+this stage), then we can send around to collaborators.
+
+
+Paper writing
+-------------
+
+Added more flesh to introduction, spectra, filled in some number of citations
+and details.
+
+
+FWHM data organization
+----------------------
+
+Come back here.  I think I have to be more data-centric, less pipeline
+focused.  Data, numbers are more permanent than may be thought... if only by
+pure inertia (that once generated, there is a delay to generate new data).
+
+Plan: figure out how to save the data smartly.  Manually convert some old data
+over (and make a note of it, and how to regenerate it).
+
+Then, write/modify scripts to generate publication-quality figures.
+These should be separated from the data processing pipeline -- but can be
+invoked by the pipeline.
+
+
+Cas A set-up
+------------
+Start running `reproject_obs` as I write.
+
+
+Tuesday 2014 September 16
+=========================
+
+Summary
+-------
+* Paper writing - fleshing out + layout planning
+
+Paper writing
+-------------
+Finish incorporating Brian's comments, ideas from mtg yesterday into text.
+Fleshed out more of introduction, methods, results.  Cleaned, restructured
+layout in anticipation of planned tables/numbers to report.
+
+Plan is to go back to code, now, with better idea of what must be generated.
+Then, create all necessary tables and SAVE the data.
+
+Code work
+---------
 
 
 

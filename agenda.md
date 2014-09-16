@@ -131,6 +131,17 @@ Quantify effects on calculation of `m_E`, B0, eta2.
 Models for filament widths
 --------------------------
 
+WRITE -- incorporate ALL comments and make new tables, figures before sending
+new version (aim for, let's say, Thursday?).  This includes writing new code to
+process files/fwhms, make tables.  Basically, just save the data somehow and it
+will be okay.
+
+INCLUDE PLOTS OF best/worst chi-squared fits !!!!!
+
+Subtract `min(C_d, C_u)` from profiles before computing FWHMs?
+Select slightly better regions: regions 2,3, 6,7 should extend a little bit
+more ahead of the shock for consistency.
+Slice up smaller regions?  To get more regions in each filament.
 
 ### Main / high-level TO-DOs
 
@@ -172,26 +183,15 @@ Supplement/appendix:
   *rerun SN1006, flmt 4, 3 energy bands for completeness*
 
 
-### Paper/table to-dos
-* LATEX TABLE GENERATING -- List number of DOFs where relevant.
-  or report chisqr red directly.
-* NOTE my automated rounding is kinda sucking... ugh.  Trust the first 2 or 3
-  digits (3 for numbers, 2 for errors), everything else is suspect.
-  Fix this...
+### Table generation
+* Report reduced chisqr + degrees of freedom.
 * maybe useful to compute advection/diffusion lengths from fits?
   Better yet -- ratio of advection/diffusion lengthscales
-  problem is that this IS energy dependent.
-* ALSO we need `m_E` from this, and the data...
-  (Rob, Brian: report this in the results, and make it clear
-   what's going on...
+  This IS energy dependent.  Does it help us say anything?
 
-* I also want to report `m_E` as estimated from MODEL fits, which to be
-  clear is a separate "observable" that I expect to be more robust
+* Maybe report `m_E` as estimated from MODEL fits, which, to be
+  clear, is a separate "observable" that I expect to be more robust
   than the point-to-point measurements)
-
-  Also, print out `m_E` values, point to point and from `width_dump` model...
-  see some of the old notebooks in `code-profiles/` (merge functionality
-  together and throw out old / unused things)
 
 
 ### Code to do this better
@@ -202,8 +202,6 @@ using.  Then we can parse them and generate tables
     fobj.kevs, fobj.data, fobj.eps, fobj.inds, fobj.title
     # need field for comment on how computed -- averaging process
     # which regions were averaged into each filament?
-
-Keep this together WITH the model fit numbers
 
 Push to JSON or YAML output, preferably...
 
@@ -268,6 +266,7 @@ we can interpret our model fit results correctly?...
 * Check numerical prefactor 8.3 TeV for electron cutoff energy
 
 * Check: sean used energy cutoff in all his model fits? (table 8)
+  (affirmed in Section 4.3)
 
 
 ### General (higher level to-dos)
@@ -278,13 +277,10 @@ we can interpret our model fit results correctly?...
   python model.
 
 
-### Kepler, CIAO stuff
+### CIAO stuff
 
 * sanity check that when I run CIAO `merge_obs`, I get the same files that
   Brian has been sending me...
-* Question: looks like `reproject_obs` will give evt file (which can then be
-  partitioned by `dmcopy`, is that good enough....
-* Read `merge_obs` documentation, play with outputs
 
 
 ### Conceptual/background/physics questions (look up and/or ask)
@@ -302,7 +298,7 @@ we can interpret our model fit results correctly?...
   the shock (I suppose as they advect/diffuse the power law distrib. may be
   modified but still persists?).  How long should the turbulence persist,
   time/lengthscale? (same, related by plasma advection speed)
-* How to get larger compression ratios?  What does it imply?
+* _How_ to get larger compression ratios?  What does it imply?
 * Why is cutoff energy set by equating loss and acceleration times?
   The electrons radiate faster than they can be accelerated?  But that seems
   weird -- because I thought the acceleration is what gives rise to the
