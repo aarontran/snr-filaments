@@ -70,6 +70,8 @@ Flux images in `kepler/` generated with CIAO 4.6 (manually pick xygrid) as:
 
     punlearn flux_obs
     pset flux_obs bands="0.7:1:0.85, 1:2:1.5, 2:7:4.5"
+    # pset flux_obs bands="2:4:3, 4:7:5.5"  # More bands
+    # pset flux_obs bands="2:3:2.5, 3:4.5:3.75, 4.5:7:5.75"  # Moooore bands
     pset flux_obs xygrid="3640:4540:1,3630:4530:1"
     flux_obs kepler_reproj/ kepler/
 
@@ -125,4 +127,18 @@ Reprojected with CIAO 4.6, CALDB 4.6.1.1, with commands:
 >         which means that the DTCOR value, and hence LIVETIME/EXPOSURE
 >         keywords are wrong
 
+Generate flux, count images with the usual:
 
+    punlearn flux_obs
+    pset flux_obs bands="0.7:1:0.85, 1:2:1.5, 2:7:4.5"
+    pset flux_obs xygrid="3700:4800:1,3400:4400:1"
+    pset flux_obs nproc=3
+    flux_obs casA_reproj/ casA/
+
+    punlearn dmcopy
+    dmcopy "merged_evt.fits[EVENTS][energy=700:1000][bin x=3700:4800:1,y=3400:4400:1]" \
+           outfile="0.7-1kev_counts.fits"
+    dmcopy "merged_evt.fits[EVENTS][energy=1000:2000][bin x=3700:4800:1,y=3400:4400:1]" \
+           outfile="1-2kev_counts.fits"
+    dmcopy "merged_evt.fits[EVENTS][energy=2000:7000][bin x=3700:4800:1,y=3400:4400:1]" \
+           outfile="2-7kev_counts.fits"

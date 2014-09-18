@@ -154,15 +154,11 @@ Slice up smaller regions?  To get more regions in each filament.
 ### List of plots/subplots/tables
 
 Main text:
-* table, geometric average FWHMS + errs + m\_E for each filament
-  *need to format and save*
-* table, best fits for each filament
-  *need to format and save -- SAVE TO A PKL FILE OF SOME KIND*
-* plots, best fits for each filament
-  *done... figure out how to save.*
-* (table, average over flmts of best fits for each region)
+* table, best fit parameters for each region
+  *rerun regions 11-13*
+* table, average over flmts of best fits for each region
   *need flmts 2-5*
-* (table, best fit for each filament with eta2 = 1)
+* table, best fit for each filament with eta2 = 1
   *done, LaTeXed*
 * (table, best simple model fits for each filament -- highlight differences)
 * (table, best fit for global average)
@@ -174,10 +170,6 @@ Supplement/appendix:
 * plots, profile widths/fits for each region
   *rerun regions 11-13*
 * table, spectral fit params + line detection/width for each region
-* (table, best fit parameters for each region)
-  *rerun regions 11-13*
-* (table, plots, best fits w/ different averaging method)
-  *need FWHM table; fits, plots done (arithmetic averaging)*
 * (table, best fit parameters w/ different FWHM calculation method)
 * (SN 1006 comparison to Sean's data)
   *rerun SN1006, flmt 4, 3 energy bands for completeness*

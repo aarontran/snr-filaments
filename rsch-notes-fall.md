@@ -22,12 +22,15 @@ Table of contents
 * Week 10 - full model grid-best-"fits" (test fits, error annealing w/ SN 1006)
             port full model code to Python, optimize for speed
 * Week 11 - one week break
-* Week 12 - code for LaTeX tables; more precise manual error calculations.
+* Week 12 - (8/18) LaTeX table code; more precise manual error calculations.
             Debug/test new full model
-* Week 13 - refactor model exec/disp code.  Debug error calculations
+* Week 13 - (8/25) refactor model exec/disp code.  Debug error calculations
             extensively.
-* Week 14 - run suite of error calculations
-* Week 15 - 
+* Week 14 - (9/1) run suite of error calculations
+* Week 15 - (9/8)
+* Week 16 - (9/15)
+* Week 17
+* Week 18
 
 (week 10 included for continuity)
 
@@ -1623,7 +1626,7 @@ But, I must revisit this...
 Not committing for now.  Will revise code tomorrow.
 
 
-(Week ?!) Monday 2014 September 15
+(Week 16) Monday 2014 September 15
 ==================================
 
 Summary
@@ -1655,13 +1658,11 @@ But, paper is absolutely first priority.  Get a more complete version to
 Rob/Brian asap (Rob refrained from commenting since it was so un-fleshed out at
 this stage), then we can send around to collaborators.
 
-
 Paper writing
 -------------
 
 Added more flesh to introduction, spectra, filled in some number of citations
 and details.
-
 
 FWHM data organization
 ----------------------
@@ -1699,8 +1700,37 @@ layout in anticipation of planned tables/numbers to report.
 Plan is to go back to code, now, with better idea of what must be generated.
 Then, create all necessary tables and SAVE the data.
 
-Code work
----------
+Wednesday 2014 September 17
+===========================
+
+Summary
+-------
+
+
+Cas A energy band images
+------------------------
+
+Planning to run CIAO `flux_obs` on reprojected Cas A data, but something is
+amiss -- the edges of the remnant are cut off in the reprojected files,
+and in the repro'd evt2 files.  But, after testing `dmcopy` with a specified xy
+grid, it looks okay (I hope).
+
+Runnning CIAO `flux_obs` on reprojected Cas A data, then `dmcopy`.
+
+FWHM fitting and calculation
+----------------------------
+
+On to code wrangling!
+
+Pulled out script to process profiles and identify fit domains.
+Massively restructured FWHM processing and fitting -- should be easier to work
+with now, mainly less cluttered and a lot of code refactored.
+
+If running variants on pipeline, now fed into new folders/data, instead of
+cramming into one region pickle.
+
+
+
 
 
 

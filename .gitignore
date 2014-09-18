@@ -4,6 +4,7 @@
 chandra/**
 !chandra/*.*
 *.fits
+*.img
 
 # Articles, many binary files
 papers
@@ -38,6 +39,7 @@ working-interm
 *.dat
 *.log
 *.errlog
+*.fitlog
 
 # Spectra (specextract)
 *.pi

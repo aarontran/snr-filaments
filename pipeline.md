@@ -19,6 +19,9 @@ filenames, numbers/ordering, etc..., which generally hold if you follow the
 pipeline.  Manually moving files a lot is not the best idea (best to rerun the
 pipeline).  Numbering/ordering follows region file order, starting from 1.
 
+WARNING 2: always specify labels in order (0.7-1kev, 1-2kev, 2-7kev, etc...)
+Many bits of code will assume ordered labels as they pass data around.
+
 Directory structure
 ===================
 Idealized, update as needed... (set-up 2014 July 8, somewhat following
@@ -62,21 +65,27 @@ Ordered in order of generation (to try to make data dependencies clearer)
                                   *.rmf
                                   *.arf
 
-    code/ regions/ ds9projplotter.py
+    code/ fplot.py
+          matplotlibrc
+
+          regions/ ds9projplotter.py
                    ds9projsplitter.py
                    ds9proj2box.py
                    ds9projangle.py
                    (regparse.py)
+                   (fplot.py, matplotlibrc)
 
-          profiles/ profile_process_*.ipynb
-                    (crvfit.py, ffwhm,py, fit_funcs.py, fsmooth.py)
+          profiles/ prep_profile_fit.py
+                    profile_process_*.ipynb
+                    regdict.py
+                    (crvfit.py, ffwhm.py, fit_funcs.py, fsmooth.py)
 
-          spec/ newregion.sh
-                newspectrum.sh
-                mergespectra.sh
-                spec_linkbg.py
-                spec_fit.py
-                (spec_clearbg.py)  # For when you mess up
+          spectra/ newregion.sh
+                   newspectrum.sh
+                   mergespectra.sh
+                   spec_linkbg.py
+                   spec_fit.py
+                   (spec_clearbg.py)  # For when you mess up
 
           models/ *-fit-tables.ipynb
                   models_disp.py  # Still being twiddled
@@ -123,13 +132,23 @@ Code:   `code-reg/ds9projplotter.py`
 Input:  `regions-n.reg`, `*_mosaic.fits`, `*_counts.fits`
 Output: `profiles/prf_[...].dat`, `profiles/prf-cts_[...].dat`
 
+## Compute profile errors & radial distances, find fit domain cuts
+
+Code:   `code-prf/prep_profile_fit.py`
+Input:  `regions-n.physreg`, `prf*.dat`
+Output: `prf-proc*.[dat,npz]`, `prf-proc_fit_cuts.[dat,npz]`
+
+Set smoothing window, binsize (known a priori), etc here
+
 ## Fit radial profiles and obtain FWHMs
 
-Code:   `code-profiles/profile_process.ipynb`
-Input:  `regions-n.reg`, `regions-n.physreg`, `profiles/prf_*.dat`
-Output: `fwhms/fwhms.[txt, pkl, log]`
+Code:   `code-profiles/profile_process_*.ipynb`
+Input:  `regions-n.reg`, `regions-n.physreg`, `profiles/prf-proc_*.dat`
+Output: `fwhms/fwhms_*.[pkl,json]`, `fwhms/fwhms_spec_cuts.[npz,dat]`
 
-_LOTS OF THINGS TO CHECK, REVISE IN IPYTHON NOTEBOOK_
+Review code in IPython notebook and make any necessary changes, adjustments,
+etc.
+
 
 Pipeline 2: extract and fit spectra
 ===================================
