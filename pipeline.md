@@ -30,40 +30,44 @@ the idea from a Software Carpentry lecture
 
 Ordered in order of generation (to try to make data dependencies clearer)
 
-    data/ *.fits
-          README.md
-          notes-regions.md  # Describe how regions are selected
+    data-*/ *.fits
+            README.md
 
-          region-ID/ README.md  # Describe how spectra/profiles are derived
-                     regionID.reg      # from region files (scripts, dates, cmds)
-                     *.jpg      # Images of regions on SNR, etc
+            region-ID/ regionID.reg
+                       imgs/ *.jpg  # Images of regions on SNR
+                             *.eps
 
-                     profiles/ *.dat
-                               plots/ *.pdf
-                                      *.png
+                       profiles/ prf_*.dat
+                                 prf-cts_*.dat
+                                 prf-proc_*.dat
+                                 prf-proc_*.npz  # These are stable
+                                 plots/ *.png
 
-                     fwhms/ *.pkl
-                            *.txt
-                            #plots/ *.pdf  # e.g. Fig. 10 of Ressler
-                            #model/ *.txt  # Modeling results?
+                       fwhms/ fwhms_*.pkl
+                              fwhms_*.json
+                              fwhms_spec_cut.npz
+                              fwhms_spec_cut.dat
 
-                     spectra/ *.pi  # Both down/up sets
-                              *.rmf
-                              *.arf
-                              plots/ *.pdf   # Plots of spectra/fits
-                                     *.ps
-                              fits/ *.txt  # Fitting information
-                                    *.qdp  # from XSPEC, etc.
+                              model-fits/ *.pkl  # All model fit results!
+                                          *.json
 
-                    model-fits/
+                        fwhms-cap/ ...  # Same structure
+                        fwhms-nobkg/ ...  # BUT, spectra must always be
+                                          # derived from fwhms/*
 
+                       spectra/ *.pi  # Both down/up sets
+                                *.rmf
+                                *.arf
+                                plots/ *.pdf   # Plots of spectra/fits
+                                       *.ps
+                                fits/ *.txt  # Fitting information
+                                      *.qdp  # from XSPEC, etc.
 
-          background-ID/ README.md  # as for regions
-                         *.reg
-                         *.ciaoreg
-                         spectra/ *.pi
-                                  *.rmf
-                                  *.arf
+            background-ID/ *.reg
+                           *.ciaoreg
+                           spectra/ *.pi
+                                    *.rmf
+                                    *.arf
 
     code/ fplot.py
           matplotlibrc
@@ -93,6 +97,8 @@ Ordered in order of generation (to try to make data dependencies clearer)
                   tables/...  # SNR specific tables -- but this is dependent on
                               # FWHM measurements!
                   (models.py, models_exec.py, parutils.py, full model codes)
+
+          prettify/
 
     # Parentheses denote utility/helper-type modules
 
@@ -126,23 +132,21 @@ physical coordinates.
 
 Output: `regions-n.reg`, `regions-n.physreg`
 
-## Generate radial profiles from regions, mosaics and count files
+## Generate, process radial profiles from regions, mosaics and count files
 
-Code:   `code-reg/ds9projplotter.py`
+Code:   `code/regions/ds9projplotter.py`
 Input:  `regions-n.reg`, `*_mosaic.fits`, `*_counts.fits`
 Output: `profiles/prf_[...].dat`, `profiles/prf-cts_[...].dat`
 
-## Compute profile errors & radial distances, find fit domain cuts
-
-Code:   `code-prf/prep_profile_fit.py`
+Code:   `code/profiles/prep_profile_fit.py`
 Input:  `regions-n.physreg`, `prf*.dat`
 Output: `prf-proc*.[dat,npz]`, `prf-proc_fit_cuts.[dat,npz]`
 
-Set smoothing window, binsize (known a priori), etc here
+Set smoothing window, binsize (known a priori), etc.
 
 ## Fit radial profiles and obtain FWHMs
 
-Code:   `code-profiles/profile_process_*.ipynb`
+Code:   `code/profiles/profile_process_*.ipynb`
 Input:  `regions-n.reg`, `regions-n.physreg`, `profiles/prf-proc_*.dat`
 Output: `fwhms/fwhms_*.[pkl,json]`, `fwhms/fwhms_spec_cuts.[npz,dat]`
 
@@ -157,7 +161,7 @@ Prerequisite: 1
 ## Prep/split regions based on profile fits
 
 Code:   `../code/ds9projsplitter.py`
-Input:  `fwhms/fwhms.pkl`, `regions-n.reg`
+Input:  `fwhms/fwhms_spec_cut.npz`, `regions-n.reg`
 Output: `regions-n_[up,down].reg`
 
 ## Then, convert split region files to ds9 boxes
@@ -167,16 +171,22 @@ Input:  `regions-n_[up,down].reg`
 Output: `regions-n_[up,down]_box.reg`
 
 _Here, stop and check that the up/down regions look okay in ds9_
+_Remove all dashes from filenames_
 
 ## Extract spectra (from multiple ObsIDs)
 
 _Edit the shell scripts to use correct ObsIDs, weights, evt2 files!_
 
 Code:   `../code-specs/[newregion,newspectrum,mergespectra].sh`
-Input:  `regions-n-[up,down].ciaoreg` (WCS fk5 coords)
+Input:  `regions_n_[up,down]_box.reg` (WCS fk5 coords)
 Output: `spectra/[up,down]/*.[pi,rmf,arf]`
 
+_Output filenames may require some manual adjustment, currently_
+
 ## Link spectra to backgrounds
+
+_Generate the CIAO region files really quickly, delete when done_
+_This script is a bit out of date w/ rest of pipeline._
 
 Code:   `../code/spec_linkbg.py`
 Input:  spectra, `regions-n.ciaoreg`, `backgrounds-n.ciaoreg`
@@ -224,9 +234,12 @@ See Ressler et al. 2014 for exposition of models, calculations
 
 Code:   `code-models/*-fit-tables.ipynb`
 Input:  `./tables/*.pkl`, `data/fwhms/*.pkl` or what have you
-Output: plots, tables, LaTeX tables within ipynb (copy-paste, currently...)
+Output: `data/fwhms/model-fits/*.[pkl, json]`
 
-Still somewhat in works
+Also generates interactive/prototype output in `.ipynb`, absolutely necessary
+for debugging/etc.
+
+Use saved data for "final" LaTeX tables and nice figures.
 
 
 Pipeline 4: plotting FWHM measurements, profiles

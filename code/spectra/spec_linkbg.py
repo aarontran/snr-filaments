@@ -2,7 +2,7 @@
 Script to link region spectra with nearest backgrounds
 Aaron Tran
 2014 July 12
-(last modified: 2014 July 12)
+(last modified: 2014 Sept 17)
 
 Initialize CIAO before running this script!
 """
@@ -20,7 +20,8 @@ def main():
     """
     parser = argparse.ArgumentParser(description=
              ('Link spectra to closest background spectra (modifies FITS '
-             'header keywords). Acts on orig + grouped files. Example usage: '
+             'header keywords). Acts on orig + grouped files. '
+             'Please use CIAO regions w/ physical coords. Example usage: '
              'python spec_linkbg.py -v ../data/profiles_good_2.ciaoreg '
              '../data/profiles_bg.ciaoreg ../data/spectra/good-2/reg '
              '../data/spectra/bkg/bkg'))
@@ -38,7 +39,7 @@ def main():
     regfile, bkgfile = args.regfile, args.bkgfile
     regroot, bkgroot = args.regroot, args.bkgroot
     verbose, debug = args.verbose, args.debug
-    
+
     if verbose:
         print 'Regions and backgrounds from files:'
         print ' Regions: {}'.format(os.path.abspath(regfile))
@@ -79,7 +80,7 @@ def set_bkg(rnum, bnum, r_rt, b_rt, verbose=False, debug=False):
     """Execute CIAO dmhedit to link spectra to backgrounds
     Check that r_rt and b_rt point to actual files
     (but I don't check that they are actual FITS files with spectra)
-    
+
     Be careful -- this method modifies files
     (i.e., there is risk of data loss!)
     """

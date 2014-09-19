@@ -50,7 +50,7 @@ def make_kepler():
     WARNING: if darc is changed, must change vs as well!
     """
     k = SupernovaRemnant('Kepler')
-    
+
     kepler.dkpc = 3.3  # Distance to remnant in kpc (!) TODO verify
                        # 4kpc from Vink (2008) kinematic study
                        # Could be up to 7 kpc?!?!?! (Patnaude et al., 2012)
@@ -87,7 +87,7 @@ def make_tycho():
     WARNING: if darc is changed, must change vs as well!
     """
     tycho = SupernovaRemnant('Tycho')
-    
+
     tycho.dkpc = 3.0  # Distance to remnant in kpc (!)
     tycho.rsarc = 240  # Shock radius (arcsec) from Green's SNR catalog
     tycho.s = 2.3  # e- spectrum index, 2.3 = 2*0.65 + 1;
@@ -162,6 +162,16 @@ class SupernovaRemnant(object):
     def rs(self):
         """Shock radius (cm)"""
         return arcsec2rad(self.rsarc) * kpc2cm(self.dkpc)
+
+    def config_log(self):
+        """Dump information about current settings in printable string"""
+        log = ['Properties:']
+        for v in vars(self).items():
+            log.append('{} = {}'.format(*v))
+        log.append('Derived parameters:')
+        log.append('v0 = {}'.format(self.v0()))
+        log.append('rs = {}'.format(self.rs()))
+        return '\n'.join(log)
 
 
 if __name__ == '__main__':

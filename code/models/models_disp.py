@@ -1,104 +1,154 @@
 """
-Code for rich iPython notebook display
-and to abstract away a lot of boilerplate kinda stuff
+Code for IPython notebook fitting -- generate and save fits
+attempting to abstract a lot of boilerplate stuff out
 
-Storage for mega methods + table, LaTeX formatting material
-(may be moved/refactored later)
+build_dataf(...), generate_fits(...) work in tandem
 
-build_dataf(...), generate_tabs_plot(...) work in tandem
-classes ListTable, LatexTable for rich output
-(ListTable, in particular, is meant to be displayed in an iPython notebook)
+factory function f(...) from build_dataf(...) outputs an lmfit.Minimizer()
+object (res) w/ lots of information attached to res.params
+Relevant properties are:
+
+    res.params.ci           dict of confidence intervals
+    res.params.info         dict of best fit parameters w/ keys:
+        'conf-intv'             CI value
+        'chisqr'                fit chisqr
+        'redchi'                fit reduced chisqr
+        'ndata'                 res.ndata
+        'nvarys'                res.nvarys
+        'nfree'                 res.nfree
+    res.params.metadata     dict of build_dataf args
+        'fit-type'              simp/full
+        'fit-kws'               eta2_free, model_kws, etc...
+        'err-kws'               manual/lmfit/stderr, eps, adapt, etc...
+
+In the "metadata" pickle:
+
+    fobj_all = {}
+    fobj_all['title'] = fobj.title
+    fobj_all['kevs'] = fobj.kevs
+    fobj_all['data'] = fobj.data
+    fobj_all['eps'] = fobj.eps
+    fobj_all['inds'] = fobj.inds
+    fobj_all['snr-pars'] = fobj.snr.config_log()
 
 Aaron Tran
 August 2014
 """
 
-
 from __future__ import division
+
+import cPickle as pickle
+import json
+import lmfit  # For type-checking, JSON serialization
 import matplotlib.pyplot as plt
 import numpy as np
 import re
 
+from json_utils import LmfitJSONEncoder
+from latex_table import LatexTable, ListTable
 import models
 import models_exec as mex
+import regdict_utils as rdu
+import regparse
 
 from fplot import fplot
 
-# ==============================================
-# Functions to save numbers/data from generators
-# ==============================================
+# ==============================
+# Run fits and save data to disk
+# ==============================
 
-def generate_fwhm_tab(labels, fobj_gen, title):
-    """Input: generator function, that makes Fitter() objects
-    and energy labels, Python list of strings
-    Output: something similar to other tables...
+def generate_fits(f_data, fobj, n_ID, mu_vals, outroot, save=True):
+    """Perform fits, save to pkl/json if desired;
+    return list of Parameters objects and Fitter()
     """
-    #table = ListTable()
-    #table.append([''] + labels)
-    ltab = LatexTable([''] + labels,
-                      ['{}'] + [1]*len(labels),
-                      title, prec=2)
+    p_list = []
+    for mu in mu_vals:
+        print '{} stdout'.format(fobj.title)
+        res = f_data(mu, fobj)
+        p_list.append(res.params)
+    if save:
+        save_fits(p_list, fobj, mu_vals, outroot + '-{:02d}'.format(n_ID))
+    return p_list, fobj
 
-    for fobj in fobj_gen():
-        kevs, data, eps, inds = fobj.kevs, fobj.data, fobj.eps, fobj.inds
+def save_fits(p_list, fobj, mu_vals, outroot):
+    """Save full model fit parameters to pkl/json
+    Use the pkl though, seriously.
+    The json is just a backup, for when Python/pickle/etc are obsolute
 
-        # Compute m_E
-        me = m_expt(kevs, data)
-        meeps = m_expt_err(kevs, data, eps)
+    please see build_dataf for info on stored data!
 
-        # Build row for latex table
-        ltr_fwhm = [fobj.title]
-        ltr_me = [r'$m_E$']
-
-        # TODO HUGE ASSUMPTION -- only first n indices are dropped
-        # (i.e., once you find a FWHM in some band, you find a FWHM in all
-        # bands above...)  Very fragile code.  Works for Tycho...
-        idx = 0
-        for n in xrange(len(labels)):
-            if n not in inds:
-                ltr_fwhm.extend([float('nan'),float('nan')])
-                ltr_me.extend([float('nan'),float('nan')])
-            else:
-                ltr_fwhm.append(data[idx])
-                ltr_fwhm.append(eps[idx])
-                if idx > 0:
-                    ltr_me.append(me[idx-1])
-                    ltr_me.append(meeps[idx-1])
-                else:
-                    ltr_me.extend([float('nan'),float('nan')])
-                idx += 1
-
-        ltab.add_row(*ltr_fwhm)
-        ltab.add_row(*ltr_me)
-
-    return ltab
-
-
-def m_expt(ens, widths):
-    """Calculated following Ressler et al. [2014]
-    Output array size is one less than that of ens/widths
+    Input:
+        p_list: list of lmfit.Parameters objects (one per mu value)
+        fobj: Fitter() object
+        mu_vals: fixed mu values used for fitting
+        outroot: output file stem (will suffix stuff to this)
+    Output:
+        creates pkl of zipped (mu_vals, p_list); each Parameters object in the
+        tuple carries ci, info, metadata
+        also creates pkl with SNR information
+        JSON implementation coming -- have to deconstruct Parameters object
+        somehow.
     """
-    e2, e1 = ens[1:], ens[:-1]
-    w2, w1 = widths[1:], widths[:-1]
-    return np.log(w2/w1) / np.log(e2/e1)
+    ci_list = []
+    info_list = []
+    meta_list = []
+    for p, mu in zip(p_list, mu_vals):
+        ci_list.append(p.ci)
+        info_list.append(p.info)
+        meta_list.append(p.metadata)
 
-def m_expt_err(ens, widths, eps):
-    """Propagate filament width errors in quadrature
-    Output array size is one less than that of ens/widths
+    # Spew metadata relevant to fits for all mu values
+    fobj_all = {}
+    fobj_all['title'] = fobj.title
+    fobj_all['kevs'] = fobj.kevs
+    fobj_all['data'] = fobj.data
+    fobj_all['eps'] = fobj.eps
+    fobj_all['inds'] = fobj.inds
+    fobj_all['snr-pars'] = fobj.snr.config_log()
+
+    # Output everything.  Doesn't check for overwriting
+    regparse.check_dir(outroot)
+
+    pkg = [p_list, mu_vals]
+
+    with open('{}-data.pkl'.format(outroot), 'w') as fpkl:
+        pickle.dump(pkg, fpkl)
+    with open('{}-fobj.pkl'.format(outroot), 'w') as fpkl:
+        pickle.dump(fobj_all, fpkl)
+
+    with open('{}-data.json'.format(outroot), 'w') as fjson:
+        json.dump([p_list, mu_vals, info_list, ci_list, meta_list],
+                  fjson, cls=LmfitJSONEncoder, indent=4)
+    with open('{}-fobj.json'.format(outroot), 'w') as fjson:
+        json.dump(fobj_all, fjson, cls=LmfitJSONEncoder, indent=4)
+
+def gen_fit_pkls(inroot, want_fobj=False):
+    """Generator that iterates over each fitted region/filament
+    Input:
+        inroot (str) is base file stem, e.g.,
+        ../../data-tycho/fwhms/model-fits/simp-man_err
+    Yield, for each region fitted:
+        tuple of 1. list of Parameters(), 2. list of mu values,
+                 3. fobj_all dict w/ fitting data, if desired
     """
-    e2, e1 = ens[1:], ens[:-1]
-    w2, w1 = widths[1:], widths[:-1]
-    w2e, w1e = eps[1:], eps[:-1]
+    npkls = glob('{}-*-data.pkl'.format(inroot))
+    for n in xrange(npkls):
+        fname = '{}-{:02d}-data.pkl'.format(inroot, n+1)  # Enforce ordering
+        ffobj = '{}-{:02d}-fobj.pkl'.format(inroot, n+1)
+        with open(fname, 'r') as fpkl:
+            p_list, mu_vals = pickle.load(fpkl)
+        if want_fobj:
+            with open(ffobj, 'r') as fpkl:
+                fobj_dict = pickle.load(fpkl)
+            yield p_list, mu_vals, fobj_dict
+        else:
+            yield p_list, mu_vals
 
-    me = m_expt(ens, widths)
-    return np.abs(me * 1./np.log(e2 / e1) * np.sqrt((w1e/w1)**2 + (w2e/w2)**2))
-
-# ==================================
-# Functions to control, display fits
-# ==================================
-
+# =========================
+# Functions to control fits
+# =========================
 def build_dataf(fit_type, conf_intv=0.683, fit_kws=None, err_kws=None):
-    """Build function f to perform fits/errs; f(mu) returns res obj with
+    """Build function f to perform fits/errs; f(mu, fobj) returns res obj with
     fits, errors, fit properties, etc... (see src)
 
     f is a wrapper function for fobj.get_fit(...), fobj.get_err(...)
@@ -131,6 +181,25 @@ def build_dataf(fit_type, conf_intv=0.683, fit_kws=None, err_kws=None):
                 anneal=True, eps=None, adapt=True (passed to mex.one_dir_root)
             if using 'lmfit':
                 maxiter=200, prob_func=None (lmfit.conf_interval kwargs)
+
+    Output:
+        wrapper function f(mu, fobj) that performs a fit using the supplied
+        keywords/settings from this factory function.
+        f(...) outputs an lmfit.Minimizer() object (res) w/ information
+        attached to res.params
+        Relevant properties:
+            res.params.ci           dict of confidence intervals
+            res.params.info         dict of best fit parameters w/ keys:
+                'conf-intv'             CI value
+                'chisqr'                fit chisqr
+                'redchi'                fit reduced chisqr
+                'ndata'                 res.ndata
+                'nvarys'                res.nvarys
+                'nfree'                 res.nfree
+            res.params.metadata     dict of build_dataf args
+                'fit-type'              simp/full
+                'fit-kws'               eta2_free, model_kws, etc...
+                'err-kws'               manual/lmfit/stderr, eps, adapt, etc...
     """
     if fit_kws is None:
         fit_kws = {}
@@ -138,51 +207,154 @@ def build_dataf(fit_type, conf_intv=0.683, fit_kws=None, err_kws=None):
         err_kws = {}
 
     def assmb_data(mu, fobj):
-        """Assemble fit/error data for a given mu"""
+        """Assemble fit/error data for a given mu
+        Attaches a ton of extra information to res.params object, for later
+        retrieval
+        """
         # Perform actual fit
         res = fobj.get_fit(mu, fit_type, **fit_kws)
 
         # Save parameter values and standard errors before error computation
-        chisqr = res.chisqr
+        chisqr, redchi = res.chisqr, res.redchi
+        ndata, nvarys, nfree = res.ndata, res.nvarys, res.nfree
         eta2, B0 = res.params['eta2'].value, res.params['B0'].value
         eta2_stderr = res.params['eta2'].stderr
         B0_stderr = res.params['B0'].stderr
 
-        # Get better errors
-        ci_man = fobj.get_errs(res, fit_type, ci_vals=(conf_intv,), **err_kws)
+        # Compute errors (whether stderr, lmfit, or my manual procedure)
+        ci = fobj.get_errs(res, fit_type, ci_vals=(conf_intv,), **err_kws)
 
-        # Quick patch -- since assmb_data / etc rely on manipulating B0, eta2
-        # specifically already
+        # If eta2/B0 are held fixed, they won't have CI entries
         if 'eta2_free' in fit_kws and not fit_kws['eta2_free']:
-            eta2_err = (0., 0.)
-        else:
-            eta2_err = mex.get_ci_errors(ci_man, 'eta2', ci_val=conf_intv)
-
+            ci_man['eta2'] = [(conf_intv, eta2), (0., eta2), (conf_intv, eta2)]
         if 'B0_free' in fit_kws and not fit_kws['B0_free']:
-            B0_err = (0., 0.)
-        else:
-            B0_err = mex.get_ci_errors(ci_man, 'B0', ci_val=conf_intv)
+            ci_man['B0'] = [(conf_intv, B0), (0., B0), (conf_intv, B0)]
 
         # (re)Store all data in res object
-        res.chisqr = chisqr
+        res.chisqr, res.redchi = chisqr, redchi
+        res.ndata, res.nvarys, res.nfree = ndata, nvarys, nfree
         res.params['eta2'].value = eta2
         res.params['eta2'].stderr = eta2_stderr
-        res.params['eta2'].fullerr = eta2_err
         res.params['B0'].value = B0
         res.params['B0'].stderr = B0_stderr
-        res.params['B0'].fullerr = B0_err
 
         # Hacky workaround to send fit information downstream
-        # Using params because it's pickle-able for iPython's parallel stuff
+        # Using params because it's pickle-able for IPython's parallel stuff
         # semantically illogical, but it works...
-        res.params.fit_type = fit_type
-        res.params.fit_kws = fit_kws
+        res.params.ci = ci
+
+        info = {}
+        info['conf-intv'] = conf_intv
+        info['chisqr'] = res.chisqr
+        info['redchi'] = res.redchi
+        info['ndata'] = res.ndata
+        info['nvarys'] = res.nvarys
+        info['nfree'] = res.nfree
+        res.params.info = info
+
+        metadata = {}
+        metadata['fit-type'] = fit_type
+        metadata['fit-kws'] = fit_kws
+        metadata['err-kws'] = err_kws
+        res.params.metadata = metadata
 
         return res
 
     return assmb_data
 
-def generate_tabs(f_data, fobj, title, mu_vals):
+def generate_tabs(p_list, title, mu_vals):
+    """Parse list of Parameters() objects, mu values, w/ Fitter()
+    to generate quick tables for IPython, LaTeX display.
+    Input:
+        p_list: output of generate_fits, list of Parameters()
+        fobj: Fitter() object
+        mu_vals: list of mu values, matched to p_list
+    Output:
+        table, ltab (IPython, LaTeX tables)
+    """
+
+    table = ListTable()
+    table.append(['mu', 'eta2', 'B0', 'chisqr'])
+
+    latex_hdr = [r'$\mu$ (-)', r'$\eta_2$ (-)', r'$B_0$ ($\mu$G)', r'$\chi^2$']
+    latex_cols = ['{:0.2f}', 2, 2, '{:0.4f}']
+    ltab = LatexTable(latex_hdr, latex_cols, title, prec=4)
+
+    for p, mu in zip(p_list, mu_vals):
+        #print p.ci
+        #print p.info
+        #print p.metadata
+        # Pull in full errors from p.ci  (get_ci_errors order: pos/neg errs)
+        p['B0'].fullerr = mex.get_ci_errors(p.ci, 'B0', p.info['conf-intv'])
+        p['eta2'].fullerr = mex.get_ci_errors(p.ci, 'eta2',p.info['conf-intv'])
+
+        # Edit B0 parameter for table formatting
+        B0_min, p['B0'].min = p['B0'].min, None  # scrub but save B0 limits
+        B0_max, p['B0'].max = p['B0'].max, None
+        p['B0'].value *= 1e6
+        p['B0'].stderr *= 1e6
+        p['B0'].fullerr = 1e6 * np.array(p['B0'].fullerr)  # Hackish workaround
+
+        # Build iPython table
+        tr = ['{:0.2f}'.format(mu)]
+        tr.append(('{0.value:0.3f} +{1[0]:0.2f}/-{1[1]:0.2f} '
+                   '(std: &plusmn; {0.stderr:0.3f})').format(
+                  p['eta2'], p['eta2'].fullerr))
+        tr.append(('{0.value:0.3g} +{1[0]:0.3g}/-{1[1]:0.3g} '
+                   '(std: &plusmn; {0.stderr:0.3f})').format(
+                  p['B0'], p['B0'].fullerr))
+        tr.append('{:0.4f}'.format(p.info['chisqr']))
+        table.append(tr)
+
+        # Build LaTeX table
+        ltab.add_row(mu, p['eta2'].value, p['eta2'].fullerr[0],
+            p['eta2'].fullerr[1], p['B0'].value, p['B0'].fullerr[0],
+            p['B0'].fullerr[1], p.info['chisqr'])
+
+        # Reset B0 value/errors, in case list is used elsewhere
+        p['B0'].value *= 1e-6
+        p['B0'].stderr *= 1e-6
+        p['B0'].fullerr *= 1e-6
+        p['B0'].min = B0_min  # Must follow value resetting
+        p['B0'].max = B0_max
+
+    return table, ltab
+
+def generate_plots(p_list, fobj, mu_vals, fmt_vals, ax=None):
+    """Makes plots.  Yeah.  Logical follow-on to generate_tabs"""
+    if ax is None:
+        plt.figure()
+        ax = plt.gca()
+    ax.errorbar(fobj.kevs, fobj.data, yerr=fobj.eps, fmt='ok', label='Data')
+
+    for p, mu, fmt in zip(p_list, mu_vals, fmt_vals):
+
+        fit_type = p.metadata['fit-type']
+        fit_kws = p.metadata['fit-kws']
+
+        if fit_type == 'simp':
+            kevs_m = np.linspace(fobj.kevs[0]-0.2, fobj.kevs[-1]+0.2, 100)
+            fwhms_m = models.width_dump(p, kevs_m, fobj.snr)
+
+        elif fit_type == 'full':
+            fill_kevs = np.linspace(fobj.kevs[0]-0.2, fobj.kevs[-1]+0.2, 5)
+            kevs_m = np.sort(np.hstack((fobj.kevs, fill_kevs)))
+            if fit_kws is not None and 'model_kws' in fit_kws:
+                model_kws = p.fit_kws['model_kws']
+            else:
+                model_kws = {}
+            fwhms_m = models.width_cont(p, kevs_m, fobj.snr, verbose=False,
+                                        **model_kws)
+        ax.plot(kevs_m, fwhms_m, fmt, label=r'$\mu = {:0.2f}$'.format(mu))
+
+    # Prepare composite plot
+    fplot('Energy (keV)', 'FWHM (arcsec)', axargs='tight')
+    ax.legend(loc='best')
+    ax.set_title(fobj.title)
+    return ax
+
+# Old, working version
+def _generate_tabs(f_data, fobj, title, mu_vals):
     """f_data takes mu, Fitter(...) as arguments, return lmfit.Minimizer() w/fits+errors
     Yes it's stupid but it will do the job...
     LaTeX tables will NOT include standard errors
@@ -234,241 +406,90 @@ def generate_tabs(f_data, fobj, title, mu_vals):
 
     return table, ltab, plist, fobj  # plist, fobj for convenience...
 
-def generate_plots(plist, fobj, title, mu_vals, fmt_vals):
-    """Makes plots.  Yeah.  Logical follow-on to generate_tabs"""
-    plt.figure()
-    ax = plt.gca()
-    ax.errorbar(fobj.kevs, fobj.data, yerr=fobj.eps, fmt='ok',
-                label='Data')
+# ========================
+# Functions to set-up fits
+# ========================
 
-    for p, mu, fmt in zip(plist, mu_vals, fmt_vals):
-        if p.fit_type == 'simp':
-            kevs_m = np.linspace(fobj.kevs[0]-0.2, fobj.kevs[-1]+0.2, 100)
-            fwhms_m = models.width_dump(p, kevs_m, fobj.snr)
-        elif p.fit_type == 'full':
-            fill_kevs = np.linspace(fobj.kevs[0]-0.2, fobj.kevs[-1]+0.2, 5)
-            kevs_m = np.sort(np.hstack((fobj.kevs, fill_kevs)))
-            if p.fit_kws is not None and 'model_kws' in p.fit_kws:
-                model_kws = p.fit_kws['model_kws']
-            else:
-                model_kws = {}
-            fwhms_m = models.width_cont(p, kevs_m, fobj.snr, verbose=False,
-                                        **model_kws)
-        ax.plot(kevs_m, fwhms_m, fmt, label=r'$\mu = {:0.2f}$'.format(mu))
-
-    # Prepare composite plot
-    fplot('Energy (keV)', 'FWHM (arcsec)', axargs='tight')
-    ax.legend(loc='best')
-    ax.set_title(title)
-    plt.show()
-
-# ===============
-# Utility classes
-# ===============
-
-class ListTable(list):
-    """ Overridden list class which takes a 2-dimensional list of
-    the form [[1,2,3],[4,5,6]], and renders an HTML Table in ipynb.
-    Source: http://calebmadrigal.com/display-list-as-table-in-ipython-notebook/
+def init_data(rroot, kevs, labels):
+    """Prepared regdict data for model fitting
+    Averages asymmetric FWHM errors
+    Input:
+        rroot (str): region dict filestem
+        kevs (list): energy band values, assoc. w/ labels
+        labels (list): energy band labels, strings
+    Output:
+        dictionary keyed by region number to (kevs, data, eps, inds)
     """
+    data_all = {}
 
-    def _repr_html_(self):
-        html = ["<table style='font-family: monospace; font-size: 10pt'>"]
-        for row in self:
-            html.append("<tr>")
+    for rdict, n_reg in rdu.regdict_load(rroot):
+        data = np.array([rdict[lab]['fwhm'] for lab in labels])
+        eps = np.mean([rdict[lab]['errs'] for lab in labels], axis=1)
+        inds = (np.where(np.isfinite(data)))[0]
+        data_all[n_reg] = kevs, data, eps, inds
 
-            for col in row:
-                html.append("<td>{0}</td>".format(col))
+    return data_all
 
-            html.append("</tr>")
-        html.append("</table>")
-        return ''.join(html)
+# TODO if we ever use averaged FWHMs,
+# splice this out into a separate script
+# make a BRAND NEW set of region dictionaries + azimuth angles
+# then, perform analysis as usual -- instead of treating specially here
+def init_data_avg(data_regs, flmts, avg='a'):
+    """Average region FWHM data that has already been retrieved
 
-class LatexTable(object):
-    """Format numpy array data with errors in a nice LaTeX'd table.
-    Designed for LaTeX package 'booktabs' (what about aastex deluxetable?)
+    Currently reporting standard error of mean as errors
+    but, for small sample sizes, we must use Student's t-distribution.
+    For 70% confidence interval, multiply by 1.963 for dof=1 (n=2)
+    For 90% confidence interval, multiply by 6.3 for dof=1 (n=2) (!!!)
 
-    This duplicates a LOT of functionality from `matrix2latex.py`.
-    Possible implementation (using doctest syntax):
-    >>> from matrix2latex import matrix2latex as m2ltx
-    >>> algnmt = '@{}rr@{ $\pm$ }lr@{ $\pm$ }lr@{}'
-    >>> hr = '''[[''] + 5 * [title],
-    ...       [r'$\mu$ (-)'] + 2 * [r'$\eta_2$ (-)] + 2 * [r'$B_0$ ($\mu$G)']
-    ...        + [r'$\chi^2$']]'''
-    >>> fmtcol = 'stuff'  # Here parse sigfigs, depending on error
-    >>> # note: fmtcol varies w/ row, not implemented in m2ltx
-    >>> m2ltx(data, headerRow = hr, formatColumn = fmtcol, alignment = algnmt)
-
-    I'd like to extend matrix2latex by adding support for data w/errors;
-    * use errors to compute # of sigfigs and supply that as an argument
-    * use \e in LaTeX to change exponential notation formatting, rather than
-      manually editing floats
-
-    For this class, some to-dos (low priority)
-    1. customize number of columns, +/- formatting, number formatting
-    2. allow concatenating tables together (horizontally)
-    3. customize header/footer/layout control
-
-    Options for columns:
-    0: plain number, default {:0.3g} formatting
-    1: number w/ +/- error, uses +/- symbol as column separator to align
-    2: number w/ distinct +/- errors, aligns to left
-    str: any string format specifier you like (single right aligned column)
-
-    add_row then accepts an arbitrary number of columns, which should
-    correspond to the length of your input column "types" array, +1 for each
-    "type 1" column you have and +2 for each "type 2" column
+    Input:
+        data_all (dict): keyed by region number, w/ kevs/data/eps/inds (use init_data)
+        flmts (dict): filament number paired w/ constituent region numbers
+        avg (str): 'a' or 'g' for arithmetic, geometric averages & errors
+    Output:
+        new dict, keyed by filament numbers, w/ averaged data
+        also includes n_pts (number of points averaged in each band)
     """
+    data_avgd = {}
 
-    # Initializes: header, labels, rows, footer; rspec, types
-    def __init__(self, labs, types, title, prec=4):
-        """Types specify column types; 0,1,2 = no/single/double +/- errors"""
+    for n_flmt, n_regs in flmts.items():
+        kevs = []
+        data_all = []
+        for m in n_regs:
+            kevs_r, data_r, eps_r, inds_r = data_regs[m]
+            if len(kevs) > 0 and not np.array_equal(kevs, kevs_r):
+                raise Exception('Discrepancy in stored kevs')
+            kevs = kevs_r
+            data_all.append(data_r)
 
-        self.types = types
-        self.prec = prec
+        data_all = np.array(data_all)
+        n_pts = np.sum(~np.isnan(data_all),axis=0)  # Number of usable FWHMs in each energy band
+        inds = np.where(n_pts)[0]
 
-        # Build table/column spec
-        hlst = [r'\begin{tabular}{@{}']
-        for t in types:
-            if t == 1:
-                hlst.append(r'r@{ $\pm$ }l')  # Use column sep for alignment
-            elif t == 2:
-                hlst.append('l')  # Align output to values, not errors
-            else:
-                hlst.append('r')
-        hlst.append(r'@{}}')
-        self.header = [''.join(hlst)]
+        # Lots of unsafe computation -- but, if n=0 we will throw it out anyways
+        if avg == 'a':
+            data = np.nanmean(data_all, axis=0)
+            std = np.nanstd(data_all, axis=0, ddof=1)
+            std[np.where(np.isnan(std))] = np.nanmax(std)  # Catch n=1 cases (stdev ill-defined)
+            eps = std / np.sqrt(n_pts)  # Standard error of the mean
+        elif avg == 'g':
+            # Compute errors in log space first, before setting NaNs in data to 1
+            std_log = np.nanstd(np.log(data_all), axis=0, ddof=1)
+            std_log[np.where(np.isnan(std_log))] = np.nanmax(std_log)  # Catch n=1 cases (stdev ill-defined)
+            eps_log = std_log / np.sqrt(n_pts)  # Convert to standard err in log space
 
-        # Table header -- top header, labels, midrule
-        self.header.append(r'\toprule')
-        ncols = len(types + [t for t in types if t == 1]) # Single err case
-        self.header.append(r'{} & \multicolumn{'+str(ncols-1)+'}{c}{'+title+r'} \\')
-        self.header.append(r'\cmidrule(l){2-'+str(ncols)+'}')
+            data_all[np.isnan(data_all)] = 1  # Identity for multiplying
+            data = np.power(np.prod(data_all, axis=0), 1./n_pts)
 
-        # Labels for units
-        lablst = []
-        for t, lab in zip(types, labs):
-            if t == 1:
-                lablst.append(r'\multicolumn{2}{c}{' + lab + r'} & ')
-            else:
-                lablst.append('{} & '.format(lab))
-        # Remove trailing ampersand, add newline
-        self.header.append((''.join(lablst))[:-3] + r'\\')
-        self.header.append(r'\midrule')
+            # Convert back to original parameter space
+            eps_upper = np.exp(np.log(data) + eps_log) - data
+            eps_lower = data - np.exp(np.log(data) - eps_log)
+            # We need to provide a symmetric error for fitting
+            eps = np.maximum(eps_upper, eps_lower)
 
-        # Build row spec
-        rlst = []
-        for t in types:
-            if t == 0:
-                rlst.append('{0.3g} & ')  # Default for a number
-            elif t == 1:
-                rlst.append('${}$ & ${}$ & ')  # Single error
-            elif t == 2:
-                rlst.append('${{{}}}^{{{}}}_{{{}}}$ & ')  # Double error
-                # Need braces around data value, in exponential case
-            else:
-                rlst.append(t + ' & ')  # Supply your own damn string spec
-        # Remove trailing ampersand, add newline
-        self.rspec = (''.join(rlst))[:-3] + r'\\'
+        data_avgd[n_flmt] = kevs, data, eps, inds, n_pts
 
-        # Rows to be filled with rspec-formatted strings
-        self.rows = []
-
-        self.footer = [r'\bottomrule', r'\end{tabular}']
-
-
-    def __str__(self):
-        return '\n'.join(self.get_table())
-
-    def get_table(self):
-        return self.header + self.rows + self.footer
-
-    def add_row(self, *args):
-        """Add row to table, using rspec.
-        If giving two errors, positive err comes first..."""
-        args = list(args)  # Must expand tuple
-        ind = 0
-        for t in self.types:
-            if t == 1:
-                args[ind:ind+2] = self.fmt_numerr(*args[ind:ind+2], prec=self.prec)
-                ind += 2
-            elif t == 2:
-                args[ind:ind+3] = self.fmt_num_2err(*args[ind:ind+3], prec=self.prec)
-                ind += 3
-            else:
-                ind += 1
-        self.rows.append(self.rspec.format(*args))
-
-    # TODO this code is very gross
-    # Sept. 10 -- forget the precision business.  Let the user deal with
-    # proper rounding, report more than needed in floating pt form
-
-    def fmt_num_2err(self, num, errpos, errneg, prec=4):
-        fmt = '{:0.' + str(prec) + 'f}'
-        nstr = fmt.format(num)
-        estr_pos = ('+'+fmt).format(errpos)
-        estr_neg = ('-'+fmt).format(errneg)
-
-        return nstr, estr_pos, estr_neg
-    
-    def fmt_numerr(self, num, err, prec=4):
-        fmt = '{:0.' + str(prec) + 'f}'
-        nstr = fmt.format(num)
-        estr = fmt.format(err)
-        return nstr, estr
-
-#    def fmt_num_2err(self, num, errpos, errneg):
-#        """Format number w/error nicely.
-#        It's imperfect and doesn't agree w/ rounding of Ressler,
-#        but it's simpler this way...
-#        DEAR GOD THIS CODE IS DISGUSTING
-#        """
-#        num_exp = int(np.floor(np.log10(num))) if num != 0. else 0
-#        err_min = abs(min(errpos, errneg))
-#        err_exp = int(np.floor(np.log10(err_min))) if err_min != 0. else 0
-#
-#        prec = num_exp - err_exp + 2 # Print to precision + 1, allowed by error
-#        if prec <= 0:
-#            prec = 1  # Enforce minimum precision
-#
-#        # Use string formatting to handle rounding
-#        numstr = ('{:0.'+str(prec)+'g}').format(num)
-#        errstr_pos = ('+{:0.2g}').format(errpos)
-#        errstr_neg = ('-{:0.2g}').format(errneg)
-#
-#        numstr = self.expstr2latex(numstr)
-#        errstr_pos = self.expstr2latex(errstr_pos)
-#        errstr_neg = self.expstr2latex(errstr_neg)
-#        return numstr, errstr_pos, errstr_neg
-#
-#    def fmt_numerr(self, num, err):
-#        """Format number w/error nicely.
-#        It's imperfect and doesn't agree w/ rounding of Ressler,
-#        but it's simpler this way...
-#        """
-#        num_exp = int(np.floor(np.log10(num))) if num != 0. else 0
-#        err_exp = int(np.floor(np.log10(err))) if err != 0. else 0
-#        prec = num_exp - err_exp + 2 # Print to precision + 1, allowed by error
-#        if prec <= 0:
-#            prec = 1  # Enforce minimum precision
-#
-#        # Use string formatting to handle rounding
-#        numstr = ('{:0.'+str(prec)+'g}').format(num)
-#        errstr = ('{:0.2g}').format(err)
-#
-#        numstr = self.expstr2latex(numstr)
-#        errstr = self.expstr2latex(errstr)
-#        return numstr, errstr
-
-    def expstr2latex(self, numstr):
-        """Convert a Python string-formatted number to nicer LaTeX"""
-        # Capturing groups for significand, exp sign if negative, exp power
-        exp_regexp = r'([0-9\+\-\.]+)' + 'e' + r'([\-]*)[\+0]*([1-9]+[0-9]*)'
-        result = re.search(exp_regexp, numstr)
-        if result:
-            return (r'{} \times '.format(result.group(1)) +
-                    '10^{' + '{}{}'.format(*result.group(2,3)) + '}')
-        return numstr
+    return data_avgd
 
 
 if __name__=='__main__':

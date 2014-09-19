@@ -19,18 +19,18 @@ Weeks 27-30: December (Christmas, week 30)
 Table of contents
 =================
 
-* Week 10 - full model grid-best-"fits" (test fits, error annealing w/ SN 1006)
-            port full model code to Python, optimize for speed
-* Week 11 - one week break
+* Week 10 - (8/4) full model grid-best-"fits" (test fits, error annealing w/
+            SN 1006). Port full model code to Python, optimize for speed
+* Week 11 - (8/11) one week break
 * Week 12 - (8/18) LaTeX table code; more precise manual error calculations.
             Debug/test new full model
 * Week 13 - (8/25) refactor model exec/disp code.  Debug error calculations
             extensively.
 * Week 14 - (9/1) run suite of error calculations
 * Week 15 - (9/8)
-* Week 16 - (9/15)
-* Week 17
-* Week 18
+* Week 16 - (9/15) flesh out paper, new plots/tables
+* Week 17 - (9/22)
+* Week 18 - 
 
 (week 10 included for continuity)
 
@@ -1705,7 +1705,8 @@ Wednesday 2014 September 17
 
 Summary
 -------
-
+* Generate more Cas A, Kepler energy band images
+* FWHM code rewriting
 
 Cas A energy band images
 ------------------------
@@ -1717,18 +1718,66 @@ grid, it looks okay (I hope).
 
 Runnning CIAO `flux_obs` on reprojected Cas A data, then `dmcopy`.
 
-FWHM fitting and calculation
-----------------------------
-
-On to code wrangling!
+Code organization
+-----------------
 
 Pulled out script to process profiles and identify fit domains.
-Massively restructured FWHM processing and fitting -- should be easier to work
-with now, mainly less cluttered and a lot of code refactored.
+Massively restructured FWHM processing and fitting -- mainly threw out
+massively cluttered region dictionary in favor of smaller files with less
+clutter.
 
-If running variants on pipeline, now fed into new folders/data, instead of
-cramming into one region pickle.
+Pull FWHM table generating code to new folder for publication tables/figures.
+Generate new, full table w/ new region dictionaries; added to paper.
+Includes global averages of FWHMs and m\_E values, though std. deviations are
+quite large...
 
+Added config log method to SupernovaRemnant objects, to spew out all internal
+parameters indiscriminately.
+
+Saving best fit parameters and errors from full model fits.
+
+
+Thursday 2014 September 18
+==========================
+
+Summary
+-------
+* Code to save/read simple/full model fitting outputs to files, including
+  metadata
+* Regenerate profile/spectra figures for paper; generate spectrum fit table
+
+Code organization II
+--------------------
+
+Assembled data serialization for our model fit outputs.
+Code to generate tables, merge tables for model fit parameters
+
+Rewrote LatexTable class -- now much simpler, and can merge tables together (so
+we can stack regions side by side).
+
+Finally, what's the best way to handle plot/table generation?
+Maybe generate new scripts for each dataset, and copy-paste as needed.
+
+
+Figures/tables
+--------------
+
+Reviewed and resized profile plots, spectra plots for paper.
+Added (almost) paper-ready plots, spectrum fit table.
+
+Reviewing region selections: Regions 9, 11 should not be blacklisted.
+Using FWHM code that 1. does not subtract background, 2. does not cap FWHM
+calculation (so, most likely to accept these regions and find a FWHM).
+
+Although the peaks are iffy and the FWHMs are close to the limits of detection,
+we can't throw these data points away.  Paper text and code blacklist updated.
+Note also that the manually specified blacklist may not be all inclusive.
+
+Minor tweaks/text changes to paper.
+
+
+Friday 2014 September 19
+========================
 
 
 

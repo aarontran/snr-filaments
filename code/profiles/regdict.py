@@ -33,9 +33,15 @@ import re
 
 import ffwhm
 import fsmooth
+from json_utils import NumpyJSONEncoder
+import regdict_utils as rdu
 from regparse import check_dir
 
 from fplot import fplot
+
+# ==================================
+# Methods to run in IPython notebook
+# ==================================
 
 def main_check(inroot, labels, wlen, wtype):
     """Main method to review fit smoothing before running fits
@@ -46,7 +52,7 @@ def main_check(inroot, labels, wlen, wtype):
         plt.figure(figsize=(5*len(labels), 4))
         for lab, i in zip(labels, xrange(len(labels))):
             plt.subplot(1, len(labels), i+1)
-            plot_smoothing_cut(rdict[lab], plt.gca())
+            rdu.plot_smoothing_cut(rdict[lab], plt.gca())
             plt.title(lab)
         plt.show()
 
@@ -72,7 +78,10 @@ def main_fwhm(inroot, outroot, labels, fitter, blacklist, wlen, wtype, **kwargs)
 
     speccut_dump(spec_cuts, outroot)
 
+# ========================================
 # Methods to create, populate region dicts
+# ========================================
+
 def regdict_init(inroot, labels, wlen, wtype):
     """Generate region dictionary for each region in profile data
     Depends on many settings/filenames in prep_profile_fit.py source!
@@ -125,7 +134,7 @@ def get_fwhm_fits(rdict, n_reg, labels, fitter, blist_reg=None, **kwargs):
         bdict = bdict_fwhm_fit(rdict[lab], fitter, want_err=want_err, **kwargs)
         print 'FWHM = {}, errors {}'.format(bdict['fwhm'], bdict['errs'])
 
-        plot_fwhm_fit(bdict, ax)
+        rdu.plot_fwhm_fit(bdict, ax)
         rdict[lab] = bdict
     plt.show()
 
@@ -175,7 +184,7 @@ def bdict_fwhm_fit(bdict, fitter, cap=False, sub_bkg=True, **kwargs):
         w = float('NaN')
         lims = (float('NaN'), float('NaN'))
 
-    f_src = inspect.getsource(f)
+    f_src = inspect.getsource(f)  # Hackily convert function name to f
     bdict['f'] = re.sub(r'.*def\s*\S+\s*\(', 'def f(', f_src, count=1)
     bdict['pars'] = popt
     bdict['fwhm'] = w
@@ -184,14 +193,9 @@ def bdict_fwhm_fit(bdict, fitter, cap=False, sub_bkg=True, **kwargs):
 
     return bdict
 
-# Implementation detail for function serialization
-def get_ffit(bdict):
-    """Get fit function used for energy band"""
-    exec(bdict['f'])
-    return f
-
 # Compute spectrum cut locations for given region dict
 # Kind of separate/unrelated functionality, but stuck here for now
+
 def get_cuts(rdict):
     """Cut locations for spectra in arcsec
     Ignores any profile bands where FWHM could not be found
@@ -215,16 +219,9 @@ def get_cuts(rdict):
 
     return x_min, x_btw, x_max
 
-# IO functionality
-
-def regdict_load(rdict_root):
-    """Glob and generate region dicts to manipulate"""
-    nregs = len(glob('{}_*.pkl'.format(rdict_root)))
-    for n in xrange(nregs):
-        fname = '{}_{:02d}.pkl'.format(rdict_root, n+1)
-        with open(fname, 'r') as fobj:
-            rdict = pickle.load(fobj)
-        yield rdict, n+1
+# ==================
+# Dump data to files
+# ==================
 
 def regdict_dump(rdict, nreg, outroot):
     """Dump regdict to plaintext json and binary"""
@@ -242,52 +239,6 @@ def speccut_dump(spec_cuts, outroot):
     hdr = 'Spectrum cuts, radial pos (arcsec), for processed/fitted profiles'
     np.savetxt(fout_dat, spec_cuts, header=hdr)
     np.savez(fout_npz, cuts=spec_cuts)
-
-class NumpyJSONEncoder(json.JSONEncoder):
-    """Convert nd.ndarray to list for JSON encoding
-    From http://stackoverflow.com/a/10367428
-    """
-    def default(self, obj):
-        if isinstance(obj, np.ndarray) and obj.ndim == 1:
-            return obj.tolist()
-        return json.JSONEncoder.default(self, obj)
-
-# Plotting functionality
-
-def plot_fwhm_fit(bdict, ax):
-    """Plot cut/uncut data with FWHM fit and bounds for given band dict"""
-    x, y, y_err, c = bdict['data']
-    wlen, wtype = bdict['wlen'], bdict['wtype']
-    f = get_ffit(bdict)
-    pars = bdict['pars']
-    w = bdict['fwhm']
-    lims = bdict['lims']
-
-    plot_smoothing_cut(bdict, ax, show_smth=False)
-
-    x_m = np.linspace(x[c], x[-1], num=200)
-    ax.plot(x_m, f(x_m, *pars), '-k', alpha=1)  # Plot best fit
-    if np.isfinite(w):
-        ax.axvline(lims[0], alpha=1, ls='-', c='k', lw=2)
-        ax.axvline(lims[1], alpha=1, ls='-', c='k', lw=2)
-    return ax
-
-def plot_smoothing_cut(bdict, ax, show_smth=True):
-    """Plot cut/uncut data, smoothing used to determine cut (optional)
-    Adds axis labels and sets limits
-    """
-    x, y, y_err, c = bdict['data']
-    wlen, wtype = bdict['wlen'], bdict['wtype']
-
-    ax.errorbar(x[:c], y[:c], yerr=y_err[:c], fmt='rx', alpha=0.2)
-    if show_smth:
-        ax.plot(x, fsmooth.std_smooth(y, wlen, wtype), '-k', alpha = 0.2)
-    ax.errorbar(x[c:], y[c:], yerr=y_err[c:], fmt='bo', alpha=1)
-
-    fplot('Radial dist. (arcsec.)', 'Intensity', ax=ax,
-          axargs=[0., ax.get_xlim()[1], 0., ax.get_ylim()[1]])
-
-    return ax
 
 
 if __name__ == '__main__':

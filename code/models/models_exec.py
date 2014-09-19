@@ -38,7 +38,7 @@ class Fitter(object):
 
     def __init__(self, snr, kevs, data, eps, tab, inds=None, verbose=True):
         """Fitter w/SNR and measured data to run full/simple model fits.
-        
+
         Use setters to update any of kevs/data/eps (does indexing for you)
         Updating kevs requires new indices as well
         """
@@ -193,7 +193,7 @@ class Fitter(object):
 
         else:
             raise Exception('Invalid model choice')
-        
+
         self._vprint('Done fitting')
 
         return res
@@ -320,7 +320,7 @@ class Fitter(object):
 
     def prep_grid_anneal(self, chisqr_thresh, res, pstr):
         """Bracketing indices of chisqr_thresh in self.tab for pstr mesh
-        
+
         This method only allows pstr = eta2, B0; i.e., application specific
         Output:
             xgrid for pstr, idx_lo/hi, pars_lo/hi
@@ -339,7 +339,7 @@ class Fitter(object):
             raise Exception('Bad parameter name for full model errors')
 
         idx = np.searchsorted(xgrid, res.params[pstr].value)
-        
+
         # Find chisqr crossings in pre-tabulated grid (may be incorrect)
         sgns = np.sign(chisqr_thresh(chisqr_grid))
         crossings = np.where(np.diff(sgns))[0]  # Left indices
@@ -442,7 +442,7 @@ class Fitter(object):
             self._vprint('WARNING: mu ({:0.3f}) not in table; '
                          'using closest table value ({:0.3f}) ').format(mu,mu2)
             mu = mu2
-            
+
         eta2_vals = np.sort(self.tab[mu].keys())
         B0_vals = np.array([])
         fwhm_vals = []  # Easier to build up, but not efficient
@@ -496,7 +496,7 @@ class Fitter(object):
         """Plot chisqr(B0) from grid for fixed eta2, multiple mu values
 
         Verify that we can resolve chisq minimum in B0 grid
-        
+
         Input:
             eta2: where in grid shall we slice?
             mus: list of mu values to check/plot

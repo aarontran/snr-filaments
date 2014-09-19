@@ -93,11 +93,7 @@ def maketab(snr, kevs, data_min, data_max, mu_vals, eta2_vals, n_B0,
     print 'Started: {}'.format(datetime.now())
 
     print '\nSNR parameters are:'
-    for v in vars(snr).items():
-        print '\t{} = {}'.format(*v)
-    print '\tDerived SNR parameters:'
-    print '\tv0 = {}'.format(snr.v0())
-    print '\trs = {}'.format(snr.rs())
+    print snr.config_log()
 
     print '\nDefault full model (width_cont) settings are:'
     args, _, _, dfltargs = inspect.getargspec(width_cont)
@@ -352,7 +348,7 @@ def mind_the_gaps(x, yaux, y, dy_max, f):
         raise ValueError('dy_max must be positive (input: {})'.format(dy_max))
     dy = np.abs(np.diff(y))
     while any(dy > dy_max):
-        mask = dy > dy_max 
+        mask = dy > dy_max
         indgaps = np.where(mask)[0]
 
         x_midpts = (x[1:][mask] + x[:-1][mask]) / 2
@@ -382,7 +378,7 @@ def simple_fit(snr, kevs, data, eps, mu, eta2=None, B0=None,
     A convenience wrapper for lmfit.minimize(objectify(width_dump), ...)
 
     Default is to fit both eta2, B0 at fixed mu.
-    
+
     Inputs:
         kevs, data, eps (np.array) as usual
         mu, B0, eta2 (float) initial guesses, but mu fixed
@@ -548,7 +544,7 @@ def width_cont(params, kevs, snr, verbose=True, rminarc=None, icut=None,
         nan_msk = np.logical_not(np.isfinite(fwhms_prelim))
         big_msk = np.logical_or(box_msk, nan_msk)
         # box resolution errors + any NaNs/infs (unlikely, but in case)
-        if any(big_msk):  
+        if any(big_msk):
             fwhms_prelim[big_msk] = rminarc[big_msk]
         # Resolution errors, take the smallest fwhm
         if all(res_msk):  # Extreme edge case...
@@ -597,7 +593,7 @@ def width_dump(params, kevs, snr):
     If eta2 is very small: l_ad / l_diff > 30, or D / (v0**2 * tsynch) < 1/900,
     use pure advective solution to avoid singularity (should ease fitting)
     Same criterion as in Sean's full model code
-    
+
     Inputs:
         params: lmfit.Parameters object with entries B0, eta2, mu
             B0 (Gauss), eta2 (-), mu (-)
@@ -621,7 +617,7 @@ def width_dump(params, kevs, snr):
     Cd = CD
     nu2 = NUKEV * 2.0
     beta = BETA
-    
+
     # eta = eta2 * (2 keV)**(1-mu)
     # eta in code maps to \eta*(E_h)^(1-\mu) in paper
     eta = eta2 * np.sqrt(nu2/(cm*B0))**(1-mu)

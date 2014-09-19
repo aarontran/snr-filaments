@@ -16,7 +16,7 @@ To compute spectra, select inner and outer regions delineated by
 One input region file will be split into two for specextract/XSPEC chain.
 Each file contains only inner or only outer pieces, to preserve numbering.
 
-Script makes MANY assumptions about structure of region dictionary.
+Script makes MANY assumptions about structure of region dictionaries
 So, if dictionary structure is changed... update accordingly.
 """
 
@@ -28,16 +28,20 @@ import re
 
 import regparse
 
+ACIS_PX2ARCSEC = 0.492  # Chandra ACIS pixel size, arcseconds
+# BAD practice... but I don't expect this to change anytime soon
+# If the code has to be generalized to other telescopes, deal with it then
 
 def main():
     """Generate split regions from cmd line arguments"""
     parser = argparse.ArgumentParser(description=
              ('Split DS9 region file of projections into inner/outer pieces, '
               'according to profile fit cuts and FWHMs'))
-    parser.add_argument('fitpkl', help=('Pickled region dictionary from '
-                        'profile fitting scripts'))
     parser.add_argument('fitreg', help='DS9 fk5 region file of projections')
     parser.add_argument('regimg', help='Valid FITS file for input regions')
+    parser.add_argument('fcut', help='npz file w/ spectrum cuts')
+    parser.add_argument('-b', '--binsize', default=1, type=float,
+                        help='Bin size of images used to select regions')
     parser.add_argument('-o', '--outreg', help=('Root name for output region '
                         'files.  Inferred from input region file by default'))
     parser.add_argument('-v', '--verbose', action='store_true',
@@ -45,17 +49,14 @@ def main():
 
     # Parse arguments
     args = parser.parse_args()
-    f_pkl, f_reg, f_img = args.fitpkl, args.fitreg, args.regimg
+    f_reg, f_img, f_cut = args.fitreg, args.regimg, args.fcut
+    binsize = args.binsize
     f_oreg = args.outreg
     verbose = args.verbose
-
     if f_oreg is None:
         f_oreg = os.path.splitext(f_reg)[0]
     if verbose:
         print 'Output root is {}'.format(f_oreg)
-
-    with open(f_pkl, 'r') as f:
-        regions = pickle.load(f)
 
     # Convert input region file to physical coordinates
     f_reg_phys = f_reg + 'tmp'
@@ -66,19 +67,21 @@ def main():
     rspecs, headers = regparse.load_ds9reg(f_reg_phys, aux=True)
     os.remove(f_reg_phys)  # Clean-up
 
+
+    # Go through each region, apply cuts, append to separate lists
     rspecs_down = []
     rspecs_up = []
 
-    # Go through each region, extract correct cuts
-    # and save new subsetted regions
-
-    # NOTE Ordering/numbering of regions must match!  This is NOT ENFORCED.
+    spec_cuts = np.load(f_cut, 'r')['cuts']
     if verbose:
-        print 'Applying FWHM/fit cuts from {}'.format(f_pkl)
-    for rspec, n in zip(rspecs, regions.keys()):
-        reg = regions[n]
-        x1, x2, x3 = scale_cuts(reg['info']['spec_cuts'], reg)
+        print 'Applying FWHM/fit cuts from {}'.format(f_cut)
 
+    for rspec, cuts in zip(rspecs, spec_cuts):
+        # Convert cuts from arcsec, measured from first data pt (r=0),
+        # to fractional position along projection length
+        r_reg = length_proj(rspec) * ACIS_PX2ARCSEC  # No flooring needed
+        x1, x2, x3 = cuts[1:] / r_reg
+        # Generate/store subsetted projections
         rspecs_down.append(subset_proj(rspec, x1, x2))
         rspecs_up.append(subset_proj(rspec, x2, x3))
 
@@ -103,15 +106,6 @@ def main():
         print 'Wrote output: {}, {}'.format(f_down, f_up)
         print 'Done!'
 
-
-def scale_cuts(x, reg):
-    """Convert cuts from arcsec, measured from first data point (x=0),
-    to fractional position along projection length"""
-    px2as = reg['info']['px2arcsec']
-    length = reg['info']['length']  # Pixels, not floored
-    return x/(px2as*length)
-
-
 def subset_proj(rstr, a, b):
     """Generates projection subsetted along radial distance between a, b
     where a, b \in [0,1] and a < b
@@ -128,6 +122,12 @@ def subset_proj(rstr, a, b):
 
     return '{0}({1},{2},{3},{4},{5}){6}'.format(rtype,x1a,y1a,x2b,y2b,t,rprops)
 
+def length_proj(rstr):
+    """Get the length of a projection region, not floored"""
+    rtype, rnums, rprops = regparse.regparse(rstr)
+    x1, y1, x2, y2, t = rnums
+
+    return np.sqrt((x2-x1)**2 + (y2-y1)**2)
 
 if __name__ == '__main__':
     main()

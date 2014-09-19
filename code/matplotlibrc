@@ -14,6 +14,7 @@ axes.labelsize  : 9.0
 xtick.labelsize : 9.0
 ytick.labelsize : 9.0
 legend.fontsize : 9.0
+axes.titlesize  : 9.0
 
 font.family     : serif
 font.serif      : Times

@@ -1,25 +1,25 @@
 # Region file format: DS9 version 4.1
 global color=green dashlist=8 3 width=1 font="helvetica 10 normal roman" select=1 highlite=1 dash=0 fixed=0 edit=1 move=1 delete=1 include=1 source=1
 fk5
-# projection(262.70364,-21.489502,262.70508,-21.488859,6.8111899") color=magenta width=3
-# projection(262.70545,-21.49091,262.70604,-21.490677,8.0537802") color=magenta width=3
-# projection(262.7062,-21.493167,262.70701,-21.49289,6.4023601") color=magenta width=3
-# projection(262.70682,-21.494766,262.7077,-21.494594,5.1530702") color=magenta width=3
-# projection(262.70733,-21.49618,262.70799,-21.496087,3.7938") color=magenta width=3
-# projection(262.70742,-21.497271,262.70822,-21.497134,4.47487") color=magenta width=3
-# projection(262.70745,-21.498489,262.70852,-21.49836,3.98502") color=magenta width=3
-# projection(262.70698,-21.503681,262.70793,-21.504289,3.97387") color=magenta width=3
-# projection(262.70432,-21.506186,262.70516,-21.506976,7.5002399") color=magenta width=3
-# projection(262.69982,-21.50867,262.70147,-21.509286,5.0524002") color=magenta width=3
-# projection(262.69812,-21.509292,262.70073,-21.510772,6.61371") color=magenta width=3
-# projection(262.69305,-21.512813,262.69233,-21.514276,5.1990698") color=magenta width=3
-# projection(262.6735,-21.520068,262.67359,-21.520918,8.1506398") color=magenta width=3
-# projection(262.66873,-21.520504,262.66825,-21.521629,7.2014601") color=magenta width=3
-# projection(262.66866,-21.518236,262.66862,-21.519089,3.26706") color=magenta width=3
-# projection(262.66545,-21.51771,262.66531,-21.518806,3.67042") color=magenta width=3
-# projection(262.66037,-21.516867,262.66001,-21.517518,4.70298") color=magenta width=3
-# projection(262.65133,-21.514058,262.65032,-21.514552,6.44649") color=magenta width=3
-# projection(262.6421,-21.497751,262.64141,-21.498362,6.0861") color=magenta width=3
-# projection(262.64091,-21.475898,262.64086,-21.474796,8.2713702") color=magenta width=3
-# projection(262.65334,-21.469174,262.65274,-21.468882,7.8638899") color=magenta width=3
-# projection(262.70375,-21.485749,262.7047,-21.484981,8.9178001") color=magenta width=3
+# projection(262.70395,-21.489363,262.70507,-21.488866,6.8111899") color=magenta width=3 text={1}
+# projection(262.70547,-21.4909,262.70604,-21.490678,8.0537802") color=magenta width=3 text={2}
+# projection(262.70627,-21.493145,262.70701,-21.492891,6.4023601") color=magenta width=3 text={3}
+# projection(262.7069,-21.494751,262.70768,-21.494597,5.1530702") color=magenta width=3 text={4}
+# projection(262.70734,-21.496178,262.70799,-21.496087,3.7938") color=magenta width=3 text={5}
+# projection(262.70749,-21.497259,262.70822,-21.497134,4.47487") color=magenta width=3 text={6}
+# projection(262.70745,-21.498489,262.70852,-21.49836,3.98502") color=magenta width=3 text={7}
+# projection(262.70698,-21.503684,262.70793,-21.504289,3.97387") color=magenta width=3 text={8}
+# projection(262.70445,-21.506304,262.70514,-21.506955,7.5002399") color=magenta width=3 text={9}
+# projection(262.69983,-21.508672,262.70147,-21.509285,5.0524002") color=magenta width=3 text={10}
+# projection(262.69812,-21.509292,262.70073,-21.510772,6.61371") color=magenta width=3 text={11}
+# projection(262.69305,-21.512813,262.69233,-21.514276,5.1990698") color=magenta width=3 text={12}
+# projection(262.67351,-21.520132,262.67359,-21.520907,8.1506398") color=magenta width=3 text={13}
+# projection(262.66872,-21.520532,262.66826,-21.521621,7.2014601") color=magenta width=3 text={14}
+# projection(262.66865,-21.518336,262.66862,-21.519062,3.26706") color=magenta width=3 text={15}
+# projection(262.66542,-21.517911,262.66533,-21.518672,3.67042") color=magenta width=3 text={16}
+# projection(262.66037,-21.516875,262.66003,-21.517492,4.70298") color=magenta width=3 text={17}
+# projection(262.6511,-21.514172,262.65036,-21.514532,6.44649") color=magenta width=3 text={18}
+# projection(262.6421,-21.497751,262.64141,-21.498362,6.0861") color=magenta width=3 text={19}
+# projection(262.6409,-21.475747,262.64086,-21.474832,8.2713702") color=magenta width=3 text={20}
+# projection(262.65328,-21.469146,262.65275,-21.468891,7.8638899") color=magenta width=3 text={21}
+# projection(262.70375,-21.485749,262.7047,-21.484981,8.9178001") color=magenta width=3 text={22}

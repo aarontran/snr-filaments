@@ -1,1 +1,1 @@
-/Users/atran3/snr-research/code-reg/regparse.py
+../regions/regparse.py
