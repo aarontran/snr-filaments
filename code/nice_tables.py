@@ -29,17 +29,18 @@ import re
 # LatexTable and utilities
 # ========================
 
-def merge_latex_tables(tab1, tab2):
+def merge_latex_tables(tab1, tab2, indent=5):
     """Smush two tables together -- combine headers and rows
     The rowspecs (precisions) of each indiv. table are preserved in rspec
     BUT, number of rows MUST be consistent
+    2nd table rows are pushed to a newline w/ indent, when joined
     """
 
     tab3 = LatexTable([], [], '')  # The empty vessel to be filled with life
     tab3.types = tab1.types + tab2.types  # list of types
     tab3.cspec = tab1.cspec + tab2.cspec  # str for \begin{tabular}{...}
     tab3.title_row = ' & '.join([tab1.title_row, tab2.title_row])  # str, row
-    tab3.labels = ' & '.join([tab1.labels, tab2.types])  # str, row
+    tab3.labels = ' & '.join([tab1.labels, tab2.labels])  # str, row
 
     t1r = tab1.rows
     t2r = tab2.rows
@@ -47,7 +48,8 @@ def merge_latex_tables(tab1, tab2):
         t1r = t1r + (len2-len1) * [tab1.rspec]
     elif len(t2r) < len(t1r):
         t2r = t2r + (len1-len2) * [tab2.rspec]
-    tab3.rows = [' & '.join([r1, r2]) for r1, r2 in zip(t1r, t2r)]  # str, row
+    rowsep = '\n' + ' '*indent + '& '
+    tab3.rows = [rowsep.join([r1, r2]) for r1, r2 in zip(t1r, t2r)]  # str, row
 
     return tab3
 
@@ -103,7 +105,7 @@ class LatexTable(object):
                 lablist.append(r'\multicolumn{2}{c}{' + lab + r'}')
             else:
                 lablist.append('{}'.format(lab))
-        self.lablist = ' & '.join(lablist)
+        self.labels = ' & '.join(lablist)
 
         # Build row spec (string)
         rlist = []
@@ -113,7 +115,7 @@ class LatexTable(object):
             elif t == 1:  # Single error splits into two columns
                 rlist.extend(2*['$'+fmt+'$'])
             elif t == 2:  # Double error w/ braces around all values
-                rlist.append('${{'+fmt+'}}^{{'+fmt+'}}_{{'+fmt+'}}$')
+                rlist.append('${{'+fmt+'}}^{{+'+fmt+'}}_{{-'+fmt+'}}$')
             else:
                 rlist.append(t)  # Supply your own spec
         self.rspec = ' & '.join(rlist)
@@ -136,14 +138,14 @@ class LatexTable(object):
     # -----------------------------------
 
     def get_header(self):
-        """List of strings, one per table row. cspec, title_row, lablist.
+        """List of strings, one per table row. cspec, title_row, labels.
         Doesn't deal with nuances of where to cut multicolumns/lines
         """
         h_list = [r'\begin{tabular}{@{}' + self.cspec + '@{}}']
         h_list.append(r'\toprule')
         h_list.append(self.title_row + r' \\')
         h_list.append(r'\midrule')
-        h_list.append(self.lablist + r' \\')
+        h_list.append(self.labels + r' \\')
         h_list.append(r'\midrule')
 
         return h_list

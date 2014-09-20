@@ -52,22 +52,29 @@ Models for filament widths
 
 ### Main / high-level TO-DOs
 
-* make new tables, figures before sending new version
-  INCLUDE PLOTS OF best/worst chi-squared fits !!!!!
-* Write the basic code to load/save data, plot data, merge tables from
-  serialized fit data.
   WRITE UP the transport model text, CLEAN UP fitting procedure to match
   WRITE UP results section
-* Clean up current data in limbo...
 
-* Kepler -- cull regions, prepare selection w/ new FWHMs!
-  run simple model fits on Kepler.
+* RUN model fitting pipeline on capped/bkg-subtracted FWHMs.
+* Select and run pipeline on Tycho regions 5
+
+* Kepler -- cull regions, prepare selection (regions-2) w/ new FWHMs!
+  run simple and full model fits on Kepler, for Monday
 * Check model fits to FWHMs w/ caps/bkg subtraction
+
 * Cas A -- select regions.
+
+TONIGHT, and SUNDAY NIGHT, I need to run calculations/etc overnight.
+Maybe -- go ahead and select new regions (list the criteria),
+ensure the FWHMs and profiles look okay.
+Then, let specextract run; run simple/full model computations afterwards.
+
+And possibly spec
+
+CODE -- to read out regions, generate a massive subplot.
 
 ### List of plots/subplots/tables
 
-See main text...
 
 Prepare example indiv regions (good/bad quality) + simple fit + eta2 fixed,
 somehow compiled together. + plots.
@@ -79,11 +86,11 @@ Rerun all routines on SN 1006 as a usual sanity check.
 
 
 ### Table generation
-* Report reduced chisqr + degrees of freedom (fits) (individual fits)
 * maybe useful to compute advection/diffusion lengths from fits?
   Better yet -- ratio of advection/diffusion lengthscales
   This IS energy dependent, hm.  Does it help us say anything?
   Or, is this already bluntly obvious from our model fits.  Hm, maybe not.
+
 * Maybe report `m_E` as estimated from MODEL fits, which, to be
   clear, is a separate "observable" that I expect to be more robust
   than the point-to-point measurements)

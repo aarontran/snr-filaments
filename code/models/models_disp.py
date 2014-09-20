@@ -38,6 +38,7 @@ August 2014
 from __future__ import division
 
 import cPickle as pickle
+from glob import glob
 import json
 import lmfit  # For type-checking, JSON serialization
 import matplotlib.pyplot as plt
@@ -45,7 +46,7 @@ import numpy as np
 import re
 
 from json_utils import LmfitJSONEncoder
-from latex_table import LatexTable, ListTable
+from nice_tables import LatexTable, ListTable
 import models
 import models_exec as mex
 import regdict_utils as rdu
@@ -122,16 +123,16 @@ def save_fits(p_list, fobj, mu_vals, outroot):
     with open('{}-fobj.json'.format(outroot), 'w') as fjson:
         json.dump(fobj_all, fjson, cls=LmfitJSONEncoder, indent=4)
 
-def gen_fit_pkls(inroot, want_fobj=False):
+def load_fit_pkls(inroot, want_fobj=False):
     """Generator that iterates over each fitted region/filament
     Input:
         inroot (str) is base file stem, e.g.,
         ../../data-tycho/fwhms/model-fits/simp-man_err
     Yield, for each region fitted:
-        tuple of 1. list of Parameters(), 2. list of mu values,
-                 3. fobj_all dict w/ fitting data, if desired
+        tuple of 1. list of Parameters(), 2. list of mu values, 3., region num
+                 4. fobj_all dict w/ fitting data, if desired
     """
-    npkls = glob('{}-*-data.pkl'.format(inroot))
+    npkls = len(glob('{}-*-data.pkl'.format(inroot)))
     for n in xrange(npkls):
         fname = '{}-{:02d}-data.pkl'.format(inroot, n+1)  # Enforce ordering
         ffobj = '{}-{:02d}-fobj.pkl'.format(inroot, n+1)
@@ -140,9 +141,9 @@ def gen_fit_pkls(inroot, want_fobj=False):
         if want_fobj:
             with open(ffobj, 'r') as fpkl:
                 fobj_dict = pickle.load(fpkl)
-            yield p_list, mu_vals, fobj_dict
+            yield p_list, mu_vals, n+1, fobj_dict
         else:
-            yield p_list, mu_vals
+            yield p_list, mu_vals, n+1
 
 # =========================
 # Functions to control fits
@@ -165,10 +166,9 @@ def build_dataf(fit_type, conf_intv=0.683, fit_kws=None, err_kws=None):
         conf_intv: please don't set above 0.683 or your life will suck, I guarantee
         fit_kws, *simple and full models*
             eta2_free=True, B0_free=True
-            eta2, B0: provide custom (non-grid) initial guesses. For full
-                      model, MUST provide guesses for both, else ignored!
+            eta2, B0: provide custom (non-grid) initial guesses.
             mu_free=False (I recommend not to change, esp. if using full model!
-                           likely to hit bugs, not tested)
+                           NOT TESTED, likely to hit bugs)
         fit_kws, *full model only*
             model_kws (dict):
                 rminarc, icut, irmax, iradmax, ixmax, irad_adapt, irad_adapt_f
@@ -242,6 +242,7 @@ def build_dataf(fit_type, conf_intv=0.683, fit_kws=None, err_kws=None):
         # Using params because it's pickle-able for IPython's parallel stuff
         # semantically illogical, but it works...
         res.params.ci = ci
+        res.params.snr = fobj.snr
 
         info = {}
         info['conf-intv'] = conf_intv
@@ -340,7 +341,7 @@ def generate_plots(p_list, fobj, mu_vals, fmt_vals, ax=None):
             fill_kevs = np.linspace(fobj.kevs[0]-0.2, fobj.kevs[-1]+0.2, 5)
             kevs_m = np.sort(np.hstack((fobj.kevs, fill_kevs)))
             if fit_kws is not None and 'model_kws' in fit_kws:
-                model_kws = p.fit_kws['model_kws']
+                model_kws = fit_kws['model_kws']
             else:
                 model_kws = {}
             fwhms_m = models.width_cont(p, kevs_m, fobj.snr, verbose=False,

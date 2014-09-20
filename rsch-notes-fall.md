@@ -1774,12 +1774,35 @@ we can't throw these data points away.  Paper text and code blacklist updated.
 Note also that the manually specified blacklist may not be all inclusive.
 
 Minor tweaks/text changes to paper.
+Assembled average of full model best fits by hand.
 
 
 Friday 2014 September 19
 ========================
 
+Summary
+-------
+* Tables -- assemble some manually, add code for model fit tables.
 
+Assembled tables of individual region fits by hand, using new output pkls.
+Added code to generate tables, + changed last column to reduced chi-squared.
+These don't have full-blown error calculations though.
+
+Talked w/ Brian about a few paper details, and on balancing coding vs manual
+work.  As discussed yesterday -- we don't need to create a smooth continuous
+pipeline here.  Better to just do the work in chunk; move things manually if
+needed.  We only need to run this a few times.  Added some small corrections
+noted by Brian.
+
+From talking w/ Brian -- we're gonna need some way to show the global energy
+drop-off!  Which is why he asked about any global `m_E` dependence.
+
+
+Table scripting
+---------------
+Added necessary code to speed up table generation and merging.
+Added SNR to pickled model fit output, to enable subsequent work to recreate
+the fit exactly (mainly for plots).
 
 
 

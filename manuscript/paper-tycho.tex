@@ -45,6 +45,7 @@
 \newcommand*{\Chandra}{\textit{Chandra}\ }
 \newcommand*\mean[1]{\bar{#1}}
 \newcommand*{\tsynch}{\tau_{\mt{synch}}}
+\newcommand*{\mE}{m_\mathrm{E}}
 \defcitealias{ressler2014}{R14}
 
 \begin{document}
@@ -101,6 +102,10 @@ supernova remnants and plasma turbulence in astrophysical shocks.
     ISM: supernova remnants ---
     shock waves ---
     X-rays: ISM}
+
+% TODO GENERAL WARNING -- DATA ARE NOT ALL FULLY CONSISTENT AT THIS TIME.
+% (spectra/profiles/fwhms/fits).  Will be corrected / good to go in final
+% revision.
 
 % ============
 % Introduction
@@ -276,7 +281,7 @@ losses while electrons are transported downstream, given as:
 \end{equation}
 which is equation (12) of \citetalias{ressler2014}.
 
-Explain how the transport models constrain diffusion via $m_E$, define $m_E$.
+Explain how the transport models constrain diffusion via $\mE$, define $\mE$.
 Explain how we back out a filament shape/width from these models
 
 \subsection{Energy dependent widths, diffusion}
@@ -336,6 +341,8 @@ Fortran code and it looks consistent w/ Parizot et al., but I haven't vetted
 the prefactor $8.3 \unit{TeV}$.  And, I have an extra exponent $\mu - 1$ on the
 $E_h$ ?!  Come back to this shortly.}
 
+Discuss $\mE$, I have NOT defined this quantity below.  % TODO
+
 \subsection{Magnetic damping}
 
 We also consider a magnetically damped field of form
@@ -378,16 +385,16 @@ should either not overlap or completely overlap (rules out parts of NE limb);
 (3) filaments should have clear FWHMs bands; i.e., a peak should be evident
 above the background signal or downstream thermal emission (rules out some
 faint southern wisps) \note[Aaron]{wishy-washy qualitative}.
+We grouped regions into filaments by visual inspection of the remnant.
 
 % NOTE generate final, higher quality figure + newer figure for regions-5
 \begin{figure}
     \centering
-    %\plotone{figures/f0-snr.pdf}
-    \includegraphics[width=0.35\textwidth]{figures/f0-snr.pdf}
+    \plotone{figures/f0-snr-inv.png}
     \caption{RGB image of Tycho with region selections overlaid.  Bands are
     0.7--1 keV (red), 1--2 keV (green) and 2--7 keV (blue).
     \note[Aaron]{Could show the spectrum extraction regions on here too?
-    Maybe too cluttered.}}
+    Maybe too cluttered.  Figure colors inverted to save ink.}}
     \label{fig:snr}
 \end{figure}
 
@@ -449,13 +456,14 @@ shock and contact discontinuity.
 Upstream spectra fits spectral indices between $2.5$--$3$ are consistent with
 synchrotron radiation spectra for ???? population of electrons
 \note[Aaron]{citation for e- distr. indices?}. Best fit column densities from
-upstream spectra, between $0.61$--$0.78 \times 10^{22} \unit{cm^{-2}}$, are
+upstream spectra between $0.61$--$0.78 \times 10^{22} \unit{cm^{-2}}$ are
 consistent with previous fits to Tycho's nonthermal rims \citep{hwang2002} but
-somewhat larger than $\abt0.35$--$0.5 \times 10^{22}$ from radio and optical??
-HI absorption line measurements \citep{black1984, albinson1986, kothes2004}.
+somewhat larger than $\abt0.35$--$0.5 \times 10^{22} \unit{cm^{-2}}$ from radio
+and optical??  HI absorption line measurements \citep{black1984, albinson1986,
+kothes2004}.
 % NOTE keep stated ranges of spectral indices, column densities up to date
 
-\note[Aaron]{On rob's suggestion of fitting thermal model -- can we get away
+\note[Aaron]{On Rob's suggestion of fitting thermal model -- can we get away
 with just fitting line emission and constraining from there? or is the
 whole NEI apparatus needed.  If we add thermal components -- report spectral
 indices and reconfirm spectral softening?}
@@ -464,12 +472,10 @@ indices and reconfirm spectral softening?}
 \begin{table}
     \scriptsize
     \centering
-    \caption{Absorbed power law fit parameters for all regions' upstream and
-    downstream spectra.  The reduced $\chi^2$ values for upstream spectrum fits
-    are consistent with a lack of thermal emission, but values for downstream
-    fits indicate a poor fit due to line emission.
-    \label{tab:spec}}
+    \caption{Region spectra fit parameters\label{tab:spec}}
     \input{tab-spec.tex}
+    \tablecomments{Absorbed power law fit parameters are photon index $\Gamma$
+    and hydrogen column density $\mathrm{N_H}$.}
 \end{table}
 
 Table~\ref{tab:spec} confirms that our region selections are practically free
@@ -630,22 +636,26 @@ Granted, this is not guaranteed correct for nonlinear fits (that $\Delta \chi^2
 \label{sec:fwhm-results}
 
 In Table~\ref{tab:fwhms} we report FWHM measurements for all of our regions.
-As previously noted, we could not resolve FWHMs for some regions in the 0.7--1 keV band.
-NOTE very low counts/numbers of regions for some averages (typically 1--2, see
-Figure~\ref{fig:snr}).
+As previously noted, we could not resolve FWHMs for some regions in the
+0.7--1 keV band.  We also report $\mE$ values for all but the lowest energy
+band, computed point-to-point as $\mE(E_2) = \ln(w_2/w_1) / \ln(E_2/E_1)$ where
+$w_1, w_2$ and $E_1, E_2$ are FWHMs and lower energy values for each energy
+band (e.g., $\mE(\text{1 keV}) = \ln(w(\text{1-1.7 keV}/w(\text{0.7-1 keV})) /
+\ln(\text{1 keV}/\text{0.7 keV})$ is computed from widths/energies.  Although
+the values of $\mE$ reflect a good deal of variability in the underlying width
+measurements, we see that most regions and energy bands display a decrease in
+rim widths as a function of energy.
 
-Mention the number of counts in individual profiles?
-May affect whether we go back and take smaller regions, or not.
-
-% TODO give individual regions' FWHMs and m_E values
 \begin{table*}[ht]
     \tiny
     \centering
-    \caption{FWHMs for all regions.\label{tab:fwhms}}
-    %\input{tab-fwhms-ave-arith.tex}
-    %\input{tab-fwhms-ave-geom.tex}
+    \caption{Measured FWHMs for all regions.\label{tab:fwhms}}
     \input{tab-fwhms.tex}
 \end{table*}
+
+Here we have presented $\mE$ to demonstrate the fall-off of rim width energy.
+However, we emphasize that $\mE$ is currently not factored into our subsequent
+analysis.
 
 
 % -------------------------
@@ -653,18 +663,20 @@ May affect whether we go back and take smaller regions, or not.
 % -------------------------
 \subsection{Model fit results}
 \label{sec:fit-results}
+
 % TODO do all the work, but with different FWHM calculation -- to confirm
 %      that it doesn't make a big difference...
 
-% TODO keep updated -- give tables for ONE region with both simple, full fits
+% NOTE keep updated -- for which region are we giving simple and full fits?
 We find that the simpler catastrophic dump model (equation~\eqref{eq:simp-mod})
 produces the same qualitative trends seen in the full continuous energy loss
 model.
 The first row of Table~\ref{tab:fits} compares simple and full model fits for
-Region 1(?).
+Region 1.
 The key differences are \emph{blah}.  The errors are comparable, the parameters
 are comparable but shifted by X amount; this is consistent in all filaments?
-(details tbd).  Consequently, we present only the full model fits for all other
+(details tbd).
+Consequently, we present only the full model fits for all other
 filaments in Table~\ref{tab:fits}.  However, the simple model is useful for
 building intuition and we will refer to its results in the following discussion
 (?); \citetalias{ressler2014} also give examples of simple model fits in SN
@@ -675,6 +687,22 @@ Table~\ref{tab:fits} presents full model fit results for all regions
 considered. Errors are computed by varying free parameters $B_0$,
 $\eta_2$ to obtain $\Delta\chi^2 = 1$, corresponding to $1$-$\sigma$ confidence
 limits on our fit parameters.
+\begin{table}[ht]
+    \tiny
+    \centering
+    \caption{Full model best fits for individual regions, Filament 1.
+    \label{tab:fits}}
+    \input{tab-fits-all.tex}
+\end{table}
+
+\begin{table}[ht]
+    \tiny
+    \centering
+    \caption{Full model best fits for individual regions, Filaments 2--5.
+    \label{tab:fits-pt2}}
+    \input{tab-fits-all-pt2.tex}
+\end{table}
+
 
 HERE we show two examples of fits -- one where the models just happen to fit
 the data very nicely, and one where the models are way off (enormous $\chi^2$
@@ -683,29 +711,25 @@ cases, to emphasize that our fits are hit-and-miss in practice.
 We also show the simple model fits here to illustrate the similar qualitative
 behavior between simple/full model fits.
 
-% TODO Assemble table of regions
-\begin{table*}[ht]
-    \scriptsize
-    \centering
-    \caption{Full model best fits for individual regions, Filament 1.
-    \label{tab:fits}}
-    \input{tab-fits-flmt1.tex}  % TODO CHANGE/UPDATE THIS
-\end{table*}
 
-In Figure~\ref{fig:fits} we plot the full model fits for the same regions
+
+In Figure~\ref{fig:fits-all} we plot the full model fits for the same regions
 tabulated in Table~\ref{tab:fits}
 
-% TODO Assemble all the individual plots.
+% NOTE need better subplot display in final version, if we keep this
 \begin{figure}[ht]
     \centering
-    \plottwo{figures/f0-fits-avg-flmt1.png}{figures/f0-fits-avg-flmt2.png} \\
-    \plottwo{figures/f0-fits-avg-flmt3.png}{figures/f0-fits-avg-flmt4.png} \\
-    \plottwo{figures/f0-fits-avg-flmt5.png}{figures/f0-box.png}
-    \plottwo{figures/f0-fits-avg-flmt1-geom.png}{figures/f0-fits-avg-flmt2-geom.png} \\
-    \plottwo{figures/f0-fits-avg-flmt3-geom.png}{figures/f0-fits-avg-flmt4-geom.png} \\
-    \plottwo{figures/f0-fits-avg-flmt5-geom.png}{figures/f0-box.png}
-    \caption{Plots of best-fits to averaged FWHMs (arithmetic, geometric avg).
-    \note[Aaron]{Need better subplot display in final version, if we keep these}}
+    \plottwo{figures/fits-sep13/reg01.png}{figures/fits-sep13/reg02.png} \\
+    \plottwo{figures/fits-sep13/reg03.png}{figures/fits-sep13/reg04.png} \\
+    \plottwo{figures/fits-sep13/reg05.png}{figures/fits-sep13/reg06.png} \\
+    \plottwo{figures/fits-sep13/reg07.png}{figures/fits-sep13/reg08.png} \\
+    \plottwo{figures/fits-sep13/reg09.png}{figures/fits-sep13/reg10.png} \\
+    \plottwo{figures/fits-sep13/reg11.png}{figures/fits-sep13/reg12.png} \\
+    \plottwo{figures/fits-sep13/reg13.png}{figures/f0-box.png}
+    \caption{Fitted full model widths as a function of energy for all regions,
+    with measured data; best fit parameters are given in
+    Tables~\ref{tab:fits},~\ref{tab:fits-pt2}.  Plots are ordered by region
+    number.}
     \label{fig:fits-all}
 \end{figure}
 
@@ -721,7 +745,7 @@ Table~\ref{tab:fits-avg-eta2-fix}).
 \begin{table*}
     \scriptsize
     \centering
-    \caption{Best fits with $\eta_2 = 1$ fixed, for filament averaged FWHMs.
+    \caption{Best fits with $\eta_2 = 1$ fixed for filament averaged FWHMs.
     \label{tab:fits-avg-eta2-fix}}
     \input{tab-fits-avg-eta2-fix.tex}
 \end{table*}
@@ -739,7 +763,7 @@ number of regions per filament (i.e., our sample size) is quite small.
 \begin{table*}
     \scriptsize
     \centering
-    \caption{Filament-wide average of best-fit parameters for constituent regions.
+    \caption{Filament averages of best-fit parameters for constituent regions
     \label{tab:fits-avg}}
     \input{tab-fits-par-avg.tex}
 \end{table*}
@@ -783,13 +807,13 @@ currently reporting because different profile fits will give a larger spread of
 FWHMs (might need to consider reduced chi-squared here, but using chi-sqr to
 select profile fit models is not physically meaningful)
 
-It would be helpful to average $m_E$ values together, under the
+It would be helpful to average $\mE$ values together, under the
 assumption that they should be somewhat consistent within a given filament.
 Then report the values and errors observed.
 
 Recall that our FWHMs (Table~\ref{tab:fwhms}) have a large range of values,
 IF magnetic damping is relevant in controlling filament widths, we might, e.g.,
-expect a maximum filament width at which $m_E$ sharply levels off, being now
+expect a maximum filament width at which $\mE$ sharply levels off, being now
 restricted by the magnetic field turn off.  We simply do not observe this in
 our data between $0.7$--$7 \unit{keV}$.  We must conclude that, as in SN 1006
 \citepalias{ressler2014}, magnetic damping cannot be relevant to our
@@ -875,13 +899,13 @@ This research has made use of NASA's Astrophysics Data System.
 % --------------
 \section{Full model validation, SN 1006 (DRAFT ONLY)}
 
-For comparison to \citetalias{ressler2014}, we reproduce Sean's table
-(Table~\ref{tab:sean} and present full model fits with 2 and 3 energy bands
-(Tables~\ref{tab:sn1006-2band} and \ref{tab:sn1006-3band}, respectively).
+For comparison to \citetalias{ressler2014}, we reproduce Sean's full model fit
+table (Table~\ref{tab:sean}) and present full model fits with 2 and 3 energy
+bands (Tables~\ref{tab:sn1006-2band} and \ref{tab:sn1006-3band}, respectively).
 We don't compare simple model results, as they are identical (only the error
 calculations differ).
-The procedure of Tables~\ref{tab:sean},~\ref{tab:sn1006-2band} are not quite
-the same.  Sean used $m_E$ at 2 keV instead of the $1$--$2$ keV width for
+The procedures of Tables~\ref{tab:sean},~\ref{tab:sn1006-2band} are not quite
+the same.  Sean used $\mE$ at 2 keV instead of the $1$--$2$ keV width for
 fitting, whereas I used both widths.  But, it should not matter much as
 the fit often has $\chi^2 \sim 0$, either way (depending on the exact
 measurements and values of $\mu$).
@@ -914,60 +938,6 @@ of the error.
     \label{tab:sn1006-3band}}
     \input{tab-sn1006-3band.tex}
 \end{table*}
-
-
-% ------------------
-% Sean's Cas A table
-% ------------------
-\section{Sean's Cas A comparison (DRAFT ONLY)}
-
-This is dredged from the \LaTeX source for Sean's paper, available on arXiv.
-I put this here just for my own reference.
-
-A detailed application of our results to other SNRs such as Cas A will
-require much more extensive analysis, but we can use the published
-filament widths of Araya et al. (2010) for Cas A to get preliminary
-estimates of the magnetic field strength and diffusion coefficient by
-applying our model. In their data, it appears that the filaments in
-Cas A shrink by a factor of $\sim 0.8$ between 0.3 and 3 keV, while the
-filament widths appear to be energy-independent between 3 and 6 keV.
-Qualitatively, this is consistent with the loss-limited model, as our
-parameter $m_{\rm E}$ is predicted to decrease with energy.  For the
-lower energy range of 0.3--3 keV, reproducing $m_{\rm E}\sim -0.1$
-(equivalent to the factor of 0.8 drop in size) requires magnetic
-fields on the order of 200-500 $\mu$G and diffusion coefficients about
-$5 \times D_{\rm Bohm}$(3 keV), about an order of magnitude higher
-than the values one obtains by neglecting the energy dependence. One
-can also see directly from Figure~\textbf{?!} that $\mu < 1$ models
-of the diffusion coefficient are excluded for $m_{\rm E}\sim -0.1$.
-
-To quickly compare how our results will differ from those of other authors, we
-applied the analytic approximation of Equation 22 and Equation 9 to the FWHMs
-presented by Araya et al. (2010) for Cas A. Here we used $m_{\rm E} = \log(
-{\rm FWHM}(3keV)/{\rm FWHM}(.3keV))/\log(10)$ and fit the filaments at a photon
-energy of 3 keV.  Hence $\eta_3 \equiv D/D_{\rm Bohm}(3 keV)$. Using the same
-parameters, our results are shown in Table~\ref{tab:araya}. To fit the energy
-dependence of the FWHM (i.e. $m_{\rm E}$), we required higher diffusion
-coefficients and, consequently, magnetic fields about an order of magnitude
-higher than their results. We note here that values of $\mu<1$ were unable to
-reproduce the data and that the diffusion coefficients cited by Araya et al.
-(2010) are below the minimally allowed Bohm value ($\eta_3 = 1$).
-
-We intended this comparison solely as a qualitative analysis, and thus did not
-rigorously keep track of uncertainties or extend the comparison to the full
-numerical calculation. The conclusion is clear, however, which is that
-considering the measured value of $m_{\rm E}$ can have a dramatic effect.
-
-\begin{table}[h]
-\tiny
-\centering
-\caption{Best fit parameters for the filaments of Cas A based on data from
-Araya et. al (2010) in varying values of $\mu$ (Approximate Analytic Results)
-Dashes denote places where fits were unobtainable.
-\label{tab:araya}}
-\input{tab-sean-casA.tex}
-\end{table}
-
 
 % ==========
 % References
