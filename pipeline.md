@@ -132,6 +132,15 @@ physical coordinates.
 
 Output: `regions-n.reg`, `regions-n.physreg`
 
+## Compute azimuth angles for regions (Tycho)
+
+For shock velocity interpolation (if needed)
+Pick some circle region to compute the azimuth angles (`data-SNR/circ/`)
+
+Code:   `code/regions/ds9projangle.py`
+Input:  `regions-n.physreg`, `circ.physreg`
+Output: `data-SNR/regions-n/regions-n-az.txt`
+
 ## Generate, process radial profiles from regions, mosaics and count files
 
 Code:   `code/regions/ds9projplotter.py`
@@ -216,6 +225,7 @@ Code:   `code-models/snr_catalog.py`
 
 Add a method that initializes a `SupernovaRemnant` with appropriate constants.
 Also stores a number of constants/magic numbers for fits
+
 
 ## Generate pre-cached table of FWHMs over parameter space
 Let run overnight or so.  Clone generating script (basically your config file,

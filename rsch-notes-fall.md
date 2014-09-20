@@ -1782,11 +1782,17 @@ Friday 2014 September 19
 
 Summary
 -------
-* Tables -- assemble some manually, add code for model fit tables.
+* Tables -- assemble some manually, added code for model fit tables.
+  I think, good enough to send around
 
+Table scripting
+---------------
 Assembled tables of individual region fits by hand, using new output pkls.
 Added code to generate tables, + changed last column to reduced chi-squared.
-These don't have full-blown error calculations though.
+Added necessary code to speed up table generation and merging.
+
+Added SNR to pickled model fit output, to enable subsequent work to recreate
+the fit exactly (mainly for plots).
 
 Talked w/ Brian about a few paper details, and on balancing coding vs manual
 work.  As discussed yesterday -- we don't need to create a smooth continuous
@@ -1794,15 +1800,25 @@ pipeline here.  Better to just do the work in chunk; move things manually if
 needed.  We only need to run this a few times.  Added some small corrections
 noted by Brian.
 
-From talking w/ Brian -- we're gonna need some way to show the global energy
-drop-off!  Which is why he asked about any global `m_E` dependence.
+
+Tycho FWHMS with manual cap + background subtraction
+----------------------------------------------------
+
+Now running full model fits on these guys, for comparison.
+Goal is just to get chisqrs out.  Quickly generate a table for all regions and
+compare to our current table.
 
 
-Table scripting
+Tycho regions-5
 ---------------
-Added necessary code to speed up table generation and merging.
-Added SNR to pickled model fit output, to enable subsequent work to recreate
-the fit exactly (mainly for plots).
+
+Goal: split up the regions and get more FWHMs in each filament
+
+
+
+
+
+
 
 
 

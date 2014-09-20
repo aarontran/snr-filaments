@@ -49,52 +49,40 @@ And, look at higher energy bands (2-4, 4-7 keV).
 Models for filament widths
 --------------------------
 
-
 ### Main / high-level TO-DOs
 
-  WRITE UP the transport model text, CLEAN UP fitting procedure to match
+Manuscript (highest priority):
+
+* WRITE UP the transport model text,
+  CLEAN UP fitting procedure text to match
   WRITE UP results section
 
+Data, numbers:
+
 * RUN model fitting pipeline on capped/bkg-subtracted FWHMs.
-* Select and run pipeline on Tycho regions 5
+  Don't bother with full errors -- for now, just want numbers + chi-sqr values.
+* PICK Tycho regions-5, according to some criteria (look at counts, spectra,
+  profiles to decide).  Save regions and run pipeline on these guys.
 
-* Kepler -- cull regions, prepare selection (regions-2) w/ new FWHMs!
-  run simple and full model fits on Kepler, for Monday
-* Check model fits to FWHMs w/ caps/bkg subtraction
+* Kepler -- cull regions by w/e criteria, prepare regions-2 w/ 4 energy bands.
+  Have simple/full model fits for Monday.
+* Cas A -- select first round of regions, get FWHMs -- would be useful to
+  discuss on Monday.
 
-* Cas A -- select regions.
+IF and ONLY IF data are worthwhile, then deal with 1. spectra, 2. full model
+errors.  For the time being, only compute FWHMs, simple models, and full models
+with stderr.  That's it.  No more.
 
-TONIGHT, and SUNDAY NIGHT, I need to run calculations/etc overnight.
-Maybe -- go ahead and select new regions (list the criteria),
-ensure the FWHMs and profiles look okay.
-Then, let specextract run; run simple/full model computations afterwards.
+### Science
 
-And possibly spec
-
-CODE -- to read out regions, generate a massive subplot.
-
-### List of plots/subplots/tables
-
-
-Prepare example indiv regions (good/bad quality) + simple fit + eta2 fixed,
-somehow compiled together. + plots.
-
-Global average -- of fit parameters, or fit to global average of FWHMs.
-Give this somewhere
-
-Rerun all routines on SN 1006 as a usual sanity check.
-
-
-### Table generation
-* maybe useful to compute advection/diffusion lengths from fits?
-  Better yet -- ratio of advection/diffusion lengthscales
-  This IS energy dependent, hm.  Does it help us say anything?
-  Or, is this already bluntly obvious from our model fits.  Hm, maybe not.
+From talking w/ Brian -- we're gonna need some way to show the global energy
+drop-off!  Which is why he asked about any global `m_E` dependence.
 
 * Maybe report `m_E` as estimated from MODEL fits, which, to be
   clear, is a separate "observable" that I expect to be more robust
   than the point-to-point measurements)
-
+* Remember brian's suggestion (from Friday july 25): how does mE depend on
+  energy? what happens if you fit a straight power law to that???
 
 ### Various checks
 
@@ -102,26 +90,20 @@ Rerun all routines on SN 1006 as a usual sanity check.
   Might also be worth double checking some of the internal numerical integrals.
   And, check how accurate/correct Pacholczyk's Bessel function values are now.
   (ASK SEAN -- ANY REASON FOR TABLE SELECTIONS?)
-* Ask Keith Arnaud about error statistics... but, lower priority
-  At what chi-sqr does our simple confidence interval analysis break down/fail?
-  I don't understand the theory behind this very well.
 * Remnant radio spectral indices?!
   See [ppt slides](http://www.astro.le.ac.uk/~cbp1/cta/Talks/TonyBell.pdf),
   just pick some numbers and report in text (saave in SNR catalog, w/ sources
   and explanation for choices).
-* Check all constants.  `snr_catalog.py`, model fitting code both
-  wrapper and fortran.  Go back to Sean's transport eq'n and rederive.
 * Update code deep review eventually (discuss: correction to the negative sign
   in electron distribution functions, explain the Ecut scaling / calculation)
 
+* Check all constants.  `snr_catalog.py`, model fitting code both
+  wrapper and fortran.  Go back to Sean's transport eq'n and rederive.
 * Check transport equation for pure advection case
 * Check numerical prefactor 8.3 TeV for electron cutoff energy
 
-* Check: sean used energy cutoff in all his model fits? (table 8)
-  (affirmed in Section 4.3)
-
-* Remember brian's suggestion (from Friday july 25): how does mE depend on
-  energy? what happens if you fit a straight power law to that???
+* When paper is nearing finish -- re-run entire pipeline on SN 1006 as a sanity
+  check.  But, not now.
 
 
 ### CIAO stuff

@@ -54,11 +54,11 @@
 
 %\begin{CJK*}{UTF8}{gbsn}
 \author{
+Aaron Tran\altaffilmark{1,4},
+Brian J. Williams\altaffilmark{1,5},
 Robert Petre\altaffilmark{1},
 Sean M. Ressler\altaffilmark{2},
-Stephen P. Reynolds\altaffilmark{3},
-Aaron Tran\altaffilmark{1,4},
-Brian J. Williams\altaffilmark{1,5}
+Stephen P. Reynolds\altaffilmark{3}
 }
 %\end{CJK*}
 
@@ -113,7 +113,8 @@ supernova remnants and plasma turbulence in astrophysical shocks.
 \section{Introduction}
 
 \note[Aaron]{this first draft of intro structure is mostly set (in terms of
-material, number of paragraphs).}
+material, number of paragraphs).  Explanations/etc may be too simplistic, I
+have more reading to do.}
 
 % Intro -- shocks, DSA, thin rims, filament observations; other fields/work
 Forward shock accelerated ISM/CSM particles in young supernova remnants emit
@@ -122,67 +123,67 @@ off downstream \citep{koyama1995, reynolds1996}, producing a shell-like
 morphology with bright X-ray and radio rims/filaments due to line-of-sight
 projection (hereafter, thin rims).
 Seminal observations \& interpretations of these filaments, interpretation in
-context of DSA.
-People (such as the authors of this manuscript) are trying to model these
-filaments and figure out what's going on.
+context of DSA.  Attempts to model filaments and figure out what's going on.
 Why do we care about these models?  They tell us something about what happens
 behind the shock, and perhaps what's going on at the shock.  We get at the
 plasma turbulence, magnetic field turbulence and structure, electron injection.
 Applications to: cosmic ray acceleration, turbulent field amplification, (note
-assumptions in re proton/electron spectra).  Cut-off energy of injected
+assumptions in re proton/electron spectra).
+Cut-off energy of injected
 electrons?  Relevant to, broadly, all astrophysical shocks: Earth's bow shock,
 PWNe, SNe and/or stellar wind blown bubbles, starbursts \citep{heckman1990},
-AGN jets, galaxy clusters \citep{van-weeren2010}, cosmological shocks?!
-\citep{miniati2000, ryu2008}, other cool stuff.  See relevant reviews
-\citep{blandford1987}.
+AGN jets, galaxy clusters \citep{van-weeren2010}, and even cosmological shocks
+\citep{miniati2000, ryu2008}.  See relevant reviews \citep{blandford1987}.
 
 % What makes these shocks?
 The widths of these X-ray rims are thought to be controlled by a combination of
 synchrotron losses, particle transport, and magnetic fields immediately
 downstream of the shock.  Synchrotron losses depend on the initial electron
 energy distribution and the gradual decrease of electron energies downstream of
-the shock.  At the shock, high energy electrons efficiently radiate harder
-synchrotron X-ray photons; as they are transported away from the shock, they
-radiate at lower energies and lose energy more slowly.  The transport process
-is driven by both bulk plasma advection away from the shock at downstream
-velocity $v_d = v_s / r$, where $v_s$ is shock velocity and $r$ the compression
-ratio, and diffusion ... (driven by collisionless particle interaction,
-magnetic field turbulence, ????? fill in details) with respect to bulk
-advection.  Energy-dependent diffusion (e.g., diffusion coefficient $D \propto
-E$ for Bohm diffusion) allows higher energy electrons to diffuse further
-upstream or downstream than would be expected from pure advection; in
-particular, diffusion upstream of the shock may give rise to a shock precursor
-\citep[e.g.,][]{ghavamian2000, wagner2009, laming2014}.  Finally, the magnetic
-field strength may be quickly damped behind the shock, so that electrons may
-not radiate as efficiently and thin rims would reflect the spatial structure of
-the field, rather than efficient particle acceleration (and losses) and/or
-efficient synchrotron cooling \citep{pohl2005}.  \note[Aaron]{I need to read up
-on particle transport, diffusion, plasma physics!}
+the shock.  High energy electrons near the shock efficiently radiate harder
+synchrotron X-ray photons, but decline in energy as they are transported away
+from the shock; this may be seen in spectral softening downstream of the shock
+\citep[e.g.,][]{cassam-chenai2007}.  The transport process is driven by bulk
+plasma advection downstream of the shock and diffusion (\emph{driven by
+collisionless particle interaction, magnetic field turbulence, ?????  fill in
+details}) with respect to bulk advection.  Energy-dependent diffusion (e.g.,
+diffusion coefficient $D \propto E$ for Bohm diffusion) allows higher energy
+electrons to diffuse further upstream or downstream than would be expected from
+pure advection; in particular, diffusion upstream of the shock may give rise to
+a shock precursor \citep[e.g.,][]{ghavamian2000, wagner2009, laming2014}.
+Finally, the magnetic field strength may be quickly damped behind the shock, so
+that electrons may not radiate as efficiently and thin rims would reflect the
+spatial structure of the field, rather than efficient particle acceleration
+(and losses) and/or efficient synchrotron cooling \citep{pohl2005}.
 
 % Energy dependence.
 Moreover, these controlling mechanisms predict different scalings for rim width
-as a function of energy.  Loss-limited rims should scale as $w \propto
-\nu^{-1/2}$.  Diffusion weakens this energy dependence by smearing out rims at
-all energies (even for energy-independent diffusion), yielding a slower
-drop-off in rim widths when diffusion dominates.  Magnetic damping, at a
-length scale where it may be considered a relevant control on rim widths (i.e.,
-length scale comparable to filament width) predicts energy-independent rim
-widths -- intuitively, if the magnetic field turns off, synchrotron radiation
-turns off regardless of electron energy.  \citet{ressler2014} give a much
-fuller exposition of the relative effects of advection, diffusion, and magnetic
-field damping.
+as a function of energy.  Synchrotron loss-limited rims should scale as $w
+\propto \nu^{-1/2}$.  Diffusion smears out rims at all energies with stronger
+effect at higher energies, yielding a slower drop-off in rim widths when
+diffusion dominates.  Magnetic damping, if at a length scale comparable to
+filament widths, predicts energy-independent rim widths -- intuitively, if the
+magnetic field turns off, synchrotron radiation turns off regardless of
+electron energy.  \citet{ressler2014} give a much fuller exposition of the
+relative effects of advection, diffusion, and magnetic field damping.
 
 % Which one is right?
 Previous measurements of basic observables \citep[e.g.,][]{bamba2003,
 bamba2005-hist, bamba2005-vela, parizot2006} and consequences.  Conclusion that
-magnetic fields are amplified according to loss-limited model.  How could this
-be plausible?  There are possible explanations -- field amplification from
-plasma instabilities, evidence for stronger compression ratios?
-\citep{blondin2001}.  Numerical simulations and theory on this matter
-accounting for streaming instabilities, CR escape / energy losses, MHD
-equations, all sorts of things I can't keep track of.  But, magnetic damping
-model offers a tantalizing alternate explanation, and has not been tested.
-Equivocal results by \citet{araya2010} for Cas A.
+magnetic fields are amplified according to loss-limited model.  How?  Field
+amplification from plasma instabilities, evidence for stronger compression ratios?
+\citep{blondin2001}.  Lots of numerical and theoretical work that I don't
+understand.
+
+Introduce $\tsynch$ and the basic intuition.
+Explain why diffusion is an important consideration
+(when did this start being recognized as relevant?).
+
+Previous work that accounted for advection/diffusion alone or separately,
+previous work that considered both simultaneously (as we do here).
+
+But, magnetic damping offers a tantalizing alternate explanation and has not
+been fully tested.  Equivocal results by \citet{araya2010} for Cas A.
 \citet{rettig2012} proposed discriminating based on filament spectra -- the
 expectation is that damped spectra are softer, loss-limited harder.
 \citet{ressler2014} developed the idea of investigating energy dependence and
@@ -223,16 +224,10 @@ amplification (lending credence to previous estimates, in disfavoring magnetic
 field amplification), and discuss particle diffusion/acceleration at the shock.
 Any further misc. applications (constraints on precursors, etc).
 
-
-% =============================
-% Transport models, observables
-% =============================
-\section{Electron transport models}\label{sec:transport}
-
+% TODO Chunk of text I don't know what to do with...
 We briefly review relevant particle transport models that we use to fit our
 measurements; a fuller review and exposition is given by \citetalias{ressler2014}.
-\note[Aaron]{is it necessary to give Sean's equation numbers?  How many of the
-derived equations should we give?}  In particular, the transport models
+In particular, the transport models
 account for both advection and diffusion simultaneously, as opposed to
 considering the lengthscales separately with advection dominating below a
 critical energy and diffusion, above
@@ -241,90 +236,114 @@ critical energy and diffusion, above
 The effects of varying various parameters, especially in regards to filament
 energy dependence, are explored in detail by \citetalias{ressler2014}.
 
+% =============================
+% Transport models, observables
+% =============================
+\section{Nonthermal rim modeling}\label{sec:models}
+
+\subsection{Particle transport}\label{sec:transport}
+
 % TODO Choose names for these models and refer to them consistently, throughout
 % TODO define ALL symbols, synchrotron constants, etc (somewhere state that CGS
 %      notation is being used)
-\note[Aaron]{Double check against Rettig/Pohl.  Variable definitions will be
-added when equations/exposition is closer to final state.}
-The electron distribution which gives rise to the observed synchrotron
-radiation is injected at the forward shock and transported by advection
-and plasma diffusion, following the advection-diffusion equation:
-\[
+% TODO double check equations, exposition against Rettig/Pohl and others
+% TODO review variable definitions when closer to final draft
+The energy and space distribution of electrons at a supernova remnant
+controls the synchrotron rims we see in X-ray and radio.  We model electron
+transport from initial injection at the remnant's forward shock as following
+the advection-diffusion equation given by:
+\note[Aaron]{ApJ prefers bold vectors and vector operators, fix later}
+% TODO fix vector operators
+\begin{equation}
   \frac{\ptl f}{\ptl t} + \del \cdot \left( f \vec{v} \right)
   = C + \del \cdot \left( D \del f \right)
-\]
-By considering only steady-state transport and some other assumptions
-(1-D flow (did we neglect the spherical coord terms?), neglect compressible flow?!,
-space-independent diffusion coefficient):
-\[
-    v \frac{\ptl f}{\ptl x} - D \frac{\ptl^2 f}{\ptl x^2} = C .
-\]
-The source/sink term $C$ reflects assumptions about the injected electron
-energy spectrum and its time/space evolution.
-A first approximation is to treat electrons as having constant energy, but
-dumping energy catastrophically after a synchrotron timescale
-$\tsynch$ \note[Aaron]{define this -- either Section~\ref{sec:transport} before jumping into
-transport models, or in the intro}, yielding:
+\end{equation}
+where $f = f(E,x)$ is electron distribution as a function of electron energy
+$E$ and downstream distance $x$ (where the forward shock is at $x=0$ and
+$x>0$ towards the remnant's interior); $C$ is an arbitrary source/sink term,
+$D$ is the diffusion coefficient, and $\vec{v}$ is a velocity field.
+By considering 1-D steady-state plane transport at a constant downstream
+velocity $v_d$ \note[Aaron]{we threw out 1. spherical coordinate terms, and 2.
+compressible flow terms, I think.  Is the latter justifiable?  Makes sense for
+assumption of uniform downstream velocity -- but is this a safe assumption in
+practice?  Double check order-of-magnitude...} and a space-independent diffusion
+coefficient, we obtain:
+\begin{equation}
+    v_d \frac{\ptl f}{\ptl x} - D \frac{\ptl^2 f}{\ptl x^2} = C .
+\end{equation}
+The source/sink term $C$ is determined by our assumptions about the injected
+electron energy spectrum and its time/space evolution.
+
+A first approximation is to let electrons have constant energy that is dumped
+catastrophically after a synchrotron timescale $\tsynch = 1/(b B^2 E)$, where
+$b = 1.57 \times 10^{-3}$ in CGS units and $B$ is magnetic field (which may
+vary as $B=B(x)$.  The sink term is $C = -f / \tsynch$, yielding:
 \begin{equation} \label{eq:simp-mod}
-    v \frac{\ptl f}{\ptl x} - D \frac{\ptl^2 f}{\ptl x^2} +
+    v_d \frac{\ptl f}{\ptl x} - D \frac{\ptl^2 f}{\ptl x^2} +
     \frac{f}{\tau_{\mt{synch}}} = 0
 \end{equation}
-where this is equation (5) of \citetalias{ressler2014}.
-Equation~\eqref{eq:simp-mod} has a convenient analytic solution (note that
-neglecting diffusion, this is $\ptl f/\ptl x \propto -f/(\tsynch v_d)$.
+which is equation (5) of \citetalias{ressler2014}.
+\note[Aaron]{I think there should be a delta function for e- injection, but it
+probably doesn't affect the solution.  Double check.}
+Conveniently, equation~\eqref{eq:simp-mod} has analytic solution $f \propto
+\exp(-x/a)$ where $a$ is a characteristic scale length.  The full width half
+maximum (FWHM) of a thin rim produced by this ``simple'' model is given by:
+\begin{equation} \label{eq;simp-fwhm}
+    w = \frac{2\beta D / v_d}{\sqrt{1 +\frac{4D}{v_d^2 \tsynch}} - 1}
+\end{equation}
+where $\beta$ is a projection factor relating $w$ to $a$ as $w = \beta a$.  We
+take $\beta = 4.6$ assuming projection from spherical shell, as derived by
+\citet{ballet2006}.
+
 A more advanced model is given by accounting for continuous radiation energy
-losses while electrons are transported downstream, given as:
+losses while electrons are transported downstream:
 \begin{equation} \label{eq:full-mod}
-    v \frac{\ptl f}{\ptl x} - D \frac{\ptl^2 f}{\ptl x^2} =
+    v_d \frac{\ptl f}{\ptl x} - D \frac{\ptl^2 f}{\ptl x^2} =
     K_0 E^{-s} e^{-E/E_{\mt{cut}}} \delta(x) + \frac{\ptl}{\ptl E}
       \left(bB^2E^2f\right)
 \end{equation}
-which is equation (12) of \citetalias{ressler2014}.
-
-Explain how the transport models constrain diffusion via $\mE$, define $\mE$.
-Explain how we back out a filament shape/width from these models
-
-\subsection{Energy dependent widths, diffusion}
-
-Bohm diffusion: $D(E) = \eta C_d E / B$. Generalized diffusion writen as:
-\[
-    D(E) = \eta C_d E^\mu / B = \eta_h D(E_h) (E/E_h)^\mu
-\]
-Explain the use of fiducial energy -- this makes sense and eases discussion,
-but linking $E_h$ and $\eta_2$ to $\eta$ and plain Bohm diffusion seems a bit
-murky.
-
-For the simple model, we have equation (6) of \citetalias{ressler2014}:
-\begin{equation} \label{eq:simp-width}
-    a = \frac{2 D / v_d}{ \sqrt{ 1 + \frac{4D}{v_d^2 \tau_{\mt{synch}}}} - 1}
-\end{equation}
-which we relate to full width half max by projection factor $\beta = 4.6$
-so that $w = \beta a$, assuming (1) electron distribution exponential in radial
-coordinate $x$, and (2) spherical source \note[Aaron]{shell?}
-\citep{ballet2006}.
-
-For the full model (equation~\eqref{eq:full-mod}), we numerically solve for
-electron distribution $f(E,x)$ using solutions due to \citet{lerche1980} and
-\citet{rettig2012}; DETAILS.
-Ultimately, we integrate numerically computed electron distributions $f(E,x)$
-over energy to obtain synchrotron emissivity as
-\[
+which is equation (12) of \citetalias{ressler2014}.  The injected electron
+distribution is an exponentially cut-off power law with normalization $K_0$ and
+cut-off energy $E_{\mt{cut}}$; the expression for the cut-off energy is
+determined by the form of the diffusion coefficient $D$, which we discuss in
+Section~\ref{sec:diffcoeff}.  To determine rim profiles and widths, we
+numerically solve for electron distribution $f(E,x)$ using Green's function
+solutions due to \citet{lerche1980} and \citet{rettig2012}; the equations are
+given using notation close to that of this paper by \citetalias{ressler2014}.
+The electron distribution may then be integrated to obtain synchrotron
+emissivity:
+\begin{equation} \label{eq:emissivity}
     j_{\nu}(x) \propto \int_0^\infty G(y) f(E,x) dE
-\]
+\end{equation}
 where $y \equiv \nu/(c_1 E^2 B)$ is a scaled synchrotron frequency and
-$G(y) = y \int_y^\infty K_{5/3}(z) dz$ is the one-particle synchrotron
+$G(y) = y \int_y^\infty K_{5/3}(z) dz$ is one-particle synchrotron
 emissivity with $K_{5/3}(z)$ a modified Bessel function of the second kind
-\citep{pacholczyk1970}.  Integrating emissivity over lines of sight yields
+\citep{pacholczyk1970}.  Integrating emissivity over lines of sight for a
+spherical shell yields intensity:
 \begin{equation} \label{eq:intensity}
     I_{\nu}(r) = 2 \int_0^{\sqrt{r_s^2 - r}}
                     j_{\nu} \left( r_s - \sqrt{s^2 + r^2} \right) ds
 \end{equation}
-where $s$ is the line-of-sight coordinate.
+where $s$ is the line-of-sight coordinate.  We can then compute these
+integrals (equations~\eqref{eq:emissivity},~\eqref{eq:intensity}) to obtain
+model predictions for rim FWHMs.
 
-\subsection{Tycho parameters}
+\subsection{Diffusion energy-dependence} \label{sec:diffcoeff}
 
-Give numbers ($v_s$, $v_d$, $r_s$, etc.).  Give a definition of the cut-off
-energy following Rettig and Pohl (again cite Sean's paper).
+Explain how the transport models constrain diffusion via $\mE$, define $\mE$.
+Explain the basic interplay between diffusion and magnetic field, in
+controlling rim widths.
+
+Bohm diffusion: $D(E) = \eta C_d E / B$. Generalized diffusion writen as:
+\begin{equation}
+    D(E) = \eta C_d E^\mu / B = \eta_h D(E_h) (E/E_h)^\mu
+\end{equation}
+Explain the use of fiducial energy -- this makes sense and eases discussion,
+but linking $E_h$ and $\eta_2$ to $\eta$ and plain Bohm diffusion seems a bit
+murky.
+
+Mention that different $\mu$ values arise from particular models of turbulence.
+
 We use an electron spectrum cut-off energy of:
 \begin{align*}
     E_{\mt{cut}} =
@@ -341,15 +360,14 @@ Fortran code and it looks consistent w/ Parizot et al., but I haven't vetted
 the prefactor $8.3 \unit{TeV}$.  And, I have an extra exponent $\mu - 1$ on the
 $E_h$ ?!  Come back to this shortly.}
 
-Discuss $\mE$, I have NOT defined this quantity below.  % TODO
 
 \subsection{Magnetic damping}
 
-We also consider a magnetically damped field of form
-\[
+We also consider (not really) a magnetically damped field of form
+\begin{equation}
     B(x) = B_{\mt{min}} + \left(B_0 + B_{\mt{min}}\right) \exp\left(-x / a_b\right) ,
-\]
-following \citetalias[Section 3.2]{ressler2014}.
+\end{equation}
+following \citetalias[Section 3.2]{ressler2014} and \citet{pohl2005}.
 
 
 % ============
@@ -403,6 +421,8 @@ All measured rim widths are at least $\abt 1\arcsec$ and hence are resolved by
 Looking at proposer's guide, Figure 4.13 -- the off-axis PSF should
 still have FWHM of $\abt 1\arcsec$ at $4\arcmin$ (approx. Tycho's radius).
 Is that good enough for us?
+(Cassam-Chena\"i et al. considered PSF effects when modeling rim widths, though
+it doesn't look like it made a big difference?)
 
 % ----------------
 % Filament spectra
@@ -562,8 +582,7 @@ FWHMs.
 % Fit data to models
 We fit the two transport models given by Equations~\eqref{eq:simp-mod} and
 \eqref{eq:full-mod} to our measured rim widths as a function of energy.
-Although our measured radial profiles sum a continuous energy range of counts,
-we assigned each width measurement to the lower energy limit of its band
+We assigned each width measurement to the lower energy limit of its energy band
 (e.g., $0.7$--$1 \unit{keV}$ is assigned to $0.7 \unit{keV}$ and fitted to
 model profile widths at $0.7 \unit{keV}$) \note[Aaron]{bad wording}.
 We also averaged the positive and negative error bars on each FWHM measurement
@@ -574,11 +593,11 @@ remnant-wide physical parameters by averaging best fit parameters for each
 region in Section~\ref{sec:fit-results}.
 
 % Model knobs and how we twiddled them
-We have three parameters to vary (more if we consider magnetic damping).
-They are diffusion-energy scaling exponent $\mu$, normalized diffusion
+We have three parameters to vary (more if we consider magnetic damping):
+diffusion-energy scaling exponent $\mu$, normalized diffusion
 coefficient $\eta_2$, and magnetic field strength $B_0$.
-Explain why we are fixing $\mu$ (forward reference best fit figures).
-We consider $\mu = 0$, 1/3, 1/2, 1, 1.5, and 2; recall that $\mu = 1/3$ and $1/2$
+To make our nonlinear fitting tractable, we fix $\mu$ in all fits and
+consider $\mu = 0$, 1/3, 1/2, 1, 1.5, and 2; recall that $\mu = 1/3$ and $1/2$
 respectively correspond to predictions from Kolmogorov and Kraichnan turbulent
 energy spectra.  As $\eta_2$ is highly variable in our fits, we also consider
 fits with $\eta_2 = 1$ fixed, coincident with Bohm diffusion at $2 \unit{keV}$.
@@ -590,14 +609,15 @@ remnant distance $3 \unit{kpc}$ \citep[cf.][]{hayato2010}, and
 shock radius $1.08 \times 10^{19} \unit{cm}$ from angular radius $240\arcsec$
 \citep{green2009}.  Tycho's forward shock velocity varies with azimuth by up to
 a factor of 2; we interpolated shock velocities reported by
-\citet{williams2013} to estimate individual shock velocities for each region.
-\note[Aaron]{this paragraph might belong in Section~\ref{sec:transport}?}
+\citet{williams2013} (rescaled to $3 \unit{kpc}$ rather than $2.3 \unit{kpc}$
+to estimate individual shock velocities for each region.
+\note[Aaron]{this paragraph might belong in an earlier section?}
 
 % How to do the fit
-The simple model is readily fit from equation~\eqref{eq:simp-width}.
-The full model is numerically computed following the procedure laid out in
-\emph{section ?!}, yielding intensity profiles from equation~\eqref{eq:intensity} for each
-energy band and hence a model full width at half maximum.
+Our data are readily fit to the simple model by equation~\eqref{eq:simp-width}.
+The full model is numerically computed as detailed in
+Section~\ref{sec:transport}, yielding intensity profiles and hence model FWHMs
+in each energy band.
 For least squares fitting purposes, the full model is treated as a black box
 that takes in physical parameters
 % TODO modify tables to match what is stated here -- in regards to parameters
@@ -822,6 +842,8 @@ observations.
 What is the smallest damping scale length that is (roughly) consistent with all
 of our observations?
 
+X-ray rims are not damped -- could damping be relevant to the radio rims?
+
 \subsection{Interpretation of fit parameters}
 
 Magnetic field $B_0$: despite the large range of fit quality, we can give
@@ -832,6 +854,11 @@ compression ratio $r=4$ and typical galactic magnetic field strength of $\abt
 2$--$3 \unit{\mu G}$ \citep{lyne1989, han2006}.
 
 Diffusion coefficient $\eta_2$, on the other hand, is a bit of a mess.
+Would it be useful to report advective and diffusive lengthscales at 2 keV?
+Idea being that it is hard to intuit what the large numbers even mean.
+(especially for the simple model -- it sits on a plateau in chi-squared space
+where small $\eta_2$ may be disfavored, but beyond a certain point any $\eta_2$
+will do)
 
 Can we favor a value of $\mu$ (and hence a turbulent energy spectrum)?
 
