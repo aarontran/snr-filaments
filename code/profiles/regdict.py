@@ -56,7 +56,8 @@ def main_check(inroot, labels, wlen, wtype):
             plt.title(lab)
         plt.show()
 
-def main_fwhm(inroot, outroot, labels, fitter, blacklist, wlen, wtype, **kwargs):
+def main_fwhm(inroot, outroot, labels, fitter, blacklist, wlen, wtype,
+              save=True, **kwargs):
     """Main method to compute FWHMs and generate lots of output
     Unlike other scripts, should be run in an IPython notebook.
 
@@ -72,11 +73,13 @@ def main_fwhm(inroot, outroot, labels, fitter, blacklist, wlen, wtype, **kwargs)
         blist_reg = blacklist[n_reg] if n_reg in blacklist else None
         rdict = get_fwhm_fits(rdict, n_reg, labels, fitter, blist_reg,**kwargs)
 
-        x_min, x_btw, x_max = get_cuts(rdict)
-        spec_cuts.append([n_reg, x_min, x_btw, x_max])
-        regdict_dump(rdict, n_reg, outroot)
+        if save:
+            x_min, x_btw, x_max = get_cuts(rdict)
+            spec_cuts.append([n_reg, x_min, x_btw, x_max])
+            regdict_dump(rdict, n_reg, outroot)
 
-    speccut_dump(spec_cuts, outroot)
+    if save:
+        speccut_dump(spec_cuts, outroot)
 
 # ========================================
 # Methods to create, populate region dicts

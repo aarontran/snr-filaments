@@ -351,7 +351,7 @@ minimizing width) is not too helpful, because we also have to address the
 spectra as well.
 
 All the spectra have a little bit of line present, most obvious in the
-residuals (less so elsewhere). Both the Silicon XII line (~1.8 keV) and
+residuals (less so elsewhere). Both the Silicon XIII line (~1.8 keV) and
 Sulfur XV line (~2.4 keV) are usually, faintly visible.
 
 Region 17(40) in particular has a more visible sulfur line.

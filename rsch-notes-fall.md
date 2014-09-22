@@ -1809,15 +1809,25 @@ Goal is just to get chisqrs out.  Quickly generate a table for all regions and
 compare to our current table.
 
 
+Sunday 2014 September 21
+========================
+
+Summary
+-------
+*
+
+Paper
+-----
+
+Added tables w/ modified FWHM calculation and simple model fits for comparison.
+More work on text, intro/transport models/results.
+
 Tycho regions-5
 ---------------
 
-Goal: split up the regions and get more FWHMs in each filament
-
-
-
-
-
+Selected new regions, see my notes.  Running pipeline.
+The new regions look workable.  Bad, perhaps, but the level of badness is
+comparable to that of the original regions anyways...
 
 
 

@@ -22,6 +22,8 @@ from scipy import optimize
 
 from crvfit import chi2, chi2red
 
+D_CHISQR = 2.7 # 90% confidence intervals
+
 # mega method to get everything at once because I'm lazy
 
 def get_fwhm_all(x, y, y_err, f, pars, want_err=True,y_cap=None,dx=5,**kwargs):
@@ -139,14 +141,14 @@ def get_stretch_limits(x, y, y_err, f, pars, xmax, **kwargs):
     """
 
     def chi2_threshold(xi):
-        """Threshold for chi^2 uncertainty. Output > 0 if \Delta\chi^2 > 2.7"""
+        """Threshold for chi^2 uncertainty. Output > 0 if \Delta\chi^2 > 1"""
         def chi2_stretch(xi):
             return chi2(x, y, y_err, stretch_func(f, xi, xmax, **kwargs), pars)
         chi2_stretch = np.vectorize(chi2_stretch)
 
         chi2_min = chi2(x, y, y_err, f, pars)  # same as chi2_stretch(xi=0)
 
-        return chi2_stretch(xi) - chi2_min - 2.7  # Magic number...
+        return chi2_stretch(xi) - chi2_min - D_CHISQR
 
     # Increasing positive xi (decreasing FWHM) uncertainty
     # Empirically, positive xi is better behaved than negative xi

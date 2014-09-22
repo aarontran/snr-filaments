@@ -107,8 +107,10 @@ def main():
             if verbose:
                 tot_cts = np.sum(cts[cut:]) * thck
                 avg_cts = np.mean(cts[cut:]) * thck
-                print ('  Band {}: avg integrated cts {:0.3f}, total cts {} '
-                       'in fit domain'.format(lab, avg_cts, tot_cts))
+                max_cts = np.amax(cts[cut:]) * thck
+                #print ('  Band {}: avg integrated cts {:0.3f}, total cts {} '
+                #       'in fit domain'.format(lab, avg_cts, tot_cts))
+                print '  Band {}: peak cts {} in fit domain'.format(lab, max_cts)
 
             # Save data to output files
             outfile_dat = '{0}_{1:02d}_band_{2}.dat'.format(outroot, i+1, lab)

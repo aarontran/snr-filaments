@@ -25,47 +25,35 @@ From poster session (July 31):
   explain the rim dropoff with energy?
 
 
-Pipeline, profile and FWHM calculation and plots
-------------------------------------------------
+Main TO-DOs
+-----------
 
-Tycho-specific
-* Add more regions -- can we get the highest 2 energy bands, if the 2-3 keV
-  band is going bad due to the sulfur line?
-* GENERATE SET OF REGIONS WITH GOOD 0.7-1 keV FWHM, AND SET OF REGIONS WITH BAD
-  0.7-1 keV FWHM -- as discussed previously.
-* Shift region numbering to be more logical (instead of 1, 10-13).
-* Select slightly better regions: regions 2,3, 6,7 should extend a little bit
-  more ahead of the shock for consistency.
-* Slice smaller regions
+For discussion: can we change the lower energy bands -- or, even change them
+all and aim to get proportional counts?  Look at my data on peak counts...
+heavy weighting towards middle bands.
 
-On using different calculations of the FWHM: how do I show the effect of these
-different procedures?  Some kind of normalization? (Figure 10 of Ressler).
-Quantify effects on calculation of `m_E`, B0, eta2.
-
-Kepler -- go through and select regions, making notes, and generate 2nd set.
-And, look at higher energy bands (2-4, 4-7 keV).
-
-
-Models for filament widths
---------------------------
-
-### Main / high-level TO-DOs
+IF we add some count criterion -- make a note in the manuscript (each energy
+band has at least ??? counts (integrated) at the peak's maximum datum).
 
 Manuscript (highest priority):
 
-* WRITE UP the transport model text,
-  CLEAN UP fitting procedure text to match
-  WRITE UP results section
+* further work on introduction and transport model text.  Careful literature
+  review, aggregate some questions for Sean!
 
 Data, numbers:
 
-* RUN model fitting pipeline on capped/bkg-subtracted FWHMs.
-  Don't bother with full errors -- for now, just want numbers + chi-sqr values.
-* PICK Tycho regions-5, according to some criteria (look at counts, spectra,
-  profiles to decide).  Save regions and run pipeline on these guys.
+* Go through `regions-all.reg` and add regions w/ bad 0.7-1 keV FWHMs.
+  Review larger region selection, w/ new criteria for region selections.
+  And, run them all through the fitting pipeline to help w/ region rejection.
+  (regions-6, after looking at regions-5)
+
+* Change profile errors to 1-sigma.  This will change the errors in our fits,
+  as well as the chi-squared values.
+  Need to update manuscript accordingly.
 
 * Kepler -- cull regions by w/e criteria, prepare regions-2 w/ 4 energy bands.
   Have simple/full model fits for Monday.
+  Go off of the peak cts/region, as I am doing w/ Tycho now.
 * Cas A -- select first round of regions, get FWHMs -- would be useful to
   discuss on Monday.
 
