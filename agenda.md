@@ -47,15 +47,16 @@ Data, numbers:
   And, run them all through the fitting pipeline to help w/ region rejection.
   (regions-6, after looking at regions-5)
 
-* Change profile errors to 1-sigma.  This will change the errors in our fits,
-  as well as the chi-squared values.
-  Need to update manuscript accordingly.
-
 * Kepler -- cull regions by w/e criteria, prepare regions-2 w/ 4 energy bands.
   Have simple/full model fits for Monday.
   Go off of the peak cts/region, as I am doing w/ Tycho now.
 * Cas A -- select first round of regions, get FWHMs -- would be useful to
   discuss on Monday.
+
+* CHECK PACHOLCZYK IN RE RESOLUTION -- avoid wasting computation time, if the
+  resolution is too poor.  (but, work on paper first... need feedback from Sean
+  and Steve)
+
 
 IF and ONLY IF data are worthwhile, then deal with 1. spectra, 2. full model
 errors.  For the time being, only compute FWHMs, simple models, and full models

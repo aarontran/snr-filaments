@@ -41,9 +41,11 @@
 \newcommand*{\del}{\nabla}
 
 % This paper
-\newcommand*{\tsup}{\textsuperscript}
-\newcommand*{\Chandra}{\textit{Chandra}\ }
 \newcommand*\mean[1]{\bar{#1}}
+\renewcommand{\vec}[1]{\mathbf{#1}}
+\newcommand*{\tsup}{\textsuperscript}
+
+\newcommand*{\Chandra}{\textit{Chandra}\ }
 \newcommand*{\tsynch}{\tau_{\mt{synch}}}
 \newcommand*{\mE}{m_\mt{E}}
 \newcommand*{\Ecut}{E_{\mt{cut}}}
@@ -118,23 +120,37 @@ material, number of paragraphs).  Explanations/etc may be too simplistic, I
 have more reading to do.}
 
 % Intro -- shocks, DSA, thin rims, filament observations; other fields/work
-Forward shock accelerated ISM/CSM particles in young supernova remnants emit
+Forward shock accelerated electrons in young supernova remnants (SNRs) emit
 synchrotron radiation strongly in the shock's immediate wake but quickly turn
 off downstream \citep{koyama1995, reynolds1996}, producing a shell-like
 morphology with bright X-ray and radio rims/filaments due to line-of-sight
-projection (hereafter, thin rims).
-Seminal observations \& interpretations of these filaments, interpretation in
-context of DSA.  Attempts to model filaments and figure out what's going on.
-Why do we care about these models?  They tell us something about what happens
-behind the shock, and perhaps what's going on at the shock.  We get at the
-plasma and magnetic field turbulence, electron injection.
-Applications to: cosmic ray acceleration, turbulent field amplification, (note
-assumptions in re proton/electron spectra).
-Cut-off energy of injected electrons?
-Relevant to, broadly, all astrophysical shocks: Earth's bow shock,
-PWNe, SNe and/or stellar wind blown bubbles, starbursts \citep{heckman1990},
-AGN jets, galaxy clusters \citep{van-weeren2010}, and even cosmological shocks
-\citep{miniati2000, ryu2008}.  See relevant reviews \citep{blandford1987}.
+projection (hereafter, thin rims).  X-ray and gamma ray imaging has provided
+several lines of indirect and direct evidence for hadron and lepton
+acceleration in SNRs \citep{uchiyama2007, aharonian2004, acero2010,
+ackermann2013}; electrons, in particular, are expected to be accelerated to
+$\abt10$--$100\unit{TeV}$ energies.  Although synchrotron emission due to
+accelerated electrons does not imply acceleration of an unseen hadronic
+component, the prevailing explanatory mechanism of diffusive shock acceleration
+(DSA) should operate on both protons and electrons; thus, observations of thin
+synchrotron rims has been often taken as supporting, indirect evidence for
+cosmic ray acceleration.  \note[Aaron]{first/second pass, very poor wording}
+
+Spectral and spatial measurements of synchrotron rims can help constrain
+physical parameters of the shock acceleration process.  Many previous workers
+have inferred magnetic field amplification at shock fronts in SNRs; a host of
+mechanisms \emph{what?!} may account for the thinness of the observed
+shocks -- much thinner than $1/12$ the forward shock radius $r_s$ as would be
+expected from a Sedov density profile \note[Aaron]{but Bamba et al. 2003 find
+consistent scale length for SN 1006?}.  \note[Aaron]{need a reference -- I
+don't have a sense of which mechanisms are most important, relevant, proven?!
+even} Many plasma physics details -- Bell's cosmic ray current instability
+\citep{bell2001} ties magnetic field amplification w/ maximum CR energy (push
+towards and just above the PeV limit).  The processes observed in SNR shocks
+are broadly relevant to many collisionless astrophysical shocks, such as
+Earth's bow shock, stellar wind-blown bubbles, starburst galaxies
+\citep{heckman1990}, jets of active galactic nuclei, galaxy clusters
+\citep{van-weeren2010}, and even cosmological shocks \citep{miniati2000,
+ryu2008}.
 
 % What makes these shocks?
 The widths of these X-ray rims are thought to be controlled by a combination of
@@ -145,17 +161,18 @@ the shock.  High energy electrons near the shock efficiently radiate harder
 synchrotron X-ray photons, but decline in energy as they are transported away
 from the shock; this may be seen in spectral softening downstream of the shock
 \citep[e.g.,][]{cassam-chenai2007}.  The transport process is driven by bulk
-plasma advection downstream of the shock and diffusion (\emph{driven by
-collisionless particle interaction, magnetic field turbulence, ?????  fill in
-details}) with respect to bulk advection.  Energy-dependent diffusion (e.g.,
-diffusion coefficient $D \propto E$ for Bohm diffusion) allows higher energy
-electrons to diffuse further upstream or downstream than would be expected from
-pure advection; in particular, diffusion upstream of the shock may give rise to
-a shock precursor \citep[e.g.,][]{ghavamian2000, wagner2009, laming2014}.
-Finally, the magnetic field strength may be quickly damped behind the shock, so
-that electrons may not radiate as efficiently and thin rims would reflect the
-spatial structure of the field, rather than efficient particle acceleration
-(and losses) and/or efficient synchrotron cooling \citep{pohl2005}.
+plasma advection downstream of the shock and collisionless particle diffusion
+\note[Aaron]{src?! need a simple review of plasma diffusion.  What are the
+relevant drivers of plasma diffusion?  Does it make sense to think of regimes
+of particle interaction -- e.g., thinking of single particle random
+interaction, vs. macroscopic MHD waves, or other structure?!} with respect to
+bulk advection.  In general, diffusion allows higher energy electrons to
+diffuse further upstream or downstream than would be expected from pure
+advection.  Finally, the magnetic field strength may be quickly damped behind
+the shock, so that electrons may not radiate as efficiently and thin rims would
+reflect the spatial structure of the field, rather than efficient particle
+acceleration (and losses) and/or efficient synchrotron cooling
+\citep{pohl2005}.
 
 % Energy dependence.
 Moreover, these controlling mechanisms predict different scalings for rim width
@@ -163,37 +180,39 @@ as a function of energy.  Synchrotron loss-limited rims should scale as $w
 \propto \nu^{-1/2}$.  Diffusion smears out rims at all energies with stronger
 effect at higher energies, yielding a slower drop-off in rim widths when
 diffusion dominates.  Magnetic damping, if at a length scale comparable to
-filament widths, predicts energy-independent rim widths -- intuitively, if the
-magnetic field turns off, synchrotron radiation turns off regardless of
-electron energy.  \citet{ressler2014} give a much fuller exposition of the
-relative effects of advection, diffusion, and magnetic field damping.
+filament widths, predicts comparatively energy-independent rim widths --
+intuitively, if the magnetic field turns off, synchrotron radiation turns off
+regardless of electron energy.  \note[aaron]{this would benefit from
+numbers/quantification, I think this statement is stronger if the magnetic
+field is stronger -- compare Figure 1 of \citet{pohl2005}}\citet{ressler2014}
+give a much fuller exposition of the relative effects of advection, diffusion,
+and magnetic field damping on filament rim widths.
 
 % Which one is right?
 Which mechanisms are most relevant to historical SNRs?
-\note[Aaron]{need to read more / more thoroughly}
-Introduce $\tsynch$ and the basic intuition. Explain why diffusion is important
-(when did diffusion start being recognized as relevant to SNR filaments? or how was
-this shown?).
-Following Sean (i.e., taking all of his references), relevant previous
-observational studies.
-\citet{bamba2003, vink2003, yamazaki2004, ballet2006} consider advection and
-diffusion separately (with the break-point at $\Ecut$ when advective and
-diffusive length scales are equal;
+
+The primary route of attack has been to just measure the filament widths,
+determine relevant advective/diffusive lengthscales, and perhaps favor one or
+the other.  Assuming that thin rim widths are limited by synchrotron energy
+losses (loss-limited rims), you have $l_{\mt{ad}} \propto v_d \tsynch$
+gives a magnetic field...
+(how did people look at $\Ecut$ or $D$?)
+\citet{bamba2003, vink2003, yamazaki2004, ballet2006}
+More sophisticated models have followed, but the basic result is consistent --
+magnetic fields are amplified, with some amount of diffusion.
 \citet{parizot2006, araya2010} consider diffusion and advection simultaneously
 with the catastrophic dump equation.
 \citet{berezhko2003, berezhko2004, cassam-chenai2007, morlino2010, rettig2012}
 consider diffusion and advection simultaneously with the continuous loss
 equation instead.
-Conclusion that magnetic fields are amplified according to loss-limited model.  How?  Field
-amplification from plasma instabilities, evidence for stronger compression ratios?
-\citep{blondin2001}.  Lots of numerical and theoretical work that I don't
-understand.
-\citet{rettig2012} mention independent estimates of magnetic field, from
-\citet{acero2010, acciari2011} for SN 1006 and Tycho (considering gamma-ray,
-radio, X-ray data).
 
-Magnetic damping offers a tantalizing alternate explanation and has not
+Some other approaches -- spectral softening \citep{cassam-chenai2007}, CD-FS
+gap \citep{warren2005}, multi-wavelength observations \citep{acero2010,
+acciari2011, morlino2012} for SN 1006 and Tycho.
+
+Magnetic damping offers a tantalizing alternative explanation and has not
 been fully tested.  Equivocal results by \citet{araya2010} for Cas A.
+\citet{marcowith2010} did ???
 \citet{rettig2012} gave model predictions for several historical SNRs and
 proposed discriminating based on filament spectra -- the
 expectation is that damped spectra are softer, loss-limited harder.
@@ -215,8 +234,6 @@ periphery, consistent with expansion into a low density ISM; ISM.
 more consistent shock acceleration around its periphery than in other
 historical remnants, whether of Type Ia or CC SNe \note[Aaron]{this is not really
 justifiable, but I think it's worth noting something to this effect?}.
-CR acceleration evidence in Tycho, if relevant? \citet{eriksen2011,
-acciari2011}.
 
 % Paper roadmap
 \note[Aaron]{roadmap}
@@ -234,6 +251,12 @@ amplification (lending credence to previous estimates, in disfavoring magnetic
 field amplification), and discuss particle diffusion/acceleration at the shock.
 Any further misc. applications (constraints on precursors, etc).
 
+
+% =============================
+% Transport models, observables
+% =============================
+\section{Nonthermal rim modeling}\label{sec:models}
+
 % TODO Chunk of text I don't know what to do with...
 We briefly review relevant particle transport models that we use to fit our
 measurements; a fuller review and exposition is given by \citetalias{ressler2014}.
@@ -246,10 +269,6 @@ critical energy and diffusion, above
 The effects of varying various parameters, especially in regards to filament
 energy dependence, are explored in detail by \citetalias{ressler2014}.
 
-% =============================
-% Transport models, observables
-% =============================
-\section{Nonthermal rim modeling}\label{sec:models}
 
 \subsection{Particle transport}\label{sec:transport}
 
@@ -262,11 +281,15 @@ The energy and space distribution of electrons at a supernova remnant
 controls the synchrotron rims we see in X-ray and radio.  We model electron
 transport from initial injection at the remnant's forward shock as following
 the advection-diffusion equation given by:
-\note[Aaron]{ApJ prefers bold vectors and vector operators, fix later}
+\note[Aaron]{\citet{blandford1987} take a different and more thorough tack in
+deriving the relevant transport equations, and do include the velocity
+divergence term (start w/ Vlasov equation, then transform to non-inertial?
+shock frame and tack on assumptions).  What is the best way to present this?
+I'm not sure if na\"ively citing generalized ``transport'' is sufficient.}
 % TODO fix vector operators
 \begin{equation}
   \frac{\ptl f}{\ptl t} + \del \cdot \left( f \vec{v} \right)
-  = C + \del \cdot \left( D \del f \right)
+  = C + \vec{\del} \cdot \left( D \vec{\del} f \right)
 \end{equation}
 where $f = f(E,x)$ is electron distribution as a function of electron energy
 $E$ and downstream distance $x$ (where the forward shock is at $x=0$ and
@@ -970,8 +993,7 @@ This research has made use of NASA's Astrophysics Data System.
 % ---------------------------
 % FWHM measurement comparison
 % ---------------------------
-\section{Capped and background subtracted FWHM measurements, and simple model
-fits}
+\section{Additional calculations}
 
 Here I present full model fit results using FWHMs measured with an artificial
 cap imposed on the profile height, and the background $\min(C_u, C_d)$
@@ -980,24 +1002,37 @@ the data maximum, but I find the full-width at one half of the data maximum.
 The results appear equivocal; there may be slightly smaller chi-squared values
 but it may not be statistically meaningful.
 
+I also present results for simple model fits, and fits for a larger set of
+regions (22 instead of 13).
+
+\begin{table*}[ht]
+    \tiny
+    \centering
+    \caption{Measured FWHMs for all regions, capped and background subtracted.}
+    \input{tab-fwhms-capsubbkg.tex}
+\end{table*}
+
 \begin{table}[ht]
     \tiny
     \centering
-    \caption{Full model best fits for individual regions, Filament 1.}
+    \caption{Full model best fits for individual regions, Filament 1.  Capped
+    and background subtracted FWHMs.}
     \input{tab-fits-all-capsubbkg.tex}
 \end{table}
 
 \begin{table}[ht]
     \tiny
     \centering
-    \caption{Full model best fits for individual regions, Filaments 2--5.}
+    \caption{Full model best fits for individual regions, Filaments 2--5.
+    Capped and background subtracted FWHMs.}
     \input{tab-fits-all-capsubbkg-pt2.tex}
 \end{table}
 
 \begin{table*}[ht]
     \scriptsize
     \centering
-    \caption{Filament averages of best-fit parameters for constituent regions}
+    \caption{Filament averages of best-fit parameters for constituent regions.
+    Capped and background subtracted FWHMs.}
     \input{tab-fits-par-avg-capsubbkg.tex}
 \end{table*}
 
@@ -1020,7 +1055,8 @@ but it may not be statistically meaningful.
 \begin{table}[ht]
     \tiny
     \centering
-    \caption{Simple model best fits for individual regions, Filaments 1 and 2}
+    \caption{Simple model best fits for individual regions, Filaments 1 and 2.
+    Same FWHM as in main text.}
     \input{tab-fits-all-simp.tex}
 \end{table}
 
@@ -1028,13 +1064,59 @@ but it may not be statistically meaningful.
 \begin{table}[ht]
     \tiny
     \centering
-    \caption{Simple model best fits for individual regions, Filaments 3--5}
+    \caption{Simple model best fits for individual regions, Filaments 3--5.
+    Same FWHM as in main text.}
     \input{tab-fits-all-simp-pt2.tex}
 \end{table}
+
+% -------------
+% Region 5 data
+% -------------
+
+\begin{table*}[ht]
+    \tiny
+    \centering
+    \caption{Measured FWHMs for all regions (22).}
+    \input{tab-fwhms-reg5.tex}
+\end{table*}
+
+\begin{table*}[ht]
+    \tiny
+    \centering
+    \caption{Full model best fits for smaller regions, filaments 1--3.  Same
+    FWHM as in main text.}
+    \input{tab-fits-all-reg5.tex}
+\end{table*}
+
+\begin{table*}[ht]
+    \tiny
+    \centering
+    \caption{Full model best fits for smaller regions, filaments 4--5.  Same
+    FWHM as in main text.}
+    \input{tab-fits-all-reg5-pt2.tex}
+\end{table*}
+
+\begin{table*}[ht]
+    \scriptsize
+    \centering
+    \caption{Filament averages of best-fit parameters for constituent regions,
+    with 22 instead of 13 regions.}
+    \input{tab-fits-par-avg-reg5.tex}
+\end{table*}
+
+\begin{figure*}
+    \centering
+    \epsscale{0.7}
+    \plotone{figures/f0-snr-reg5-inv.png}
+    \caption{RGB image of Tycho with region selections overlaid.  Bands are
+    0.7--1 keV (red), 1--2 keV (green) and 2--7 keV (blue).}
+\end{figure*}
+
 
 % --------------
 % SN 1006 tables
 % --------------
+\clearpage
 \section{Full model validation, SN 1006 (DRAFT ONLY)}
 
 For comparison to \citetalias{ressler2014}, we reproduce Sean's full model fit

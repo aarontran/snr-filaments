@@ -28,7 +28,7 @@ Table of contents
             extensively.
 * Week 14 - (9/1) run suite of error calculations
 * Week 15 - (9/8)
-* Week 16 - (9/15) flesh out paper, new plots/tables
+* Week 16 - (9/15) flesh out paper, many new plots/tables; new Tycho regions
 * Week 17 - (9/22)
 * Week 18 - 
 
@@ -1814,20 +1814,66 @@ Sunday 2014 September 21
 
 Summary
 -------
-*
+* Add tables w/ modified FWHM calculation, simple model fits
+* Paper text (intro, transport models, results)
+* Select regions-5 (see notes), run through pipeline
 
-Paper
------
-
-Added tables w/ modified FWHM calculation and simple model fits for comparison.
-More work on text, intro/transport models/results.
-
-Tycho regions-5
----------------
-
-Selected new regions, see my notes.  Running pipeline.
 The new regions look workable.  Bad, perhaps, but the level of badness is
 comparable to that of the original regions anyways...
+
+
+(Week 17) Monday 2014 Sepetember 22
+===================================
+
+Summary
+-------
+* Generate tables for new region-5 FWHMs, additional tables/numbers for
+  modified FWHM (cap + background subtraction) calculation, regions 4 and 5.
+* Review paper layout for intro / transport models
+* Meeting -- main point of consternation (call in the theorists) is, well, eta2
+
+After generating slew of tables, started walking through intro/transport text.
+
+
+Meeting remarks
+---------------
+For myself: aim to send material that can be distributed to Sean/Steve, by next
+Monday... (earlier if possible... so Brian/Rob can look it over by Monday).
+
+Rob's idea: to get an idea of the sensitivity of our fitting procedure, our
+modeling procedure in general, run fits on fake data.
+(adding noise is a separate thing).
+
+Ideas of slicing up regions (lots of overlapping things) -- Rob suggested, move
+along and find most homogeneous bits/sections?  I was thinking, improve
+statistics or similar.
+But, honestly, at this point it doesn't really matter.  eta2 is so poorly
+constrained anyways.
+
+Simulation -- check model/fitting sensitivity
+---------------------------------------------
+
+Set up IPython notebook and letting it run now, w/ full model errors.
+May be worth exploring large eta2 range, because the fit variation is MUCH more
+pronounced at high eta2!  Consistent with what we are seeing in our results.
+Running overnight to get full errors.
+
+Paper writing
+-------------
+
+I am really hitting the limits of what I know (which is, not much).
+I think, tomorrow I should spend a day just shredding through papers (and set
+up full model fit errors to run, meanwhile).
+Write up some material / take some notes.  Bring a notebook or buy a notebook,
+whatever.
+
+
+Tuesday 2014 September 23
+=========================
+
+
+
+
 
 
 

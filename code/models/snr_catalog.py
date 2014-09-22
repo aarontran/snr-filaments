@@ -99,7 +99,7 @@ def make_tycho():
                    # "filaments" within the remnant?
                    # And, Green's SNR catalog gives 0.58, not 0.65.  DAMMIT.
 
-    tycho.vs = 3.6e8 * tycho.dkpc/2.3  # Shock velocity, cm/s
+    tycho.vs = 3.6e8 * tycho.dkpc/2.3  # Average-ish shock velocity, cm/s
     # Mean of velocs from nonthermal regions, Williams et al. 2013
     tycho.cratio = 4.0  # Compression ratio, strong adiabatic shock (R-H)
 
