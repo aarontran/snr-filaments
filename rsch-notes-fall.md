@@ -1893,11 +1893,52 @@ Wednesday 2014 September 24
 ===========================
 
 Paper writing.  Followed up a lot of references in Sean's paper.
-AAS abstract to Rob/Brian by tomorrow (prefer today).
+Text, AAS abstract sent to Rob/Brian.
 
 
 Thursday 2014 September 25
 ==========================
+
+Summary
+-------
+* Data catchup
+
+
+Data catch-up: Tycho, Kepler, & Cas A
+-------------------------------------
+
+### Tycho
+
+Double checked regions-all.reg, for other possible additions.
+It seems like any possible options have already been ruled out, from 
+previous iterations over `regions-2` or so.
+The eastern limb, in particular, has spectral lines (see regions-2) even if I
+only select the little rim section.
+Southern regions are messed up by both low SNR and multiple filaments.
+
+So, keep using regions-5.  Using FWHMs without cap, with background
+subtraction, I generate specextract spectra for "up" regions.  Done around
+noon (took 4 hrs).
+
+Ran simple model fits + errors.
+Now, running full model fits + full errors...
+
+### Kepler
+
+Going through `regions-1` -- inspect profiles, spectra, and spectrum fits.
+Select/divvy up new regions, yielding 11 regions.  Kepler's ear was divided
+into 7 regions, to get roughly equal counts in 2-7 keV band.
+
+Generate 2-4, 4-7 keV counts images.
+
+### Cas A
+
+Picked a few regions to play with (get an idea of number of counts);
+this is `regions-0`.  Generated some profile data + plots of profiles, to take
+a look at on Monday -- no need to go further now.
+
+Generate mosaic + counts images for 2-3, 3-4.5, 4.5-7, 7-9 keV.
+(count images take a while for Cas A!)
 
 
 

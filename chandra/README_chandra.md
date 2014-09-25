@@ -131,6 +131,7 @@ Generate flux, count images with the usual:
 
     punlearn flux_obs
     pset flux_obs bands="0.7:1:0.85, 1:2:1.5, 2:7:4.5"
+    pset flux_obs bands="2:3:2.5, 3:4.5:3.75, 4.5:7:5.75, 7:9:8"
     pset flux_obs xygrid="3700:4800:1,3400:4400:1"
     pset flux_obs nproc=3
     flux_obs casA_reproj/ casA/
@@ -142,3 +143,7 @@ Generate flux, count images with the usual:
            outfile="1-2kev_counts.fits"
     dmcopy "merged_evt.fits[EVENTS][energy=2000:7000][bin x=3700:4800:1,y=3400:4400:1]" \
            outfile="2-7kev_counts.fits"
+
+
+
+
