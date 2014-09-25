@@ -29,8 +29,8 @@ Table of contents
 * Week 14 - (9/1) run suite of error calculations
 * Week 15 - (9/8)
 * Week 16 - (9/15) flesh out paper, many new plots/tables; new Tycho regions
-* Week 17 - (9/22)
-* Week 18 - 
+* Week 17 - (9/22) paper writing
+* Week 18 - (9/29) AAS abstract
 
 (week 10 included for continuity)
 
@@ -1871,10 +1871,33 @@ whatever.
 Tuesday 2014 September 23
 =========================
 
+Fitting to simulated data finished.
+(15 hours to get errors for 6 regions! incl. parallelization.  geez)
+Spent some time formatting data to send.
+
+Reading/reviewing literature: goal is to review the relation between the
+injected electron energy spectrum and the observed synchrotron spectrum.
+Relations between diffusive/advective/acceleration time/length scales.
+Most useful papers -- Reynolds 2008, Vink 2012 reviews.
+X-ray brightness requires synchrotron cutoff, hence electron spectrum cutoff.
+
+...
+
+lots of algebra later.
+
+Expression for cut-off energy verified, 
+reviewed Parizot in detail, and several other papers.
 
 
+Wednesday 2014 September 24
+===========================
+
+Paper writing.  Followed up a lot of references in Sean's paper.
+AAS abstract to Rob/Brian by tomorrow (prefer today).
 
 
+Thursday 2014 September 25
+==========================
 
 
 

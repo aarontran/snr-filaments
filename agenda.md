@@ -35,23 +35,23 @@ heavy weighting towards middle bands.
 IF we add some count criterion -- make a note in the manuscript (each energy
 band has at least ??? counts (integrated) at the peak's maximum datum).
 
-Manuscript (highest priority):
-
-* further work on introduction and transport model text.  Careful literature
-  review, aggregate some questions for Sean!
-
-Data, numbers:
 
 * Go through `regions-all.reg` and add regions w/ bad 0.7-1 keV FWHMs.
   Review larger region selection, w/ new criteria for region selections.
   And, run them all through the fitting pipeline to help w/ region rejection.
   (regions-6, after looking at regions-5)
 
+  IF we use the larger regions, must check the spectra carefully.
+
+  -- Rerun the specextract pipeline -- then cull regions one more time.
+  Then run the specextract pipeline, generate new plots of profiles + spectra,
+  and run all fits + errors.
+
 * Kepler -- cull regions by w/e criteria, prepare regions-2 w/ 4 energy bands.
-  Have simple/full model fits for Monday.
   Go off of the peak cts/region, as I am doing w/ Tycho now.
-* Cas A -- select first round of regions, get FWHMs -- would be useful to
-  discuss on Monday.
+* Cas A -- select first round of regions, get FWHMs.
+  Check how we are doing on counts, may need to stick to higher bands.
+  Run w/ all three high energy bands.  Might even try up to 9 keV or so.
 
 * CHECK PACHOLCZYK IN RE RESOLUTION -- avoid wasting computation time, if the
   resolution is too poor.  (but, work on paper first... need feedback from Sean
@@ -61,6 +61,9 @@ Data, numbers:
 IF and ONLY IF data are worthwhile, then deal with 1. spectra, 2. full model
 errors.  For the time being, only compute FWHMs, simple models, and full models
 with stderr.  That's it.  No more.
+
+EXTRA: re-run pipeline, on SN 1006 individual regions. Does the sub-Bohm
+diffusion result still stand?????
 
 ### Science
 
@@ -89,7 +92,7 @@ drop-off!  Which is why he asked about any global `m_E` dependence.
 * Check all constants.  `snr_catalog.py`, model fitting code both
   wrapper and fortran.  Go back to Sean's transport eq'n and rederive.
 * Check transport equation for pure advection case
-* Check numerical prefactor 8.3 TeV for electron cutoff energy
+* Check numerical prefactor 8.3 TeV for electron cutoff energy (DONE, YUCK)
 
 * When paper is nearing finish -- re-run entire pipeline on SN 1006 as a sanity
   check.  But, not now.

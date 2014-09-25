@@ -66,7 +66,7 @@ def fefflen(kevs, B0, eta2, mu, vs, v0, rs, rsarc, s, rminarc, icut, irmax,
     """Use numpy arrays for everything (kevs, rminarc)
 
     Note that irmax is not very important anymore.
-    
+
     Input:
         kevs (np.ndarray)
         B0, eta2, mu (float)
@@ -87,7 +87,10 @@ def fefflen(kevs, B0, eta2, mu, vs, v0, rs, rsarc, s, rminarc, icut, irmax,
     eta =  eta2 * (2.*NUKEV/(C_M*B0))**(-(mu-1)/2)
     if icut:
         Ecut = ( (8.3*(B0/(100e-6))**(-0.5)*(vs/1e8)*1.6021773)**(2/(1+mu))
-                *(1./eta)**(1./(mu+1)) )  # TODO check prefactor 8.3 TeV
+                *(1./eta)**(1./(mu+1)) )  # I believe this is right.
+        # Checked 2014 Sep 24 by Aaron
+        # (1.602 erg)**(2/(1+mu)) balances (1/eta)**(1/(1+mu))
+        # to give erg**1.  Everything looks okay.
     else:
         Ecut = 1e40
 
@@ -404,7 +407,7 @@ def fwhm(rmesh, intensity, f_int):
     else:
         rmin_a = rmesh[inds_rmin[-1]]  # Crossing closest to peak
         rmin_b = rmesh[inds_rmin[-1] + 1]
-        
+
     if inds_rmax.size == 0:  # No right crossing found
         rmax_a = rmesh[-1]  # Yes, this can be rmesh[-1]
         rmax_b = search_crossing(rmesh[-1], 1., f_thrsh, eps2)

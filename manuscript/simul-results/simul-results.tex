@@ -1,0 +1,114 @@
+\documentclass[manuscript]{aastex}  % one-column, double-spaced GENERATE BIB
+
+\shorttitle{Synchrotron Rims in Tycho's SNR}  % <~ 44 char
+\shortauthors{XXX et al.}  % Max three
+\slugcomment{Draft, \today}  % short title pg comment
+
+\usepackage{amsmath}  % amsthm, amssymb
+\usepackage{booktabs}
+\usepackage{hyperref}
+
+\newcommand*{\mt}{\mathrm}
+\newcommand*{\unit}[1]{\;\mt{#1}}  % http://vemod.net/typesetting-units-in-latex
+\newcommand*{\abt}{\mathord{\sim}} % http://tex.stackexchange.com/q/55701
+\newcommand*{\ptl}{\partial}
+\newcommand*{\del}{\nabla}
+
+% This paper
+\newcommand*\mean[1]{\bar{#1}}
+\renewcommand{\vec}[1]{\mathbf{#1}}
+\newcommand*{\tsup}{\textsuperscript}
+
+\newcommand*{\Chandra}{\textit{Chandra}\ }
+\newcommand*{\tsynch}{\tau_{\mt{synch}}}
+\newcommand*{\mE}{m_\mt{E}}
+\newcommand*{\Ecut}{E_{\mt{cut}}}
+\defcitealias{ressler2014}{R14}
+
+\begin{document}
+
+\title{Full model fitting sensitivity from faked input data}
+
+\section{Results}
+
+Here are best fits, with $\Delta\chi^2 = 1$ errors, to six different sets of
+parameter values.  FWHM values being fitted range between 1 to 9
+arcseconds.  FWHM errors for fitting were 5\% throughout.
+
+\begin{table*}[ht!]
+    \scriptsize
+    \centering
+    \caption{Full model best fits for individual regions, Filament 1.
+    \label{tab:fits}}
+
+    \begin{tabular}{@{}rllrllrllr@{}}
+    \toprule
+    {} & \multicolumn{3}{c}{P1 ($\mu=1$, $\eta_2=1$, $B_0=200 \unit{\mu G}$)}
+       & \multicolumn{3}{c}{P2 ($\mu=1$, $\eta_2=1$, $B_0=500 \unit{\mu G}$)}
+       & \multicolumn{3}{c}{P3 ($\mu=2$, $\eta_2=1$, $B_0=500 \unit{\mu G}$)} \\
+    \cmidrule(lr){2-4} \cmidrule(lr){5-7} \cmidrule(l){8-10}
+    $\mu$ (-) & $\eta_2$ (-) & $B_0$ ($\mu$G) & $\chi^2_{\mt{red}}$
+              & $\eta_2$ (-) & $B_0$ ($\mu$G) & $\chi^2_{\mt{red}}$
+              & $\eta_2$ (-) & $B_0$ ($\mu$G) & $\chi^2_{\mt{red}}$ \\
+    \cmidrule{1-10}
+    0.00 & ${4.9}^{\,+91}_{\,-3.5}$ & ${286}^{\,+233}_{\,-56}$ & 0.0941
+         & ${4.9}^{\,+91}_{\,-3.4}$ & ${714}^{\,+584}_{\,-139}$ & 0.0934
+         & ${6.6}^{\,+73.3}_{\,-5.0}$ & ${800.}^{\,+527}_{\,-178}$ & 0.3482 \\[0.5em]
+    0.33 & ${1.6}^{\,+2082}_{\,-0.8}$ & ${226}^{\,+664}_{\,-18}$ & 0.0415
+         & ${1.6}^{\,+2080}_{\,-0.8}$ & ${564}^{\,+1658}_{\,-45}$ & 0.0412
+         & ${1.8}^{\,+2.5}_{\,-0.9}$ & ${605.4}^{\,+95}_{\,-52}$ & 0.2338 \\[0.5em]
+    0.50 & ${1.3}^{\,+1.1}_{\,-0.6}$ & ${215.3}^{\,+20}_{\,-14}$ & 0.0232
+         & ${1.3}^{\,+1.1}_{\,-0.6}$ & ${538.3}^{\,+51}_{\,-34}$ & 0.0230
+         & ${1.5}^{\,+1.3}_{\,-0.6}$ & ${575.2}^{\,+59}_{\,-38}$ & 0.1860 \\[0.5em]
+    1.00 & ${1.0}^{\,+0.5}_{\,-0.4}$ & ${200.0}^{\,+10}_{\,-8}$ & 0.0000
+         & ${1.0}^{\,+0.5}_{\,-0.4}$ & ${500.0}^{\,+26}_{\,-20}$ & 0.0000
+         & ${1.1}^{\,+0.6}_{\,-0.4}$ & ${531.3}^{\,+29}_{\,-22}$ & 0.0755 \\[0.5em]
+    1.50 & ${0.9}^{\,+0.4}_{\,-0.3}$ & ${192.9}^{\,+7}_{\,-6}$ & 0.0198
+         & ${0.9}^{\,+0.4}_{\,-0.3}$ & ${482.2}^{\,+18}_{\,-16}$ & 0.0197
+         & ${1.0}^{\,+0.5}_{\,-0.3}$ & ${511.4}^{\,+20}_{\,-17}$ & 0.0164 \\[0.5em]
+    2.00 & ${0.9}^{\,+0.4}_{\,-0.3}$ & ${188.7}^{\,+5.9}_{\,-5}$ & 0.0685
+         & ${0.9}^{\,+0.4}_{\,-0.3}$ & ${471.7}^{\,+15}_{\,-13}$ & 0.0680
+         & ${1.0}^{\,+0.4}_{\,-0.3}$ & ${500.0}^{\,+16}_{\,-14}$ & 0.0000 \\
+
+    \midrule
+    {} & \multicolumn{3}{c}{P4 ($\mu=1$,   $\eta_2=0.01$,$B_0=200 \unit{\mu G}$)}
+       & \multicolumn{3}{c}{P5 ($\mu=0.5$, $\eta_2=1$,   $B_0=500 \unit{\mu G}$)}
+       & \multicolumn{3}{c}{P6 ($\mu=1$,   $\eta_2=100$, $B_0=500 \unit{\mu G}$)} \\
+    \cmidrule(lr){2-4} \cmidrule(lr){5-7} \cmidrule(l){8-10}
+    $\mu$ (-) & $\eta_2$ (-) & $B_0$ ($\mu$G) & $\chi^2_{\mt{red}}$
+              & $\eta_2$ (-) & $B_0$ ($\mu$G) & $\chi^2_{\mt{red}}$
+              & $\eta_2$ (-) & $B_0$ ($\mu$G) & $\chi^2_{\mt{red}}$ \\
+    \cmidrule{1-10}
+    0.00 & ${0.01}^{\,+4011.9}_{\,-0.0}$ & ${204.6}^{\,+511}_{\,-4.4}$ & 0.0214
+         & ${2.43}^{\,+123.7}_{\,-1.5}$ & ${603.7}^{\,+697}_{\,-83}$ & 0.0197
+         & ${17.3}^{\,+17.6}_{\,-7.3}$ & ${402.0}^{\,+64}_{\,-43}$ & 10.8141 \\[0.5em]
+    0.33 & ${0.00}^{\,+0.13}_{\,-0.00}$ & ${202.5}^{\,+6.3}_{\,-3.0}$ & 0.0010
+         & ${1.2}^{\,+1.2}_{\,-0.5}$ & ${518.1}^{\,+56}_{\,-35}$ & 0.0022
+         & ${48.8}^{\,+80.1}_{\,-27.8}$ & ${475.6}^{\,+114}_{\,-81}$ & 4.7675 \\[0.5em]
+    0.50 & ${0.00}^{\,+0.13}_{\,-0.00}$ & ${202.8}^{\,+4.7}_{\,-3.8}$ & 0.0103
+         & ${1.00}^{\,+0.8}_{\,-0.4}$ & ${500.0}^{\,+40}_{\,-28}$ & 0.0000
+         & ${81.4}^{\,+184.8}_{\,-53.8}$ & ${518.5}^{\,+157}_{\,-111}$ & 2.6293 \\[0.5em]
+    1.00 & ${0.01}^{\,+0.12}_{\,-0.01}$ & ${200.0}^{\,+4.3}_{\,-2.9}$ & 0.0000
+         & ${0.80}^{\,+0.4}_{\,-0.3}$ & ${470.8}^{\,+22}_{\,-18}$ & 0.0188
+         & ${100.0}^{\,+12308}_{\,-83}$ & ${500.0}^{\,+988}_{\,-164}$ & 0.0000 \\[0.5em]
+    1.50 & ${0.02}^{\,+0.1}_{\,-0.0}$ & ${198.1}^{\,+3.3}_{\,-2.9}$ & 0.0005
+         & ${0.75}^{\,+0.3}_{\,-0.3}$ & ${456.3}^{\,+16}_{\,-14}$ & 0.0687
+         & ${10.3}^{\,+8.4}_{\,-3.9}$ & ${285.7}^{\,+35}_{\,-23}$ & 0.0899 \\[0.5em]
+    2.00 & ${0.03}^{\,+0.08}_{\,-0.03}$ & ${196.7}^{\,+2.7}_{\,-2.9}$ & 0.0044
+         & ${0.74}^{\,+0.3}_{\,-0.3}$ & ${447.6}^{\,+13}_{\,-13}$ & 0.1356
+         & ${6.91}^{\,+2.9}_{\,-2.0}$ & ${253.1}^{\,+15}_{\,-13}$ & 0.3506 \\
+    \bottomrule
+    \end{tabular}
+
+\end{table*}
+
+\begin{figure*}[ht!]
+    \centering
+    %\epsscale{0.45}
+    \plottwo{fig/reg_01.pdf}{fig/reg_02.pdf} \\
+    \plottwo{fig/reg_03.pdf}{fig/reg_04.pdf} \\
+    \plottwo{fig/reg_05.pdf}{fig/reg_06.pdf} \\
+    \caption{Stuff}
+\end{figure*}
+
+\end{document}
