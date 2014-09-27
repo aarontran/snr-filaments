@@ -36,11 +36,11 @@ The original files as given to me by Nina
 My own utilities to manipulate spectra (some may be outdated)
 -------------------------------------------------------------
 
-`spec_linkbg.py`
+`spec_linkbg.py`  (must run CIAO first)
 
-Connects spectra for a list of regions, with closest background spectra
-Reads CIAO region files used to generate 1) regions of interest, 2) backgrounds
-in order to determine closest backgrounds
+Connects spectra for a list of regions, with closest background spectra.
+Regions must be boxes, cannot be projections -- should use same region files
+specified for newregion/newspectrum/mergespectrum shell scripts.
 (future extension: allow to parse more types of CIAOREG regions)
 
 `spec_clearbg.py`
@@ -50,7 +50,7 @@ will update the headers for ungrouped and grouped spectra).
 Use this if you mess up the order of arguments to `spec_linkbg.py` and end up
 writing headers to the background files.
 
-`spec_fit.py`
+`spec_fit.py`  (must run heainit first)
 
 Generate best fits (parameters, plots) for set of spectra, using PyXspec
 Logs with fit parameters are saved to same folder as spectra

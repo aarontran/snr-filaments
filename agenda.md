@@ -25,56 +25,72 @@ From poster session (July 31):
   explain the rim dropoff with energy?
 
 
+Monday progress/material to review
+----------------------------------
+
+Kepler: new region selections, profile fit notebook, model fit results (tables)
+        if possible -- make regions-3, then get spectra for subset of regions
+
+Cas A: show region selections and profiles (plan: defer spectra/fits until we
+       figure out how to tackle all the blobs)
+
+Tycho: print copy of (latest) paper for Monday
+
+
 Main TO-DOs
 -----------
-* Kepler -- prepare profile fits, spectra, and model fits for Monday
-  (but tycho #s first...)
 
-* Cas A -- run profile plots + counts by Rob/Brian on Monday
-  PREPARE QUICK IMAGE OF REGIONS ON TOP OF DATA
+### Paper
 
-* Tycho -- run spectrum fits (fast) for Tycho + new table to paper. 
-           Ensure all fits are good, adjust regions if needed.
+Review and fill in results, discussion.
+Double check and reference all numbers for Tycho (the radio spectral index, in
+particular, needs to be explained -- don't spend more than ~1 hr looking that
+up though.
 
-           MEANWHILE -- using FWHMs w/ subbkg, run model fits with ERRORS.
-           Just to see what comes out.
+### Data processing / analysis
 
-  Rerun the specextract pipeline -- then cull regions one more time.
-  Then run the specextract pipeline, generate new plots of profiles + spectra,
-  and run all fits + errors.
+Waiting on the full model error calculations for Tycho to finish, it will
+probably take another day...
 
-  TRY adjusting adaptive stepping, for error procedure...
-  (not done, just running anyways for now -- when done, look at stdout and
-  assess in how many cases the stepping could have been improved.  Might not
-  even be helpful to change stepping now)
+Kepler -- get all numbers and citations prepared.
 
-  Idea -- especially as Sean had discussed in his appendix that w/ some
-  diffusion, lower energy bands may be more helpful in discriminating stuff.
-  Run pipeline on regions-5 first (ensure regions/spectra are good).
-  Then, try splitting 1-1.7 and 2-3 bands into smaller pieces! (low priority)
+* Kepler -- prepare model fits for Monday, showing all regions for now
+            for regions-3: cut 1,2,8,10,11 (on basis of poor FWHM fits)
+            Get spectra for regions-3
+            Generate simple model fits
+            Generate full model table (check w/ Brian on numbers, first)
+            Generate full model fits w/ errors
 
+* Cas A -- generate FWHM fits (1-7 keV) and get spectra, if there is time;
+           run profile plots + counts by Rob/Brian on Monday.
+
+* Tycho -- running full model fits WITH errors, to give idea.
+           likely we will run it one more time, when I manually blacklist
+           regions etc...
+
+           Error finding code is awful.  It's definitely getting stuck and
+           doing some stupid things.  Look at stdout, check why the adaptive
+           stepping doesn't seem to be working.
+           Try manual error fitting, and see how long it takes (extrapolate
+           accordingly).  If it works... do EVERYTHING ELSE FIRST.  Then come
+           back and compute some errors.
+
+           Run full specextract on all bkg-2 files and re-link spectrum files.
+           Look at stdout and see whether we can cut down error computation time)
+
+           Try splitting 1-1.7 and 2-3 bands into smaller pieces! (low priority)
+
+           For my own verification -- run full model fits w/ capped/bkg-subbed
+           FWHMs, to compare to non-corrected FWHMs.  Do chi-sqr values drop
+           consistently?  Does eta2 increase from ~0 values?  Possible that
+           there's nothing -- but I want to check.
 
 * CHECK PACHOLCZYK IN RE RESOLUTION -- avoid wasting computation time, if the
   resolution is too poor.
 
-
-IF and ONLY IF data are worthwhile, then deal with 1. spectra, 2. full model
-errors.  For the time being, only compute FWHMs, simple models, and full models
-with stderr.  That's it.  No more.
-
-EXTRA: re-run pipeline, on SN 1006 individual regions. Does the sub-Bohm
-diffusion result still stand?????
-
-### Science
-
-From talking w/ Brian -- we're gonna need some way to show the global energy
-drop-off!  Which is why he asked about any global `m_E` dependence.
-
-* Maybe report `m_E` as estimated from MODEL fits, which, to be
-  clear, is a separate "observable" that I expect to be more robust
-  than the point-to-point measurements)
-* Remember brian's suggestion (from Friday july 25): how does mE depend on
-  energy? what happens if you fit a straight power law to that???
+* SN 1006 -- re-run pipeline at very end and ensure all is still consistent
+             re-run pipeline on _individual_ SN 1006 regions.
+             Does the sub-Bohm diffusion result still stand at that level?
 
 ### Various checks
 

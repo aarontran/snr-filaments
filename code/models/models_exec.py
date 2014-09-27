@@ -634,6 +634,7 @@ def one_dir_root(f, x_init, x_lim, eps=None, adapt=True, verbose=False):
 
         # Update step size if desired
         if adapt:
+            print '\t  Prev chisqr dist {}, current {}'.format(dist, prev_dist)
             if abs(dist - prev_dist) < 0.1:
                 eps *= 1.5
             elif abs(dist - prev_dist) > 0.5:

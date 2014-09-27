@@ -2,7 +2,7 @@
 Script to link region spectra with nearest backgrounds
 Aaron Tran
 2014 July 12
-(last modified: 2014 Sept 17)
+(last modified: 2014 Sept 26)
 
 Initialize CIAO before running this script!
 """
@@ -10,24 +10,28 @@ Initialize CIAO before running this script!
 import argparse
 import os
 import re
+import sys
 
 from ciao_contrib.runtool import dmhedit, dmhistory
+
+# NOTE we must tell CIAO python where pyds9 is located
+sys.path.append('/usr/local/lib/python2.7/site-packages')
+import regparse
 
 def main():
     """Parse user input and update spectra background links
     KEY ASSUMPTION: numbering of region, background spectra
-    MUST match numbering/ordering of region, background CIAOREG files
+    MUST match numbering/ordering of region, background region files
     """
     parser = argparse.ArgumentParser(description=
              ('Link spectra to closest background spectra (modifies FITS '
-             'header keywords). Acts on orig + grouped files. '
-             'Please use CIAO regions w/ physical coords. Example usage: '
-             'python spec_linkbg.py -v ../data/profiles_good_2.ciaoreg '
-             '../data/profiles_bg.ciaoreg ../data/spectra/good-2/reg '
-             '../data/spectra/bkg/bkg'))
+              'header keywords). Acts on orig + grouped files. '
+              'Directory stem for spectra is whatever precedes _src{:d}*.*'))
 
-    parser.add_argument('regfile', help='CIAO region file for spectra to link')
-    parser.add_argument('bkgfile', help='CIAO region file for backgrounds')
+    parser.add_argument('regfile', help=('DS9 fk5 region file for spectra to '
+                                         'be linked (regions must be boxes!)'))
+    parser.add_argument('bkgfile', help='DS9 fk5 region file for backgrounds')
+    parser.add_argument('imgfile', help='FITS file w/ image for regions')
     parser.add_argument('regroot', help='Directory stem for region spectra')
     parser.add_argument('bkgroot', help='Directory stem for bkg spectra')
     parser.add_argument('-v', '--verbose', action='store_true',
@@ -37,6 +41,7 @@ def main():
 
     args = parser.parse_args()
     regfile, bkgfile = args.regfile, args.bkgfile
+    imgfile = args.imgfile
     regroot, bkgroot = args.regroot, args.bkgroot
     verbose, debug = args.verbose, args.debug
 
@@ -48,15 +53,31 @@ def main():
         print ' Regions: {}'.format(os.path.abspath(regroot))
         print ' Backgrounds: {}'.format(os.path.abspath(bkgroot))
 
+    # Convert ds9 fk5 to CIAO physical coords -- temporary files
+    if verbose:
+        print '\nConverting DS9 fk5 to CIAO physical coords'
+    regfile_c = regfile + '.tmp.ciaoreg'
+    bkgfile_c = bkgfile + '.tmp.ciaoreg'
+    regparse.conv_reg_coords(regfile, imgfile, regfile_c,
+                             fmt='ciao', sys='physical')
+    regparse.conv_reg_coords(bkgfile, imgfile, bkgfile_c,
+                             fmt='ciao', sys='physical')
+
     # CIAO numbering starts at 1, not 0, hence the key numbering...
     # Centers, used as keys, should be unique.  But, if not unique,
     # then doesn't mtter which number is used
     if verbose:
         print '\nParsing center coordinates'
-    reg_ctrs = get_centers(regfile, verbose)
-    bkg_ctrs = get_centers(bkgfile, verbose)
+    reg_ctrs = get_centers(regfile_c, verbose)
+    bkg_ctrs = get_centers(bkgfile_c, verbose)
     reg_dict = {reg_ctrs[x]:(x+1) for x in xrange(len(reg_ctrs))}
     bkg_dict = {bkg_ctrs[x]:(x+1) for x in xrange(len(bkg_ctrs))}
+
+    # Remove CIAO files -- only needed them to get region strings/centers
+    if verbose:
+        print '\nCleaning up temporary CIAO region files'
+    os.remove(regfile_c)
+    os.remove(bkgfile_c)
 
     # Find closest bkg to each region
     if verbose:
@@ -69,6 +90,10 @@ def main():
     # Assign bkgfile to each region (spec + grouped spec)
     if verbose:
         print '\nUpdating file headers...'
+    # Yes, bad practice, but this lets us load/use pyds9 before loading CIAO
+    #sp = subprocess.Popen(['/bin/bash', '-i', '-c', 'ciao'])#call('ciao', shell=True)
+    #sp.communicate()
+    #from ciao_contrib.runtool import dmhedit, dmhistory
     for r in rb_dict.keys():
         set_bkg(r, rb_dict[r], regroot, bkgroot, verbose, debug)
 
@@ -123,7 +148,7 @@ def set_bkg(rnum, bnum, r_rt, b_rt, verbose=False, debug=False):
             else:
                 dmhedit()
         else:
-            print 'A call to dmhedit would occur here'
+            print 'DEBUG: A call to dmhedit would occur here'
 
 
 def get_centers(fname, verbose=False):

@@ -26,6 +26,8 @@ import numpy as np
 import os
 import re
 
+from ds9proj2box import proj2box  # temporary, testing -- if good, can
+# just merge the proj2box functionality into here or something.
 import regparse
 
 ACIS_PX2ARCSEC = 0.492  # Chandra ACIS pixel size, arcseconds
@@ -81,9 +83,9 @@ def main():
         # to fractional position along projection length
         r_reg = length_proj(rspec) * ACIS_PX2ARCSEC  # No flooring needed
         x1, x2, x3 = cuts[1:] / r_reg
-        # Generate/store subsetted projections
-        rspecs_down.append(subset_proj(rspec, x1, x2))
-        rspecs_up.append(subset_proj(rspec, x2, x3))
+        # Generate/store subsetted projections, converted to boxes!
+        rspecs_down.append(proj2box(subset_proj(rspec, x1, x2)))
+        rspecs_up.append(proj2box(subset_proj(rspec, x2, x3)))
 
     # Save as ds9, physical coords, then resave as wcs,fk5 coords
     f_down = '{}_down.reg'.format(f_oreg)

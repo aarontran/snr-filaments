@@ -1,9 +1,9 @@
 """
-Convert ds9 region files to CIAO format, changing projections to boxes
+Convert ds9 region files with projections to ds9 region files with boxes
 
 Aaron Tran
 2014 June 10
-(last modified: 2014 Sept 14)
+(last modified: 2014 Sept 26)
 
 1. read DS9 file containing projection regions, fk5 coords
 2. save DS9 file in physical coords.
@@ -95,7 +95,7 @@ def main():
 
 
 def proj2box(r):
-    """Changes projection string to box string."""
+    """Changes projection string to box string (DS9 format)."""
     rtype, rnums, rprops = regparse.regparse(r)
     x1, y1, x2, y2, t = rnums
 

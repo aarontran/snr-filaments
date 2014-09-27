@@ -1,0 +1,25 @@
+# Region file format: DS9 version 4.1
+global color=green dashlist=8 3 width=1 font="helvetica 10 normal roman" select=1 highlite=1 dash=0 fixed=0 edit=1 move=1 delete=1 include=1 source=1
+fk5
+box(262.70495,-21.489968,4.1504237",6.8111899",154.46042) # color=magenta width=3 text={1}
+box(262.70623,-21.491818,2.0443955",8.0537802",156.96784) # color=magenta width=3 text={2}
+box(262.70697,-21.493852,2.645558",6.4023601",159.82705) # color=magenta width=3 text={3}
+box(262.70745,-21.495374,2.675786",5.1530702",168.07891) # color=magenta width=3 text={4}
+box(262.70775,-21.496653,2.1908637",3.7938",171.41796) # color=magenta width=3 text={5}
+box(262.70798,-21.497808,2.4934797",4.47487",169.62747) # color=magenta width=3 text={6}
+box(262.70806,-21.498974,3.6134361",3.98502",172.66052) # color=magenta width=3 text={7}
+box(262.70712,-21.504441,3.8398399",3.97387",214.60209) # color=magenta width=3 text={8}
+box(262.70399,-21.50736,3.2859258",7.5002399",225.52483) # color=magenta width=3 text={9}
+box(262.70037,-21.50963,5.9249935",5.0524002",201.90474) # color=magenta width=3 text={10}
+box(262.69891,-21.510817,10.240827",6.61371",211.34965) # color=magenta width=3 text={11}
+box(262.69198,-21.513246,5.7846636",5.1990698",294.40798) # color=magenta width=3 text={12}
+box(262.67234,-21.520632,2.8060118",8.1506398",264.3085) # color=magenta width=3 text={13}
+box(262.66749,-21.520708,4.2166617",7.2014601",291.63583) # color=magenta width=3 text={14}
+box(262.66815,-21.518679,2.6164901",3.26706",272.44329) # color=magenta width=3 text={15}
+box(262.66483,-21.518234,2.7551468",3.67042",276.53423) # color=magenta width=3 text={16}
+box(262.65957,-21.516883,2.5007543",4.70298",297.34012) # color=magenta width=3 text={17}
+box(262.65028,-21.51356,2.7833116",6.44649",332.18005) # color=magenta width=3 text={18}
+box(262.64112,-21.497446,3.1761346",6.0861",316.16945) # color=magenta width=3 text={19}
+box(262.64211,-21.475238,3.2979584",8.2713702",87.399539) # color=magenta width=3 text={20}
+box(262.65356,-21.468048,1.9962603",7.8638899",27.392235) # color=magenta width=3 text={21}
+box(262.7051,-21.4863,4.2105445",8.9178001",139.00085) # color=magenta width=3 text={22}

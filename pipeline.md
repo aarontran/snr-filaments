@@ -169,15 +169,11 @@ Prerequisite: 1
 
 ## Prep/split regions based on profile fits
 
+This code handles the projection-box conversion as well
+
 Code:   `../code/ds9projsplitter.py`
 Input:  `fwhms/fwhms_spec_cut.npz`, `regions-n.reg`
 Output: `regions-n_[up,down].reg`
-
-## Then, convert split region files to ds9 boxes
-
-Code:   `../code/ds9proj2box.py`
-Input:  `regions-n_[up,down].reg`
-Output: `regions-n_[up,down]_box.reg`
 
 _Here, stop and check that the up/down regions look okay in ds9_
 _Remove all dashes from filenames_
@@ -194,12 +190,16 @@ _Output filenames may require some manual adjustment, currently_
 
 ## Link spectra to backgrounds
 
-_Generate the CIAO region files really quickly, delete when done_
-_This script is a bit out of date w/ rest of pipeline._
+_Run in debug mode first, check that filepaths to be linked are correct.
+Then check in DS9 that the background/region linkings look correct.
+Then, go ahead and modify files_
 
 Code:   `../code/spec_linkbg.py`
-Input:  spectra, `regions-n.ciaoreg`, `backgrounds-n.ciaoreg`
+Input:  spectra, `regions-n_[up,down].reg`, `backgrounds-n.reg`
 Output: N/A (modifies spectra in place)
+
+Also, yes, the background link is the ungrouped file.  See this
+[CIAO thread](http://cxc.harvard.edu/ciao/threads/extended/index.html#up).
 
 ## Fit spectra to absorbed powerlaw with(out) Si line
 Run with 32 bit python (`arch -i386 python`), `heainit` (not in same window as
@@ -213,6 +213,9 @@ Output: `spectra/[up,down]/plot/plt_*.ps`,
 Code:   `../code/spec_plot2pdf.sh`
 Input:  `spectra/[up,down]/plot/plt_*.ps`
 Output: `spectra/[up,down]/plot/plt_*.pdf`
+
+NOTE: double check fit logs before proceeding, to make sure that background
+spectra are linked correctly!
 
 
 Pipeline 3: fit FWHM data to filament models

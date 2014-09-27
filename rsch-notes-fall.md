@@ -1901,7 +1901,7 @@ Thursday 2014 September 25
 
 Summary
 -------
-* Data catchup
+* Data catchup.  Pipelining material on Tycho, Kepler, Cas A
 
 
 Data catch-up: Tycho, Kepler, & Cas A
@@ -1941,4 +1941,62 @@ Generate mosaic + counts images for 2-3, 3-4.5, 4.5-7, 7-9 keV.
 (count images take a while for Cas A!)
 
 
+Friday 2014 September 26
+========================
 
+Summary
+-------
+* Continued data catch-up.  Generated most new things needed.
+* Manuscript updated / most recent Tycho plots/numbers (some still pending)
+
+(mainly, waiting on full model errors to finish computing)
+
+Data catch-up (cont): Tycho regions-5, Kepler regions-2
+-----------------------------------------------------------
+
+Updated `spec_linkbg.py` to work with DS9 fk5 files, for ease.
+Updated `ds9projsplitter.py` to make region files w/ boxes directly.
+(no need for separate script, since this is the only place where
+`ds9proj2box.py` needs to be invoked)
+
+### Kepler
+Linked regions-1 spectra w/ backgrounds (forgot to do earlier).  Updated fits.
+Reviewed my notes + new fits, it doesn't change our conclusions and region
+picks.  Removing background does help w/ the very faint filaments.
+
+For regions-2: Brian recommends throwing out regions where the profiles look
+so bad/unusable.  Expectation is that physics is same everywhere...
+(go ahead and do FWHMs, profile fits), especially since we already have
+multiple samples of the ear filament.
+
+Discard: region numbers 1, 2, 8, 10, 11.  Region number 9 is bordering on the
+discard "threshold"; its highest energy band is a bit of a mess and doesn't fit
+well.  The current black list is:
+
+    blacklist = {1:['0.7-1kev'], 2:['0.7-1kev'],
+                 8:['0.7-1kev'],
+                 9:['4-7kev'],
+                 10:['0.7-1kev', '4-7kev'],
+                 11:['0.7-1kev']}
+
+Generated all FWHMS (with/without cap, background subtraction) for model
+fitting.
+
+### Cas A
+Brian notes that Fe K lines might be a problem.
+I selected a bunch more filaments.  One big thing to consider: when using log
+scaling, bright filaments get washed out; linear scaling does the reverse.
+So don't forget to double check multiple image scalings/setups.
+
+### Tycho
+Tycho regions-5.  I linked upstream spectra to old bkg-2 spectra, which were
+generated incorrectly.  Not perfect -- but it will do for now.
+Just a minor issue but to be addressed.
+
+
+
+Tycho paper
+-----------
+
+Removed old tables and figures (go to previous git commit to recover).
+Most tables/figures now should be for Tycho regions-5 data.

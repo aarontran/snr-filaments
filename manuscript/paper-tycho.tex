@@ -231,15 +231,17 @@ density ISM.  \citet{williams2013} favor mean pre-shock ISM density $\abt
 more consistent shock acceleration around its periphery than in other
 historical remnants, whether of Type Ia or CC SNe.
 
-Evidence for acceleration: spectral softening \citep{cassam-chenai2007}, CD-FS
-gap \citep{warren2005}, multi-wavelength observations \citep{acero2010,
-acciari2011, morlino2012} for SN 1006 and Tycho; Tycho's tiger stripes
-\citep{eriksen2011}. These further support the notion that Tycho is actively
-accelerating hadrons and leptons.
-Various questions to consider (or answer).
-Why the diversity of filament structure? How does diffusion really work?  How
-much energy is going into cosmic rays / how efficient is the acceleration
-process?  All sorts of things... (one interesting paper: \citet{caprioli2013}).
+Evidence for acceleration: basically, see \citet{morlino2012} for a nice review
+of evidence in Tycho.  No need to cite everything here.
+
+spectral softening \citep{cassam-chenai2007}, CD-FS gap \citep{warren2005},
+multi-wavelength observations \citep{acero2010, acciari2011, morlino2012} for
+SN 1006 and Tycho; Tycho's tiger stripes \citep{eriksen2011}. These further
+support the notion that Tycho is actively accelerating hadrons and leptons.
+Various questions to consider (or answer).  Why the diversity of filament
+structure? How does diffusion really work?  How much energy is going into
+cosmic rays / how efficient is the acceleration process?  All sorts of
+things... (one interesting paper: \citet{caprioli2013}).
 \note[Aaron]{this para may not be necessary}
 
 % Paper roadmap
@@ -554,21 +556,23 @@ clear of spatial plumes of thermal ejecta in \Chandra images, which rules out,
 e.g., areas of strong thermal emission on Tycho's eastern limb; (2) filaments
 should be singular and localized; multiple filaments should either not
 overlap or completely overlap (rules out parts of NE limb); (3) filaments
-should have clear FWHMs in most energy band; i.e., a peak should be evident
-above the background signal or downstream thermal emission (rules out some
-faint southern wisps) \note[Aaron]{wishy-washy qualitative}.  We grouped
-regions into filaments by visual inspection of the remnant.
+peaks should be evident above the background signal or downstream thermal
+emission (rules out some faint southern wisps), although we selected some
+regions with poor quality peaks in the lowest energy band (0.7--1 keV) so long
+as peaks in all higher energy bands were acceptable and well-fit.
+\note[Aaron]{vague, weakly qualitative}
+We grouped regions into filaments by visual inspection of the remnant.
 Within each filament, we chose region widths to get a similar number of counts
-at the thin rim, in each region. \note[Aaron]{wording}
+at the thin rim, in each region.
 We attempted to balance signal-to-noise of each profile against having multiple
 selections for each filament (a signal-to-noise further downstream, in a
 sense); within each filament we tried to keep the number of counts in each
-region
+region roughly consistent... \note[Aaron]{wording for latter half of para}
 
 % NOTE generate final, higher quality figure + newer figure for regions-5
 \begin{figure}
     \centering
-    \plotone{figures/f0-snr-reg5-inv.png}
+    \plotone{figures/f0-snr.png}
     \caption{RGB image of Tycho with region selections overlaid.  Bands are
     0.7--1 keV (red), 1--2 keV (green) and 2--7 keV (blue).
     \note[Aaron]{Could show the spectrum extraction regions on here too?
@@ -601,9 +605,7 @@ captures the thin rim.  The downstream section extends from the back of the rim
 (end of the upstream section) to the rim model fit's (equation~\eqref{eq:prof})
 downstream limit.  We merged spectra from all \Chandra ObsIDs and grouped the
 data into bins of $\geq 15$ counts.  Figure~\ref{fig:spec} plots an example
-profile (4.5--7 keV) with the downstream and upstream sections highlighted; the
-dividing line is set at the \textbf{???--???} energy band's downstream FWHM
-limit here (see Figure~\ref{fig:profiles}).
+profile (4.5--7 keV) with the downstream and upstream sections highlighted.
 We extracted background spectra from circular regions (radius $\abt 30\arcsec$)
 around the remnant's exterior; each thin rim region was matched to the closest
 background region's spectrum.
@@ -612,13 +614,15 @@ background region's spectrum.
 % NOTE must match fig:profiles!  Keep region numbers updated and
 % consistent.  Currently, region 1 of data-tycho/regions-4/ selections
 \begin{figure*}
-    \plotone{figures/fig-specs.pdf}
-    \caption{Spectra and fits from Region 1. Left: $4.5$--$7 \unit{keV}$
+    \plotone{figures/fig-specs_01.pdf}
+    \plotone{figures/fig-specs_16.pdf}
+    \caption{Spectra and fits from Regions 1 (top) and 16 (bottom).
+    Left: $4.5$--$7 \unit{keV}$
     profile with highlighted downstream (blue) and upstream (grey) sections.
-    Intensity units are arbitrary (a.u.).  Middle: downstream spectrum with
+    Intensity in arbitrary units (a.u.).  Middle: downstream spectrum with
     absorbed power law fit; Si and S lines at $1.85$, $2.45 \unit{keV}$ are
     clearly visible.  Right: upstream spectrum with absorbed power law fit
-    shows that the filament is likely free of thermal line emission.}
+    shows that each region is likely free of thermal line emission.}
     \label{fig:spec}
 \end{figure*}
 
@@ -643,6 +647,7 @@ somewhat larger than $\abt0.35$--$0.5 \times 10^{22} \unit{cm^{-2}}$ from radio
 and optical??  HI absorption line measurements \citep{black1984, albinson1986,
 kothes2004}.
 % NOTE keep stated ranges of spectral indices, column densities up to date
+% NOTE keep example region numbers up to date
 
 % NOTE keep region numbers updated (in discussion of good/bad downstream spectra)
 \begin{table}
@@ -650,8 +655,6 @@ kothes2004}.
     \centering
     \caption{Region spectra fit parameters\label{tab:spec}}
     \input{tab-spec.tex}
-    \tablecomments{Absorbed power law fit parameters are photon index $\Gamma$
-    and hydrogen column density $\mathrm{N_H}$.}
 \end{table}
 
 Table~\ref{tab:spec} confirms that our region selections are practically free
@@ -702,17 +705,19 @@ profiles with a 21-point ($\abt 10\arcsec$) Hanning window.  The upstream bound
 was set at the profile's outer edge (i.e., no data were removed).
 
 \begin{figure*}[ht]
-    \plotone{figures/fig-profiles.pdf}
+    \plotone{figures/fig-profiles_01.pdf}
+    \plotone{figures/fig-profiles_16.pdf}
     \caption{Best fit profiles with measured FWHMs demarcated for each energy
-             band in Region 1.  Red data points are excluded from profile fit
-             domain.}
+        band in Region 1 (top) and Region 16 (bottom).  Energy bands increase
+        from left to right.  Data points in red were excluded from profile
+        fitting domains as described in text.}
     \label{fig:profiles}
 \end{figure*}
 
 % NOTE keep blacklisted/excluded region numbers updated!
 From the fitted profiles we extracted a full width at half maximum (FWHM) for
-each region and each energy band.  We could not resolve a FWHM in regions 2, 6,
-and 8 at 0.7--1 keV (Table~\ref{tab:fwhms}); in these regions, either
+each region and each energy band.  We could not resolve a FWHM in 7 of 22
+regions at 0.7--1 keV (Table~\ref{tab:fwhms}); in these regions, either
 the downstream FWHM bound would extend outside the fit domain or we could not
 find an acceptable fit to equation~\eqref{eq:prof}.  We were able to resolve
 FWHMs for all regions at higher energy bands (1--7 keV).
@@ -833,7 +838,7 @@ analysis.
     \tiny
     \centering
     \caption{Measured FWHMs for all regions.\label{tab:fwhms}}
-    \input{tab-fwhms-reg5.tex}
+    \input{tab-fwhms.tex}
 \end{table*}
 
 % -------------------------
@@ -871,7 +876,7 @@ limits on our fit parameters.
     \centering
     \caption{Full model best fits for individual regions, Filaments 1--3.
     \label{tab:fits}}
-    \input{tab-fits-all-reg5.tex}
+    \input{tab-fits-all.tex}
 \end{table*}
 
 \begin{table*}[ht]
@@ -879,7 +884,7 @@ limits on our fit parameters.
     \centering
     \caption{Full model best fits for individual regions, Filaments 4--5.
     \label{tab:fits-pt2}}
-    \input{tab-fits-all-reg5-pt2.tex}
+    \input{tab-fits-all-pt2.tex}
 \end{table*}
 
 % NOTE need better subplot display in final version, if we keep this
@@ -932,7 +937,7 @@ especially as the typical number of regions per filament is quite small.
     \centering
     \caption{Filament averages of best-fit parameters for constituent regions
     \label{tab:fits-avg}}
-    \input{tab-fits-par-avg-reg5.tex}
+    \input{tab-fits-par-avg.tex}
 \end{table*}
 
 % Global fits...
