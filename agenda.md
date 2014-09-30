@@ -29,7 +29,6 @@ Monday progress/material to review
 ----------------------------------
 
 Kepler: new region selections, profile fit notebook, model fit results (tables)
-        if possible -- make regions-3, then get spectra for subset of regions
 
 Cas A: show region selections and profiles (plan: defer spectra/fits until we
        figure out how to tackle all the blobs)
@@ -40,68 +39,78 @@ Tycho: print copy of (latest) paper for Monday
 Main TO-DOs
 -----------
 
-### Paper
+In order:
 
-Review and fill in results, discussion.
-Double check and reference all numbers for Tycho (the radio spectral index, in
-particular, needs to be explained -- don't spend more than ~1 hr looking that
-up though.
+1. Review manuscript comments, mark up my own comments, fill in
+   results/discussion (catching up Tycho pipeline where appropriate).  Fill in
+   as many holes as possible.  Have text ready to go, then work on results up
+   to Thurs / early Friday as much as possible before sending for another round
+   of review.
+2. Address resolution issue (Pacholczyk + internal integrals), before moving to
+   more full model fits
+3. Magnetic damping!
 
-### Data processing / analysis
+Grouped by individual "pipeline":
 
-Waiting on the full model error calculations for Tycho to finish, it will
-probably take another day...
+* Tycho -- Run full specextract on all bkg-2 files and re-link spectrum files
+           to tycho's "up" spectra (regions-5).
+           
+           Cull regions-6 out of regions-5, and manually port over derived data
+           products as needed... (add notes in README files).
+           Generate all spin-off/variant data products needed (ignore full
+           model errors because ugh).
 
-Kepler -- get all numbers and citations prepared.
+           Add text on issue of remnant distance.  Run calculations if
+           appropriate and add text explaining this
 
-* Kepler -- prepare model fits for Monday, showing all regions for now
-            for regions-3: cut 1,2,8,10,11 (on basis of poor FWHM fits)
-            Get spectra for regions-3
-            Generate simple model fits
-            Generate full model table (check w/ Brian on numbers, first)
-            Generate full model fits w/ errors
-
-* Cas A -- generate FWHM fits (1-7 keV) and get spectra, if there is time;
-           run profile plots + counts by Rob/Brian on Monday.
-
-* Tycho -- running full model fits WITH errors, to give idea.
-           likely we will run it one more time, when I manually blacklist
-           regions etc...
-
-           Error finding code is awful.  It's definitely getting stuck and
-           doing some stupid things.  Look at stdout, check why the adaptive
-           stepping doesn't seem to be working.
-           Try manual error fitting, and see how long it takes (extrapolate
-           accordingly).  If it works... do EVERYTHING ELSE FIRST.  Then come
-           back and compute some errors.
-
-           Run full specextract on all bkg-2 files and re-link spectrum files.
-           Look at stdout and see whether we can cut down error computation time)
+           Tackle the magnetic damping matter.  Set up a port of Sean's code
+           and start running calculations.  Do some trial cases and compute
+           `m_E`.  Figure out how to show when magnetic damping does matter, or
+           does not matter.
 
            Try splitting 1-1.7 and 2-3 bands into smaller pieces! (low priority)
+             (run `reproject_obs` and `flux_obs`, double check that I get the
+              same files that Brian has sent, then make new cuts and numbers)
 
            For my own verification -- run full model fits w/ capped/bkg-subbed
            FWHMs, to compare to non-corrected FWHMs.  Do chi-sqr values drop
            consistently?  Does eta2 increase from ~0 values?  Possible that
            there's nothing -- but I want to check.
 
-* CHECK PACHOLCZYK IN RE RESOLUTION -- avoid wasting computation time, if the
-  resolution is too poor.
+* Kepler -- for regions-3: cut 1,2,8,10,11 (on basis of poor FWHM fits)
+            Get spectra for regions-3
+            Generate simple model fits (... redo on regions-3)
+            Check full model resolution #s (ipynb)
+            Generate full model table (check w/ Brian on numbers, first)
+            Generate full model fits w/ errors
+
+* Cas A -- pick subset of regions-0 for regions-1 from FWHMs/profiles/counts,
+             ensuring that all regions can get decent FWHMs.
+           generate new FWHM fits (1-9 keV) and get spectra of rims
+           select specific regions outside rims and get spectra, need to figure
+             out how much thermal contamination
+           (may as well 
+
+Lower priority / various checks
+-------------------------------
+
+* RESOLUTION -- check Pacholczyk tables (!)
+                check some internal numerical integrals
+                check accuracy of Pacholczyk's Bessel function values
+                (likely a tiny error -- but to be sure.  Generate
+                 1. table w/ more entries from Pacholczyk
+                 2. table w/ same entries, but more recent values
+                 3. table w/ more entries, more recent values)
+                More e- table values will slow down computation for sure...
+                (ask Sean: any reason for table selections)
+
+* Manual error computation -- test it out on one/two regions, estimate how much
+  time it takes (and extrapolate).  Do this after the resolution checks.
 
 * SN 1006 -- re-run pipeline at very end and ensure all is still consistent
              re-run pipeline on _individual_ SN 1006 regions.
              Does the sub-Bohm diffusion result still stand at that level?
 
-### Various checks
-
-* Full model code -- check resolution error due to Pacholczyk tables (!)
-  Might also be worth double checking some of the internal numerical integrals.
-  And, check how accurate/correct Pacholczyk's Bessel function values are now.
-  (ASK SEAN -- ANY REASON FOR TABLE SELECTIONS?)
-* Remnant radio spectral indices?!
-  See [ppt slides](http://www.astro.le.ac.uk/~cbp1/cta/Talks/TonyBell.pdf),
-  just pick some numbers and report in text (saave in SNR catalog, w/ sources
-  and explanation for choices).
 * Update code deep review eventually (discuss: correction to the negative sign
   in electron distribution functions, explain the Ecut scaling / calculation)
 
@@ -112,14 +121,11 @@ Kepler -- get all numbers and citations prepared.
 * When paper is nearing finish -- re-run entire pipeline on SN 1006 as a sanity
   check.  But, not now.
 
-
-### CIAO stuff
-
 * sanity check that when I run CIAO `merge_obs`, I get the same files that
-  Brian has been sending me...
-
+  Brian has been sending me... (this requires the reprojected files)
 
 ### Conceptual/background/physics questions (look up and/or ask)
+
 * When converting from particle energy E to radiated frequency nu, doesn't the
   formula `$\nu_m = c_m E^2 B$` implicitly invoke the delta-function approx for
   synchrotron radiation?  I have no idea how you'd do it otherwise though.
@@ -128,25 +134,11 @@ Kepler -- get all numbers and citations prepared.
   this is not a bad approximation?  I don't understand the physics of the
   derivation of synchrotron stuff (MUST REVIEW ALL OF THIS...).
   Perhaps it corresponds to some median, mean energy, or power, or something.
-* How to get such strong B field values?!  Is nonlinear MHD turbulence enough?
-* How far behind the shock does magnetic turbulence operate?  The equations we
-  use assume electrons are injected, with power law distrib. + cutoff, right at
-  the shock (I suppose as they advect/diffuse the power law distrib. may be
-  modified but still persists?).  How long should the turbulence persist,
-  time/lengthscale? (same, related by plasma advection speed)
-* _How_ to get larger compression ratios?  What does it imply?
-* Why is cutoff energy set by equating loss and acceleration times?
-  The electrons radiate faster than they can be accelerated?  But that seems
-  weird -- because I thought the acceleration is what gives rise to the
-  radiation.  Please read parizot et al (2006), take notes, rederive things.
-
-* How do you rule out magnetic damping?  E.g., looking at figure 4 with ab =
-  5 percent of shock radius, seems like it would give a decent energy dropoff.
-  How did Sean get that mE must be of order -0.1 for damping? (Brian: maybe
-  Sean explored parameters, maybe from old/"classic" papers on damping?)
 
 
-### Extra
+Extra
+-----
+i.e., things that no one cares about
 
 Write/find short scripts / hooks to git, to clear out ipynb output cells or
 something... 

@@ -1,7 +1,7 @@
 """
 Catalog of SNR physical parameters and synchrotron constants
 
-Aaron Tran, Summer 2014
+Aaron Tran
 2014 July 22
 """
 
@@ -18,14 +18,14 @@ SYNCH_C1 = 6.27e18  # for synchrotron emissivity (eq'n 20; see Pacholczyk)
                     # I believe C_1 = 3e/(4\pi m^3 c^5), in CGS units
                     # e = e- charge, m = e- mass, c = 3e10 cm/s
                     # i.e., prefactor for critical freq. as in
-                    # //cv.nrao.edu/course/astr534/SynchrotronSpectrum.html
+                    # cv.nrao.edu/course/astr534/SynchrotronSpectrum.html
                     # anyways this is all one giant TODO that should be typed
                     # up and thrown into the code deep review PDF
 
-CD = 2.083e19  # Bohm diffusion const; Cd = c/(3e)
+CD = 2.083e19  # Bohm diffusion const; Cd = c/(3e) (confirmed)
 BETA = 4.6  # Projection factor for exponential emissivity (Ballet, 2006)
 
-NUKEV = 2.417989e17  # Frequency of 1 keV photon
+NUKEV = 2.417989e17  # Frequency of 1 keV photon (confirmed)
 
 # ================================
 # Some convenient unit conversions
@@ -46,50 +46,69 @@ def kpc2cm(x):
 # ================================
 
 def make_kepler():
-    """Physical parameters, model/fit settings for Tycho's SNR
-    WARNING: if darc is changed, must change vs as well!
+    """Physical parameters, model/fit settings for Kepler's SNR
+    WARNING: if dkpc is changed, must change vs as well!
     """
-    k = SupernovaRemnant('Kepler')
+    kepler = SupernovaRemnant('Kepler')
 
-    kepler.dkpc = 3.3  # Distance to remnant in kpc (!) TODO verify
-                       # 4kpc from Vink (2008) kinematic study
-                       # Could be up to 7 kpc?!?!?! (Patnaude et al., 2012)
-                       # 3.3kpc from Katsuda et al. (2008)
-    kepler.rsarc = 180 # Shock radius (arcsec) from Green's SNR catalog
-    kepler.s = 2.28  # e- spectrum index, 2.3 = 2*0.65 + 1;
+    kepler.dkpc = 5    # Distance to remnant in kpc
+                       # Many conflicting results -- X-ray expansion gives
+                       # numbers of ~3.3 kpc (Katsuda et al., 2008)
+                       # Vink (2008) uses a funny maximum likelihood method
+                       # and gets 4 kpc, but favors much larger distances
+                       # Chiotellis et al. (2012) and Patnaude et al. (2012)
+                       # favor >6,7 kpc for standard (1 M_56Ni or w/e)
+                       # energetics, but ~4-6 kpc consistent w/ subenergetic
+                       # explosion.
+                       # TeV non-detection by HESS favors > 6.4 kpc
+                       # (Aharonian et al., 2008)
+                       # Finally, radio HI absoprtion gives [4.8, 6.4] kpc
+                       # (Reynoso and Goss, 1999)
+                       # And Balmer filament measurements give ~4 kpc or so...
+                       # (Sankrit et al., 2005)
+                       # Choice of 5 kpc also taken by Toledo-Roy et al. (2014)
+
+    kepler.rsarc = 114 # Shock radius (arcsec) = 1.9 arcmin, compromise between
+                       # ~2 arcmin at ears and 1.8 arcmin at rest of remnant
+                       # Green's estimate of 1.5 arcmin is too small
+                       # Chiotellis et al. (2012) use ~1.7-1.8 arcmin
+
+    kepler.s = 2.28  # e- spectrum index, 2.28 = 2*0.64 + 1;
                      # 0.64 = radio spectral index, Green's SNR catalog
-                     # TODO get a source on this?!
+                     # consistent w/ DeLaney et al. (2002)
 
-    kepler.vs = 4.2e8  # Shock velocity, cm/s
-                       # TODO verify, 4.2e8 from Vink (2008) kinematic study
-                       # Katsuda et al assumed 1.6e8 (?!)
-                       # if shock velocity is truly higher, then distance
-                       # estimate of Katsuda et al. should be revised up...
+    kepler.vs = 4.71e8 * kepler.dkpc/5 # Shock velocity, cm/s (with dkpc = 5)
+                        # mean measurements of Reg-4/5, Katsuda et al. (2008)
+                        # scaled to 5 kpc.  Vink (2008) give 5.25e8
+                        # but within error the values are barely consistent
+
     kepler.cratio = 4.0  # Compression ratio, strong adiabatic shock (R-H)
 
     # Model grid settings, resolutions
     kepler.icut = True
-    #kepler.rminarc = 20  # Default rminarc, arcsec
+    kepler.rminarc = 20  # Default rminarc, arcsec (remember w/ adaptive
+                         # rminarc calculation, this isn't too important)
     kepler.irmax = 400  # Currently unchanged from SN 1006
     kepler.iradmax = 100
     kepler.ixmax = 500
 
     # Fitting default initial guesses, bounds
-    #kepler.par_init = {'mu': 1.0, 'eta2': 1.0, 'B0': 300e-6}
-    #kepler.par_lims = {'mu': (0., 2.),
-    #                  'eta2': (1e-16, 1e5),  # model code div by zero on eta2=0
-    #                  'B0': (1e-6, 1e-2)}
+    kepler.par_init = {'mu': 1.0, 'eta2': 1.0, 'B0': 250e-6}
+    kepler.par_lims = {'mu': (0., 2.),
+                       'eta2': (1e-16, 1e5),  # model code div by zero on eta2=0
+                       'B0': (1e-6, 1e-2)}
 
     return kepler
 
 def make_tycho():
     """Physical parameters, model/fit settings for Tycho's SNR
-    WARNING: if darc is changed, must change vs as well!
+    WARNING: if dkpc is changed, must change vs as well!
     """
     tycho = SupernovaRemnant('Tycho')
 
     tycho.dkpc = 3.0  # Distance to remnant in kpc (!)
     tycho.rsarc = 240  # Shock radius (arcsec) from Green's SNR catalog
+                       # This is about right from image inspection.
     tycho.s = 2.3  # e- spectrum index, 2.3 = 2*0.65 + 1;
                    # 0.65 = radio spectral index
                    # TODO is this right?  One src. is Eriksen et al. 2011
@@ -128,7 +147,8 @@ def make_SN1006():
     sn1006.s = 2.2  # e- spectrum index, 2.2 = 2*0.6 + 1;
                     # 0.6 = radio spectral index
 
-    sn1006.vs = 5e8  # Shock velocity, cm/s (Satoru et al., 2009, 2013)
+    sn1006.vs = 5e8  * sn1006.dkpc / 2.2  # Shock velocity, cm/s
+                                          # (Satoru et al., 2009, 2013)
     sn1006.cratio = 4.0  # Compression ratio, strong adiabatic shock (R-H)
 
     # Model grid settings, resolutions

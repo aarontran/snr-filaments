@@ -29,8 +29,9 @@ Table of contents
 * Week 14 - (9/1) run suite of error calculations
 * Week 15 - (9/8)
 * Week 16 - (9/15) flesh out paper, many new plots/tables; new Tycho regions
-* Week 17 - (9/22) paper writing
-* Week 18 - (9/29) AAS abstract
+* Week 17 - (9/22) paper writing, cleanup/data for Tycho regions-5
+            Cull Kepler regions, trial Cas A regions
+* Week 18 - (9/29)
 
 (week 10 included for continuity)
 
@@ -2000,3 +2001,178 @@ Tycho paper
 
 Removed old tables and figures (go to previous git commit to recover).
 Most tables/figures now should be for Tycho regions-5 data.
+
+
+(Week 18) Monday 2014 September 29
+==================================
+
+Summary
+-------
+* Meeting -- Tycho results, discussion, tables, paper fixes;
+  Kepler simple model fits and regions; Cas A region selections
+* Sent final draft AAS abstract to all
+* Reviewed/added Tycho, Kepler SNR numbers (radio spectral index for Tycho)
+* Kepler regions-2 simple model fits (first pass)
+* Cas A regions profiles and FWHMs generated (from last Friday's new regions-0
+  selections)
+
+
+Monday meeting notes
+--------------------
+Also merged into (transient) to-dos
+
+Tycho (paper disc. first priority): aim to send new version before Monday.
+        lots of things to think about!  go through paper with Brian's comments
+        Brian addressed a few questions / incorrect statements in the paper
+        Make list of numbers/etc to update, fix, etc...
+        Magnetic damping model is up next in line, very soon
+        check error calculations on m_E etc...
+
+Kepler: use new regions, run spectra, get full model numbers...
+        otherwise looks quite fine
+
+Cas A: take a look. select subset of regions, pull out NEARBY spectra.
+       big issue is that cas A is so freaking bright that we have thermal
+       contamination because of scattered light.  Geez.
+       So we have to subtract or avoid that somehow.
+       Data in 4-6.5 keV, 7+ keV would be ideal to side-step issue.
+       Using photons below 4 keV -- gotta deal w/ contamination.
+
+
+Kepler numbers
+--------------
+
+Looking up Kepler data values.  We need:
+* distance to SNR (kpc)
+* shock radius (arcsec)
+* spectral (photon?) index s = 2 * alpha + 1
+* shock velocity (cm/s)
+
+I've gone ahead and updated SNR catalog w/ all relevant values.
+They are NOT vetted with Rob and Brian, yet.
+
+### Remnant distance
+
+* Katsuda et al. (2008) give X-ray expansion measurements (6 yr baseline) for
+  several regions around Kepler's SNR.  Regions 4/5 (SE filament) have
+  expansions of 0.191, 0.206 arcsec/yr (+/- 0.03, at most, each).  Average:
+  0.199 arcsec/yr = 3.77e8 cm/s +/- 0.57e8 cm/s velocity (stat+sys error is
+  overestimate), assuming distance 4 kpc (4.71 +/- 0.71, if d = 5 kpc).
+
+  3.3 kpc favored by Katsuda et al. (2008), matched Balmer filament
+  measurements (Blair et al. 1991, Sankrit et al. 2005) to X-ray kinematics
+
+* Vink (2008) gives 4200 km/s (assuming d = 4 kpc) for the bright SE filament,
+  and states that "[this] is twice as fast as the shock velocities inferred
+  from optical spectral and proper-motion studies in the [NW] region (Blair et
+  al.  1991; Sankrit et al. 2005)..."; he favors a larger distance as being
+  more consistent with the expected energetics/expansion of a Type Ia SN.
+
+* Reynoso and Goss (1999) give lower bound of 4.8 +/- 1.4 kpc and upper bound
+  of 6.4 kpc, by analysis of some absorption features -- I think the implicit
+  assumption is that the HI velocities are indicative of location in/relative
+  to the galactic plane?  Consider HI features behind/interacting with/in front
+  of remnant.
+
+* Patnaude et al. (2012) suggest ~5-6 kpc if expanding into ISM, and require
+  >~7 kpc if expanding into a wind-blown bubble -- looking at energetics +
+  hydrodynamic modeling.  A pure wind model is not enough; needs a small
+  cavity to make the ionization ages work.
+  (similar conclusion by Chiotellis et al. (2012))
+
+  The TeV gamma ray non-detection implies distance > 6.4 kpc?  Quite extreme.
+  (Aharonian et al. 2008) (what models do they consider to get this number?)
+
+  A smaller distance (< 5-6 kpc) also favors a "subenergetic" SN.
+  All of this is somewhat curious, that the different measurements and
+  constraints are so discrepant.
+
+
+Temporary conclusion -- take d = 5 kpc and run this by Rob/Brian...
+
+### Shock radius
+
+Shock radius = 1.5 arcmin (90 arcsec) from Green's catalog is fine.
+In fact this is a little smaller than what I measure in DS9 -- especially since
+we're interested in the protruding ear.  Chiotellis et al. (2012) give
+radius of ~1.78 arcmin.  I measure radial dist to ears is about 2 arcmin,
+radial dist to front of shock is about 1.8 arcmin.
+
+Let's compromise and say ~1.9 arcmin.
+
+### Shock velocity
+
+For shock velocity -- taking the X-ray measured kinematics of Katsuda et al.
+(2008) and scaling to 5 kpc gives 4.71e8 cm/s  (Vink (2008) would give 5.25e8
+with d=5kpc).  The other 2 regions I have selected in regions-2 (10, 11)
+are not sampled by Katsuda et al. (2008).  Reg-8 is closest to my region 10,
+with an even faster expansion velocity, in fact; Reg-13 is closest to my region
+11 but samples the slower northern rim, whereas region 11 falls on the ear of
+Kepler (which is likely to be expanding more rapidly).
+
+So I'll go ahead and assume shock velocity 4.71e8
+
+
+### Radio spectral index (and then e- spectral/photon index)
+
+The spectral index map (radio, 6-20 cm) of DeLaney et al. (2002) suggests that
+at the nonthermal filaments, the radio spectral index is around -0.65 (but, the
+N edge of the SE ear seems to be a bit steeper).  I will accept -0.64 from
+Green's catalog for now.
+
+
+
+Cas A region picks, FWHMs
+-------------------------
+
+Re-ran the radial profile generation scripts (forgot to keep the region files
+ordered!  Messes everything up).  Ran FWHM fitting notebook and got decent
+numbers, though in a number of cases the fitting code fails/crashes for
+whatever reasons, not investigated.
+
+
+
+Tycho radio spectral index
+--------------------------
+
+Working in reverse chronological order through various radio survey papers:
+Sun et al. (2011), Sino-German 6cm Urumqi survey favor alpha = -0.58 +/- 0.02
+(value in Green's catalog) over -0.65 from Kothes et al. (2006).  They fit many
+radio flux measurements, from references:
+
+  Langston et al. (2000)
+  Fuerst et al. (1990b)  (ue is u-umlaut)
+  Fanti et al. (1974)
+  Bennett (1962)
+  Conway et al. (1965)
+  Kellermann et al. (1968, 1969)
+  Pauliny-Toth et al. (1966)
+  Kundu and Velusamy (1972)
+  Green et al. (1975)
+  Becker et al. (1991)
+  Hurley-Walker et al. (2009)
+  White and Becker (1992)
+  Kothes et al. (2006)
+  Horton et al. (1969)
+  Reich et al. (1997)
+  Bietenholz et al. (2001)
+  Green (1986)
+
+...
+
+Okay I'm not even gonna challenge that.  The fit looks quite nice, though I
+wonder what caused the jump from -0.65 of Kothes et al. to -0.58 (and, how
+reliable the older data are).
+
+* Kothes et al. (2006) actually got -0.61 from their Canada Galactic Plane
+  Survey data alone, but pulled out Klein et al. (1979) to get -0.65 (funny,
+  that doesn't seem to be in the seemingly exhausitve list of Sun et al.
+  (2011))
+
+* I'm not sure how Hurley-Walker et al. (2009) computed alpha in Table 6, but
+  the fit plot for Tycho (Figure 2) gives alpha=0.58, which looks good.
+
+* Katz-Stone et al. (2000) look for spectral index variation; find range
+  -0.44 to -0.63, average -0.52
+
+
