@@ -111,12 +111,9 @@ def make_tycho():
                        # This is about right from image inspection.
     tycho.s = 2.3  # e- spectrum index, 2.3 = 2*0.65 + 1;
                    # 0.65 = radio spectral index
-                   # TODO is this right?  One src. is Eriksen et al. 2011
-                   # which cites Kothes et al. 2006, for alpha=0.65
-                   # for the ENTIRE remnant (mean).
-                   # Katz-Stone et al. (2000) suggest 0.5 for various
-                   # "filaments" within the remnant?
-                   # And, Green's SNR catalog gives 0.58, not 0.65.  DAMMIT.
+                   # TODO this should be 2.16 = 2*0.58 + 1
+                   # following Sun et al. (2011)
+                   # I used 0.65 in all previous work from Kothes et al. (2006)
 
     tycho.vs = 3.6e8 * tycho.dkpc/2.3  # Average-ish shock velocity, cm/s
     # Mean of velocs from nonthermal regions, Williams et al. 2013

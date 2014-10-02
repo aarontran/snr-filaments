@@ -25,13 +25,13 @@ Table of contents
 * Week 12 - (8/18) LaTeX table code; more precise manual error calculations.
             Debug/test new full model
 * Week 13 - (8/25) refactor model exec/disp code.  Debug error calculations
-            extensively.
-* Week 14 - (9/1) run suite of error calculations
-* Week 15 - (9/8)
+            extensively.  Back on GSFC campus.
+* Week 14 - (9/1) run suite of error calculations; start paper text/outlining
+* Week 15 - (9/8) tables, varied FWHM calculations, first Kepler picks; paper
 * Week 16 - (9/15) flesh out paper, many new plots/tables; new Tycho regions
 * Week 17 - (9/22) paper writing, cleanup/data for Tycho regions-5
             Cull Kepler regions, trial Cas A regions
-* Week 18 - (9/29)
+* Week 18 - (9/29) AAS abstract. Smooth out paper, results/disc.
 
 (week 10 included for continuity)
 
@@ -2016,6 +2016,7 @@ Summary
 * Cas A regions profiles and FWHMs generated (from last Friday's new regions-0
   selections)
 
+(set up specextract on bkg-2, to use all ObsIDs for consistency)
 
 Monday meeting notes
 --------------------
@@ -2121,7 +2122,6 @@ N edge of the SE ear seems to be a bit steeper).  I will accept -0.64 from
 Green's catalog for now.
 
 
-
 Cas A region picks, FWHMs
 -------------------------
 
@@ -2129,7 +2129,6 @@ Re-ran the radial profile generation scripts (forgot to keep the region files
 ordered!  Messes everything up).  Ran FWHM fitting notebook and got decent
 numbers, though in a number of cases the fitting code fails/crashes for
 whatever reasons, not investigated.
-
 
 
 Tycho radio spectral index
@@ -2168,11 +2167,97 @@ reliable the older data are).
   Survey data alone, but pulled out Klein et al. (1979) to get -0.65 (funny,
   that doesn't seem to be in the seemingly exhausitve list of Sun et al.
   (2011))
-
 * I'm not sure how Hurley-Walker et al. (2009) computed alpha in Table 6, but
   the fit plot for Tycho (Figure 2) gives alpha=0.58, which looks good.
-
 * Katz-Stone et al. (2000) look for spectral index variation; find range
   -0.44 to -0.63, average -0.52
+
+
+
+Tuesday 2014 September 30
+=========================
+
+Summary
+-------
+* Tycho paper updates/cleaning
+* Attempt to submit AAS abstract foiled
+
+Tycho data/paper updates / review
+---------------------------------
+
+### Data update
+
+Error calculation finished last night around 9pm (so, mid-day Thurs to ~9p Mon
+is about 4.5 days, 105 hours... geez).
+Also computed full model fits with stderr only as backup.
+
+Finished specextract / mergespectra on Tycho backgrounds-2.
+Relinked spectra for regions-5 up.
+Updated all tables (manually culling regions 21, 22; other regions untouched)
+Updated all figures (SNR image, spectra, profile plots)
+
+### Manuscript review
+
+Propagating error through for `m_E`, turns out I was doing it wrong.  Woops.
+Error should be:
+    \[
+        \delta m_E = \frac{1}{\ln(w_2/w_1)}
+                     \sqrt{ \left(\frac{\delta w_2}{w_2}\right)^2 + 
+                            \left(\frac{\delta w_1}{w_1}\right)^2 }
+    \]
+So even if `m_E` is zero, its error is certainly not!  Fixed in new tables.
+
+Reviewed all of Brian's comments + added my own remarks.
+
+Cleaned up and reorganized introduction/transport/diffusion text, cutting about
+1 column of text.
+
+Wednesday 2014 October 1
+========================
+
+Summary
+-------
+* Submitted AAS abstract
+* Manuscript results/discussion, sketch and flesh out
+* Updated manuscript spectra table/plots
+
+Tycho manuscript
+----------------
+
+Reviewed and cleaned procedure/methods.  Cleaned results, outline and flesh out
+some discussion.  Hit all comments, or at least integrated into text to be
+fleshed out.
+
+Quick chat with Brian about 1. where to place text on remnant distance
+dependence (just 1-2 sentences...), and 2. radio rims.  Jack and Brian
+have fresh VLA data (not yet run through VLA pipeline), but that likely won't
+be tackled in earnest until December-ish, after new Chandra data comes in!
+
+Remark: if we want to adapt the rim width model for radio filaments, we will
+certainly have to delve back into the electron distribution calculation details.
+
+Tycho data
+----------
+
+Run specextract on Tycho regions-5 "down" spectra, for completeness (to show
+correct numbers and figures in draft -- I expect only FWHMs and fits to change
+with regions-6).  Filled in tables/plots with correct downstream spectra (with
+horrible lines and all).
+
+Run `reproject_obs` on Tycho 750 ks data, to sanity check my mosaics and
+generate new energy band images (since I don't have other programs/data to run
+at the moment that are terribly pressing).  Should get same `merged_evt.fits`
+that Brian sent, actually, I forgot I had that.  Woops.  Oh well -- will have
+files on hand for consistency / meddling.
+
+Just for fun, downloaded Hughes' 150ks Chandra observation of Tycho, from 2003.
+I am wondering how much the rims may vary in time...
+Attempted to run `chandra_repro` as usual, but gunzip fails with CRC check
+failed on `acisf03837_000N003_evt1.fits.gz`.  Very strange.  This persists
+after redownloading the data.
+
+
+Thursday 2014 October 2
+=======================
 
 

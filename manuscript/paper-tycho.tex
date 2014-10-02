@@ -1,8 +1,6 @@
 %\documentclass[manuscript]{aastex}  % one-column, double-spaced GENERATE BIB
-% \documentclass[12pt,preprint]{aastex}  % one-column, single-spaced
+%\documentclass[12pt,preprint]{aastex}  % one-column, single-spaced
 \documentclass[iop, apj, numberedappendix, twocolappendix]{emulateapj}
-% \documentclass[iop, apj, numberedappendix]{emulateapj}
-
 
 \shorttitle{Synchrotron Rims in Tycho's SNR}  % <~ 44 char
 \shortauthors{XXX et al.}  % Max three
@@ -28,15 +26,13 @@
 \addeditor{Brian}
 
 \usepackage{amsmath}  % amsthm, amssymb
-% \usepackage{CJK}  % aas.org/authors/author-names-non-roman-alphabets
+\usepackage{CJK}  % aas.org/authors/author-names-non-roman-alphabets
 \usepackage{booktabs}
-%\usepackage[labelfont=bf, labelsep=period]{caption}  % Custom float captions
-%\usepackage{pdflscape}  % rotate pages (Texlive)
 \usepackage{hyperref}
 
 \newcommand*{\mt}{\mathrm}
-\newcommand*{\unit}[1]{\;\mt{#1}}  % http://vemod.net/typesetting-units-in-latex
-\newcommand*{\abt}{\mathord{\sim}} % http://tex.stackexchange.com/q/55701
+\newcommand*{\unit}[1]{\;\mt{#1}}  % vemod.net/typesetting-units-in-latex
+\newcommand*{\abt}{\mathord{\sim}} % tex.stackexchange.com/q/55701
 \newcommand*{\ptl}{\partial}
 \newcommand*{\del}{\nabla}
 
@@ -52,18 +48,20 @@
 \defcitealias{ressler2014}{R14}
 
 \begin{document}
+%\begin{CJK}{UTF8}{gbsn}
 
 \title{Synchrotron X-Ray Rims in Tycho's Supernova Remnant are Energy Dependent}
 
-%\begin{CJK*}{UTF8}{gbsn}
 \author{
-Aaron Tran\altaffilmark{1,4},
+Aaron Tran \altaffilmark{1,4},
+% 陳 doesn't display?
+% Also breaks emulateapj bibliography... toggle CJK env w/ AASTeX only
+%Aaron Tran (陈宏裕)\altaffilmark{1,4},
 Brian J. Williams\altaffilmark{1,5},
 Robert Petre\altaffilmark{1},
 Sean M. Ressler\altaffilmark{2},
 Stephen P. Reynolds\altaffilmark{3}
 }
-%\end{CJK*}
 
 \affil{
 \tsup{1}NASA Goddard Space Flight Center, Greenbelt, MD 20771, USA \\
@@ -71,11 +69,6 @@ Stephen P. Reynolds\altaffilmark{3}
 \tsup{3}Dept. Physics, North Carolina State University, Raleigh, NC 27695, USA
 }
 
-%\altaffiltext{1}{NASA Goddard Space Flight Center, Greenbelt, MD 20771, USA}
-%\altaffiltext{2}{Dept. Physics, University of California,
-%    Berkeley, CA 94720, USA}
-%\altaffiltext{3}{Dept. Physics, North Carolina State University,
-%    Raleigh, NC 27695, USA}
 \altaffiltext{4}{CRESST, University of Maryland, College Park, MD 20742}
 \altaffiltext{5}{NASA Postdoctoral Program Fellow}
 
@@ -117,7 +110,7 @@ needed to better constrain diffusion at supernova remnant shocks.
 % ============
 \section{Introduction} \label{sec:intro}
 
-% Intro -- shocks, DSA, thin rims, filament observations; other fields/work
+% What are these shock rims, what is this acceleration?
 Forward shock accelerated electrons in young supernova remnants (SNRs) emit
 synchrotron radiation strongly in the shock's immediate wake but quickly turn
 off downstream, producing a shell-like morphology with bright X-ray and radio
@@ -128,31 +121,41 @@ acceleration (DSA) should operate on both protons and electrons.  Observations
 of these synchrotron rims, with other lines of direct and indirect evidence,
 have built a case for hadron and lepton acceleration up to $\unit{PeV}$
 energies in young supernova remnants \citep{uchiyama2007, aharonian2004,
-acero2010, ackermann2013} \note[Aaron]{up to PeV energies for both populations?
-Do protons reach higher energies with lower synchrotron losses?}. Efficient
-hadron acceleration, if able to convert $\abt10\%$ of a supernova's $10^{51}
-\unit{erg}$, is a prime candidate source for galactic cosmic rays up to the CR
-spectrum ``knee'' \citep{vink2012}.
+acero2010, ackermann2013}.  Efficient hadron acceleration in supernova remnant
+shocks is a prime candidate source for galactic cosmic rays up to the
+cosmic ray spectrum's ``knee'' \citep{vink2012}.
+\note[Aaron]{the discussion of hadronic acceleration isn't really relevant,
+just background information}
 
-Spectral and spatial measurements of synchrotron rims can help constrain
-physical parameters of the shock acceleration process.  Many previous workers
-have inferred strong magnetic field amplification at SNR shocks, as electrons
-must radiate energy rapidly to account for the thinness of observed rims.
-\note[Aaron]{flesh out} Plasma physics details -- Bell's cosmic ray current
-instability \citep{bell2001} ties magnetic field amplification w/ maximum CR
-energy (push towards and just above the PeV limit).  How to get large
-compression ratios (why is 10 an upper bound suggested by Parizot), magnetic
-fields -- how far can amplification go?
-The processes observed in SNR shocks are broadly relevant to many collisionless
-astrophysical shocks, such as Earth's bow shock, stellar wind-blown bubbles,
-starburst galaxies \citep{heckman1990}, jets of active galactic nuclei, galaxy
-clusters \citep{van-weeren2010}, and even cosmological shocks
-\citep{miniati2000, ryu2008}.  Reviews of diffusive shock acceleration have
-ably highlighted the ubiquity of shock acceleration in astrophysical settings
-\note[Aaron]{too trite?} \citep[e.g.,][]{blandford1987, malkov2001}.
+% What can we learn from these shocks?  Why are they interesting?
+Spectral and spatial measurements of synchrotron rims can constrain physical
+parameters of the shock acceleration process.  Many previous workers have
+inferred strong magnetic field amplification at SNR shocks, as electrons must
+rapidly radiate energy to account for the thinness of observed rims
+\citep{bamba2003, vink2003, parizot2006}.  Furthermore, broadband synchrotron
+synchrotron flux from supernova remnants steepens at X-ray energies
+\citep{reynolds1999}, corresponding to a cut-off in the underlying electron
+spectrum as predicted by diffusive shock acceleration \citep{webb1984}.
+\note[Aaron]{question: which came first?  observation of synchrotron
+steepening, or explanation/prediction of electron cut-off and hence synchrotron
+roll-off?  Or, even, was the electron cut-off predicted but the observable
+consequence of synchrotron roll-off not recognized until observations?} Many
+fundamental questions about the shock acceleration process remain to be
+answered.  Under what conditions do shocks accelerate particles efficiently?
+How are magnetic fields amplified in such shocks?  \citet{reynolds2008} reviews
+relevant observations and open questions to date.  The answers to these
+questions are broadly relevant to many astrophysical shocks, such as Earth's
+bow shock, stellar wind-blown bubbles, starburst galaxies \citep{heckman1990},
+jets of active galactic nuclei, galaxy clusters \citep{van-weeren2010}, and
+even cosmological shocks \citep{miniati2000, ryu2008}.
+% Expand on these questions -- plasma turbulence, Alfven waves, wave damping
+% behind the shock, upstream/downstream plasma interactions and instabilities
+% These in turn affect plasma, CR dynamics -- how does the shock propagate and
+% interact with the ISM?  Will we see a precursor due to diffusion and/or CR
+% streaming?  How efficiently are CRs accelerated?
 
-% What makes these shocks?
-The widths of these X-ray rims are thought to be controlled by a combination of
+% What makes these shock rims?
+The widths of these X-ray rims are controlled by a combination of
 synchrotron losses, particle transport, and magnetic fields immediately
 downstream of the shock.  Synchrotron losses depend on the initial electron
 energy distribution and the gradual decrease of electron energies downstream of
@@ -163,108 +166,80 @@ from the shock; this may be seen in spectral softening downstream of the shock
 plasma advection downstream of the shock and particle diffusion with respect to
 bulk advection.  In general, diffusion allows higher energy electrons to
 diffuse further upstream or downstream than would be expected from pure
-advection.  Finally, the magnetic field strength may be quickly damped behind
-the shock, so that electrons may not radiate as efficiently and thin rims would
-reflect the spatial structure of the field, rather than efficient particle
-acceleration (and losses) and/or efficient synchrotron cooling
-\citep{pohl2005}.
+advection.  Finally, the magnetic field strength may be quickly damped
+downstream of the shock, so that electrons may not radiate as efficiently and
+thin rims would reflect the spatial structure of the field, rather than
+efficient particle acceleration (and losses) and/or efficient synchrotron
+cooling \citep{pohl2005}.
 
-% Energy dependence.
+% Whatever makes these shock rims also imposes energy dependence
 Moreover, these controlling mechanisms predict different scalings for rim width
-as a function of energy.  Synchrotron loss-limited rims should scale as $w
-\propto \nu^{-1/2}$.  Diffusion smears out rims at all energies with stronger
-effect at higher energies, yielding a slower drop-off in rim widths when
-diffusion dominates.  Magnetic damping, if at a length scale comparable to
-filament widths, predicts comparatively energy-independent rim widths --
-intuitively, if the magnetic field turns off, synchrotron radiation turns off
-regardless of electron energy.  \note[Aaron]{this would benefit from
-numbers/quantification, I think this statement is stronger if the magnetic
-field is stronger -- compare Figure 1 of \citet{pohl2005}} \citet{ressler2014}
-give a much fuller exposition of the relative effects of advection, diffusion,
-and magnetic field damping on filament rim widths.
+as a function of energy.  In the limiting case of constant magnetic field and
+negligible particle diffusion, the rims are said to be synchrotron loss-limited
+and rim widths should narrow with increasing photon frequency $\nu$ as
+$\nu^{-1/2}$. Diffusion smears out rims at all energies with stronger effect at
+higher energies, yielding a slower drop-off in rim widths when diffusion
+dominates.  Magnetic damping, if at a length scale comparable to filament
+widths, predicts comparatively energy-independent rim widths -- intuitively, if
+the magnetic field turns off, synchrotron radiation turns off regardless of
+electron energy.
 
-% Which one is right?
-Previous work has used the typical scale width of the filaments to derive
-magnetic field estimates, among other physical parameters.  Observed
-synchrotron spectrum roll-offs at X-ray energies require corresponding cut-offs
-in the electron spectrum \citep{reynolds1998}; such a cut-off is naturally
-predicted by DSA balanced against synchrotron losses, and requires that
-diffusion and advection are both important near the electron cut-off energy
-\note[Aaron]{imprecise statement...} Whether accounting for advection and
-diffusion independently, or jointly in more sophisticated transport models, It
-became clear that magnetic field amplification was necessary to explain the
-observed filaments \citet{bamba2003, vink2003, parizot2006}.  \note[Aaron]{this
-is said 3 paragraphs above already}
-
-% Magnetic damping...
+% Magnetic damping?
 Magnetic damping immediately behind the shock offers a tantalizing alternative
 explanation for filament rims that requires less extreme magnetic field
-amplification, and damping has not been fully tested \citep{pohl2005,
-marcowith2010}.  \citet{cassam-chenai2007} examined radio and X-ray synchrotron
-rim profiles, but found that neither damping nor synchrotron losses matched
-radio profiles particularly well.  \citet{araya2010} measured rims at multiple
-energy bands in Cas A, but suggested that the rims only narrow more weakly than
-expected and did not consider magnetic damping.  \citet{rettig2012} gave model
-predictions for several historical SNRs and proposed discriminating based on
-filament spectra -- the expectation is that damped spectra are softer,
-loss-limited harder.  \citet{ressler2014}, using deep observations of SN 1006
-from a recent \Chandra Large Project, fully developed the idea of
-differentiating damping and loss-limited scenarios by using rim width energy
-dependence and found rim narrowing in the remnant of SN 1006, strongly favoring
-a loss-limited model.
+amplification, and the possibility of damping in SNR shocks has not been fully
+tested \citep{pohl2005, marcowith2010}.  \citet{cassam-chenai2007} examined
+radio and X-ray synchrotron rim profiles, but found that neither damping nor
+synchrotron losses matched radio profiles particularly well.  \citet{araya2010}
+measured rims at multiple energy bands in Cas A, but suggested that the rims
+only narrow more weakly than expected and did not consider magnetic damping.
+\citet{rettig2012} gave model predictions for several historical SNRs and
+proposed discriminating based on filament spectra -- the expectation is that
+damped spectra are softer, loss-limited harder.  Recently, \citet{ressler2014}
+further extended the idea of discriminating between damped or loss-limited
+rims by measuring rim width energy dependence in X-ray energies and found that
+rims consistently narrowed in the remnant of SN 1006, favoring synchrotron
+loss-limited rims.
 
 % Why Tycho's SNR
-To further test these models, we follow \citet{ressler2014} by measuring rim
-widths at multiple energies in the remnant of Tycho's 1572 supernova
-(hereafter, Tycho).  Tycho, being a nearby galactic SNR, is close enough that
-its rims are well-resolved by \textit{Chandra}'s spatial resolution; the work
-is further made possible by a deep $750 \unit{ks}$ exposure of the entire
-remnant, yielding excellent count rates and allowing us to sample the rims
-quite finely.  Tycho has an extensive and unusually contiguous shell of
-synchrotron rims around its periphery, consistent with expansion into a low
-density ISM.  \citet{williams2013} favor mean pre-shock ISM density $\abt
-0.1$--$0.2 \unit{cm^{-3}}$, consistent with Tycho's X-ray expansion rate
-\citep{katsuda2010}.  Although Tycho is expanding into an ISM gradient
-\citep{williams2013} and interacting with a molecular cloud on its eastern limb
-\citep{reynoso1999}, Tycho's spherical morphology suggests that we might expect
-more consistent shock acceleration around its periphery than in other
-historical remnants, whether of Type Ia or CC SNe.
-
-Evidence for acceleration: basically, see \citet{morlino2012} for a nice review
-of evidence in Tycho.  No need to cite everything here.
-
-spectral softening \citep{cassam-chenai2007}, CD-FS gap \citep{warren2005},
-multi-wavelength observations \citep{acero2010, acciari2011, morlino2012} for
-SN 1006 and Tycho; Tycho's tiger stripes \citep{eriksen2011}. These further
-support the notion that Tycho is actively accelerating hadrons and leptons.
-Various questions to consider (or answer).  Why the diversity of filament
-structure? How does diffusion really work?  How much energy is going into
-cosmic rays / how efficient is the acceleration process?  All sorts of
-things... (one interesting paper: \citet{caprioli2013}).
-\note[Aaron]{this para may not be necessary}
+To further test these models, we follow \citet{ressler2014} (hereafter,
+\citetalias{ressler2014}) by measuring rim widths at multiple energies in the
+remnant of Tycho's 1572 supernova (hereafter, Tycho).  Tycho exhibits an
+extensive shell of synchrotron-dominated thin rims around its periphery; the
+rims show very little thermal emission, consistent with expansion into a low
+density ISM \citet{williams2013}.  Tycho, being a nearby galactic SNR, is close
+enough that its rims are easily resolved by \textit{Chandra} spatial
+resolution. A deep $750 \unit{ks}$ exposure of the entire remnant from an
+archived \Chandra large project (PI: J. Hughes) also allows us to sample the
+remnant rims quite finely.  Furthermore, Tycho has been a prime target of study
+for determining whether hadrons are being accelerated in historic SNRs
+\citep[and references therein]{morlino2012}; understanding the acceleration
+process will bear upon our understanding of CR acceleration in Tycho.
+\note[Aaron]{reword/cut?}
 
 % Paper roadmap
-Our measurements and modeling closely followed and extended the procedure of
-\citet{ressler2014} (hereafter, \citetalias{ressler2014}).  We first briefly
-review relevant transport models which fully account for electron advection and
-diffusion with continuous synchrotron losses, as considered by, e.g.,
-\citet[and references therein]{berezhko2004} and \citet{rettig2012}.
-We selected and measured rim widths at several locations around Tycho's forward
-shock, verifying that selected rims are free of thermal line emission.  Using
-our model for particle transport (with DSA included, to first order, in a
-simple exponentially cut-off injected electron spectrum), we obtain estimates
-on magnetic field strength and diffusion coefficient as a function. \emph{We
-discuss the implications of our model fit results for particle transport in
-Tycho, despite a significant degeneracy between diffusion and synchrotron
-losses when diffusion is non-negligible.}
-\note[Aaron]{(tentative?)}
-\note[Aaron]{(non sub-Bohm, or anything above Bohm basically)}
+Our procedure closely follows that of \citetalias{ressler2014}.
+We first briefly review relevant transport models which fully account for
+electron advection and diffusion with continuous synchrotron losses, as
+considered by, e.g., \citet[and references therein]{berezhko2004} and
+\citet{rettig2012}.  We selected and measured rim widths at several locations
+around Tycho's forward shock, verifying that selected rims are free of thermal
+line emission.  Using our model for particle transport (with DSA included, to
+first order, in a simple exponentially cut-off injected electron spectrum), we
+obtain estimates on magnetic field strength and diffusion coefficient
+magnitude. We discuss the implications of our model fit results for
+particle transport in Tycho, despite a significant degeneracy between
+diffusion and synchrotron losses when diffusion is non-negligible.
 
 % =============================
 % Transport models, observables
 % =============================
 \section{Nonthermal rim modeling}\label{sec:models}
 
+\note[Aaron]{I am a bit uncertain on the structure/order of presentation here,
+particularly in presenting $\Ecut$ (which can be an independent observable?
+but is not considered here).  I tried to put ``enough'' to independently
+follow / re-derive all the model results.}
 % TODO Chunk of text I don't know what to do with...
 We consider two models for particle transport to our measurements of Tycho's
 filament widths.  To best quantify width-energy dependence, we measure rim full
@@ -273,6 +248,11 @@ measurements to these models' predictions of rim FWHMs at multiple photon
 energies.  \citetalias{ressler2014} give a fuller review of previous approaches
 to characterizing filament widths, as well as a more thorough exposition of
 model parameters and physical implications.
+
+We use CGS (Gaussian) units throughout.
+
+Any other introductory text -- emphasize that we back out two parameters,
+possibly three or more.  COME BACK after writing magnetic damping bit.
 
 %Early workers measured filament widths of several historical supernova remnants
 %and considered ...  Assuming that thin rim widths are limited by synchrotron
@@ -302,49 +282,43 @@ tack in deriving the relevant transport equations, drawing specifically from
 plasma physics / DSA assumptions -- I suppose much material is not relevant or
 condensed into our diffusion coefficient $D$ (w/ stated Bohm diffusion).
 Is na\"ively citing generalized ``transport'' is sufficient here?
-E.g., there is often a term of form $E/3 (\del\cdot\vec{v}) (\ptl f/\ptl E)$,
+E.g., there is often a term of form $(E/3) (\del\cdot\vec{v}) (\ptl f/\ptl E)$,
 neglected for steady downstream velocity (i.e., $\del\cdot\vec{v}=0$), which
 would not arise out of our equations as stated.
 See, e.g., equation (9) of \citet{skilling1975}.}
 % Transport fundamentals
 The energy and space distribution of electrons at a supernova remnant
 controls the synchrotron rims we see in X-ray and radio.  We model electron
-transport from initial injection at the remnant's forward shock as following
-an advection-diffusion equation given by:
-\begin{equation}
-  \frac{\ptl f}{\ptl t} + \del \cdot \left( f \vec{v} \right)
-  = C + \del \cdot \left( D \del f \right)
-\end{equation}
-where $f = f(E,x)$ is electron distribution as a function of electron energy
-$E$ and downstream distance $x$ (where the forward shock is at $x=0$ and
-$x>0$ towards the remnant's interior); $C$ is an arbitrary source/sink term,
-$D$ is the diffusion coefficient, and $\vec{v}$ is a velocity field.
-By considering 1-D steady-state plane transport at a constant downstream
-velocity $v_d$ and a space-independent diffusion coefficient, we obtain:
+advection and diffusion from initial injection at the remnant's forward shock
+assuming 1-D steady-state plane transport, with spatially homogeneous and
+isotropic diffusion, as following the equation:
 \begin{equation}
     v_d \frac{\ptl f}{\ptl x} - D \frac{\ptl^2 f}{\ptl x^2} = C .
 \end{equation}
-For simplicity, the source/sink term $C$ and diffusion coefficient $D$
-encapsulate all assumptions about the DSA-generated electron spectrum, shock
+Here $f = f(E,x)$ is electron distribution as a function of electron energy $E$
+and downstream distance $x$ (where the forward shock is at $x=0$ and $x>0$
+towards the remnant's interior); $C$ is an arbitrary source/sink term, $D$ is
+the diffusion coefficient, and $v_d$ is plasma velocity downstream of the
+shock.  We consider only particle transport downstream of the shock ($x \geq
+0$).  The source/sink term $C$ and diffusion coefficient $D$ conveniently
+encapsulate all assumptions about the accelerated electron spectrum, shock
 and magnetic field structure, and time/space evolution of the particle
-distribution.  We also consider only particle transport downstream of the
-shock ($x \geq 0$).  More sophisticated treatments may explicitly treat
-magnetic fields across the shock, plasma streaming instabilities and particle
-losses, anisotropic diffusion, the DSA process and efficiency, and other
-details in great depth \citep[e.g.,][and references therein]{reville2013,
+distribution.  More sophisticated treatments may explicitly treat magnetic
+fields and diffusion across the shock, plasma streaming instabilities and
+particle losses, anisotropic diffusion, the DSA process and efficiency, and
+other details in great depth \citep[e.g.,][and references therein]{reville2013,
 bykov2014, ferrand2014}.
 
 % Simple model
 A first approximation is to let electrons have constant energy that is dumped
 catastrophically after a synchrotron timescale $\tsynch = 1/(b B^2 E)$, where
 $b = 1.57 \times 10^{-3}$ in CGS units and $B$ is magnetic field (which may
-vary as $B=B(x)$).  The sink term is $C = -f / \tsynch$, yielding:
+vary in space as $B=B(x)$).  The sink term is $C = -f / \tsynch$, yielding:
 \begin{equation} \label{eq:simp-mod}
     v_d \frac{\ptl f}{\ptl x} - D \frac{\ptl^2 f}{\ptl x^2} +
     \frac{f}{\tau_{\mt{synch}}} = 0 .
 \end{equation}
-No assumptions on the injected electron source term are necessary
-\note[Aaron]{I don't have a citation, but it seems simple enough?}.
+No assumptions on the injected electron source term are necessary.
 \citet{parizot2006} employed this model to derive estimates of magnetic fields,
 diffusion coefficients, and electron spectrum cut-offs for several historical
 SNRs.  Conveniently, equation~\eqref{eq:simp-mod} has analytic solution $f
@@ -367,15 +341,18 @@ are injected from an exponentially cut-off power-law electron distribution
     &K_0 E^{-s} e^{-E/\Ecut} \delta(x) \nonumber \\
     &+ \frac{\ptl}{\ptl E} \left(bB^2E^2f\right) ;
 \end{align}
-see \citet{berezhko2004, cassam-chenai2007, morlino2010, rettig2012}; and
-references therein.  The cut-off energy is determined by the form of the
-diffusion coefficient $D$, which we discuss in Section~\ref{sec:diffcoeff}.
-(but, cf. \citet{zirakashvili2007} on the exponential cut-off assumption) To
-determine rim profiles and widths, we first numerically solve for electron
-distribution $f(E,x)$ using Green's function solutions by \citet{lerche1980}
-and \citet{rettig2012}; these solutions are given by \citetalias{ressler2014}
-using notation similar to that used herein \note[Aaron]{wording}.  The electron
-distribution may then be integrated to obtain synchrotron emissivity:
+see \citet{webb1984}, \citet{berezhko2004}, \citet{cassam-chenai2007},
+\citet{morlino2010}, \citet{rettig2012}, and references therein.
+\citet{zirakashvili2007} have derived a different electron spectrum with a
+steeper $\exp\left(- \left(E/\Ecut\right)^2\right)$ cut-off, but we follow
+\citetalias{ressler2014} in using $E^{-s} e^{-E/\Ecut}$ for conceptual
+simplicity.  The cut-off energy is determined by the diffusion coefficient $D$,
+which we address in Section~\ref{sec:diffcoeff}.  To determine rim profiles and
+widths, we first numerically solve for electron distribution $f(E,x)$ using
+Green's function solutions by \citet{lerche1980} and \citet{rettig2012}; these
+solutions are given by \citetalias{ressler2014} using notation similar to that
+used herein \note[Aaron]{wording}.  The electron distribution may then be
+integrated to obtain synchrotron emissivity:
 \begin{equation} \label{eq:emissivity}
     j_{\nu}(x) \propto \int_0^\infty G(y) f(E,x) dE
 \end{equation}
@@ -391,64 +368,66 @@ spherical remnant yields intensity as a function of radial coordinate $r$:
 where $s$ is the line-of-sight coordinate.  A model FWHM may then be calculated
 from the resulting intensity profile.
 
+% Moving on...
 In what follows we consider both transport models, but primarily present
 results from the more advanced model (equation~\eqref{eq:full-mod}) as we find
-the qualitative behavior of both models is comparable.
+that the qualitative behavior of both models is comparable.
 
 % Diffusion
 \subsection{Diffusion energy-dependence} \label{sec:diffcoeff}
 
-\note[Aaron]{can condense this, merge first 2 paragraphs here?}
-The modus operandi of much previous work has been to assume Bohm diffusion or
-diffusion-energy scaling ($D \propto E$).  Bohm diffusion assumes that the
-particle mean free path $\lambda$ is equal to the gyroradius $r_g = E/(eB)$,
-yielding diffusion coefficient $D_{\mt{B}} = \lambda c / 3 = c E / (3 e B)$.
-We may generalize by adding a prefactor $\eta$ such that $\lambda = \eta r_g$:
-\begin{equation} \label{eq:bohm}
-    D = \frac{\lambda c}{3} = \frac{\eta c E}{3 e B} .
-\end{equation}
-Here, and throughout, we use CGS (Gaussian) units; $c$ is the speed of light,
-$E$ is particle energy, $e$ is elementary charge, and $B$ is magnetic field.
-Bohm diffusion at $\eta = 1$ is commonly considered a lower
-limit on the diffusion coefficient at all energies, but sub-Bohm diffusion may be
-possible in turbulently amplified oblique magnetic fields
-\citep[e.g.,][]{reville2013}, and has not been well-studied.
-\note[Aaron]{I have no justification, and minimal sense, of whether this is
-correct or not.  Any treatment/discussion of Bohm diffusion?  All the papers
-seem to take it for granted} Different types of MHD turbulence, in a
-quasi-linear approximation for particle motion, may give rise to a non-linear
-energy scaling for diffusion coefficient \citep{giacalone1999, reynolds2004}.
-Power-wavenumber spectra for Kolmogorov and Kraichnan turbulence predict $D
-\propto E^{1/3}$ and $D \propto E^{1/2}$ respectively.  For gyroradius larger
-than field coherence length, $\mu = 2$ may be relevant as well.
-\note[Aaron]{Source?? Parizot mentions this in one sentence and cites nothing}
+Much previous work has assumed Bohm-like diffusion in plasma downstream of the
+shock.  Bohm diffusion assumes that the particle mean free path $\lambda$ is
+equal to the gyroradius $r_g = E/(eB)$, yielding diffusion coefficient
+$D_{\mt{B}} = \lambda c / 3 = c E / (3 e B)$; here $c$ is the speed of light,
+$E$ is particle energy, $e$ is the elementary charge, and $B$ is magnetic
+field.  Bohm-like diffusion introduces a free prefactor $\eta$ such that
+$\lambda = \eta r_g$ allows for varying diffusion; however, Bohm diffusion at
+$\eta = 1$ is commonly considered a lower limit on the diffusion coefficient at
+all energies.
+\note[Aaron]{for self-edification, any justification / derivation of this
+result?  All the papers seem to take it for granted}
+However, different types of MHD turbulence may give rise to a non-linear energy
+scaling for diffusion coefficient \citep{giacalone1999, reynolds2004}.
+Power-wavenumber spectra for Kolmogorov and Kraichnan turbulence, with a
+quasi-linear approximation for particle motion,
+\note[Aaron]{I don't really know what this means}
+predict $D \propto E^{1/3}$ and $D \propto E^{1/2}$ respectively.
+Particle gyroradii larger than field coherence length may to $D \propto E^{2}$
+\note[Aaron]{Source?? Parizot mentions this in one sentence and cites nothing.
+I have no idea what this means.}
 
-In our models, we consider a generalized diffusion coefficient that with
-arbitrary power-law dependence of diffusion upon energy:
+In our models, we consider a generalized diffusion coefficient with arbitrary
+power-law dependence upon energy following, e.g., \citet{parizot2006}:
 \begin{equation} \label{eq:diffcoeff}
     D(E) = \frac{\eta C_d E^\mu}{B}
-         = \eta_h D_{\mt{B}}\left(E_h\right) \left(\frac{E}{E_h}\right)^\mu .
+         = \eta_h D_{\mt{B}}\left(E_h\right) \left(\frac{E}{E_h}\right)^\mu
 \end{equation}
-This follows, e.g., \citet{parizot2006}; note that $\eta$ now has units of
-$\mathrm{erg}^{1-\mu}$.  In the right-hand side of
-equation~\eqref{eq:diffcoeff} we also rescale the diffusion coefficient to its
-value at a fiducial energy $E_h$, ; the now dimensionless $\eta_h$ is the
-diffusion coefficient scaled to the Bohm value at $E_h$.  We choose fiducial
-electron energy $E_h$ corresponding to a synchrotron photon energy of $2
-\unit{keV}$, taking the $\delta$-function approximation that an electron of
-energy $E$ radiates solely at frequency $\nu \propto E^2 B$ in a surrounding
-magnetic field.  Then $E_h \propto \sqrt{2 \unit{keV} / B}$.  The value of
-$E_h$ does depend on the user/model value of magnetic field $B$, but having
-$\eta_h$ tied to observations at $2 \unit{keV}$ gives a convenient and
-intuitive sense of diffusion strength when applied to any remnant.
+where $\mu$ parameterizes diffusion-energy scaling, and $\eta$ now has unites
+of $\mathrm{erg}^{1-\mu}$.
+The right-hand side of equation~\eqref{eq:diffcoeff} introduces a dimensionless
+$\eta_h$ as the diffusion coefficient scaled to the Bohm value at a fiducial
+particle energy $E_h$.  We subsequently choose the fiducial electron energy
+$E_h$ corresponding to a synchrotron photon energy of $2 \unit{keV}$, taking
+the $\delta$-function approximation that an electron of energy $E$ radiates
+solely at frequency $\nu \propto E^2 B$ in a surrounding magnetic field.  Then,
+$E_h \propto \sqrt{2 \unit{keV} / B}$.  Although the value of $E_h$ depends on
+magnetic field $B$, tying $\eta_h$ to a fixed observation energy gives a
+convenient and intuitive sense of diffusion strength regardless of the
+electron energies producing observed rims.
+\note[Aaron]{what I want to say: electron energies responsible for the rims we
+see could vary between remnants or even within a single remnant.  And, we
+cannot get a handle on diffusion at a singular electron energy or energy range,
+in all our observations.  So it's simpler to tie $\eta_h$ to observation
+energy.}
 
 With a diffusion coefficient in hand, we determine the electron spectrum
 cut-off energy by equating synchrotron loss and diffusive acceleration
-timescales.  For low energies, where synchrotron losses are small (cooling time
-longer than acceleration time), electrons may be efficiently accelerated; near
-or above the cut-off energy, electrons will radiate or escape too rapidly to be
-accelerated, and so the energy spectrum drops off steeply.
-The cut-off energy adapted from \citet{parizot2006} is given as:
+timescales.  For low energies and small synchrotron losses (cooling time longer
+than acceleration time), electrons may be efficiently accelerated; near or
+above the cut-off energy, electrons will radiate or escape too rapidly to be
+accelerated, so the energy spectrum drops off steeply.  The cut-off energy
+adapted from \citet{parizot2006} is given as:
 \begin{align}
     \Ecut =
         &\left(8.3\unit{TeV}\right)^{2/(1+\mu)}
@@ -456,13 +435,13 @@ The cut-off energy adapted from \citet{parizot2006} is given as:
         &\times \left(\frac{v_s}{10^8 \unit{cm\;s^{-1}}}\right)^{2/(1+\mu)}
         \eta^{-1 / (1+\mu)} .
 \end{align}
-Note that this expression implicitly assumes (1) a strong adiabatic shock with
+Note that this expression implicitly assumes (1) a strong shock with
 compression ratio 4, and (2) isotropic magnetic turbulence both upstream and
 downstream; see \citet{parizot2006} for a full derivation.
 
-
 \subsection{Magnetic damping}
 
+% TODO REVISIT THIS AFTER SETTING UP CALCULATIONS
 We also consider (not really) a magnetically damped field of form
 \begin{equation}
     B(x) = B_{\mt{min}} + \left(B_0 + B_{\mt{min}}\right) \exp\left(-x / a_b\right) ,
@@ -485,23 +464,24 @@ for $0.7$--$7 \unit{keV}$), and compute FWHMs and $\mE$ values?
 As discussed in Section~\ref{sec:intro}, width-energy dependence is key to
 differentiating between loss/diffusion-limited rims and magnetically damped
 rims.  \citetalias{ressler2014} parameterize rim width-energy dependence in
-terms of a scaling exponent $\mE$, defined as:
+terms of a scaling exponent $\mE$ defined by:
 \begin{equation}
     w(\nu) \propto \nu^{\mE}
 \end{equation}
 where $w(\nu)$ is filament FWHM as a function of observed photon frequency
-$\nu$. We do refer to observed photons interchangeably by energy or
-frequency $\nu$; however, $E$ is reserved for electron energy.
+$\nu$, and $\mE = \mE(\nu)$ is generally energy dependent.  We may refer to
+observed photons interchangeably by energy or frequency $\nu$; however, $E$ is
+reserved for electron energy.
 
-Diffusion, for our purposes, is most important in weakening the energy
-dependence of rim widths.  If both diffusion and magnetic field damping are
-negligible, and electrons are only loss-limited as they advect downstream,
-$\mE$ attains a minimum value $\mE = -0.5$ at all energies; this is the
-strongest energy-dependence possible in our models.
-Diffusion increases $\mE$ monotonically but roughly plateaus at values between
-$-0.4$ and $0$, with larger $\mu$ values yielding weaker energy-dependence
-($\mE$ closer to $0$, or even positive) \citepalias[Figure 3]{ressler2014}.
+If both diffusion and magnetic field damping are negligible (whether at a small
+range of, or all, electron energies) and electrons are only loss-limited as
+they advect downstream, $\mE$ attains a minimum value $\mE = -0.5$; this is the
+strongest energy-dependence possible in our models.  Diffusion increases $\mE$
+monotonically but roughly plateaus at values between $-0.4$ and $0$, with
+larger $\mu$ values yielding weaker energy-dependence ($\mE$ closer to $0$, or
+even positive) \citepalias[Figure 3]{ressler2014}.
 
+% TODO REVISIT THIS AFTER SETTING UP CALCULATIONS
 If magnetic damping is a primary control on rim widths, we expect to see $\mE
 \sim -0.1$ \citepalias{ressler2014}.
 \note[Aaron]{elaborate after filling in preceding section}
@@ -534,7 +514,7 @@ emission in Tycho.
 We measured synchrotron rim full widths at half maximum (FWHMs) from an
 archival \Chandra ACIS-I observation of Tycho
 (RA: 00\tsup{h}25\tsup{m}19\fs0, dec: +64\arcdeg08\arcmin10\farcs0; J2000)
-between 2009 Apr 11 and 2009 May 5 (PI: John P. Hughes;
+between 2009 Apr 11 and 2009 May 5 (PI: J. Hughes;
 \dataset[ADS/Sa.CXO\#obs/10093--10097]{ObsIDs: 10093--10097},
 \dataset[ADS/Sa.CXO\#obs/10902--10906]{10902--10906}).
 The total exposure time was $734 \unit{ks}$.
@@ -542,51 +522,39 @@ Level 1 \Chandra data were reprocessed with CIAO 4.6 and CALDB 4.6.1.1 and kept
 unbinned with ACIS spatial resolution $0.492\arcsec$.
 Merged and corrected events were divided into five energy bands:
 0.7--1 keV, 1--1.7 keV, 2--3 keV, 3--4.5 keV, and 4.5--7 keV.
-We excluded 1.7--2 keV energy range to avoid the \ion{Si}{13} (He$\alpha$)
-emission line at 1.85 keV, prevalent in the remnant's thermal ejecta, which
-\remove[Brian]{could} \remove[Aaron]{would} \add[Aaron]{may}
-\note[Aaron]{since some profiles are practically uncontaminated?}
-contaminate our nonthermal profile measurements.
+We excluded the 1.7--2 keV energy range to avoid any \ion{Si}{13} (He$\alpha$)
+emission at 1.85 keV, prevalent in the remnant's thermal ejecta, which
+might contaminate our nonthermal profile measurements.
 
 % KEEP REGION NUMBER UPDATED
-We selected 22 regions in 5 distinct filaments around Tycho's shock
+We selected 20 regions in 5 distinct filaments around Tycho's shock
 (Figure~\ref{fig:snr}) based on the following criteria: (1) filaments should be
 clear of spatial plumes of thermal ejecta in \Chandra images, which rules out,
 e.g., areas of strong thermal emission on Tycho's eastern limb; (2) filaments
 should be singular and localized; multiple filaments should either not
-overlap or completely overlap (rules out parts of NE limb); (3) filaments
+overlap or completely overlap (rules out parts of NE limb); (3) filament
 peaks should be evident above the background signal or downstream thermal
-emission (rules out some faint southern wisps), although we selected some
+emission (rules out faint southern filaments).  We accepted several
 regions with poor quality peaks in the lowest energy band (0.7--1 keV) so long
-as peaks in all higher energy bands were acceptable and well-fit.
-\note[Aaron]{vague, weakly qualitative}
+as peaks in all higher energy bands were clear and well-fit.
+\note[Aaron]{vague, imprecise}
 We grouped regions into filaments by visual inspection of the remnant.
-Within each filament, we chose region widths to get a similar number of counts
-at the thin rim, in each region.
-We attempted to balance signal-to-noise of each profile against having multiple
-selections for each filament (a signal-to-noise further downstream, in a
-sense); within each filament we tried to keep the number of counts in each
-region roughly consistent... \note[Aaron]{wording for latter half of para}
+Within each filament, we chose region widths to obtain comparable counts
+at the thin rim peak.
+All measured rim widths are at least $1\arcsec$ and hence are resolved by
+\textit{Chandra}'s point-spread function (PSF), which has FWHM of
+$\abt 1\arcsec$ at $4\arcmin$ off-axis.
 
-% NOTE generate final, higher quality figure + newer figure for regions-5
+% TODO final figure should be higher quality, use vector overlay if possible
 \begin{figure}
     \centering
-    \plotone{figures/f0-snr.png}
-    \caption{RGB image of Tycho with region selections overlaid.  Bands are
-    0.7--1 keV (red), 1--2 keV (green) and 2--7 keV (blue).
-    \note[Aaron]{Could show the spectrum extraction regions on here too?
-    Maybe too cluttered.  Figure colors inverted to save ink.}}
-    \label{fig:snr}
+    \plotone{figures/f0-snr-inv.png}
+    \caption{RGB image of Tycho with region selections overlaid.  Image bands
+    are 0.7--1 keV (red), 1--2 keV (green) and 2--7 keV (blue).  Bold region
+    labels (1, 16) indicate region selections shown in
+    Figures~\ref{fig:spec},~\ref{fig:profiles}.
+    \note[Aaron]{Figure colors inverted to save ink.} \label{fig:snr}}
 \end{figure}
-
-All measured rim widths are at least $\abt 1\arcsec$ and hence are resolved by
-\textit{Chandra}'s point-spread function.
-Looking at proposer's guide, Figure 4.13 -- the off-axis PSF should
-still have FWHM of $\abt 1\arcsec$ at $4\arcmin$ (approx. Tycho's radius).
-Is that good enough for us?
-(\citet{cassam-chenai2007} considered PSF effects when modeling rim widths,
-though it doesn't look like it made a big difference?) If the PSF matters, this
-favors some combination of stronger magnetic fields and weaker diffusion.
 
 % ----------------
 % Filament spectra
@@ -599,52 +567,50 @@ We extracted spectra for all regions to check that rim width measurements are
 not affected by contaminating thermal line emission.  In each region, we
 selected upstream and downstream sections from which to extract spectra.  The
 upstream section is the smallest sub-region that contains the measured FWHM
-bounds from all energy bands (see Section~\ref{sec:fwhms}); i.e., this region
-captures the thin rim.  The downstream section extends from the back of the rim
+bounds from all energy bands (see Section~\ref{sec:fwhms}); i.e., this section
+overlies the thin rim.  The downstream section extends from the back of the rim
 (end of the upstream section) to the rim model fit's (equation~\eqref{eq:prof})
-downstream limit.  We merged spectra from all \Chandra ObsIDs and grouped the
-data into bins of $\geq 15$ counts.  Figure~\ref{fig:spec} plots an example
-profile (4.5--7 keV) with the downstream and upstream sections highlighted.
-We extracted background spectra from circular regions (radius $\abt 30\arcsec$)
-around the remnant's exterior; each thin rim region was matched to the closest
-background region's spectrum.
+downstream limit.  We extracted spectra from all \Chandra ObsIDs and grouped
+the data into bins of $\geq 15$ counts.  Figure~\ref{fig:spec} plots an example
+profile ($4.54$--$7 \unit{keV}$) with the downstream and upstream sections
+highlighted.  We extracted background spectra from circular regions (radius
+$\abt 30\arcsec$) around the remnant's exterior; each thin rim region's spectra
+subtracted the closest background region's spectrum.
 % Background region size is valid for data-tycho/bkg-2/ selections
 
-% NOTE must match fig:profiles!  Keep region numbers updated and
-% consistent.  Currently, region 1 of data-tycho/regions-4/ selections
+% NOTE must match fig:snr, fig:profiles!
+% Keep region numbers updated and consistent.
 \begin{figure*}
     \plotone{figures/fig-specs_01.pdf}
     \plotone{figures/fig-specs_16.pdf}
-    \caption{Spectra and fits from Regions 1 (top) and 16 (bottom).
-    Left: $4.5$--$7 \unit{keV}$
-    profile with highlighted downstream (blue) and upstream (grey) sections.
-    Intensity in arbitrary units (a.u.).  Middle: downstream spectrum with
-    absorbed power law fit; Si and S lines at $1.85$, $2.45 \unit{keV}$ are
-    clearly visible.  Right: upstream spectrum with absorbed power law fit
-    shows that each region is likely free of thermal line emission.}
+    \caption{Spectra and fits from Regions 1 (top) and 16 (bottom) show varying
+    rim morphology and example of rim where 0.7--1 keV peak could not be fit.
+    Left: $4.5$--$7 \unit{keV}$ profile with highlighted downstream (blue) and
+    upstream (grey) sections.  Intensity in arbitrary units (a.u.).  Middle:
+    downstream spectrum with absorbed power law fit; Si and S lines at $1.85$,
+    $2.45 \unit{keV}$ are clearly visible.  Right: upstream spectrum with
+    absorbed power law fit shows that each region is likely free of thermal
+    line
+emission.}
     \label{fig:spec}
 \end{figure*}
 
-We fit $0.5$--$7 \unit{keV}$ spectra from each region's upstream and downstream
-sections to an absorbed power law model (XSPEC 12.8.1, \texttt{phabs*po}) with
-spectral index $n$, hydrogen column density $n_H$, and a normalization as free
-parameters.  Table~\ref{tab:spec} lists best fit parameters and reduced
-$\chi^2$ values for all regions.  Spectra from thin rims (upstream sections)
-are well-fit by the power law model alone; spectra from sections downstream of
-the rims are generally poorly-fit, reflecting thermal contamination primarily
-from \ion{Si}{13} and \ion{S}{15} He$\alpha$ line emission at $1.85$ and $2.45$
-keV.  Although most downstream spectra show thermal contamination, some regions
-(e.g., 4, 5 on Tycho's northwestern limb) are reasonably well-fit downstream by
-an absorbed power law as well due to a larger distance between the forward
+We fit spectra from each region's upstream and downstream sections to an
+absorbed power law model (XSPEC 12.8.1, \texttt{phabs*po}) between $0.5$--$7
+\unit{keV}$ with photon index $\Gamma$, hydrogen column density $N_{\mt{H}}$,
+and a normalization as free parameters.  Table~\ref{tab:spec} lists best fit
+parameters and reduced $\chi^2$ values for all regions.  Spectra from thin rims
+(upstream sections) are well-fit by the power law model alone; spectra from
+sections downstream of the rims are generally poorly-fit, reflecting thermal
+contamination primarily from \ion{Si}{13} and \ion{S}{15} He$\alpha$ line
+emission at $1.85$ and $2.45$ keV.  Although most downstream spectra show
+thermal contamination, some regions (e.g., ?!?!, ?!?! on Tycho's northwestern limb)
+are reasonably well-fit downstream due to a larger gap between the forward
 shock and contact discontinuity.
-Upstream spectra fits spectral indices between $2.5$--$3$ are consistent with
-synchrotron radiation spectra for a steep power-law electron distribution
-\citep{vink2012}. Best fit column densities from
-upstream spectra between $0.61$--$0.78 \times 10^{22} \unit{cm^{-2}}$ are
-consistent with previous fits to Tycho's nonthermal rims \citep{hwang2002} but
-somewhat larger than $\abt0.35$--$0.5 \times 10^{22} \unit{cm^{-2}}$ from radio
-and optical??  HI absorption line measurements \citep{black1984, albinson1986,
-kothes2004}.
+Our best-fit photon indices ($2.4$--$3$) and column densities ($0.6$--$0.8
+\times 10^{22} \unit{cm^{-2}}$) from upstream spectra are consistent with
+previous spectral fits to Tycho's nonthermal rims \citep{hwang2002,
+cassam-chenai2007}.
 % NOTE keep stated ranges of spectral indices, column densities up to date
 % NOTE keep example region numbers up to date
 
@@ -658,12 +624,9 @@ kothes2004}.
 
 Table~\ref{tab:spec} confirms that our region selections are practically free
 of thermal line emission, as already suggested by visual inspection
-(Figure~\ref{fig:snr}).  Our exclusion of all $1.7$--$2
-\unit{keV}$ photons should further limit any thermal contamination, as
-the $1.85 \unit{keV}$ Si line emission is over a third of Tycho's thermal flux
-as detected by \Chandra \citep{hwang2002}.  We may safely proceed to model our
-measured rim widths as being due entirely to nonthermal radiation
-\note[Aaron]{bad phrasing}.
+(Figure~\ref{fig:snr}).  Our exclusion of all $1.7$--$2 \unit{keV}$ photons
+further limits thermal contamination as $1.85 \unit{keV}$ Si line emission is
+over a third of Tycho's thermal flux as detected by \Chandra \citep{hwang2002}.
 
 % --------------------------
 % FWHM measurement procedure
@@ -672,19 +635,18 @@ measured rim widths as being due entirely to nonthermal radiation
 \label{sec:fwhms}
 
 % NOTE keep mentioned number of regions updated!
-% Update these numbers before final version.
+% Check these (arcsec) numbers before final version.
 We obtained radial intensity profiles from $\abt 10$--$20\arcsec$ behind the
-shock to $\abt 2$--$8\arcsec$ in front for each of our 13 regions in all five
-energy bands.  To increase signal-to-noise, we integrate along the shock ($\abt
-8$--$24\arcsec$) in each region.  Plotted and fitted profiles are reported in
-vignetting and exposure-corrected, but arbitrary, intensity units; error bars
-are computed from raw count data assuming Poisson statistics.  Intensity
-profiles peak sharply (within $\abt 2$--$3\arcsec$) behind the shock,
-demarcating our thin rims, and then fall off until thermal emission from ejecta
-picks up at Tycho's contact discontinuity \citep{warren2005}.
+shock to $\abt 5$--$10\arcsec$ in front for each of our regions in all five
+energy bands.  To increase signal-to-noise, we integrate along the shock
+($5$--$23\arcsec$) in each region.  Plotted and fitted profiles are reported in
+vignetting and exposure-corrected intensity units; error bars are computed from
+raw counts assuming Poisson statistics.  Intensity profiles peak sharply
+within $\abt 2$--$3\arcsec$ behind the shock, demarcating our thin rims,
+then fall off gradually until thermal emission picks up further behind the
+shock.
 
-We fitted rim profiles, obtained by integrating intensity along the shock in
-each region, to a piecewise two-exponential model:
+We fitted rim profiles to a piecewise two-exponential model:
 \begin{equation} \label{eq:prof}
     h(x) =
     \begin{cases}
@@ -693,13 +655,13 @@ each region, to a piecewise two-exponential model:
     \end{cases}
 \end{equation}
 where $h(x)$ is profile height and $x$ is radial distance from remnant center.
-The rim model, which we emphasize is strictly empirical, has 6 free parameters:
-$A_u, x_0, w_u, w_d, C_u$, and $C_d$ with $A_d = A_u + (C_u - C_d)$ enforcing
+The rim model, which is strictly empirical, has 6 free parameters:
+$A_u, x_0, w_u, w_d, C_u$, and $C_d$; $A_d = A_u + (C_u - C_d)$ enforces
 continuity at $x=x_0$. Our model is similar to that of \citet{bamba2003,
 bamba2005-hist} and differs slightly from that of \citetalias{ressler2014}.
 To fit only the nonthermal rim in each intensity profile, we selected the fit
 domain for each profile as follows.  The downstream bound was set at the first
-local data minimum downstream of the rim peak, as identified by smoothing the
+local data minimum downstream of the rim peak, identified by smoothing the
 profiles with a 21-point ($\abt 10\arcsec$) Hanning window.  The upstream bound
 was set at the profile's outer edge (i.e., no data were removed).
 
@@ -713,14 +675,17 @@ was set at the profile's outer edge (i.e., no data were removed).
     \label{fig:profiles}
 \end{figure*}
 
-% NOTE keep blacklisted/excluded region numbers updated!
+% NOTE keep blacklisted/excluded region count updated!
 From the fitted profiles we extracted a full width at half maximum (FWHM) for
-each region and each energy band.  We could not resolve a FWHM in 7 of 22
-regions at 0.7--1 keV (Table~\ref{tab:fwhms}); in these regions, either
-the downstream FWHM bound would extend outside the fit domain or we could not
-find an acceptable fit to equation~\eqref{eq:prof}.  We were able to resolve
-FWHMs for all regions at higher energy bands (1--7 keV).
+each region and each energy band after subtracting a constant background term
+$\min(C_u, C_d)$.  We could not resolve a FWHM in 4 of 20 regions at 0.7--1 keV
+(Table~\ref{tab:fwhms}); in these regions, either the downstream FWHM bound
+would extend outside the fit domain or we could not find an acceptable fit to
+equation~\eqref{eq:prof}.  We were able to resolve FWHMs for all regions at
+higher energy bands (1--7 keV).
 % NOTE review the FWHM rejection criterion, on the final set of regions
+% We will be blacklisting by hand, and we have to explain how we chose the
+% blacklisted ones.
 
 To estimate FWHM uncertainties, we horizontally stretched each best-fit
 profile by mapping radial coordinate $x$ to
@@ -729,12 +694,7 @@ parameter and $x_0$ the best-fit rim center from equation~\eqref{eq:prof};
 this yields a new profile $h'(x) = h(x'(x))$.
 We varied $\xi$ (and hence rim FWHM) to vary each profile fit $\chi^2$ by 2.7
 and the stretched or compressed FWHMs as upper/lower bounds on our reported
-FWHMs. \note[Aaron]{Unimportant note: chi-squared values from our
-fits assume that input errors are 1-sigma.  But, taking $\Delta\chi^2 = 1$
-for our FWHM errors would shrink the errors even further, and the errors
-don't reflect uncertainty that may arise from, e.g., using different fit
-functions or taking different profiles.}
-
+FWHMs.
 
 % -------------
 % Model fitting
@@ -745,68 +705,58 @@ functions or taking different profiles.}
 % Fit data to models
 We fit the two transport models given by Equations~\eqref{eq:simp-mod} and
 \eqref{eq:full-mod} to our measured rim widths as a function of energy.
-We assigned each width measurement to the lower energy limit of its energy band
-(e.g., $0.7$--$1 \unit{keV}$ is assigned to $0.7 \unit{keV}$ and fitted to
-model profile widths at $0.7 \unit{keV}$) \note[Aaron]{bad wording}.
-We also averaged the positive and negative error bars on each FWHM measurement
-(Table~\ref{tab:fwhms}) for least squares fitting.
-% Averaging/merging/synthesizing, somehow, our results
-Rim widths from each region are fitted separately; we consider filament and
-remnant-wide physical parameters by averaging best fit parameters for each
-region in Section~\ref{sec:fit-results}.
+We mapped each width measurement to the lower energy limit of its energy band;
+e.g., $0.7$--$1 \unit{keV}$ is assigned to $0.7 \unit{keV}$ and fitted to
+model profile widths at $0.7 \unit{keV}$.  Errors in least squares fits
+average the positive and negative errors on each FWHM measurement.
 
 % Model knobs and how we twiddled them
-We varied three physical parameters (more if we consider magnetic damping):
+We varied three physical parameters (more if we consider magnetic damping fits
+explicitly):
 diffusion-energy scaling exponent $\mu$, normalized diffusion
 coefficient $\eta_2$, and magnetic field strength $B_0$.
 To make nonlinear fitting tractable, we fixed $\mu$ in all fits and considered
 $\mu = 0$, $1/3$, $1/2$, $1$, $1.5$, and $2$;
 recall that $\mu = 1/3$ and $1/2$ correspond to Kolmogorov and Kraichnan turbulence.
-As $\eta_2$ is highly variable in our fits, we also performed
-fits with $\eta_2 = 1$ fixed, coincident with Bohm diffusion at $2 \unit{keV}$.
 
-A few remnant-specific parameters enter into the model calculations.  We take
-electron spectral index $s = 2.3$ (from radio spectral index $\alpha = 0.65$,
-\citet{kothes2006} \note[Aaron]{not using $0.58$ from Green's catalog?!}),
+% Tycho parameters
+A few remnant-specific parameters enter into the model calculations.  We
+adopted electron spectral index $s = 2.3$ from radio spectral index $\alpha = 0.65$
+\note[Aaron]{will change to $s= 2.16$ from $\alpha=0.58$ following
+\citet{sun2011} on next iteration}
+\citep{kothes2006},
 remnant distance $3 \unit{kpc}$ \citep[cf.][]{hayato2010}, and
 shock radius $1.08 \times 10^{19} \unit{cm}$ from angular radius $240\arcsec$
 \citep{green2009}.  Tycho's forward shock velocity varies with azimuth by up to
 a factor of 2; we interpolated shock velocities reported by
 \citet{williams2013} (rescaled to $3 \unit{kpc}$ rather than $2.3 \unit{kpc}$
 to estimate individual shock velocities for each region.
-\note[Aaron]{this paragraph might belong in an earlier section?}
 
 % How to do the fit
 Equation~\eqref{eq:simp-fwhm} was directly fit to our measurements to obtain
-best-fit values of $\eta_2$ and $B_0$.
-The full model was numerically computed as detailed in
-Section~\ref{sec:transport}, yielding intensity profiles and hence model FWHMs
-in each energy band; we then varied the input parameters ($\eta_2$, $B_0$) to
-obtain a least squares best fit.
-To assist the nonlinear fitting, we tabulated a large grid of model FWHM values
-for various values of $\mu$ and shock velocity $v_s$; from a best initial grid
-value, we then used a Levenberg-Marquardt fitting routine to determine the best
-fits.
-For both simple and full fits, we deemed fits with $\eta_2 \geq 10^5$ and $B_0
-\geq 10 \unit{mG}$ effectively unconstrained; $\eta_2$ is also constrained to
-be positive.
-
-% TODO modify tables to match what is stated here -- in regards to parameters
-% being effectively unbounded.
-% TODO for extreme values in tables -- go back and double check chi^2 space
-As the full model must be numerically solved, its predicted rim widths are
-subject to resolution error in the numerical integrals.  We chose our
-integration resolutions such that the fractional error in model FWHMs
-associated with halving/doubling integration resolution is less than $1\%$ for
-the parameter space relevant to our filaments.
-\note[Aaron]{rewrite -- unclear.  Need to verify 1\% claim and check Pacholczyk
-table resolution (and possibly Bessel function numbers)...}
-
-% Errors
-Finally, we computed errors on our best fit parameters by varying each
+best-fit values of $\eta_2$ and $B_0$.  The full model was numerically computed
+as detailed in Section~\ref{sec:transport}, yielding intensity profiles and
+hence model FWHMs in each energy band.  To assist the nonlinear
+fitting, we tabulated a large grid of model FWHM values for various values of
+$\mu$, $\eta_2$, $B_0$, and shock velocity $v_s$.  From a best initial grid
+value, we used a Levenberg-Marquardt fitting routine to determine the best
+fits.  Errors on best fit parameters were computed by varying each fit
 parameter and obtaining a new best fit model, with one less degree of freedom,
 to find the parameter limit such that $\Delta \chi^2 = 1$ for a roughly
 1-$\sigma$ error.
+
+We required $\eta_2$ to be positive in all fits.  We also deemed
+best-fit and error bound values with $\eta_2 \geq 10^5$ and $B_0 \geq 10
+\unit{mG}$ to be effectively unconstrained. % Change this if needed.
+
+% TODO Come back after checking Pacholczyk resolution
+As the full model must be numerically solved, its predicted rim widths are
+subject to resolution error in the numerical integrals (discretization over
+radial coordinate, line-of-sight coordinate, electron distribution, Green's
+function integrals).  We chose our integration resolutions such that the
+fractional error in model FWHMs associated with halving/doubling integration
+resolution is less than $1\%$ for the parameter space relevant to our
+filaments.
 
 % =======================
 % Results, FWHMs and fits
@@ -819,26 +769,41 @@ to find the parameter limit such that $\Delta \chi^2 = 1$ for a roughly
 \subsection{Rim widths}
 \label{sec:fwhm-results}
 
-In Table~\ref{tab:fwhms} we report FWHM measurements for all of our regions.
-As previously noted, we could not resolve FWHMs for some regions in the 0.7--1
-keV band.  We also report $\mE$ values for all but the lowest energy band,
-computed point-to-point as: \begin{equation} \mE(E_2) =
-\frac{\ln(w_2/w_1)}{\ln(E_2/E_1)} \end{equation} where $w_1, w_2$ and $E_1,
-E_2$ are FWHMs and lower energy values for each energy band (e.g., $\mE$ at $1
-\unit{keV}$ is computed using FWHMs from $0.7$--$1 \unit{keV}$ and $1$--$1.7
-\unit{keV}$, and taking $E_2 = 1 \unit{keV}$ and $E_1 = 0.7 \unit{keV}$.
-Although the values of $\mE$ reflect a good deal of variability in the
-underlying width measurements, we see that most regions and energy bands
-display a decrease in rim widths as a function of energy.  NOTE (draft): we
-emphasize that $\mE$ is currently not considered or utilized in our subsequent
-analysis.
+Table~\ref{tab:fwhms} reports FWHM measurements for all of our regions.
+We also report $\mE$ values for all but the lowest energy band, computed
+point-to-point between discrete energy bands as:
+\begin{equation}
+    \mE(E_2) = \frac{\ln(w_2/w_1)}{\ln(E_2/E_1)}
+\end{equation}
+where $w_1, w_2$ and $E_1, E_2$ are FWHMs and lower energy values for each
+energy band (e.g., $\mE$ at $1 \unit{keV}$ is computed using FWHMs from
+$0.7$--$1 \unit{keV}$ and $1$--$1.7 \unit{keV}$, with $E_2 = 1
+\unit{keV}$ and $E_1 = 0.7 \unit{keV}$.  Errors on $\mE$ are propagated in
+quadrature from adjacent FWHM measurements.
 
 \begin{table*}[ht]
-    \tiny
+    \scriptsize
     \centering
-    \caption{Measured FWHMs for all regions.\label{tab:fwhms}}
+    \caption{Measured full widths at half max (FWHMs) for all regions.
+             \label{tab:fwhms}}
     \input{tab-fwhms.tex}
 \end{table*}
+
+Measured rim widths decrease with energy in most regions and energy bands.
+Although the measurement variation between measurements is quite large, shown
+dramatically in the point-wise computed $\mE$ values, the mean rim width
+decreases consistently with increasing energy.  Furthermore, mean $\mE$ values
+are consistently negative and tend smoothly towards $0$ (weaker
+energy-dependence) with increasing energy.
+
+The errors on FWHM measurements are typically $\abt 10\%$ or smaller,
+reflecting the high quality of underlying \Chandra data as also seen in
+Figure~\ref{fig:profiles}.  Scatter in FWHM measurements may be attributed in
+part to (1) our profile fitting procedure, which depends on an empirically
+chosen profile fit function which may also fit the rims non-uniquely, and (2)
+variation in Tycho's rim morphology, also demonstrated clearly in
+comparison of rims from Regions 1 and 16 in Figure~\ref{fig:profiles}.
+\note[Aaron]{review paragraph wording}
 
 % -------------------------
 % Model fit results, tables
@@ -846,34 +811,10 @@ analysis.
 \subsection{Model fit results}
 \label{sec:fit-results}
 
-% NOTE keep updated -- for which region are we giving simple and full fits?
-We find that the simpler catastrophic dump model (equation~\eqref{eq:simp-mod})
-produces the same qualitative trends seen in the full continuous energy loss
-model.  The first row of Table~\ref{tab:fits} compares simple and full model
-fits for Region 1 \note[Aaron]{data coming soon}.  In general, simple model
-fits are less poorly constrained (i.e., fits are more likely to reach manual
-fitting limits).  Where both simple and full model fits are well constrained
-(i.e., moderate to small $\eta_2$ values), the simple model favors slightly
-smaller $\eta_2$ and slightly larger $B_0$.  But this is not always true, and
-it is difficult to identify any obvious trends as both fits are quite variable
-across $\mu$ values and different regions.  \note[Aaron]{from the table
-calculations, the simple model needed larger $B_0$ values than the full model
-for a fixed $\eta_2$ and mean width (roughly speaking); this effect
-strengthened with larger $\eta_2$.  We're looking at order 10--50\% effects}.
-For the rest of our results and discussion, we consider only full model fits.
-
-% Individual region fit results
-Table~\ref{tab:fits} presents full model fit results for all regions
-considered. Errors are computed by varying free parameters $B_0$,
-$\eta_2$ to obtain $\Delta\chi^2 = 1$, corresponding to $1$-$\sigma$ confidence
-limits on our fit parameters.
-%In Figure~\ref{fig:fits-all} we also plot the best full model fits for the same
-%regions tabulated in Table~\ref{tab:fits}
-
 \begin{table*}[ht]
     \tiny
     \centering
-    \caption{Full model best fits for individual regions, Filaments 1--3.
+    \caption{Full model best fit for individual regions, Filaments 1--2.
     \label{tab:fits}}
     \input{tab-fits-all.tex}
 \end{table*}
@@ -881,7 +822,7 @@ limits on our fit parameters.
 \begin{table*}[ht]
     \tiny
     \centering
-    \caption{Full model best fits for individual regions, Filaments 4--5.
+    \caption{Full model best fits for individual regions, Filaments 3--5.
     \label{tab:fits-pt2}}
     \input{tab-fits-all-pt2.tex}
 \end{table*}
@@ -904,32 +845,40 @@ limits on our fit parameters.
 %    \label{fig:fits-all}
 %\end{figure}
 
-% Individual region fits with eta2=1 fixed
-%We also computed best fits while holding $\eta_2 = 1$; i.e., requiring Bohm
-%diffusion at $2 \unit{keV}$.  We found that the best fit $B_0$ is relatively
-%insensitive to $\mu$; for all regions, $B_0$ varies by no more than XXX ($\abt
-%10$)\% from the value at $\mu = 1$ (with larger $B_0$ at smaller $\mu$ and vice
-%versa).  \note[Aaron]{compute/verify this}.  Therefore, we show only best fits
-%with $\mu = 1$ and $\eta_2 = 1$ fixed in Table~\ref{tab:fits-avg-eta2-fix}).
-%\note[Aaron]{this should be computed just for Region 1, or something similar?}
-%
-%\begin{table*}[ht]
-%    \scriptsize
-%    \centering
-%    \caption{Best fits with $\eta_2 = 1$ fixed for filament averaged FWHMs.
-%    \label{tab:fits-avg-eta2-fix}}
-%    \input{tab-fits-avg-eta2-fix.tex}
-%\end{table*}
+% Individual region fit results
+% NOTE keep updated -- for which region are we giving simple and full fits?
+Table~\ref{tab:fits} presents full model fit results for all regions
+considered.  The first row of Table~\ref{tab:fits} includes both simple and
+full model fits for Region 1 for comparison.
+We found that fits to the simpler catastrophic dump model
+(equation~\eqref{eq:simp-mod}) reproduced qualitative trends seen in the full
+continuous energy loss model, as expected.  In general, simple model fits
+yielded slightly smaller $\eta_2$ and/or slightly larger $B_0$ values; this is
+consistent with the expectation that electrons travel farther in the simple
+model than in the full model, since electrons are not subjected to continuous
+synchrotron cooling, so smaller $\eta_2$ and larger $B_0$ values are needed to
+generate thinner rim widths as compared to the full model.  Simple model fits
+were also more likely to reach manual fitting limits (i.e., allow for
+unconstrained parameter values) than full model fits.
+
+For the rest of our results and discussion, we consider only full model
+fit results in Tycho for simplicity.  We do reference the simple model to build
+intuition and give scaling relations, as was done in depth by
+\citet{parizot2006} and \citetalias{ressler2014}.
 
 % Averaged fit results
 In each filament, we averaged best fit parameters $B_0$, $\eta_2$ from each
 constituent region to obtain filament-wide estimates on $B_0$ and $\eta_2$,
 reported in Table~\ref{tab:fits-avg}.  Stated uncertainties are standard errors
-of the mean \note[Aaron]{may need to scale by $\abt 2 \times$ to get 1-sigma
-confidence interval since our sample sizes are so small}.  We note that both
-averages and errors are strongly affected by outliers from extreme best fit
-values, as can be seen in Tables~\ref{tab:fits} and \ref{tab:fits-pt2} --
-especially as the typical number of regions per filament is quite small.
+of the mean.  The averaged parameters and corresponding errors are strongly
+affected by outliers from extreme best fit values, as can be seen in
+Tables~\ref{tab:fits} and \ref{tab:fits-pt2} -- especially as the typical
+number of regions per filament is quite small.  We also averaged best fit
+parameters from all regions in the remnant, but the presence of outliers
+renders the averages relatively unusable.
+% TODO
+\note[Aaron]{we could also report one fit to the global FWHM averages, as was
+done by Sean?}
 
 \begin{table*}[ht]
     \scriptsize
@@ -939,11 +888,122 @@ especially as the typical number of regions per filament is quite small.
     \input{tab-fits-par-avg.tex}
 \end{table*}
 
-% Global fits...
-Extras: we could report a global average of best fit parameters from all
-regions, or a fit to the global FWHM average.
-Plot of best fit parameters with $\mu=1$ as a function of azimuth angle, with
-error bars or something similar?
+% ==========
+% Discussion
+% ==========
+\section{Discussion}
+
+\subsection{Energy dependence rules out magnetic damping for X-ray rims}
+
+% Linchpin of argument -- energy dependence at ~1 keV incompatible with damping
+% NOTE keep numbers up to date
+Our observations of strong energy-dependence, particularly at low energies
+(0.7--1 keV, 1--1.7 keV, 2--3 keV), are incompatible with magnetic damping as a
+primary control on filament widths.
+Our mean $\mE$ values with errors favor $|\mE| \gtrsim 0.25$ at $\abt 1
+\unit{keV}$, and $|\mE| \gtrsim 0.19$ at $\abt 2 \unit{keV}$.
+\note[Aaron]{calculations on magnetic damping $\mE$ go here}  % TODO FILL IN
+\citetalias{ressler2014} also argued that magnetic damping generally requires
+$|\mE| \sim 0.1$.  If thin rims are not magnetically damped at our lowest
+energy bands, the rims will not be damped at any higher energies (barring
+extreme $\mu>1$ diffusion with $\mE > 0$ that yields wider rims at higher
+energies -- and indeed that is further disfavored by the electron energy
+cut-off, as well as the fact that diffusion only begins to outpace advection
+around the same cut-off).  Our result should hold for all photon energies above
+$\abt 1 \unit{keV}$.
+
+% More quantification -- give scale lengths, field strength values.
+How robust is this result, give quantitative results.
+What is the smallest damping scale length that is (roughly) consistent with all
+of our observations?
+\note[Aaron]{See Sean's section 3.2.1 and appendix for explication of the
+magnetic damping disfavoring etc.}
+
+% Address the broader trend in mE
+The observed decrease in $|\mE|$ with increasing energy is attributable to
+diffusion, which weakens width-energy dependence at higher energies
+(even if diffusion is energy-independent with $\mu = 0$)
+\citepalias[see][Figure 5]{ressler2014}.
+\note[Aaron]{material on width scaling w/ $B_0$ and $\eta_2$. I'm not sure
+where this should go, exactly.  May be better in the next section.
+Or, this may even go in the beginning of the text, after or before introducing
+transport models?!}
+To make this more quantitative, note the scaling relations:
+\begin{equation}
+    l_{\mt{ad}} \propto v_d B_0^{-3/2} \nu^{-1/2}
+\end{equation}
+and
+\begin{equation}
+    l_{\mt{diff}} \propto \eta^{1/2} B_0^{-3/2} \nu^{(\mu-1)/4}
+\end{equation}
+As previously claimed, where advection dominates we expect $w \sim l_{\mt{ad}}
+\sim \nu^{-1/2}$.  Where diffusion and advection are comparable, we expect
+$|\mE|$ to decrease, i.e. yielding weaker energy dependence.
+\citetalias{ressler2014} give a full discussion of the relative effects of
+advection and diffusion, as well as the effect of $\Ecut$ in counterbalancing
+the effects of diffusion at higher energies; see in particular Figures 3 and 5
+of \citetalias{ressler2014}.  \note[Aaron]{might have been discussed earlier?}
+The increasing importance of diffusion at X-ray energies matches the
+synchrotron spectrum roll-off at X-ray energies as compared to radio
+observations; the criterion for synchrotron roll-off, or electron cut-off, is
+equivalent to requiring that advective and diffusive lengthscales are
+comparable.  Thus, a weakening energy dependence in X-rays is consistent with
+prior work and a welcome observation!
+\note[Aaron]{I think this is a nice result of its own, unless it's a bit
+obvious?  Importantly, the spectral roll-off observation is derived from the
+intensity of Tycho -- how much flux comes out of the rims.  But we look at the
+widths, disregarding intensity, and find a consistent result.}
+
+% Addressing the variability in width measurements
+The large variation in filament widths, and point-wise computed $\mE$ values,
+does make our claim a little shakier.  Indeed, in Region 3 we see
+\emph{increases} in filament width between multiple energy bands.
+But we have confidence on our averaged results.
+\note[Aaron]{We could also compute $\mE$ numerically from the model fit
+profiles -- basically mimicking Sean's Figures 1, 5, 6, but generating $\mE$
+numbers that effectively reflect the broad energy drop-off (or, lack thereof)
+from all measured widths.}
+
+\subsection{Model parameters: constraining magnetic fields and diffusion}
+
+We now turn to our model fit parameters, magnetic field strength and diffusion
+coefficient.
+
+%WHERE to place the width - magnetic field dependence.  Cite Parizot's paper on
+%this result, mention Sean's paper for symbols/set-up similar to our work.
+%---> BRIAN reminded me, he wanted to talk about REMNANT DISTANCE. RIGHT.
+%Throw this text in here, to discuss mE.
+%Then we backreference this equation and simply say, the physical width scales
+%linearly with the remnant distance.  The ONLY confounding factor is that shock
+%velocity changes as well. -- SO, I need to add in NUMBERS!!!!!
+
+% 1-2 paragraphs on this
+Eta2 is poorly constrained.  Explain why -- we have a strong degeneracy between
+magnetic field and eta2, especially at low mu.  Mention the sensitivity
+results.
+It is important to note that this is a limitation of our fitting model, not of
+the data.  Stacking the data, e.g. by taking larger regions or averaging FWHM
+measurements, does NOT help.
+
+But, we note that our model fits generally favor $\eta_2 > 1$ -- the lowest
+error bound on $\eta_2$ is ????. % TODO.
+
+Magnetic field $B_0$: despite the large range of fit quality, we can give
+fairly robust lower bounds.  Lowest bound is ????  Consistent with previous
+studies, Tycho requires strong magnetic field amplification -- up to ??? times
+the expected value of $\abt 10 \unit{\mu G}$ from a strong shock with
+compression ratio $r=4$ and typical galactic magnetic field strength of $\abt
+2$--$3 \unit{\mu G}$ \citep{lyne1989, han2006}.
+
+A few ways to touch this -- can we back out information from the synchrotron
+roll-off and hence $\Ecut$, to obtain diffusion coefficient independently of
+$B_0$?  Then we have a single parameter fit.
+
+We could report estimates of cut-off energy?  I don't know if that is
+helpful/meaningful for anything, unless we can tie it back to something in DSA.
+
+Can we favor a value of $\mu$ (and hence a turbulent energy spectrum)?
+
 
 \subsection{Variations on a theme of plug \& chug}
 
@@ -953,86 +1013,20 @@ accounting for azimuthal variation in $v_s$ (compare to taking a remnant
 average?).  Sean already discussed $\Ecut$ (result: more high energy electrons
 to damp out narrowing at high energy, if $\Ecut$ not included).
 
-% ==========
-% Discussion
-% ==========
-\section{Discussion}
+\subsection{Uncertainties what not trash heap}
 
-\subsection{How confidently can we reject B-damping?}
-
-Everything hinges on our error bars -- this is most important.  Our rims do
-thin consistently, in most regions (might be one or two places where they
-don't), but (1) the errors in our individual FWHMs are larger than I'm
-currently reporting because different profile fits will give a larger spread of
-FWHMs (might need to consider reduced chi-squared here, but using chi-sqr to
-select profile fit models is not physically meaningful)
-
-It might be helpful to average $\mE$ values together, under the
-assumption that they should be somewhat consistent within a given filament.
-Then report the values and errors observed.  Again, needs more data points.
-
-Recall that our FWHMs (Table~\ref{tab:fwhms}) have a large range of values,
-IF magnetic damping is relevant in controlling filament widths, we might, e.g.,
-expect a maximum filament width at which $\mE$ sharply levels off, being now
-restricted by the magnetic field turn off.  We simply do not observe this in
-our data between $0.7$--$7 \unit{keV}$.  We must conclude that, as in SN 1006
-\citepalias{ressler2014}, magnetic damping cannot be relevant to our
-observations.
-
-What is the smallest damping scale length that is (roughly) consistent with all
-of our observations?
-
-X-ray rims are not damped -- could damping be relevant to the radio rims?
-
-\subsection{Interpretation of fit parameters}
-
-Magnetic field $B_0$: despite the large range of fit quality, we can give
-fairly robust lower bounds.  Lowest bound (TBD)?  Consistent with previous
-studies, Tycho requires strong magnetic field amplification -- up to ??? times
-the expected value of $\abt 10 \unit{\mu G}$ from a strong adiabatic shock with
-compression ratio $r=4$ and typical galactic magnetic field strength of $\abt
-2$--$3 \unit{\mu G}$ \citep{lyne1989, han2006}.
-
-Brief (possibly obvious) remark: these estimates of magnetic fields should be
-lower bounds, if we neglect diffusion (and compression ratio/etc...).
-A spherical projection is the narrowest filament we can get.
-Any rippling effects, etc... hmm.  Rippling could strengthen the filament,
-making it look at little thinner actually.  But we don't know how big an effect
-that could be.  And we are looking at a tangential slice.  There is some room
-for ripples/waveforms to accumulate, of course... we see them elsewhere, we do
-see distinct filaments stacking.
-
-(maybe something useful / fun to do: what's the projection factor for a rippled
-sphere?  Estimating some wavelength from observed stripes, ripple
-lengthscale from width of filaments viewed face on (e.g. in Kepler).  Likely,
-not gonna make much difference.  But could be helpful to have an idea of how
-good/bad this assumption of a spherical shell is, and how much effect that has
-on our magnetic field estimates)
-
-Diffusion coefficient $\eta_2$, on the other hand, is a bit of a mess.
-Would it be useful to report advective and diffusive lengthscales at 2 keV?
-Idea being that it is hard to intuit what the large numbers even mean.
-(especially for the simple model -- it sits on a plateau in chi-squared space
-where small $\eta_2$ may be disfavored, but beyond a certain point any $\eta_2$
-will do)
-
-Can we favor a value of $\mu$ (and hence a turbulent energy spectrum)?
-
-We could report estimates of cut-off energy?  I don't know if that is
-helpful/meaningful for anything, unless we can tie it back to something in DSA.
-
-\subsection{Bohm diffusion}
-
-Fixing $\mu = 1$ and $\eta_2 = 1$ in Table~\ref{tab:fits-avg} is equivalent to
-assuming Bohm diffusion, as most previous studies have done.
-We should find/show that our result is very similar to theirs, in terms of
-$B_0$ estimates, and this may be the easiest way to back out any estimates of
-azimuthal magnetic field variation.
-
-Magnetic field amplification numbers -- how do they compare with previous
-studies?  What is the azimuthal variation (and significance thereof)?
-
-Diffusion -- sub-Bohm diffusion in Filament 4?
+% discussion of uncertainties/caveats in our results
+Our FWHM measurements have a good deal of scatter.
+One possible concern is our fitting function, which may overshoot or undershoot
+our profiles, or simply fail to fit profiles that are not well-described as
+having exponential fall-offs.
+.. One way to address this is to consider other functions -- for example, a
+gently smoothed spline fit, a manually capped two-exponential function, a
+Gaussian sitting on a ramp or logistic curve, etc.
+Explain that nothing happens -- not much (but I will reaffirm this).
+.. another is simply our sampling -- we have already sought to circumvent this
+by taking multiple regions in each filament, as many as possible without overly
+compromising the quality of our radial profiles
 
 \subsection{Other things}
 
@@ -1049,11 +1043,13 @@ Figure~\ref{fig:peak-pos}), steepness of the filament rise?
         \label{fig:peak-pos}}
 \end{figure}
 
+
 % ==========
 % Conclusion
 % ==========
 \section{Conclusions}
 
+% Summarize our results
 Our observations of filament thinning, although qualitative, are consistent
 with the observations of \citet{ressler2014} in SN 1006.
 We find that filaments narrow considerably.
@@ -1064,6 +1060,19 @@ Tycho's nonthermal emission and shock structure, as well as its surrounding
 medium.  This despite the fact that Tycho is the closest we have to a spherical
 cow of a SNR!
 
+% Further work -- radio
+BROAD QUESTION -- Why couldn't we answer this from radio measurements?
+Rims are splattered/lost in emission from within the remnant, looking at
+\citet{cassam-chenai2007}.
+Are the rims from shock accelerated electrons, simply swamped/drowned by
+turbulence/synchrotron/bremsstrahlung in the interior? (seems that
+bremsstrahlung is unimportant at very low frequencies...)
+
+VLA data from Brian/Jack Hewitt, + Chandra X-ray data, coming November!
+They have lots of fun things to look at -- proper motion (main thing),
+polarization, etc.  Can take a look at the radio rims too and see what's up...
+
+% Further work -- other SNRs
 We will follow up with an analysis of Kepler's supernova remnant and
 Cassiopeia A \citep[see][]{araya2010}.  Further confirmation that X-ray rims
 are not damped may suggest that any damping lengthscale must be quite a bit
@@ -1071,11 +1080,17 @@ larger than the observed rims, and the damping hypothesis will need to be
 tested by continuing radio observations (???) or numerical and laboratory
 simulations.
 
+Ask a theorist: if we find a pretty global behavior, that damping is disfavored
+in all remnants -- what does that tell us about the damping?  Why
+\emph{shouldn't} damping occur on small lengthscales?
+
 % ================
 % Acknowledgements
 % ================
 \acknowledgments
 
+A.T. thanks CRESST for support.
+B.J.W. NPP?
 The scientific results reported in this article are based on data obtained from
 the \Chandra Data Archive.
 This research has made use of NASA's Astrophysics Data System.
@@ -1093,128 +1108,6 @@ This research has made use of NASA's Astrophysics Data System.
 %\renewcommand{\thetable}{A\arabic{table}}
 %\setcounter{figure}{0}
 %\renewcommand{\thefigure}{A\arabic{figure}}
-%
-%% ---------------------------
-%% FWHM measurement comparison
-%% ---------------------------
-%\section{Additional calculations}
-%
-%Here I present full model fit results using FWHMs measured with an artificial
-%cap imposed on the profile height, and the background $\min(C_u, C_d)$
-%subtracted out before computing the FWHM.  The fitted profile may extend above
-%the data maximum, but I find the full-width at one half of the data maximum.
-%The results appear equivocal; there may be slightly smaller chi-squared values
-%but it may not be statistically meaningful.
-%
-%I also present results for simple model fits, and fits for a larger set of
-%regions (22 instead of 13).
-%
-%\begin{table*}[ht]
-%    \tiny
-%    \centering
-%    \caption{Measured FWHMs for all regions, capped and background subtracted.}
-%    \input{tab-fwhms-capsubbkg.tex}
-%\end{table*}
-%
-%\begin{table}[ht]
-%    \tiny
-%    \centering
-%    \caption{Full model best fits for individual regions, Filament 1.  Capped
-%    and background subtracted FWHMs.}
-%    \input{tab-fits-all-capsubbkg.tex}
-%\end{table}
-%
-%\begin{table}[ht]
-%    \tiny
-%    \centering
-%    \caption{Full model best fits for individual regions, Filaments 2--5.
-%    Capped and background subtracted FWHMs.}
-%    \input{tab-fits-all-capsubbkg-pt2.tex}
-%\end{table}
-%
-%\begin{table*}[ht]
-%    \scriptsize
-%    \centering
-%    \caption{Filament averages of best-fit parameters for constituent regions.
-%    Capped and background subtracted FWHMs.}
-%    \input{tab-fits-par-avg-capsubbkg.tex}
-%\end{table*}
-%
-%\begin{figure}[ht]
-%    \centering
-%    %\epsscale{0.45}
-%    \plottwo{figures/fits-sep19-capsubbkg/reg01.png}{figures/fits-sep19-capsubbkg/reg02.png} \\
-%    \plottwo{figures/fits-sep19-capsubbkg/reg03.png}{figures/fits-sep19-capsubbkg/reg04.png} \\
-%    \plottwo{figures/fits-sep19-capsubbkg/reg05.png}{figures/fits-sep19-capsubbkg/reg06.png} \\
-%    \plottwo{figures/fits-sep19-capsubbkg/reg07.png}{figures/fits-sep19-capsubbkg/reg08.png} \\
-%    \plottwo{figures/fits-sep19-capsubbkg/reg09.png}{figures/fits-sep19-capsubbkg/reg10.png} \\
-%    \plottwo{figures/fits-sep19-capsubbkg/reg11.png}{figures/fits-sep19-capsubbkg/reg12.png} \\
-%    \plottwo{figures/fits-sep19-capsubbkg/reg13.png}{figures/f0-box.png}
-%    \caption{Fitted full model widths as a function of energy for all regions,
-%    with measured data; best fit parameters are given in
-%    Tables~\ref{tab:fits},~\ref{tab:fits-pt2}.  Plots are ordered by region
-%    number.}
-%\end{figure}
-%
-%\begin{table}[ht]
-%    \tiny
-%    \centering
-%    \caption{Simple model best fits for individual regions, Filaments 1 and 2.
-%    Same FWHM as in main text.}
-%    \input{tab-fits-all-simp.tex}
-%\end{table}
-%
-%\begin{table}[ht]
-%    \tiny
-%    \centering
-%    \caption{Simple model best fits for individual regions, Filaments 3--5.
-%    Same FWHM as in main text.}
-%    \input{tab-fits-all-simp-pt2.tex}
-%\end{table}
-
-% -------------
-% Region 5 data
-% -------------
-
-%\begin{table*}[ht]
-%    \tiny
-%    \centering
-%    \caption{Measured FWHMs for all regions (22).}
-%    \input{tab-fwhms-reg5.tex}
-%\end{table*}
-%
-%\begin{table*}[ht]
-%    \tiny
-%    \centering
-%    \caption{Full model best fits for smaller regions, filaments 1--3.  Same
-%    FWHM as in main text.}
-%    \input{tab-fits-all-reg5.tex}
-%\end{table*}
-%
-%\begin{table*}[ht]
-%    \tiny
-%    \centering
-%    \caption{Full model best fits for smaller regions, filaments 4--5.  Same
-%    FWHM as in main text.}
-%    \input{tab-fits-all-reg5-pt2.tex}
-%\end{table*}
-%
-%\begin{table*}[ht]
-%    \scriptsize
-%    \centering
-%    \caption{Filament averages of best-fit parameters for constituent regions,
-%    with 22 instead of 13 regions.}
-%    \input{tab-fits-par-avg-reg5.tex}
-%\end{table*}
-%
-%\begin{figure*}
-%    \centering
-%    \epsscale{0.7}
-%    \plotone{figures/f0-snr-reg5-inv.png}
-%    \caption{RGB image of Tycho with region selections overlaid.  Bands are
-%    0.7--1 keV (red), 1--2 keV (green) and 2--7 keV (blue).}
-%\end{figure*}
-
 
 % --------------
 % SN 1006 tables
@@ -1268,4 +1161,5 @@ This research has made use of NASA's Astrophysics Data System.
 \bibliographystyle{apj}  % AASTeX journal macros are supplied in ADS entries
 \bibliography{refs-snr}
 
+%\end{CJK}
 \end{document}

@@ -5,6 +5,7 @@ chandra/**
 !chandra/*.*
 *.fits
 *.img
+*.tar
 
 # Articles, many binary files
 papers

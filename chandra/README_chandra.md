@@ -32,6 +32,24 @@ spectra from all ObsIDs and merging them together.
 To try reproducing Brian's image mosaics, use xygrid="3300:4900:1,3300:4900:1"
 (see procedure outlined below for Kepler).
 
+Running `reproject_obs`
+> Warning: the merged event file tycho_reproj/merged_evt.fits
+>    should not be used to create ARF/RMF/exposure maps because
+>       the RA_NOM keyword varies by 0.0026711627833 (limit is 0.0003)
+>       the DEC_NOM keyword varies by 0.000990338427997 (limit is 0.0003)
+>       the ROLL_NOM keyword varies by 10.8524035038 (limit is 1.0)
+
+
+Tycho's SNR, 2003 observation
+-----------------------------
+
+ObsID folder `3837` contains raw data from Hughes' 150 ks observation of
+Tycho's SNR.  Observation was made over 2003 April 29-30.
+The exposure time is:
+
+* 3837, 145.6 ks
+
+
 Kepler's SNR observation
 ------------------------
 

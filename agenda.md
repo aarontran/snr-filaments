@@ -25,40 +25,27 @@ From poster session (July 31):
   explain the rim dropoff with energy?
 
 
-Monday progress/material to review
-----------------------------------
-
-Kepler: new region selections, profile fit notebook, model fit results (tables)
-
-Cas A: show region selections and profiles (plan: defer spectra/fits until we
-       figure out how to tackle all the blobs)
-
-Tycho: print copy of (latest) paper for Monday
-
-
 Main TO-DOs
 -----------
 
 In order:
 
-1. Review manuscript comments, mark up my own comments, fill in
-   results/discussion (catching up Tycho pipeline where appropriate).  Fill in
-   as many holes as possible.  Have text ready to go, then work on results up
-   to Thurs / early Friday as much as possible before sending for another round
-   of review.
-2. Address resolution issue (Pacholczyk + internal integrals), before moving to
+0. Fill in discussion, many holes.  Have text ready to go, first, then
+   get into data/modeling issues.
+1. Magnetic damping!
+2. Check out outliers by hand (why did the fits go wonky), and check manual
+   error computation speed.
+3. Address resolution issue (Pacholczyk + internal integrals), before moving to
    more full model fits
-3. Magnetic damping!
+4. Set radio spectral index to 0.58 (s = 2.16), regenerate tables for regions-6
+   fits.
 
 Grouped by individual "pipeline":
 
-* Tycho -- Run full specextract on all bkg-2 files and re-link spectrum files
-           to tycho's "up" spectra (regions-5).
-           
-           Cull regions-6 out of regions-5, and manually port over derived data
-           products as needed... (add notes in README files).
-           Generate all spin-off/variant data products needed (ignore full
-           model errors because ugh).
+* Tycho -- Cull regions-6 out of regions-5, apply blacklist, and manually port
+           over derived data products as needed... (add notes in README files).
+           Generate all spin-off/variant data products needed...
+           (full model errors, after checking resolution + manual approach)
 
            Add text on issue of remnant distance.  Run calculations if
            appropriate and add text explaining this
@@ -89,7 +76,12 @@ Grouped by individual "pipeline":
            generate new FWHM fits (1-9 keV) and get spectra of rims
            select specific regions outside rims and get spectra, need to figure
              out how much thermal contamination
-           (may as well 
+
+* Tycho (radio) -- later, meddle with Sean's model and see if we can't
+                   reproduce the radio rims.
+
+* Tycho (2003) -- try reprocessing ObsID 3837 on another computer.  If that
+                  fails email the CXC or something
 
 Lower priority / various checks
 -------------------------------

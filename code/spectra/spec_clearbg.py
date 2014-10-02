@@ -34,7 +34,7 @@ def main():
 
     # Get number of spectra to update (count ungrouped spectrum files)
     pattern = os.path.basename(specroot) + r'_src[0-9]+\.pi'
-    files = [f for f in os.listdir(os.path.dirname(specroot))
+    files = [f for f in os.listdir(os.path.dirname(os.path.abspath(specroot)))
              if re.match(pattern, f)]
     print '{} files will be modified'.format(len(files)*2)
 
@@ -52,7 +52,7 @@ def set_bkg(num, rt, verbose=False):
     """Execute CIAO dmhedit to link spectra to backgrounds
     Check that specified root points to actual files
     (but I don't check that they are FITS files with spectra)
-    
+
     Be careful -- this method modifies files
     (i.e., there is risk of data loss!)
     """

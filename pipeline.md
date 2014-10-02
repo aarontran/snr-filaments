@@ -132,6 +132,18 @@ physical coordinates.
 
 Output: `regions-n.reg`, `regions-n.physreg`
 
+## Making nice images of regions
+
+Open RGB image of SNR data.  Twiddle colormap/scaling parameters as desired.
+Convert projection regions to boxes with:
+
+    code/regions/ds9proj2box.py
+
+Remove automatically placed numbers/labels and add your own, using Times font.
+Save the regions as `regions-n-disp.reg` or whatever.
+It may be good to save the scaling/colormap parameters too (just use ds9
+command line syntax and write in by hand).
+
 ## Compute azimuth angles for regions (Tycho)
 
 For shock velocity interpolation (if needed)

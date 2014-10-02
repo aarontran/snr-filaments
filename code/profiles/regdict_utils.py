@@ -28,8 +28,11 @@ import fsmooth
 # Following plot settings are twiddled for "publication"-quality figures
 # May need to rasterize some data, depending on output file sizes
 
-def plot_fwhm_fit(bdict, ax):
-    """Plot cut/uncut data with FWHM fit and bounds for given band dict"""
+def plot_fwhm_fit(bdict, ax, allfits=True):
+    """Plot cut/uncut data with FWHM fit and bounds for given band dict
+    if flag allfits=False, don't plot attempted best fit if FWHM is not
+    obtained or blacklisted
+    """
     x, y, y_err, c = bdict['data']
     wlen, wtype = bdict['wlen'], bdict['wtype']
     f = get_ffit(bdict)
@@ -39,8 +42,9 @@ def plot_fwhm_fit(bdict, ax):
 
 
     # Plot best fit profile
-    x_m = np.linspace(x[c], x[-1], num=100)
-    ax.plot(x_m, f(x_m, *pars), '-b', alpha=1)
+    if allfits or np.isfinite(w):
+        x_m = np.linspace(x[c], x[-1], num=100)
+        ax.plot(x_m, f(x_m, *pars), '-b', alpha=1)
     # Plot FWHMs if FWHM is resolved
     if np.isfinite(w):
         ax.axvline(lims[0], ls='-', c='k', lw=1, alpha=0.5)
