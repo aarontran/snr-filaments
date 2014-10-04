@@ -2212,6 +2212,7 @@ Reviewed all of Brian's comments + added my own remarks.
 Cleaned up and reorganized introduction/transport/diffusion text, cutting about
 1 column of text.
 
+
 Wednesday 2014 October 1
 ========================
 
@@ -2259,5 +2260,58 @@ after redownloading the data.
 
 Thursday 2014 October 2
 =======================
+
+Magnetic damping code
+
+Friday 2014 October 3
+=====================
+
+Filled out discussion and more conclusion (moving text around elsewhere to match)
+Sent manuscript to Rob/Brian
+
+Exploring effect of remnant distance on best fits
+-------------------------------------------------
+
+### Simple model
+
+I compare simple model fits at d = 4 kpc instead of d = 3 kpc.
+Looking at best fits to regions-5, FWHMS with subbkg (no cap).
+
+B0 is basically unchanged.  eta2 scales as (4 kpc / 3 kpc)^2 = 1.77777; some
+variation in the tables/numbers appears due to roundoff error.
+
+At some very extreme values, B0 does vary slightly.  For example:
+
+    |-----|----------------------|----------------------|
+    |     | Region 16 (d = 4kpc) | Region 16 (d = 3kpc) |
+    |     |----------------------|----------------------|
+    | mu  | eta2        B0       | eta2        B0       |
+    |-----|----------------------|----------------------|
+    | 0   | 18705.6     8875.0   | 10362.2     8830.2   |
+    | 1/3 | 10.4        860.2    | 5.9         860.2    |
+    | 1/2 | 5.7         744.6    | 3.2         744.6    |
+    | 1   | 2.2         618.2    | 1.2         618.2    |
+    |-----|----------------------|----------------------|
+
+At mu = 0, the eta2 ratio is 1.805, deviating from expected 1.777...
+B0 ratio is 1.005.
+
+But there are only a few cases of this, where B0 values actually change.
+(in many cases though, the fitting routine hits the limit at eta2 = 10^5
+or B0 = 10 mG)
+
+### Full model
+
+Basically the same, but the scaling is not quite so spot-on (as we might have
+expected).  I have added my estimates of the deviation to the manuscript.
+B0 values vary by about 1% or so; eta2 values vary by about 1-5% from the
+expected 1.777... ratio.
+
+
+
+
+(Week 19) Monday 2014 October 6
+===============================
+
 
 

@@ -20,9 +20,6 @@ From poster session (July 31):
   but doesn't say "why".  Why shouldn't accelerated particles travel farther
   back?  Function of time / remnant evolution?
 * Madura -- 3D reconstruction?
-* We really need to quantify the magnetic damping issue -- can we put a lower
-  bound on the relevant damping scale length, given that it basically can't
-  explain the rim dropoff with energy?
 
 
 Main TO-DOs
@@ -30,15 +27,14 @@ Main TO-DOs
 
 In order:
 
-0. Fill in discussion, many holes.  Have text ready to go, first, then
-   get into data/modeling issues.
 1. Magnetic damping!
-2. Check out outliers by hand (why did the fits go wonky), and check manual
+2. Address resolution issue (Pacholczyk + internal integrals), before moving to
+   more full model fits!
+3. Set radio spectral index to 0.58 (s = 2.16) (note this in rsch notes)
+4. regenerate tables for regions-6 fits.
+5. Check out outliers by hand (why did the fits go wonky), and check manual
    error computation speed.
-3. Address resolution issue (Pacholczyk + internal integrals), before moving to
-   more full model fits
-4. Set radio spectral index to 0.58 (s = 2.16), regenerate tables for regions-6
-   fits.
+6. Generate Kepler tables, too.
 
 Grouped by individual "pipeline":
 
@@ -46,9 +42,6 @@ Grouped by individual "pipeline":
            over derived data products as needed... (add notes in README files).
            Generate all spin-off/variant data products needed...
            (full model errors, after checking resolution + manual approach)
-
-           Add text on issue of remnant distance.  Run calculations if
-           appropriate and add text explaining this
 
            Tackle the magnetic damping matter.  Set up a port of Sean's code
            and start running calculations.  Do some trial cases and compute
@@ -63,6 +56,7 @@ Grouped by individual "pipeline":
            FWHMs, to compare to non-corrected FWHMs.  Do chi-sqr values drop
            consistently?  Does eta2 increase from ~0 values?  Possible that
            there's nothing -- but I want to check.
+           (run after regions-6 is done)
 
 * Kepler -- for regions-3: cut 1,2,8,10,11 (on basis of poor FWHM fits)
             Get spectra for regions-3

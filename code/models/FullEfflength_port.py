@@ -187,6 +187,11 @@ def emisx(r, nu, B, radtab, disttab, xex, fex):
 
     integrand = fex * dist / (xex**1.5)
 
+    # TODO TODO B-damping: compute as
+    # z = 1d0-radtab(irad)
+    # Bfield = Bmin + (Bmax-Bmin)*dexp(-z/ab)  ! Bmax=B0
+    # np.sqrt(nu*Bfield)
+
     # Skip constant prefactors
     return spint.trapz(integrand, xex, axis=0) * np.sqrt(nu*B)
 

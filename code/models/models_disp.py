@@ -132,7 +132,7 @@ def load_fit_pkls(inroot, want_fobj=False):
         tuple of 1. list of Parameters(), 2. list of mu values, 3., region num
                  4. fobj_all dict w/ fitting data, if desired
     """
-    npkls = len(glob('{}-*-data.pkl'.format(inroot)))
+    npkls = len(glob('{}-[0-9]*-data.pkl'.format(inroot)))
     for n in xrange(npkls):
         fname = '{}-{:02d}-data.pkl'.format(inroot, n+1)  # Enforce ordering
         ffobj = '{}-{:02d}-fobj.pkl'.format(inroot, n+1)

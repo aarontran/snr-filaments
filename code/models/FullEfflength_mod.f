@@ -397,6 +397,8 @@ cf2py depend(inumax) widtharc
 ! Compute e- distr and return full table
 ! --------------------------------------
 
+! NOTE: THIS IS THE ONLY PART OF THE FORTRAN CODE CURRENTLY IN USE
+
       subroutine distr(disttab, radtab, iradmax, nu, rmin, B0, Ecut,
      &                                           eta, mu, rs, v0, s, c1)
           implicit none
@@ -428,7 +430,11 @@ cf2py intent(out) disttab
 
           do irad = 1, iradmax  ! Fortran-order access
             do j = 1, ir
+              ! TODO TODO Here Sean sets the magnetic field, if damped
+              ! B = Bmin + (B0-Bmin)*dexp((rad-1d0)/ab)
+              ! THEN, pass B into the arguments to distr...(...)
               en = dsqrt(nu/c1/B0/xex(j))
+              ! disttab(j,irad) = distr(En,B0, Ecut,ab, rad, Bmin)
               if (mu.lt.1d0) then
                 disttab(j,irad) = distrmlt1(en,B0, ecut,rad,
      &                                      eta,mu, rs, v0,s)
