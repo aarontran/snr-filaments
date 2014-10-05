@@ -62,14 +62,14 @@ def main():
 
 # @profile
 def fefflen(kevs, B0, eta2, mu, vs, v0, rs, rsarc, s, rminarc, icut, irmax,
-            iradmax, ixmax):
+            iradmax, ixmax, idamp, ab, Bmin):
     """Use numpy arrays for everything (kevs, rminarc)
 
     Note that irmax is not very important anymore.
 
     Input:
         kevs (np.ndarray)
-        B0, eta2, mu (float)
+        B0, eta2, mu (float), B0 in Gauss
         vs, v0, rs, rsarc, s (float)
         rminarc (np.ndarray)
         icut (bool, or 0/1)
@@ -77,6 +77,8 @@ def fefflen(kevs, B0, eta2, mu, vs, v0, rs, rsarc, s, rminarc, icut, irmax,
             irmax = resolution on intensity profile (400, SN 1006)
             iradmax = resolution on tabulated e- distribution (100, SN 1006)
             ixmax = resolution for line of sight integration (500, SN 1006)
+        idamp (bool), enable/disable damping
+        ab, Bmin (float) damping scale length btwn [0,1], Bmin in Gauss
     Output:
         np.ndarray of FWHMs for each entry in kevs
     """
@@ -106,14 +108,17 @@ def fefflen(kevs, B0, eta2, mu, vs, v0, rs, rsarc, s, rminarc, icut, irmax,
         # Tabulate e- distr. for fixed nu over e- energy, radial coord
         # Be careful, Fortran code hardcoded for iradmax < 1000
         # and Pacholczyk table < 100 entries
+        idamp_flag = 1 if idamp else 0  # Convert bool to int for Fortran
         radtab = np.linspace(rmin_nu, 1.0, num=iradmax)
         disttab = fullmodel.distr(np.zeros(1000), iradmax, nu, rmin_nu,
-                                  B0, Ecut, eta, mu, rs, v0, s, C_1)
+                                  B0, Ecut, eta, mu, rs, v0, s, C_1,
+                                  idamp_flag, ab, Bmin)
         disttab = disttab[:len(xex), :iradmax]  # Slice off zeros
 
         # Tabulate emissivity over radial coord
         rhotab = np.linspace(rmin_nu, 1., num=10000)  # TODO let num=irhomax?
-        emistab = emisx(rhotab, nu, B0, radtab, disttab, xex, fex)
+        emistab = emisx(rhotab, nu, B0, radtab, disttab, xex, fex,
+                        idamp, ab, Bmin)
 
         # Make grids for intensity computation (x = line-of-sight coord)
         rmesh = np.linspace(rmin_nu, 1.0, num=irmax, endpoint=False)
@@ -124,7 +129,7 @@ def fefflen(kevs, B0, eta2, mu, vs, v0, rs, rsarc, s, rminarc, icut, irmax,
         xgrid = xintv * xmaxmesh.reshape(-1,1)  # stackoverflow.com/a/16887425
         rgrid = np.tile(rmesh, (len(xintv), 1)).T  # r = constant on sightlines
 
-        # Compute rho, emissivity at each point in grid
+        # Compute rho, emissivity at each point in grid (r,x)
         rhogrid = np.sqrt(xgrid**2 + rgrid**2)
         emisgrid = np.interp(rhogrid, rhotab, emistab)
         # then, integrate emis. along lines of sight
@@ -159,9 +164,10 @@ def read_fglists(fname='fglists.dat'):
 # Compute emissivity at radial position r
 # =======================================
 
-def emisx(r, nu, B, radtab, disttab, xex, fex):
+def emisx(r, nu, B0, radtab, disttab, xex, fex,
+          idamp, ab, Bmin):
     """Numerically integrate 1-particle synchrotron emissivity (emis1) over
-    electron distribution to obtain full emissivity j_\nu
+    electron distribution to obtain full emissivity j_\nu at r (array)
 
     j_\nu(x) ~ \int_0^\infty y^{-3/2} G(y) f(x, E(y)) dy
 
@@ -176,21 +182,22 @@ def emisx(r, nu, B, radtab, disttab, xex, fex):
                  xex(j) (particle energy / radiation frequency), radial coord
     Output: j_\nu(r), r = radial dist, j_\nu a scalar (float)
     """
-    # Integrate over y-values (e- energies) in Pacholczyk
     # Would be nice to use np.interp, but not sure if possible
     ind = np.searchsorted(radtab, r)
     slp = (disttab[:,ind] - disttab[:,ind-1]) / (radtab[ind] - radtab[ind-1])
     dist = disttab[:,ind-1] + slp * (r - radtab[ind-1])
+    # dist = slice of disttab at fixed x = 1-r, linearly interpolated
 
-    xex = np.tile(xex, (len(r),1)).T
-    fex = np.tile(fex, (len(r),1)).T
+    xex = np.tile(xex, (len(r),1)).T  # e- energy
+    fex = np.tile(fex, (len(r),1)).T  # e- single-particle emissivity
 
     integrand = fex * dist / (xex**1.5)
 
-    # TODO TODO B-damping: compute as
-    # z = 1d0-radtab(irad)
-    # Bfield = Bmin + (Bmax-Bmin)*dexp(-z/ab)  ! Bmax=B0
-    # np.sqrt(nu*Bfield)
+    # Damping: scale emissivity by sqrt(nu*B(r))
+    if idamp:
+        B = Bmin + (B0 - Bmin)*np.exp((1.0 - r) / ab)
+    else:
+        B = B0
 
     # Skip constant prefactors
     return spint.trapz(integrand, xex, axis=0) * np.sqrt(nu*B)
@@ -202,162 +209,162 @@ def emisx(r, nu, B, radtab, disttab, xex, fex):
 
 # NOTE distr(...) not currently in use!  Calling Fortran code instead
 
-def distr(Ec, rc, B, Ecut, eta, mu, rs, v, s):
-    """Electron distribution, from Rettig & Pohl and Lerche & Schlickeiser
-
-    ASSUMED: E, r are 1-D arrays
-    spint.trapz integrates along last axis by default, conveniently
-
-    Input:
-        E = particle energy, r = radial position (scaled to [0,1])
-        B = magnetic field
-        Ecut = cut-off energy of injected electrons
-        eta = \eta*(E_h)^(1-\mu), from the paper
-        mu = diffusion coefficient exponent
-        rs, v, s = shock radius, plasma velocity, injected e- spectral index
-    """
-
-    D0 = eta*2.083e19/B  # eta (E_h)^(1-mu) * C_d / B0
-    a = 1.57e-3  # This is b in the paper
-                 # Synchrotron constant ... TODO declare at module level?
-    k0 = 1.  # Normalization, Q_0
-    b0 = a * B**2  # b*B^2 in paper
-    alpha = 1. # TODO Not sure what this is, scaling factor?
-
-    def get_nums(E, r):
-        """Compute derived parameters over 3-D arrays from np.meshgrid"""
-        tau = 1. / (b0 * E)  # Synchrotron cooling time
-        lad = v * tau  # Advective lengthscale
-        ldiff = np.sqrt(D0*E**mu*tau)  # Diffusive lengthscale
-        x = (rs - r*rs)/alpha  # Convert scaled r to x in cm
-        return tau, lad, ldiff, x
-
-    # Functions for each of 4 cases
-
-    # TODO this one is not yet functional
-    def distr_adv(Ec, rc, B, Ecut, eta, mu, rs, v, s):
-        """Case: l_ad / l_diff >> 1"""
-        efinv = a/v * B**2 * (rs - r*rs)
-        ef = 1. / efinv
-        en0 = E / (1.0 - E/ef)
-        argexp = en0/Ecut
-        # argexp = E / Ecut / (1 - a*B**2*E * (rs-r*rs) / v)
-        Xi = 1 - E/ef  # Only used for if-else structure below
-        if Xi > 0:
-            return 1./en0**s * (en0/E)**2 / np.exp(argexp) * 8e-9
-        else:
-            return 0.
-
-
-    def distr_mlt1(Ec, rc, B, Ecut, eta, mu, rs, v, s):
-        """Case: mu < 1
-        Integrate over t, where n = 1 - t^2
-        """
-        # Build 3-D arrays
-        tc = np.linspace(0., 1., num=1000)  # TODO arbitrary
-        E, r, t = np.meshgrid(Ec, rc, tc, indexing='ij')
-        n = 1 - t**2
-        tau, lad, ldiff, x = get_nums(E, r)
-
-        argexp = (n**(-1/(1-mu)) * E/Ecut +
-                      (lad/alpha * (1 - n**(1/(1-mu)) ) - x)**2 /
-                      (4*ldiff**2*(1-n)/alpha) * (1-mu) )
-        argexp[n==1.] = 1e35  # Prevent blowup
-        integrand = 2*n**((s+mu-2)/(1-mu)) / np.exp(argexp)
-
-        integral = spint.trapz(integrand, t)  # TODO can do better?
-        E_s = E[:,:,0]  # Slice as integral is a 2-D array
-        return integral * ( k0 /2 /np.sqrt(np.pi*alpha*b0*D0*(1-mu)) *
-                            E_s**(-1*(mu/2+1/2+s)) )
-
-
-    def distr_rpohl(Ec, rc, B, Ecut, eta, mu, rs, v, s):
-        """Case: mu = 1
-        Integrate over t in [0,1] (n=e^(t^2) in [1,e]), then
-        integrate over y in [0,1] (n=mess in [e, infty)).
-        """
-        # First integral, build 3-D arrays
-        tc = np.linspace(0., 1., num=1000)  # TODO arbitrary
-        E, r, t = np.meshgrid(Ec, rc, tc, indexing='ij')
-        n = np.exp(t**2)
-        tau, lad, ldiff, x = get_nums(E, r)
-
-        argexp = n*E/Ecut + ( (lad/alpha*(1-1/n) - x)**2/
-                              (4*ldiff**2/alpha*np.log(n)) )
-        argexp[n==1.] = 1e35  # Prevent blowup
-        integrand = 2*np.exp((1-s)*t**2) / np.exp(argexp)
-        integral_left = spint.trapz(integrand, t)  # TODO can do better?
-
-        # Second integral, build 3-D arrays
-        yc = np.linspace(0., 1., num=100, endpoint=False)  # TODO arbitrary
-        E, r, y = np.meshgrid(Ec, rc, yc, indexing='ij')
-        q = 2.  # q, nmin just for change of variables
-        nmin = np.exp(1.)
-        n = y / (1 - y**2)**q + nmin
-        tau, lad, ldiff, x = get_nums(E, r)
-
-        argexp = n*E/Ecut + ( (lad/alpha*(1-1/n) - x)**2/
-                              (4*ldiff**2/alpha*np.log(n)) )  # same
-        integrand = ( n**(-1*s) / np.sqrt(np.log(n)) / np.exp(argexp) *
-                      ((2*q-1)*y**2+1) / (1-y**2)**(q+1) )
-        integral_right = spint.trapz(integrand, y)  # TODO can do better?
-
-        # Final integral
-        integral = integral_left + integral_right
-        E_s = E[:,:,0]  # Slice as integral is 2-D array
-        return integral * k0 /2 /np.sqrt(np.pi*alpha*b0*D0) * E_s**(-1*(1+s))
-
-
-    def distr_mgt1(Ec, rc, B, Ecut, eta, mu, rs, v, s):
-        """Case: mu > 1
-        Integrate over t in [0, 1] (n = 1+t^2 in [1, 2]), then
-        integrate over y in [0, 1] (n = mess in [2, infty)).
-        """
-        # First integral, build 3-D arrays
-        tc = np.linspace(0., 1., num=1000)  # TODO arbitrary
-        E, r, t = np.meshgrid(Ec, rc, tc, indexing='ij')
-        n = 1 + t**2
-        tau, lad, ldiff, x = get_nums(E, r)
-
-        argexp = n**(-1/(1-mu)) * E/Ecut + ( (lad/alpha*(1-n**(1/(1-mu)))-x)**2 /
-                                             (4*ldiff**2*(1-n)/alpha) * (1-mu) )
-        argexp[n==1.] = 1e35
-        integrand = 2*n**((s+mu-2)/(1-mu)) / np.exp(argexp)
-        integral_left = spint.trapz(integrand, t)  # TODO can do better?
-
-        # Second integral, build 3-D arrays
-        yc = np.linspace(0., 1., num=100, endpoint=False)  # TODO arbitrary
-        E, r, y = np.meshgrid(Ec, rc, yc, indexing='ij')
-        q = 2.
-        nmin = 2.
-        n = y / (1 - y**2)**q + nmin
-        tau, lad, ldiff, x = get_nums(E, r)
-
-        argexp = ( n**(-1/(1-mu)) * E/Ecut +
-                   (lad/alpha*(1-n**(1/(1-mu))) - x)**2 /
-                   (4*ldiff**2*(1-n)/alpha) * (1-mu) )
-        integrand = ( n**((s+mu-2)/(1-mu)) / np.sqrt(n-1) / np.exp(argexp) *
-                      ((2*q-1)*y**2+1) / (1-y**2)**(q+1) )
-        integral_right = spint.trapz(integrand, y)  # TODO can do better?
-
-        integral = integral_left + integral_right
-        E_s = E[:,:,0]  # Slice as integral is a 2-D array
-        return integral * ( k0 /2 /np.sqrt(np.pi*alpha*b0*D0*(mu-1)) *
-                            E_s**(-1*(mu/2+1/2+s)) )
-
-    # Need to address edge case by vectorizing... or something.
-    # Construct 2-D grid of E, r
-
-    # lad/ldiff ~ sqrt(v*lad) / dsqrt(D) ~ peclet number!
-    #if lad/ldiff > 30:
-    #    return distr_adv(E, r, B, Ecut, eta, mu, rs, v, s)
-
-    if mu > 1:
-        return distr_mgt1(Ec, rc, B, Ecut, eta, mu, rs, v, s)
-    elif mu < 1:
-        return distr_mlt1(Ec, rc, B, Ecut, eta, mu, rs, v, s)
-    else:
-        return distr_rpohl(Ec, rc, B, Ecut, eta, mu, rs, v, s)
+#def distr(Ec, rc, B, Ecut, eta, mu, rs, v, s):
+#    """Electron distribution, from Rettig & Pohl and Lerche & Schlickeiser
+#
+#    ASSUMED: E, r are 1-D arrays
+#    spint.trapz integrates along last axis by default, conveniently
+#
+#    Input:
+#        E = particle energy, r = radial position (scaled to [0,1])
+#        B = magnetic field
+#        Ecut = cut-off energy of injected electrons
+#        eta = \eta*(E_h)^(1-\mu), from the paper
+#        mu = diffusion coefficient exponent
+#        rs, v, s = shock radius, plasma velocity, injected e- spectral index
+#    """
+#
+#    D0 = eta*2.083e19/B  # eta (E_h)^(1-mu) * C_d / B0
+#    a = 1.57e-3  # This is b in the paper
+#                 # Synchrotron constant ... TODO declare at module level?
+#    k0 = 1.  # Normalization, Q_0
+#    b0 = a * B**2  # b*B^2 in paper
+#    alpha = 1. # TODO Not sure what this is, scaling factor?
+#
+#    def get_nums(E, r):
+#        """Compute derived parameters over 3-D arrays from np.meshgrid"""
+#        tau = 1. / (b0 * E)  # Synchrotron cooling time
+#        lad = v * tau  # Advective lengthscale
+#        ldiff = np.sqrt(D0*E**mu*tau)  # Diffusive lengthscale
+#        x = (rs - r*rs)/alpha  # Convert scaled r to x in cm
+#        return tau, lad, ldiff, x
+#
+#    # Functions for each of 4 cases
+#
+#    # TODO this one is not yet functional
+#    def distr_adv(Ec, rc, B, Ecut, eta, mu, rs, v, s):
+#        """Case: l_ad / l_diff >> 1"""
+#        efinv = a/v * B**2 * (rs - r*rs)
+#        ef = 1. / efinv
+#        en0 = E / (1.0 - E/ef)
+#        argexp = en0/Ecut
+#        # argexp = E / Ecut / (1 - a*B**2*E * (rs-r*rs) / v)
+#        Xi = 1 - E/ef  # Only used for if-else structure below
+#        if Xi > 0:
+#            return 1./en0**s * (en0/E)**2 / np.exp(argexp) * 8e-9
+#        else:
+#            return 0.
+#
+#
+#    def distr_mlt1(Ec, rc, B, Ecut, eta, mu, rs, v, s):
+#        """Case: mu < 1
+#        Integrate over t, where n = 1 - t^2
+#        """
+#        # Build 3-D arrays
+#        tc = np.linspace(0., 1., num=1000)  # TODO arbitrary
+#        E, r, t = np.meshgrid(Ec, rc, tc, indexing='ij')
+#        n = 1 - t**2
+#        tau, lad, ldiff, x = get_nums(E, r)
+#
+#        argexp = (n**(-1/(1-mu)) * E/Ecut +
+#                      (lad/alpha * (1 - n**(1/(1-mu)) ) - x)**2 /
+#                      (4*ldiff**2*(1-n)/alpha) * (1-mu) )
+#        argexp[n==1.] = 1e35  # Prevent blowup
+#        integrand = 2*n**((s+mu-2)/(1-mu)) / np.exp(argexp)
+#
+#        integral = spint.trapz(integrand, t)  # TODO can do better?
+#        E_s = E[:,:,0]  # Slice as integral is a 2-D array
+#        return integral * ( k0 /2 /np.sqrt(np.pi*alpha*b0*D0*(1-mu)) *
+#                            E_s**(-1*(mu/2+1/2+s)) )
+#
+#
+#    def distr_rpohl(Ec, rc, B, Ecut, eta, mu, rs, v, s):
+#        """Case: mu = 1
+#        Integrate over t in [0,1] (n=e^(t^2) in [1,e]), then
+#        integrate over y in [0,1] (n=mess in [e, infty)).
+#        """
+#        # First integral, build 3-D arrays
+#        tc = np.linspace(0., 1., num=1000)  # TODO arbitrary
+#        E, r, t = np.meshgrid(Ec, rc, tc, indexing='ij')
+#        n = np.exp(t**2)
+#        tau, lad, ldiff, x = get_nums(E, r)
+#
+#        argexp = n*E/Ecut + ( (lad/alpha*(1-1/n) - x)**2/
+#                              (4*ldiff**2/alpha*np.log(n)) )
+#        argexp[n==1.] = 1e35  # Prevent blowup
+#        integrand = 2*np.exp((1-s)*t**2) / np.exp(argexp)
+#        integral_left = spint.trapz(integrand, t)  # TODO can do better?
+#
+#        # Second integral, build 3-D arrays
+#        yc = np.linspace(0., 1., num=100, endpoint=False)  # TODO arbitrary
+#        E, r, y = np.meshgrid(Ec, rc, yc, indexing='ij')
+#        q = 2.  # q, nmin just for change of variables
+#        nmin = np.exp(1.)
+#        n = y / (1 - y**2)**q + nmin
+#        tau, lad, ldiff, x = get_nums(E, r)
+#
+#        argexp = n*E/Ecut + ( (lad/alpha*(1-1/n) - x)**2/
+#                              (4*ldiff**2/alpha*np.log(n)) )  # same
+#        integrand = ( n**(-1*s) / np.sqrt(np.log(n)) / np.exp(argexp) *
+#                      ((2*q-1)*y**2+1) / (1-y**2)**(q+1) )
+#        integral_right = spint.trapz(integrand, y)  # TODO can do better?
+#
+#        # Final integral
+#        integral = integral_left + integral_right
+#        E_s = E[:,:,0]  # Slice as integral is 2-D array
+#        return integral * k0 /2 /np.sqrt(np.pi*alpha*b0*D0) * E_s**(-1*(1+s))
+#
+#
+#    def distr_mgt1(Ec, rc, B, Ecut, eta, mu, rs, v, s):
+#        """Case: mu > 1
+#        Integrate over t in [0, 1] (n = 1+t^2 in [1, 2]), then
+#        integrate over y in [0, 1] (n = mess in [2, infty)).
+#        """
+#        # First integral, build 3-D arrays
+#        tc = np.linspace(0., 1., num=1000)  # TODO arbitrary
+#        E, r, t = np.meshgrid(Ec, rc, tc, indexing='ij')
+#        n = 1 + t**2
+#        tau, lad, ldiff, x = get_nums(E, r)
+#
+#        argexp = n**(-1/(1-mu)) * E/Ecut + ( (lad/alpha*(1-n**(1/(1-mu)))-x)**2 /
+#                                             (4*ldiff**2*(1-n)/alpha) * (1-mu) )
+#        argexp[n==1.] = 1e35
+#        integrand = 2*n**((s+mu-2)/(1-mu)) / np.exp(argexp)
+#        integral_left = spint.trapz(integrand, t)  # TODO can do better?
+#
+#        # Second integral, build 3-D arrays
+#        yc = np.linspace(0., 1., num=100, endpoint=False)  # TODO arbitrary
+#        E, r, y = np.meshgrid(Ec, rc, yc, indexing='ij')
+#        q = 2.
+#        nmin = 2.
+#        n = y / (1 - y**2)**q + nmin
+#        tau, lad, ldiff, x = get_nums(E, r)
+#
+#        argexp = ( n**(-1/(1-mu)) * E/Ecut +
+#                   (lad/alpha*(1-n**(1/(1-mu))) - x)**2 /
+#                   (4*ldiff**2*(1-n)/alpha) * (1-mu) )
+#        integrand = ( n**((s+mu-2)/(1-mu)) / np.sqrt(n-1) / np.exp(argexp) *
+#                      ((2*q-1)*y**2+1) / (1-y**2)**(q+1) )
+#        integral_right = spint.trapz(integrand, y)  # TODO can do better?
+#
+#        integral = integral_left + integral_right
+#        E_s = E[:,:,0]  # Slice as integral is a 2-D array
+#        return integral * ( k0 /2 /np.sqrt(np.pi*alpha*b0*D0*(mu-1)) *
+#                            E_s**(-1*(mu/2+1/2+s)) )
+#
+#    # Need to address edge case by vectorizing... or something.
+#    # Construct 2-D grid of E, r
+#
+#    # lad/ldiff ~ sqrt(v*lad) / dsqrt(D) ~ peclet number!
+#    #if lad/ldiff > 30:
+#    #    return distr_adv(E, r, B, Ecut, eta, mu, rs, v, s)
+#
+#    if mu > 1:
+#        return distr_mgt1(Ec, rc, B, Ecut, eta, mu, rs, v, s)
+#    elif mu < 1:
+#        return distr_mlt1(Ec, rc, B, Ecut, eta, mu, rs, v, s)
+#    else:
+#        return distr_rpohl(Ec, rc, B, Ecut, eta, mu, rs, v, s)
 
 
 # ============================

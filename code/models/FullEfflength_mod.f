@@ -80,13 +80,13 @@
           if (snrflag.eq.0) then
             call Fullefflengthsub(kevs, inumax, widtharc, B0, eta2, mu,
      &                          5d0*1.d8, 5d0*1.d8/4d0, 2.96d19, 900d0,
-     &                          2d0*0.6d0+1d0, rminarcarray, 1, 4000,
-     &                          200,1000)
+     &                          2d0*0.6d0+1d0, rminarcarray, 1, 400,
+     &                          100,500, 1, 0.05d0, 5d-6)
           elseif (snrflag.eq.1) then
             call Fullefflengthsub(kevs, inumax, widtharc, B0, eta2, mu,
      &                            4.7d0*1.d8, 4.7d0*1.d8/4d0, 1.077d19,
      &                            240d0, 2d0*0.65d0+1d0, rminarcarray,
-     &                            1, 400, 100,500)
+     &                            1, 400, 100,500, 0, 0.05d0, 5d-6)
           endif
 
           do i = 1, inumax
@@ -117,20 +117,25 @@
 !     iradmax = 100     ! Resolution on tabulated electron distribution
 !     ixmax =  500      ! Resolution along line of sight for integration
 
+!     idamp = ...
+!     ab = 0.05d0
+!     Bmin = 5d-6
+
       subroutine Fullefflengthsub(kevs, inumax, widtharc, B0, eta2, mu,
      &                            vs, v0, rs, rsarc, s, rminarc, icut,
-     &                            irmax, iradmax, ixmax)
+     &                            irmax, iradmax, ixmax,
+     &                            idamp, ab, Bmin)
           implicit none
           ! Input parameters (widtharc is for output)
           integer inumax
-          double precision mu, eta2, B0
+          double precision mu, eta2, B0, ab, Bmin
           double precision kevs(inumax), widtharc(inumax)
           ! Constants, or nominally constant inputs (SNR specific)
           double precision vs, v0, rs, rsarc, s
           double precision rminarc(inumax)
           ! Settings
           integer irmax, ixmax, iradmax
-          integer icut
+          integer icut, idamp
 
           ! "Fundamental" constants
           double precision cm, c1, a ! Synchrotron params
@@ -153,7 +158,7 @@
           double precision dx, x, rho
           integer i, ix
           double precision emis1, integrand, integral, intensity
-          double precision distgraph(1000), intensitygraph(inumax,10000)
+          double precision distgraph(10000),intensitygraph(inumax,10000)
           ! FWHM calculation, outputs
           double precision width(inumax)!, norms(inumax)
 
@@ -186,7 +191,6 @@ cf2py depend(inumax) widtharc
 
           if (icut.eq.1) then
               ! Scaling checks out, and 1.602177 erg = 1 TeV
-              ! TODO: numerical prefactor 8.3 TeV not checked yet
               ecut = (8.3d0*(B0/(100d-6))**(-1d0/2d0)
      &               *(vs/1d8)*1.6021773d0)**(2d0/(1d0+mu))
      &               *(1d0/eta)**(1d0/(mu+1d0))
@@ -207,7 +211,7 @@ cf2py depend(inumax) widtharc
             ! Tabulate electron distribution for fixed nu
             ! generating 2-D grid as function of energy, radial position
             call distr(disttab, radtab, iradmax, nu, rmin(inu), B0,Ecut,
-     &                 eta, mu, rs, v0, s, c1)
+     &                 eta, mu, rs, v0, s, c1, idamp, ab, Bmin)
 
             ! For each radial position in intensity profile
             ! Integrate over line of sight to get I_\nu(r)
@@ -400,7 +404,8 @@ cf2py depend(inumax) widtharc
 ! NOTE: THIS IS THE ONLY PART OF THE FORTRAN CODE CURRENTLY IN USE
 
       subroutine distr(disttab, radtab, iradmax, nu, rmin, B0, Ecut,
-     &                                           eta, mu, rs, v0, s, c1)
+     &                                           eta, mu, rs, v0, s, c1,
+     &                                           idamp, ab, Bmin)
           implicit none
           ! Input arrays to modify
           double precision disttab(100, 1000), radtab(1000)
@@ -408,6 +413,12 @@ cf2py depend(inumax) widtharc
           integer iradmax ! Resolution for radtab
           double precision nu, rmin, B0, mu, rs, v0, s, c1  ! Input/constants
           double precision Ecut, eta ! Derived from program inputs
+          ! Magnetic damping inputs
+          integer idamp  ! Flag for magnetic damping
+          double precision ab, Bmin  ! Magnetic damping params
+
+          ! Extra variable -- compute energy w/ correct field
+          double precision B
 
           ! Iteration variables
           integer irad, j
@@ -429,21 +440,29 @@ cf2py intent(out) disttab
           ! rad will span rmin to 1.0, inclusive
 
           do irad = 1, iradmax  ! Fortran-order access
+
+            ! Compute B at radial position, if needed
+            if (idamp.eq.1) then
+              B = Bmin + (B0-Bmin)*dexp((rad-1d0)/ab) ! -x = (r-1)
+            else
+              B = B0
+            endif
+
             do j = 1, ir
-              ! TODO TODO Here Sean sets the magnetic field, if damped
-              ! B = Bmin + (B0-Bmin)*dexp((rad-1d0)/ab)
-              ! THEN, pass B into the arguments to distr...(...)
-              en = dsqrt(nu/c1/B0/xex(j))
-              ! disttab(j,irad) = distr(En,B0, Ecut,ab, rad, Bmin)
+              en = dsqrt(nu/c1/B/xex(j))
+              ! Don't pass B into distr*, use B0 and Bmin
               if (mu.lt.1d0) then
                 disttab(j,irad) = distrmlt1(en,B0, ecut,rad,
-     &                                      eta,mu, rs, v0,s)
+     &                                      eta,mu, rs, v0,s,
+     &                                      idamp, ab, Bmin)
               elseif (mu.gt.1d0) then
                 disttab(j,irad) = distrmgt1(en,B0, ecut,rad,
-     &                                      eta,mu, rs, v0,s)
+     &                                      eta,mu, rs, v0,s,
+     &                                      idamp, ab, Bmin)
               else
                 disttab(j,irad) = distrpohl(en,B0, ecut,rad,
-     &                                      eta,mu, rs, v0,s)
+     &                                      eta,mu, rs, v0,s,
+     &                                      idamp, ab, Bmin)
               endif
             enddo
             radtab(irad) = rad
@@ -454,32 +473,41 @@ cf2py intent(out) disttab
       end
 
 
-! ------------------------------------------------
-! Electron distribution function, for mu < 1
-! Equation (15), from Lerche & Schlickeiser (1980)
+! --------------------------------------------------
+! Electron distribution function arguments, for all!
 !
 ! E = particle energy, B = magnetic field
 ! ecut = cut-off energy of injected electrons
 ! s = spectral index of injected electrons
-! r = radial position
+! r = radial position (scaled, 0 to 1)
 ! eta = \eta*(E_h)^(1-\mu), from the paper
 ! mu = diffusion coefficient exponent
 ! rs, v = shock radius, plasma velocity
-!
-! Cleaned 2014 July 18
+! idamp = toggle for magnetic damping
+! absc = damping length ab (scaled, 0 to 1)
+! Bmin = minimum magnetic field
+! --------------------------------------------------
+
+
+! ------------------------------------------------
+! Electron distribution function, for mu < 1
+! Equation (15), from Lerche & Schlickeiser (1980)
 ! ------------------------------------------------
 
-      function distrmlt1(E,B, Ecut,r, eta,mu, rs, v,s)
+      function distrmlt1(E,B, Ecut,r, eta,mu, rs,v,s, idamp,absc,Bmin)
           implicit none
 
           ! Inputs
           double precision E, r  ! Variables to grid over
           double precision B, mu, rs, v, s  ! Input/constants
           double precision Ecut, eta ! Derived from program inputs
+          integer idamp  ! Flag for damping
+          double precision absc, Bmin  ! Magnetic damping stuff
 
           ! Derived constants etc
           double precision D0, a, k0, b0, alpha, pi
           double precision tau, lad, ldiff, x
+          double precision ab, z  ! For damping
 
           ! Integration
           double precision efinv, ef, en0, Xi  ! For lad >> ldiff case
@@ -501,7 +529,19 @@ cf2py intent(out) disttab
           lad = v*tau  ! Advective lengthscale
           ldiff = dsqrt(D0*E**mu*tau)  ! Diffusive lengthscale
 
-          x = (rs-r*rs)/alpha  ! Convert radial coord to x
+          if (idamp.eq.0) then
+              x = (rs-r*rs)/alpha  ! Convert scaled radial coord to x
+          elseif (absc.gt.1d3) then
+              x = rs - r*rs  ! Let z(x) = x for extreme damping
+          else
+              ab = absc*rs  ! convert ab to cm
+              z = rs - r*rs  ! This would normally be x
+              ! variable x is z(x) in paper
+              x = (z*(Bmin**2d0)/B**2d0 +
+     &             ab/2d0*(B-Bmin)**2d0/B**2d0 *(1d0-dexp(-2d0*z/ab)) +
+     &             2d0*ab*(B-Bmin)*Bmin/B**2d0 *(1d0-dexp(-z/ab))
+     &            )/alpha
+          endif
 
           ! Integration limits
           tmin = 0d0
@@ -509,7 +549,11 @@ cf2py intent(out) disttab
 
           !If lad >> ldiff, compute easy solution and skip to end
           if (lad/ldiff.gt.30d0) then  !If lad<<ldiff the solution is easy
-            efinv = a/v * B**2d0*(rs-r*rs)
+            if (idamp.eq.0) then
+                efinv = a/v * B**2d0 * (rs-r*rs)
+            else
+                efinv = b0/v*x
+            endif
             ef =1d0/efinv
             en0 = E/(1d0-E/ef)
             argexp = en0/ecut
@@ -567,21 +611,33 @@ cf2py intent(out) disttab
 ! Equation (14), from Rettig and Pohl (2012)
 ! ------------------------------------------
 
-      function distrpohl(E,B, Ecut,r, eta,mu, rs, v,s)
-        double precision v, tau, E, Ecut
-        double precision distrpohl
-        double precision D0, B, a, b0, alpha
-        double precision k0, s, integrand
-        double precision x, n, argexp,pi, rs, r
-        double precision integral
-        double precision oldintegrand, nmin, dy
-        double precision y,q,t, dt
-        double precision tmax
-        double precision tmin, lad, ldiff
-        double precision en0, efinv, ef,  Xi
-        double precision eta, mu
+      function distrpohl(E,B, Ecut,r, eta,mu, rs,v,s, idamp,absc,Bmin)
+          !implicit none
 
-        D0 = eta*2.083d19/B
+          ! Inputs
+          double precision E, r  ! Variables to grid over
+          double precision B, mu, rs, v, s  ! Input/constants
+          double precision Ecut, eta ! Derived from program inputs
+          integer idamp  ! Flag for damping
+          double precision absc, Bmin  ! Magnetic damping stuff
+
+          ! Derived constants etc
+          double precision D0, a, k0, b0, alpha, pi
+          double precision tau, lad, ldiff, x
+          double precision ab, z  ! for damping
+
+          ! Integration
+          double precision efinv, ef, en0, Xi  ! For lad >> ldiff case
+          double precision t, tmin, tmax, dt  ! 1st variable change
+          double precision y, q, nmin, dy  ! 2nd variable change
+          !integer i, inmax, it, itmax
+          double precision n, argexp
+          double precision integral, integrand, oldintegrand
+
+          double precision distrpohl
+
+
+        D0 = eta*2.083d19/B  ! C_D = c/(3e)
         a = 1.57d-3
         k0 = 1d0
         b0 = a*B**2d0
@@ -592,28 +648,51 @@ cf2py intent(out) disttab
         lad = v*tau
         ldiff = dsqrt(D0*E*tau)
 
-        x = (rs-r*rs)/alpha
+        if (idamp.eq.0) then
+            x = (rs-r*rs)/alpha
+        elseif (absc.gt.1d3) then
+            x = rs - r*rs  ! Let z(x) = x for extreme damping
+        else
+            ab = absc*rs  ! convert ab to cm
+            z = rs - r*rs  ! This would normally be x
+            ! variable x is z(x) in paper
+            x = (z*(Bmin**2d0)/B**2d0 +
+     &           ab/2d0*(B-Bmin)**2d0/B**2d0 *(1d0-dexp(-2d0*z/ab)) +
+     &           2d0*ab*(B-Bmin)*Bmin/B**2d0 *(1d0-dexp(-z/ab))
+     &          )/alpha
+        endif
 
         tmin = 0d0
         tmax = 1d0
         
         if (lad/ldiff.gt.30d0) then 
-            efinv = a/v*B**2d0*(rs-r*rs)
-            ef =1d0/efinv
-            en0 = E/(1d0-E/ef)
-            argexp = en0/ecut
-            Xi = 1d0-E/ef
-            if (Xi.gt.0d0) then
-              integral = 1./en0**s*(en0/E)**2/dexp(argexp)*8d-9
-            else
-              integral = 0d0
-            endif
-            go to 444
+          if (idamp.eq.0) then
+              efinv = a/v*B**2d0*(rs-r*rs)
+          else
+              efinv = b0/v*x
+          endif
+          ef =1d0/efinv
+          en0 = E/(1d0-E/ef)
+          argexp = en0/ecut
+          ! argexp = E/ecut / (1 - a*B**2d0*E * (rs-r*rs) / v)
+          Xi = 1d0-E/ef  ! Only used for if-else structure below
+
+          if (Xi.gt.0d0) then
+            integral = 1./en0**s*(en0/E)**2/dexp(argexp)*8d-9
+          else
+            integral = 0d0
+          endif
+
+          go to 444
         endif
 
         ! This integral only runs from t=0 to t=1 (n=1 to n=e)
         ! Using trapezoidal sum
-        itmax = 1000
+        if (idamp.eq.0) then
+            itmax = 1000
+        else
+            itmax = 5000  ! TODO TEMPORARY just copied fr Sean's code
+        endif
         oldintegrand = 0d0
         integral = 0d0
         dt = (tmax-tmin)/dble(itmax-1)
@@ -679,21 +758,25 @@ cf2py intent(out) disttab
 
         return 
       end
-    
+
+
 ! ------------------------------------------------
 ! Electron distribution function, for mu > 1
 ! Equation (16), from Lerche & Schlickeiser (1980)
 ! ------------------------------------------------
 
-      function distrmgt1(E,B, Ecut,r, eta,mu, rs, v,s)
+      function distrmgt1(E,B, Ecut,r, eta,mu, rs,v,s, idamp,absc,Bmin)
           implicit none
           double precision E, r  ! Variables to grid over
           double precision B, mu, rs, v, s  ! Input/constants
           double precision Ecut, eta  ! Derived from program inputs
+          integer idamp  ! Flag for damping
+          double precision absc, Bmin  ! Magnetic damping stuff
 
           ! Derived constants etc
           double precision D0, a, k0, b0, alpha, pi
           double precision tau, lad, ldiff, x
+          double precision ab, z  ! for damping
 
           ! Integration
           double precision efinv, ef, en0, Xi  ! For lad >> ldiff case
@@ -716,26 +799,43 @@ cf2py intent(out) disttab
           lad = v*tau
           ldiff = dsqrt(D0*E**mu*tau)
 
-          x = (rs-r*rs)/alpha
+          if (idamp.eq.0) then
+              x = (rs-r*rs)/alpha
+          elseif (absc.gt.1d3) then
+              x = rs - r*rs  ! Let z(x) = x for extreme damping
+          else
+              ab = absc*rs  ! convert ab to cm
+              z = rs - r*rs  ! This would normally be x
+              ! variable x is z(x) in paper
+              x = (z*(Bmin**2d0)/B**2d0 +
+     &             ab/2d0*(B-Bmin)**2d0/B**2d0 *(1d0-dexp(-2d0*z/ab)) +
+     &             2d0*ab*(B-Bmin)*Bmin/B**2d0 *(1d0-dexp(-z/ab))
+     &            )/alpha
+          endif
 
           tmin = 0d0
           tmax = 1d0
 
           ! Same, use easy soln for lad >> ldiff
           if (lad/ldiff.gt.30d0) then 
-              efinv = a/v*B**2d0*(rs-r*rs)
-              ef =1d0/efinv
-              en0 = E/(1d0-E/ef)
-              argexp = en0/ecut
-              Xi = 1d0-E/ef
+            if (idamp.eq.0) then
+                efinv = a/v*B**2d0*(rs-r*rs)
+            else
+                efinv = b0/v*x
+            endif
+            ef =1d0/efinv
+            en0 = E/(1d0-E/ef)
+            argexp = en0/ecut
+          ! argexp = E/ecut / (1 - a*B**2d0*E * (rs-r*rs) / v)
+            Xi = 1d0-E/ef  ! Only used for if-else structure below
 
-              if (Xi.gt.0d0) then
-                  integral = 1./en0**s*(en0/E)**2/dexp(argexp)*8d-9
-              else
-                  integral = 0d0
-              endif
+            if (Xi.gt.0d0) then
+                integral = 1./en0**s*(en0/E)**2/dexp(argexp)*8d-9
+            else
+                integral = 0d0
+            endif
 
-              go to 444
+            go to 444
           endif
 
           ! Set up integral over t, n = 1+t^2 (not same as before!)

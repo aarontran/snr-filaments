@@ -469,7 +469,8 @@ def simple_width(snr, kevs, mu, eta2, B0):
 # Input: params, kevs, snr, **kwargs; output: model FWHMs
 
 def width_cont(params, kevs, snr, verbose=True, rminarc=None, icut=None,
-    irmax=None, iradmax=None, ixmax=None, irad_adapt=True, irad_adapt_f=1.2):
+    irmax=None, iradmax=None, ixmax=None, irad_adapt=True, irad_adapt_f=1.2,
+    idamp=False, damp_ab=0.05, damp_bmin=5.0e-6):
     """Width function, wrapper for Python port of full model (equation 12)
 
     All **kwargs not specified (excepting verbose) are taken from snr object
@@ -496,6 +497,10 @@ def width_cont(params, kevs, snr, verbose=True, rminarc=None, icut=None,
                     comparatively faster than increasing grid resolution)
         irad_adapt_f: float, should be > 1; margin-of-error for rminarc in
                       adaptive calculation
+
+        idamp: boolean; toggle magnetic damping
+        damp_ab: float between [0,1], damping lengthscale if damping is on
+        damp_bmin: float, minimum magnetic field for damping
 
     Outputs:
         np.array of modeled FWHMs (arcsec) for each energy in 'kevs'
@@ -537,7 +542,8 @@ def width_cont(params, kevs, snr, verbose=True, rminarc=None, icut=None,
         iradmax_prelim = int(iradmax / 2.)  # Just a rough calculation
 
         fwhms_prelim = fmp.fefflen(kevs, B0, eta2, mu, vs, v0, rs, rsarc, s,
-                                   rminarc, icut, irmax, iradmax_prelim, ixmax)
+                                   rminarc, icut, irmax, iradmax_prelim, ixmax,
+                                   idamp, damp_ab, damp_bmin)
 
         # Replace error-code values
         res_msk, box_msk = _check_calc_errs(fwhms_prelim, rminarc)
@@ -568,7 +574,8 @@ def width_cont(params, kevs, snr, verbose=True, rminarc=None, icut=None,
 
     # Python full model port
     fwhms = fmp.fefflen(kevs, B0, eta2, mu, vs, v0, rs, rsarc, s,
-                        rminarc, icut, irmax, iradmax, ixmax)
+                        rminarc, icut, irmax, iradmax, ixmax,
+                        idamp, damp_ab, damp_bmin)
 
     res_msk, box_msk = _check_calc_errs(fwhms, rminarc)
     # Check for errors

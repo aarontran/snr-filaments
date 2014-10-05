@@ -38,8 +38,8 @@
         !Physics Parameters
         compratio = 4d0
         v0 = 5*1.d8/compratio
-        ab =.05d0
-        Bmin =5d-6
+        ab =.05d0       ! Damping length, between [0, 1]
+        Bmin =5d-6      ! Minimum magnetic field
         rs = 2.96e19    !tan(943.7'')*2.2 kpc
         alpha = .6d0
         s = 2d0*alpha+1d0
@@ -377,7 +377,7 @@
         const = Bmax-Bmin
         eta = 1d0
 
-        D0 = 2.083d19/Bmax*eta
+        D0 = eta*2.083d19/Bmax
         a = 1.57d-3
         k0 = 1d0
         b0 = a*Bmax**2d0
@@ -390,7 +390,7 @@
         v = vs/4d0
         rs = 2.96d19
 
-        ! Damping lengthscale
+        ! Damping lengthscale (cm)
         ab = absc*rs
 
         tau = 1d0/b0/E

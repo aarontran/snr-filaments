@@ -2308,6 +2308,55 @@ B0 values vary by about 1% or so; eta2 values vary by about 1-5% from the
 expected 1.777... ratio.
 
 
+Saturday 2014 October 4
+=======================
+
+Magnetic damping: planing out the chain of code modifications.
+
+First get underlying code working (`models.width_cont` and everything below).
+Then, deal with `models*.py` infrastructure to set-up damping calculations
+
+
+    models_disp.py
+    models_exec.py
+    models.py
+
+        width_cont **kwargs: idamp=False, damp_ab=0.05, damp_bmin=5.0e-6
+                             pass to fefflen (only ever called by width_cont)
+
+    FullEfflength_port.py
+
+        I let emisx, distr (in FullEfflength_mod.f) do computations from
+        B0/ab/Bmin separately -- no need to carry around B field array.
+        e- distribution calculation uses z(x) = ... ugly thing
+
+        fefflen args: idamp, ab, Bmin (ab, Bmin only used if idamp=True)
+        emisx args: idamp, ab, Bmin
+
+        pass idamp_flag, ab, Bmin to fullmodel.distr (idamp is an int)
+
+    FullEfflength_mod.f
+
+        distr(..., idamp, ab, Bmin)
+        distrmlt1(..., idamp, ab, Bmin)
+        distrmgt1(..., idamp, ab, Bmin)
+        distrpohl(..., idamp, ab, Bmin)
+
+        Also modified:
+        Fullefflengthsub(..., idamp, ab, Bmin)
+
+Finished updating code.  It looks like it works.  With Sean's default input I
+get larger FWHMs but they definitely still look energy dependent.  Though, the
+scale width was about 0.05 percent of remnant radius though.
+
+I'm not sure whether to expect larger or smaller rims with damping.
+Electrons radiate energy less effectively, so they get farther downstream
+But the peak emission energy shifts down too, at smaller B
+so they wouldn't radiate at that energy as much...
+
+Oh well, it looks to work, will check it and all tomorrow.
+(also, all the e- distr integrals' resolutions have to be checked)
+
 
 
 (Week 19) Monday 2014 October 6
