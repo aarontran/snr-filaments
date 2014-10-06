@@ -2311,11 +2311,10 @@ expected 1.777... ratio.
 Saturday 2014 October 4
 =======================
 
-Magnetic damping: planing out the chain of code modifications.
+Magnetic damping: planning out the chain of code modifications.
 
 First get underlying code working (`models.width_cont` and everything below).
 Then, deal with `models*.py` infrastructure to set-up damping calculations
-
 
     models_disp.py
     models_exec.py
@@ -2356,6 +2355,286 @@ so they wouldn't radiate at that energy as much...
 
 Oh well, it looks to work, will check it and all tomorrow.
 (also, all the e- distr integrals' resolutions have to be checked)
+
+Sunday 2014 October 5
+=====================
+
+
+B-damping code check
+--------------------
+
+Check my code against Sean's original B-damping code, ensure that we get the
+same/similar numbers (for rim FWHMs) out
+
+Phys parameters:
+    eta = 1, mu = 1, Bmin = 5e-6, icut = 1
+SN 1006 parameters:
+    compratio = 4d0, v0 = 5d8/compratio, rs = 2.96e19,
+    alpha = 0.6d0, s = 2*alpha + 1
+Grid parameters:
+    irmax, iradmax, ixmax = 1000, 400, 500
+
+I generally take rminarc = 72, to match Sean's choice of rmin=0.92 (I assume
+92% of 900 arcsec?).
+
+### Sean's code
+
+Compiled with `-O3` flag.  `rmin = 0.92`
+
+* B0 = 50d-6, ab = 0.005
+    1.00  keV   11.81  arcseconds   NaN  mnu
+    2.00  keV   10.58  arcseconds  -.16  mnu
+    4.00  keV    9.58  arcseconds  -.14  mnu
+    8.00  keV    8.78  arcseconds  -.12  mnu
+* B0 = 150d-6, ab = 0.005
+    1.00  keV    7.85  arcseconds   NaN  mnu
+    2.00  keV    6.84  arcseconds  -.20  mnu
+    4.00  keV    5.98  arcseconds  -.19  mnu
+    8.00  keV    5.26  arcseconds  -.19  mnu
+
+* B0 = 50d-6, ab = 0.05
+    1.00  keV   66.10  arcseconds   NaN  mnu
+    2.00  keV   53.86  arcseconds  -.30  mnu
+    4.00  keV   44.64  arcseconds  -.27  mnu
+    8.00  keV   37.58  arcseconds  -.25  mnu
+* B0 = 150d-6, ab = 0.05
+    1.00  keV   15.84  arcseconds   NaN  mnu
+    2.00  keV   12.10  arcseconds  -.39  mnu
+    4.00  keV    9.65  arcseconds  -.33  mnu
+    8.00  keV    7.92  arcseconds  -.28  mnu
+
+### My modified code
+
+Running code from `FullEfflength_mod.f` (NOT Python wrapper).
+(tried Python wrapper code, but results failed too often. super sensitive to
+rminarc value?...)
+
+* B0 = 50d-6, ab = 0.005 (rminarc = 72 arcsec)
+   1.00  keV:    16.92
+   2.00  keV:    14.40
+   4.00  keV:    12.42
+   8.00  keV:    11.16
+* B0 = 150d-6, ab = 0.005 (rminarc = 72 arcsec)
+   1.00  keV:     9.72
+   2.00  keV:     8.28
+   4.00  keV:     7.02
+   8.00  keV:     6.12
+
+* B0 = 50d-6, ab = 0.05 (rminarc = 100 arcsec)
+   1.00  keV:    78.50
+   2.00  keV:    62.50
+   4.00  keV:    50.25
+   8.00  keV:    41.75
+* B0 = 150d-6, ab = 0.05 (rminarc = 72 arcsec)
+   1.00  keV:    16.56
+   2.00  keV:    12.42
+   4.00  keV:     9.72
+   8.00  keV:     8.10
+
+Something is up -- numbers are in the right ballpark, but rather off.  Too much
+to be explained by resolution or similar (and, resolutions should be the same).
+
+### Try running without energy cut-off (icut=0).  B0 = 150d-6, ab = 0.005
+Sean's code:
+    1.00  keV    9.43  arcseconds   NaN  mnu
+    2.00  keV    8.71  arcseconds  -.11  mnu
+    4.00  keV    8.06  arcseconds  -.11  mnu
+    8.00  keV    7.63  arcseconds  -.08  mnu
+My code:
+    1.00  keV:   12.42
+    2.00  keV:   11.34
+    4.00  keV:   10.62
+    8.00  keV:    9.90
+Nope.  Besides, the expressions for cut-off energy look correct!
+
+### Check resolutions?...
+
+Woops, I used wrong resolutions in my Fortran set-up, fix that...
+Sean's numbers, B0 = 150d-6, ab = 0.005
+    1.00  keV    7.85  arcseconds   NaN  mnu
+    2.00  keV    6.84  arcseconds  -.20  mnu
+    4.00  keV    5.98  arcseconds  -.19  mnu
+    8.00  keV    5.26  arcseconds  -.19  mnu
+Now I get (B0 = 150d-6, ab = 0.005, cut-off enabled, rminarc=72):
+   1.00  keV:    9.792
+   2.00  keV:    8.424
+   4.00  keV:    7.200
+   8.00  keV:    6.264
+
+
+### Disable magnetic damping
+
+Set ab = 5d3, to trigger the flag and set `z(x) = x` (paper notation) in the e-
+distribution calculation.  Synchrotron emissivity is still computed w/ damped
+field.  But with such a large lengthscale it should not matter.
+
+My code (rminarc = 72):
+    1.00  keV:    15.768
+    2.00  keV:    12.096
+    4.00  keV:     9.648
+    8.00  keV:     7.920
+Sean's code:
+    1.00  keV   15.55  arcseconds   NaN  mnu
+    2.00  keV   11.95  arcseconds  -.38  mnu
+    4.00  keV    9.58  arcseconds  -.32  mnu
+    8.00  keV    7.85  arcseconds  -.29  mnu
+
+Now, THAT might be close enough to chalk up to resolution error!
+Try shrinking the resolution now.
+My (Fortran) code w/ rminarc=20 gives:
+    1.00  keV:    15.72
+    2.00  keV:    12.08
+    4.00  keV:     9.62
+    8.00  keV:     7.96
+Sean's code with rmin = 0.98 (~18 arcsec) gives:
+    1.00  keV   15.64  arcseconds   NaN  mnu
+    2.00  keV   12.01  arcseconds  -.38  mnu
+    4.00  keV    9.58  arcseconds  -.33  mnu
+    8.00  keV    7.90  arcseconds  -.28  mnu
+
+Not amazing agreement.  We are using irmax = 1000, so resolution error is
+about 20 arcsec / 1000 ~ 0.02 arcsec.  Moreover, my Fortran code implementation
+uses the same stuff as Sean's code -- same FWHM calculation routine, etc.
+
+AH, I just remembered, Sean is using splines to interpolate his intensity
+profiles or whatever.  Try running my Python code w/ the FWHM finding routine,
+to see if I get results closer to those of Sean's.
+
+My Python code w/ rminarc=20, ab=5e3:
+    1.00 keV: 15.77825
+    2.00 keV: 12.12329
+    4.00 keV: 9.67510
+    8.00 keV: 8.00394
+
+NOPE.  It got even farther away!  Why? -- ahh right, I remember.  Because the
+FWHM calculation routine in Fortran code always takes the smallest FWHM value,
+measured from grid points closest to peak / inside.
+
+Well, at least FWHMs agree to order 0.1 arcsec (with FWHM values 8--16 arcsec)
+I don't want to get into the nitty-gritty of the spline/integral calculations.
+So let's say that this is acceptable.  Now, why do results with magnetic
+damping enabled differ more strongly??
+
+### Enable magnetic damping, use tight rmin/rminarc
+
+Try again with ab = 0.005 (B0 = 150d-6, same resolutions, icut=1, etc)
+
+Sean's code, rmin = 0.98 (basically the same, honestly)
+    1.00  keV    7.87  arcseconds   NaN  mnu
+    2.00  keV    6.88  arcseconds  -.19  mnu
+    4.00  keV    6.03  arcseconds  -.19  mnu
+    8.00  keV    5.33  arcseconds  -.18  mnu
+
+My (Fortran) code, rminarc = 20:
+    1.00  keV:    9.78
+    2.00  keV:    8.38
+    4.00  keV:    7.22
+    8.00  keV:    6.28
+
+Right, okay, we're back to this being off by 1--2 arcsec deal.
+As a quick sanity check -- we are not invoking the advective solution so no
+need to debug there (they are identical anyways).
+
+But I look over the e- distribution calculations, and they are friggin
+identical.  Seriously.  Well, let's take a look to be sure
+
+### Check that calculated e- distributions agree
+
+B0=150d-6, ab = 0.005, icut=1, irmax/iradmax/ixmax = 1000/400/500
+Outputs to disttab2.dat, disttabmine.dat
+
+Conclusion -- NUMBERS ARE IDENTICAL.  Okay.  So something is amiss.
+Next step in line is to consider emissivities?
+
+### Fix emissivity calculation in orig Fortran code
+
+Realized that NOT been updating B field in this calculation (in Fortran code).
+BUT, I am accounting for this in Python code and the Python code numbers are
+even FARTHER off than Fortran...  Well, let's fix it and see:
+(rminarc = 18)
+
+   1.00  keV:    7.920
+   2.00  keV:    6.912
+   4.00  keV:    6.066
+   8.00  keV:    5.364
+
+Hallelujah.  We're now within about 0.05 of Sean's code.  Still not amazing,
+but not bad.  I would expect agreement to +/- 0.018 if Sean did not use
+splines.  I don't really want to go back and redo Sean's work without the
+splines.  Now let's see why the Python code is so far off the mark.
+
+CAUGHT: off by a sign.  Should be `exp(-1*(1-r)/ab)`.  Try the Python code!
+(all same settings: rminarc = 18, ab = 0.005, Bmin = 5e-6, etc)
+    1.00 keV: 7.96426
+    2.00 keV: 6.96749
+    4.00 keV: 6.11790
+    8.00 keV: 5.40123
+
+Better than before, but now this disagrees w/ Sean's code by abt 0.1, when we
+expect them to agree within resolution (roughly) as well.
+What about agreement with my own Fortran code?  Looks like generally offset by
+~0.05 arcsec, seems promising.
+
+### Retry all calculations with rminarc = 9 / rmin = 0.99
+
+Make sure that the errors drop appropriately, if it is indeed tied to
+resolution / spline usage / etc.
+
+rminarc=9, rmin = 0.99; otherwise same settings as before.
+ab = 0.005, Bmin = 5e-6, icut = 1, irmax/iradmax/ixmax = 1000/400/500
+
+Expected resolution w/ irmax = 1000 is 9/1000 ~ 0.01 arcsec
+
+* Aaron's Python code
+    1.00 keV: 7.96428
+    2.00 keV: 6.96751
+    4.00 keV: 6.11794
+    8.00 keV: 5.40130
+* Aaron's Fortran code (modified version of Sean's original)
+    1.00  keV:    7.920
+    2.00  keV:    6.930
+    4.00  keV:    6.084
+    8.00  keV:    5.373
+* Sean's Fortran code (for B-damping)
+    1.00  keV    7.87  arcseconds  -.12  mnu
+    2.00  keV    6.89  arcseconds  -.19  mnu
+    4.00  keV    6.05  arcseconds  -.19  mnu
+    8.00  keV    5.33  arcseconds  -.18  mnu
+
+But, the errors are holding constant at about 0.04 arcsec, in stepped fashion.
+
+Try one more calculation, all same except let ab = 0.5 instead.  Much weaker
+damping -- magnetic field drops by ~2% over 9 arcseconds; about 10% over 45
+arcseconds.  Let rminarc = 36, rmin = 0.96.  Then...
+
+* Aaron's Python
+    1.00 keV:   15.83766
+    2.00 keV:   12.15671
+    4.00 keV:    9.69488
+    8.00 keV:    8.01593
+* Aaron's Fortran
+    1.00  keV:  15.768
+    2.00  keV:  12.096
+    4.00  keV:   9.648
+    8.00  keV:   7.956
+* Sean's Fortran
+    1.00  keV   15.70  arcseconds   NaN  mnu
+    2.00  keV   12.02  arcseconds  -.38  mnu
+    4.00  keV    9.58  arcseconds  -.33  mnu
+    8.00  keV    7.92  arcseconds  -.27  mnu
+
+Mismatch between Sean's Fortran and my Fortran is 0.03 to 0.07 arcsec
+Mismatch bewteen Sean's Fortran and my Python  is 0.1 to 0.13 arcsec
+
+So, again, we see this stepped error.  Resolution error here should be about
+0.04 arcsec, compared to before.
+
+The error here, then, would be of order 1%.  But this is not great, because my
+resolution error bounds are at *most* 1% (and typically 0.1%).  So this would
+be a dominant error term.
+(and, I don't really have a way to validate whether my code is right, or
+Sean's, or whatever)
+
 
 
 

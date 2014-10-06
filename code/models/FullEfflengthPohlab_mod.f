@@ -38,7 +38,7 @@
         !Physics Parameters
         compratio = 4d0
         v0 = 5*1.d8/compratio
-        ab =.05d0       ! Damping length, between [0, 1]
+        ab = .5d0       ! Damping length, between [0, 1]
         Bmin =5d-6      ! Minimum magnetic field
         rs = 2.96e19    !tan(943.7'')*2.2 kpc
         alpha = .6d0
@@ -50,14 +50,14 @@
         a = 1.57d-3
 
         !Options
-        icut = 0
+        icut = 1
 
         !Grid Parameters
         iradmax=400  !Grid size for e-distribution table
         irmax =1000  !Grid size for intensity
         ixmax = 500  !Grid size for line of sight
         inumax = 4   !Grid size for frequency
-        rmin = .92d0  !Minimum radius of intensity profile
+        rmin = .96d0  !Minimum radius of intensity profile
         nu0 = 2.417989d17*1d0  !Initial frequency
 
 !       ! rtab, altab, inttab, titab, brtab, bttab all appear unused?!
@@ -80,7 +80,8 @@
 
         ! eta=1, mu=1 assumed
         if(icut.eq.1) then
-          ecut =8.3d0*(Bfield/(100d-6))**(-.5d0)*(v0*4d0/1d8)*1.6021773d0
+          ecut = 8.3d0*(Bfield/(100d-6))**(-0.5d0)
+     c           *(v0*4d0/1d8)*1.6021773d0
         else
           ecut = 1d40
         endif
@@ -117,14 +118,19 @@
                     en = dsqrt(nu/c1/B/xex(j))
                     disttab(j,irad) = distr(En,B0, Ecut,ab, rad, Bmin)
                     radtab(irad) = rad
+                    ! write to disttab.dat if inu=3 (4 keV) and j=3
+                    ! (i.e., fixed e- energy?)
+                    ! AH not fixed.  remember en varies w/ B field
                     if (inu.eq.3.and.j.eq.3) then
                         write (119, *) rad,disttab(j, irad),en
+                        ! file is disttab.dat
                     endif
                     rad = rad + delrad
                 enddo
             enddo
             ! Finished populating disttab, radtab
 
+            ! disttab2.dat, normalized e- distr #s
             do i = 1, iradmax
               if (inu.eq.3) then
                 write (219, *) i, disttab(31, i)/disttab(31,iradmax)
@@ -142,12 +148,14 @@
             if (inu.eq.3) then
               do i = 1, iradmax
                 write (1001,*), radtab(i), emistab(i)/emistab(iradmax)
+                ! emistab.dat
               enddo
             endif
 
             if (inu.eq.1) then
               do i = 1, iradmax
                 write (1004,*), radtab(i), emistab(i)/emistab(iradmax)
+                ! emistab2.dat
               enddo
             endif
 
@@ -404,7 +412,7 @@
      c    ab/2d0*(Bmax-Bmin)**2d0/Bmax**2d0*(1d0-dexp(-2d0*z/ab)) +
      c    2d0*ab*(Bmax-Bmin)*Bmin/Bmax**2d0*(1d0-dexp(-z/ab)))/alpha
 
-        if (absc.gt.1d3) x =z  ! TODO what is this for?!
+        if (absc.gt.1d3) x =z  ! Use z(x)=x for weak damping
 
         tmin = 0d0
         tmax = 1d0
@@ -464,14 +472,14 @@ c       print *, x, z, bmax, bmin, n
         oldintegrand = 0d0
         do i = 1, inmax
 
-        n = y/(1d0-y**2d0)**q+nmin
+          n = y/(1d0-y**2d0)**q+nmin
 
 
-        argexp = n*E/Ecut+(lad/alpha*(1d0-1d0/n)-x)**2d0/
-     c      (4d0*ldiff**2d0/alpha*dlog(n))
-        integrand = n**(-1d0*s)/dsqrt(dlog(n))/dexp(argexp)*
-     c   ((2d0*q-1d0)*y**2d0+1d0)/
-     c   (1d0-y**2d0)**(q+1d0)
+          argexp = n*E/Ecut+(lad/alpha*(1d0-1d0/n)-x)**2d0/
+     c        (4d0*ldiff**2d0/alpha*dlog(n))
+          integrand = n**(-1d0*s)/dsqrt(dlog(n))/dexp(argexp)*
+     c     ((2d0*q-1d0)*y**2d0+1d0)/
+     c     (1d0-y**2d0)**(q+1d0)
 
           if (integrand.lt.1d45) then
           else
@@ -722,7 +730,8 @@ c
 
                 SUBROUTINE BANFAC(W,NROWW,NROW,NBANDL,NBANDU,IFLAG)
 
-                INTEGER IFLAG, NBANDL, NBANDU, NROW, NROWW, I, IPK, J, JMAX
+                INTEGER IFLAG, NBANDL, NBANDU, NROW, NROWW
+                INTEGER I, IPK, J, JMAX
                 INTEGER K, KMAX, MIDDLE, MIDMK, NROWM1
                 DOUBLE PRECISION W(NROWW,NROW), FACTOR, PIVOT
 
@@ -833,17 +842,17 @@ c
 10              J = 1
                 BIATX(1) = 1D0
                 IF (J.GE.JHIGH) GO TO 99
-20                      JP1 = J+1
-                        DELTAR(J) = T(LEFT+J) -X
-                        DELTAL(J) = X-T(LEFT+1-J)
-                        SAVED = 0D0
-                        DO 26 I = 1,J
-                                TERM = BIATX(I)/(DELTAR(I)+DELTAL(JP1-I))
-                                BIATX(I) = SAVED+DELTAR(I)*TERM
-26                              SAVED = DELTAL(JP1-I)*TERM
-                        BIATX(JP1) = SAVED
-                        J = JP1
-                        IF (J.LT.JHIGH) GO TO 20
+20                  JP1 = J+1
+                    DELTAR(J) = T(LEFT+J) -X
+                    DELTAL(J) = X-T(LEFT+1-J)
+                    SAVED = 0D0
+                    DO 26 I = 1,J
+                        TERM = BIATX(I)/(DELTAR(I)+DELTAL(JP1-I))
+                        BIATX(I) = SAVED+DELTAR(I)*TERM
+26                      SAVED = DELTAL(JP1-I)*TERM
+                    BIATX(JP1) = SAVED
+                    J = JP1
+                    IF (J.LT.JHIGH) GO TO 20
 
 99              RETURN
                 END

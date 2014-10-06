@@ -43,35 +43,35 @@
           ! Load common block first
           call readfglists()
 
-          !print *, 'Enter B0'
-          !read *, B0            ! Gauss
+          print *, 'Enter B0'
+          read *, B0            ! Gauss
           !print *, 'Enter Eta2'
           !read *, eta2          ! dimensionless
           !print *, 'Enter mu'
           !read *, mu            ! dimensionless
-          !print *, 'Enter rminarc'
-          !read *, rminarc       ! arcsec
+          print *, 'Enter rminarc'
+          read *, rminarc       ! arcsec
           !print *, 'Enter 0 for SN1006, 1 for Tycho'
           !read *, snrflag       ! binary...
 
           ! For timing test
-          B0 = 150d-6
+          !B0 = 150d-6
           eta2=1d0
-          mu=1.5d0
-          rminarc=20d0
-          snrflag=0
+          mu=1d0
+          !rminarc=20d0
+          snrflag=0  ! SN 1006
 
-          kevs(1) = 0.7d0
-          kevs(2) = 1d0
-          kevs(3) = 2d0
-          !kevs(4) = 3d0
-          inumax = 3
+          kevs(1) = 1d0
+          kevs(2) = 2d0
+          kevs(3) = 4d0
+          kevs(4) = 8d0
+          inumax = 4
 
-          ! Same as old code, array of rminarcs used in python wrapper
+          ! Same as old code; array of rminarcs used in python wrapper
           rminarcarray(1) = rminarc
           rminarcarray(2) = rminarc
           rminarcarray(3) = rminarc
-          !rminarcarray(4) = rminarc - 15d0
+          rminarcarray(4) = rminarc
 
 !      subroutine Fullefflengthsub(kevs, inumax, widtharc, B0, eta2, mu,
 !     &                            vs, v0, rs, rsarc, s, rminarc, icut,
@@ -80,13 +80,15 @@
           if (snrflag.eq.0) then
             call Fullefflengthsub(kevs, inumax, widtharc, B0, eta2, mu,
      &                          5d0*1.d8, 5d0*1.d8/4d0, 2.96d19, 900d0,
-     &                          2d0*0.6d0+1d0, rminarcarray, 1, 400,
-     &                          100,500, 1, 0.05d0, 5d-6)
+     &                          2d0*0.6d0+1d0, rminarcarray, 1,
+     &                          1000, 400, 500,
+     &                          1, 0.5d0, 5d-6)
           elseif (snrflag.eq.1) then
             call Fullefflengthsub(kevs, inumax, widtharc, B0, eta2, mu,
      &                            4.7d0*1.d8, 4.7d0*1.d8/4d0, 1.077d19,
      &                            240d0, 2d0*0.65d0+1d0, rminarcarray,
-     &                            1, 400, 100,500, 0, 0.05d0, 5d-6)
+     &                            1, 400, 100,500,
+     &                            0, 0.05d0, 5d-6)
           endif
 
           do i = 1, inumax
@@ -145,6 +147,9 @@
           ! Emissivity data for common block
           double precision xex(100), fex(100)
           integer ir  ! Should label as ifmax or so, to be consistent
+
+          ! Extra parameter for B-damping
+          double precision Bfield
 
           ! Iterate over nu
           double precision nu, nugraph(inumax)
@@ -220,6 +225,14 @@ cf2py depend(inumax) widtharc
             ! rho = s**2 + r**2 (r = "viewer's" radial coord)
             ! (integrates over particle energy via emisx)
 
+            ! TODO DEBUG TODO
+            !if (inu.eq.3) then
+            !    open(1001, file = 'emistab.dat')
+            !    do i = 1, iradmax
+            !        emis1 = emisx(
+            !    enddo
+            !endif
+
             ! Step from r=1 to r=rmin (IRMAX resolution)
             delr(inu) = -(1d0-rmin(inu))/real(irmax)
             r = 1d0
@@ -229,22 +242,37 @@ cf2py depend(inumax) widtharc
               ! emis1 = j_nu, emisx integrates disttab against G(y) dy
               dx = -(dsqrt(1d0-r**2))/real(ixmax)
 
+
               ! originally called emisx(r,...), changed to emisx(1, ...)
               ! SHOULD BE
               ! x = dsqrt(1d0-r**2)
               ! rho = dsqrt(x**2 + r**2)  ! Simply 1d0
               ! emis1 = emisx(rho ...)
               ! x = x + dx
-              emis1 = emisx(1d0, nu,B0,radtab,disttab) ! j_nu(r)
+
+              ! Set field for damping
+              if (idamp.eq.1) then
+                  Bfield = Bmin + (B0 - Bmin) * dexp((r-1d0)/ab)
+                  ! This is just B0 at r=1d0... but for consistency
+              else
+                  Bfield = B0
+              endif
+
+              emis1 = emisx(1d0, nu,Bfield,radtab,disttab) ! j_nu(r)
               integral = emis1*dx ! /3d0  ! Removed division by 3
               x = dsqrt(1d0-r**2)+dx
 
-              ! Integration to find intensity
+              ! Integration over line-of-sight to find intensity
               do ix = 2,ixmax-1
                 rho = dsqrt(x**2+r**2)
 
                 ! Integral over e- distribution!
-                emis1 = emisx(rho, nu,B0,radtab,disttab)
+                if (idamp.eq.1) then
+                    Bfield = Bmin + (B0 - Bmin) * dexp((rho-1d0)/ab)
+                else
+                    Bfield = B0
+                endif
+                emis1 = emisx(rho, nu,Bfield,radtab,disttab)
 
                 if (mod(ix,2).eq.0) then
                   integrand =4d0*emis1  ! Changed to 4 from 2
@@ -258,7 +286,12 @@ cf2py depend(inumax) widtharc
 
               ! Endpoint - middle
               rho = dsqrt(x**2 + r**2)  ! Should be just r
-              emis1 = emisx(rho, nu,B0,radtab,disttab)
+              if (idamp.eq.1) then
+                  Bfield = Bmin + (B0 - Bmin) * dexp((rho-1d0)/ab)
+              else
+                  Bfield = B0
+              endif
+              emis1 = emisx(rho, nu,Bfield,radtab,disttab)
               integral = integral + emis1*dx / 2d0  ! No double count
 
               intensity = integral
@@ -465,6 +498,7 @@ cf2py intent(out) disttab
      &                                      idamp, ab, Bmin)
               endif
             enddo
+
             radtab(irad) = rad
             rad = rad + delrad
           enddo

@@ -25,9 +25,22 @@ From poster session (July 31):
 Main TO-DOs
 -----------
 
+Material to discuss, Monday?
+* B-damping -- including electron cut-off adds a similar shift
+  (I suspect Sean's estimate of `m_E \sim -0.1` may be a bit conservative,
+  perhaps -0.2 is closer.  But needs validation)
+  Note that my numbers disagree w/ Sean's by about 1% (FWHMs), larger than I
+  would like (mainly, error is quite a bit larger than resolution error)
+* Procedure for validating B-damping: my thought/instinct is to run a series of
+  fits, estimate the smallest damping lengthscale ab that produces rims w/
+  chi-squared within +/-1 of the best fit w/o damping or whatever.  Compute the
+  relevant F-statistic.  Check a range of numbers -- it's possible that damping
+  could produce a BETTER fit, even.
+* Check Kepler numbers.
+
 In order:
 
-1. Magnetic damping!
+1. Magnetic damping! (validating)
 2. Address resolution issue (Pacholczyk + internal integrals), before moving to
    more full model fits!
 3. Set radio spectral index to 0.58 (s = 2.16) (note this in rsch notes)
