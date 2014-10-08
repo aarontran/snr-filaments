@@ -148,6 +148,9 @@ def fefflen(kevs, B0, eta2, mu, vs, v0, rs, rsarc, s, rminarc, icut, irmax,
         w = fwhm(rmesh, intensity, get_intensity)
         widths.append(w)
 
+        # TODO DEBUG
+        print intensity
+
     return np.array(widths) * rsarc
 
 
@@ -379,9 +382,8 @@ def fwhm(rmesh, intensity, f_int):
     # Tolerance for finding intensity max position
     eps2 = np.finfo(float).eps * 2  # Tolerance, 1 ~= 1+eps2/2.
 
-    # Compute half max from grid initial guess
+    # Compute half max from grid initial guess by bracketing intensity max
     idxmax = np.argmax(intensity)
-
     if idxmax == 0:
         print 'ERROR: intensity max not found (rminarc too small)'
         return 1  # Can't search r < rmin, no disttab/emisttab values computed
@@ -402,37 +404,31 @@ def fwhm(rmesh, intensity, f_int):
     # (as res.x is order 1, eps2 should be appropriate)
     res = spopt.minimize_scalar(lambda x: -1*f_int(x), method='bounded',
                                 bounds=(rpk_a, rpk_b), options={'xatol':eps2})
-    pk = f_int(res.x)
+    rpk = res.x
+    pk = f_int(rpk)
     halfpk = 0.5 * pk
-
-    # Find r-values that bracket FWHM location (zero-crossings of f_thrsh(r))
-    # if crossings not found, search outside grid
-    cross = np.diff(np.sign(intensity - halfpk))
-    inds_rmin = np.where(cross > 0)[0]  # Left (neg to pos)
-    inds_rmax = np.where(cross < 0)[0]  # Right (pos to neg)
-
     def f_thrsh(r):  # For rootfinding
         return f_int(r) - halfpk
 
+    # Right (upstream) FWHM crossing -- do not search on grid
+    # (grid is too coarse upstream of rim, will not find FWHM;
+    #  spurious crossings occur if profile not monotonic, e.g. w/ damping)
+    rmax = spopt.bisect(f_thrsh, rpk, 1.)
+
+    # Left (downstream) FWHM crossing -- find bracketing r (position) values
+    # requires that rminarc is large enough so that grid contains crossing
+    cross = np.diff(np.sign(intensity - halfpk))
+    inds_rmin = np.where(cross > 0)[0]  # Left (neg to pos)
+
     if inds_rmin.size == 0:  # No left crossing found
-        print 'ERROR: FWHM edge (rmin) not found (rminarc too small)'
+        print ('ERROR: FWHM edge (rmin) not found '
+               '(rminarc too small or peak FWHM cannot be resolved in profile)')
         return 1.  # Can't search r < rmin, no disttab/emisttab values computed
     else:
-        rmin_a = rmesh[inds_rmin[-1]]  # Crossing closest to peak
+        rmin_a = rmesh[inds_rmin[-1]]  # Crossing closest to peak (largest r)
         rmin_b = rmesh[inds_rmin[-1] + 1]
 
-    if inds_rmax.size == 0:  # No right crossing found
-        rmax_a = rmesh[-1]  # Yes, this can be rmesh[-1]
-        rmax_b = search_crossing(rmesh[-1], 1., f_thrsh, eps2)
-        if rmax_b is None:
-            print 'ERROR: FWHM edge (rmax) not found (?!should not happen?!)'
-            return 1.  # This should not happen
-    else:
-        rmax_a = rmesh[inds_rmax[0]]  # Crossing closest to peak
-        rmax_b = rmesh[inds_rmax[0] + 1]
-
     rmin = spopt.bisect(f_thrsh, rmin_a, rmin_b)
-    rmax = spopt.bisect(f_thrsh, rmax_a, rmax_b)
 
     return rmax - rmin
 

@@ -3074,6 +3074,308 @@ Tomorrow: run things by Rob/Brian, hunt down rminarc bug again...
           explore fitting outliers (in non-damping code)
 
 
+Wednesday 2014 October 8
+========================
+
+Summary
+-------
+* Preliminary B-damping results (email, discussed w/ Brian)
+* Debug B-damping FWHMs
+* B-damping theory -- diffusion gradient, eff. veloc, lengthscales from YPL '05
+* Prep for B-damping tables
+* Plan of attack: resolution errors, B-damping, downstream spectra,
+    best fit mE values, srcut-based model fits
 
 
+Running into Rob on a Wednesday morning
+---------------------------------------
+
+Rob's main observation on paper draft -- need to add fits that either excise or
+fit Si/S lines, to show that it's just the lines and there's still a power law
+underneath.  So do that.
+
+Assess manual B-damping calculations
+------------------------------------
+
+First look at results -- goodness.  We can get pretty good fits with
+moderate/strong damping.  This is just for Region 1 of Tycho.  Generated
+results for Region 15 too.
+
+Note Region 15 best fits favor somewhat weaker energy-dependence because error
+on lowest energy band is so large, and it disproportionately does-not-influence
+the fit.  In fact, this may be an issue for many of our fits...
+
+Actual results are given at the bottom of this day's notes.
+
+
+B-damping profile FWHM observations & debugging (cont.)
+-------------------------------------------------------
+(cont. from yesterday that is)
+
+Fixed negative FWHM results -- code searched for crossings on grid of intensity
+values.  Spurious crossings due to local minimum in intensity, just behind
+peak, were misidentified as real and yielded negative FWHMs.
+
+rminarc errors (box apparently too small) also arise when peak simply does not
+have a FWHM!  Behind the peak there is too much emission, staying above the
+peak half max.  Again, debugging with extreme cases, but this is an interesting
+observation.
+
+Weird behaviors observed with B-damping intensity so far, summarized:
+
+* Stronger diffusion can cause rims to _narrow_ due to coefficient gradient
+  (see yesterday's notes)
+* Strong emission background behind peak can create a castle parapet-like
+  morphology (which is, similar to what is seen in some locations -- but it's
+  uncertain whether that's due to thermal emission)
+* Associated w/ strong emission background, sometimes, is this local minimum
+  behind the peak.  I.e., emission increasing towards remnant center?!
+  (or, possibly a second hump/peak behind the main peak, I don't know)
+
+These could be interesting/useful, if fitting entire profiles (as others have
+tried)!  But farther downstream of shock we're more likely we are to get hit with
+other processes / going-ons.  Who knows what happens to the B-field and
+diffusion coefficient, out there.
+
+### More derivation -- effective advection velocity?
+
+See some notes/derivation I scribbled down.  If this very simple description of
+advection speed dropping due to diffusion coefficient gradient is correct,
+there is a VERY strong variation in "effective advection velocity" at the
+shock, persisting over several damping lengthscales.  My very quick
+calculations even show this "effective velocity" going strongly negative, to
+-1/2 x shock speed, before rising up again.
+
+(this then would be consistent with this idea of a (very weak / barely present)
+local minimum just behind rim profiles, or so)
+
+A caveat is that our transport equation was for a plane shock and assumed
+constant downstream veloc. etc... so there are almost certainly more
+terms, effects, etc.
+
+
+
+Discussion w/ Brian
+-------------------
+
+Our results/presentation may change dramatically.
+We may not even need to present our fit tables if it turns out that we just
+have this negative result, that we can't distinguish anything much.
+
+B-damping tables/results first, to further vet this.
+Brian asked something like -- what's a physically reasonable number?  What kind
+of lengthscale should we consider?  See my notes below for answer (basically
+the range of ab we're looking at is okay, for Tycho).
+
+Brian will send srcutlog, an XSPEC "local model" -- better for fitting, not
+included w/ XSPEC.  The break freq. / normalization might be somewhat
+correlated if both left free, per Steve (in Brian's recollection).
+The srcut result would be useful.  At this point the model is so iffy that it's
+difficult to trust the results for anything but B0 values.
+
+Results for meeting on Monday morning as usual (or, even earlier)
+
+Brian can get to paper on Friday (XMM-Newton proposal deadline is something
+like 7am EDT (noon UTC)).  Revisions to paper will have to wait on discussion
+of results anyways.
+
+
+B-damping lengthscales
+----------------------
+
+### Rough expectation
+
+Pohl/Yan/Lazarian 2005 (PYL) suggest a typical lengthscale of 10^16, 10^17 cm
+(considering 3 different types of energy cascades that could damp the field).
+
+Tycho's radius is 240 arcsec = pi/2700 radians.  Assuming d = 3kpc, its
+radius is then 1.077 x 10^19 cm, or 3.5 pc.  Then the (scaled) damping scale
+length ab would be 0.001-0.01x shock radius for the range of numbers
+10^16-10^17 cm stated by PYL.
+
+(by comparison, SN 1006 radius is 900 arcmin w/ d = 2.2kpc, so radius
+1.77x 10^20 cm would give ab ~ 0.00006 to 0.0006 (6e-5 to 6e-4)
+
+### Compute with SNR specific parameters (predictions for Tycho)
+
+The damping lengthscale also scales with shock velocity, sqrt(ISM density),
+turbulent wavelength, and a measure of B fluctuation (variance or something).
+
+For us, U ~ 5000 km/s.  n is ~0.1 to 0.5, but sqrt(n) will give something
+closer to 1.  The turbulent wavelength lambda is uncertain, but let's assume
+it is simply the e- Larmor radius (I have no idea why).
+
+Synchrotron photons at 1-9 keV are radiated by 23-68 TeV e- in a 100 muG field.
+In a 20 muG field we get 52-150 TeV e- energies.  From equation (4) of PYL, we
+get Larmor radii of 0.7--2 x 10^15 cm for 100 muG field, 8--23 x 10^15 cm for a
+20 muG field.
+
+Finally, for B fluctuation (delta B), let's assume 100 microG.  PYL cite the
+Bell-Lucek streaming instability for this, relevant for a young SNR -- but I'm
+not sure precisely how young.
+
+Then, e.g., for Tycho we have:
+
+    (Kolmogorov cascade)
+    l_d(B=100 muG) = (10^16 cm) * 5 * sqrt(0.1) * (0.7 to 2) = 1e16 to 3e16
+    l_d(B=20 muG) =  (10^16 cm) * 5 * sqrt(0.1) * (8 to 23) = 1.3e17 to 4e17
+
+    (YL fast-mode cascade, assuming L = shock radius)
+    l_d ~ (10^16 cm) * sqrt(3.5/3) * sqrt(0.7 to 2) = 0.9e16 to 1.5e16
+    l_d ~ (10^16 cm) * sqrt(3.5/3) * sqrt(8 to 23) = 3e16 to 5e16
+
+    (Alfven mode cascade)
+    Same as for YL, but multiplied by 5
+
+Slightly more specific numbers for Tycho, assuming turbulent wavelength =
+Larmor radius, assuming some velocity factors are unity, assuming L is SNR
+radius, assuming typical field fluctuation of 100 muG.
+
+* If B = 100 muG, damping length range is   1--8 x 10^16 cm
+* If B =  20 muG, damping length range is 0.3--4 x 10^17 cm
+
+*Conclusion*: ab of about 0.001 to 0.04 x shock radius is reasonable for Tycho.
+
+
+Manual B-damping fit results
+----------------------------
+
+ab = damping lengthscale scaled to shock radius (ab=0.005 is 1.2 arcsec)
+Ffit? indicates whether eta2 was free parameter or not
+First set of eta2/B0 columns is (hand-input) initial guess for fit
+Second set of columns contains best fit parameters
+chisqr is chisqr, not reduced/scaled by DoF.
+ID is an ID associated with plots / saved output
+
+Output fits were saved to:
+
+    full-std_err-damping-141007-test-22-fobj.pkl
+    full-std_err-damping-141008-reg15-test-22-fobj.pkl
+
+(the unlabeled one is Region 1, of course)
+
+### Tycho Region 1
+
+    ab      Ffit?   eta2    B0          eta2    B0      chisqr      ID
+    ------------------------------------------------------------------
+    0.500   True    3.700   208.000      3.854  209.675      25      1
+    0.050   True    3.000   195.000      2.958  195.038    25.5      2
+    0.040   True    3.000   210.000      2.308  183.488    25.7      3
+    0.030   True    2.000   200.000      1.381  162.803    26.1      4
+    0.020   True    2.000   200.000      0.375  128.534    27.6      5
+    0.010   True    1.000   100.000      0.993   32.078    32.6      6
+    0.009   True    1.000   100.000      1.278   27.554    28.1      7
+    0.008   True    1.000   100.000      1.630   24.394    24.3      8
+    0.007   True    0.500   100.000      0.002   44.256    67.6      9
+    0.006   True    0.500   30.000       0.090   32.905    25.6     10
+    0.005   True    0.030   34.000       0.032   33.914    25.8     11
+    0.004   True    0.030   34.000       0.011   34.275    25.1     12
+    ------------------------------------------------------------------
+    0.500   False   1.000   210.000      1.000  180.958    35.5     13
+    0.050   False   1.000   210.000      1.000  177.284    32.2     14
+    0.040   False   1.000   210.000      1.000  172.488    29.7     15
+    0.030   False   1.000   210.000      1.000  160.596    26.7     16
+    0.020   False   1.000   210.000      1.000  121.947    31.2     17
+    0.010   False   1.000   100.000      1.000   32.034    32.6     18
+    0.009   False   1.000   100.000      1.000   28.812    28.2     19
+    0.008   False   1.000   100.000      1.000   26.436    24.4     20
+    0.007   False   1.000   100.000      1.000   24.733    24.8     21
+    0.006   False   1.000   100.000      1.000   23.591    38.4     22
+    0.005   False   1.000   23.000       1.000   22.918    85.6     23
+    0.004   False   1.000   23.000       1.000   22.628     201     24
+
+    0.500   False   0.100   200.000      0.100  168.458    71.1     25
+    0.050   False   0.100   200.000      0.100  168.602    66.5     26
+    0.040   False   0.100   200.000      0.100  165.932    60.4     27
+    0.030   False   0.100   200.000      0.100  158.969    48.4     28
+    0.020   False   0.100   200.000      0.100  136.747    30.6     29
+    0.010   False   0.100   100.000      0.100   51.367    41.5     30
+    0.009   False   0.100   50.000       0.100   44.098    38.8     31
+    0.008   False   0.100   50.000       0.100   38.788    34.2     32
+    0.007   False   0.100   50.000       0.100   35.036    28.5     33
+    0.006   False   0.100   50.000       0.100   32.527    25.6     34
+    0.005   False   0.100   27.000       0.100   31.040    39.5     35
+    0.004   False   0.100   23.000       0.100   23.000   4e+06     36
+
+    0.500   False   10.000  220.000     10.000  245.438      28     37
+    0.050   False   10.000  220.000     10.000  230.338    29.5     38
+    0.040   False   10.000  220.000     10.000  218.482    31.4     39
+    0.030   False   10.000  200.000     10.000  189.565    36.2     40
+    0.020   False   10.000  100.000     10.000   95.351    47.5     41
+    0.010   False   10.000  100.000     10.000   21.390    29.5     42
+    0.009   False   10.000  100.000     10.000   19.966    26.1     43
+    0.008   False   10.000  100.000     10.000   18.874    24.9     44
+    0.007   False   10.000  40.000      10.000   18.068    30.9     45
+    0.006   False   10.000  40.000      10.000   17.521      55     46
+    0.005   False   10.000  27.000      10.000   17.200     119     47
+    0.004   False   10.000  23.000      10.000   17.080     254     48
+
+### Tycho Region 15
+
+    ab      Ffit?   eta2    B0          eta2    B0      chisqr      ID
+    ------------------------------------------------------------------
+    0.500   True    3.700   208.000     67.926  899.200    19.8      1
+    0.050   True    3.000   195.000     89.259  940.063    20.2      2
+    0.040   True    3.000   210.000     84.523  922.534    20.3      3
+    0.030   True    2.000   200.000     81.244  902.027    20.6      4
+    0.020   True    2.000   200.000     58.524  815.319    21.1      5
+    0.010   True    1.000   100.000     28.823  601.958    20.7      6
+    0.009   True    1.000   100.000     23.912  552.525    20.4      7
+    0.008   True    1.000   100.000     15.754  485.146    20.2      8
+    0.007   True    0.500   100.000      7.766  406.193      20      9
+    0.006   True    0.500   30.000      69.771  108.082    20.3     10
+    0.005   True    0.030   34.000      46.996   48.548    20.3     11
+    0.004   True    0.030   34.000      23.054   33.049    20.2     12
+    ------------------------------------------------------------------
+    0.500   False   1.000   210.000      1.000  426.463    70.3     13
+    0.050   False   1.000   210.000      1.000  429.314    72.1     14
+    0.040   False   1.000   210.000      1.000  429.605    72.2     15
+    0.030   False   1.000   210.000      1.000  429.574    71.9     16
+    0.020   False   1.000   210.000      1.000  427.440    69.6     17
+    0.010   False   1.000   100.000      1.000  402.638    51.3     18
+    0.009   False   1.000   100.000      1.000  393.183    46.1     19
+    0.008   False   1.000   100.000      1.000  379.205    39.7     20
+    0.007   False   1.000   100.000      1.000  357.710    32.4     21
+    0.006   False   1.000   100.000      1.000  322.264    25.1     22
+    0.005   False   1.000   23.000       1.000  257.941    20.3     23
+    0.004   False   1.000   23.000       1.000  133.117    21.1     24
+
+    0.500   False   0.100   200.000      0.100  388.367     156     25
+    0.050   False   0.100   200.000      0.100  392.284     161     26
+    0.040   False   0.100   200.000      0.100  392.954     161     27
+    0.030   False   0.100   200.000      0.100  393.722     162     28
+    0.020   False   0.100   200.000      0.100  393.641     159     29
+    0.010   False   0.100   100.000      0.100  380.135     130     30
+    0.009   False   0.100   50.000       0.100  374.472     121     31
+    0.008   False   0.100   50.000       0.100  366.088     107     32
+    0.007   False   0.100   50.000       0.100  353.311    89.9     33
+    0.006   False   0.100   50.000       0.100  332.992    67.8     34
+    0.005   False   0.100   27.000       0.100  298.251    42.9     35
+    0.004   False   0.100   23.000       0.100   23.000 7.91e+0     36
+
+    0.500   False   10.000  220.000     10.000  597.601    22.7     37
+    0.050   False   10.000  220.000     10.000  597.754    23.5     38
+    0.040   False   10.000  220.000     10.000  596.889    23.7     39
+    0.030   False   10.000  200.000     10.000  594.471    23.9     40
+    0.020   False   10.000  100.000     10.000  585.725    23.8     41
+    0.010   False   10.000  100.000     10.000  522.486    21.4     42
+    0.009   False   10.000  100.000     10.000  499.541    20.8     43
+    0.008   False   10.000  100.000     10.000  465.474    20.2     44
+    0.007   False   10.000  40.000      10.000  411.710      20     45
+    0.006   False   10.000  40.000      10.000  319.268    20.5     46
+    0.005   False   10.000  27.000      10.000  151.535    21.9     47
+    0.004   False   10.000  23.000      10.000   45.351      21     48
+
+
+Thursday 2014 October 9
+=======================
+
+
+B-damping tables (set-up)
+-------------------------
+
+Set up generating script (see relevant script for details), ready to go.
+Fixing shock speed vs to default, manually vary mu.  Call by hand for a range
+of ab values.  The initial guesses will be REALLY bad, but we'll see how it
+goes.
 

@@ -27,38 +27,64 @@ Misc questions/thoughts
 
 Could magnetic damping be compatible with / less distinguishable, even more, if
 the e- cut-off is super-exponential?  Figure 12. of Tanaka et al.                                                   
+(NEVER MIND WE HAVE BIGGER FISH TO FRY)
 
 (but I don't think anyone wants to rederive the Green's functions solutions,
 for this.  we could always turn to finite differences etc but that introduces
 its own host of problems)
+
+(can we edit our AAS abstract?)
 
 Main TO-DOs
 -----------
 
 In order:
 
-1. Magnetic damping! Code to run fits (manually) w/ various scale lengths.
-   Back to B-damping code.  Set up infrastructure and run calculations.
-   Aim to have completed numbers in a few days.
-2. Address resolution issue (Pacholczyk + internal integrals), before moving to
+1. Address resolution issue (Pacholczyk + internal integrals), before running
    more full model fits!
-3. Set radio spectral index to 0.58 (s = 2.16) (note this in rsch notes)
-4. Check out outliers by hand (why did the fits go wonky), and check manual
-   error computation speed.
-5. regenerate tables for regions-6 fits.
-6. Generate Kepler tables, too.
+   Check resolution separately for B-damping models as well.  So add one more
+   dimension to parameter space and take slices appropriately.
+2. Magnetic damping!  Make magnetic damping tables, then run fits for all Tycho
+   regions.  Also fit with eta2 fixed to 1, 0.1, 10.
+3. Re-run spectral fits, both fitting Si/S lines and excising them.  Show that
+   we recover a clean power law (give the column density / photon indices
+   again).
+4. Use srcutlog (from Brian) to run fits with eta2 fixed at values determined
+   from synchrotron break frequency.
+5. Compute mE values for best loss-limited fits (to compare to data mE's).
+   Do this for best damping-fits too, for completeness.
+   Reason: we expect mE values for fits to be much smaller than data mE values,
+   which are misleading (esp. due to large error bars on lowest energy FWHMs)
 
-Grouped by individual "pipeline":
+
+Prepare for Monday (or earlier), in order:
+
+* Magnetic damping fits (chisqr as a function of `m_E`)
+* mE values from model fit curves (B-damped or loss-limited)
+* Downstream spectral fits w/ lines accounted for
+* Loss-limited fits from srcutlog
+* Get Brian/Rob to okay Kepler numbers
+
+(once all results are in place, go back to paper!)
+
+Moving to lower priority:
+
+1. Set radio spectral index to 0.58 (s = 2.16) (note this in rsch notes)
+2. Check out outliers by hand (why did the fits go wonky), and check manual
+   error computation speed.
+3. regenerate tables for regions-6 fits (also damping tables if need be)
+4. Generate Kepler tables and run full model fits
+
+Question: what parameters did Sean use to compute SN 1006 profiles, or rule
+out damping in SN 1006?
+
+Data processing to-dos, by individual "pipeline":
+(i.e., getting FWHMs/regions/etc)
 
 * Tycho -- Cull regions-6 out of regions-5, apply blacklist, and manually port
            over derived data products as needed... (add notes in README files).
            Generate all spin-off/variant data products needed...
            (full model errors, after checking resolution + manual approach)
-
-           Tackle the magnetic damping matter.  Set up a port of Sean's code
-           and start running calculations.  Do some trial cases and compute
-           `m_E`.  Figure out how to show when magnetic damping does matter, or
-           does not matter.
 
            Try splitting 1-1.7 and 2-3 bands into smaller pieces! (low priority)
              (run `reproject_obs` and `flux_obs`, double check that I get the
@@ -111,7 +137,8 @@ Lower priority / various checks
 
 * Check all constants.  `snr_catalog.py`, model fitting code both
   wrapper and fortran.  Go back to Sean's transport eq'n and rederive.
-* Check transport equation for pure advection case
+
+* Check transport equation for pure advection case and for damping case
 
 * When paper is nearing finish -- re-run entire pipeline on SN 1006 as a sanity
   check.  But, not now.
@@ -130,6 +157,8 @@ Lower priority / various checks
   derivation of synchrotron stuff (MUST REVIEW ALL OF THIS...).
   Perhaps it corresponds to some median, mean energy, or power, or something.
 
+* In plasma transport equation, could other terms matter?  E.g. the
+  1/3 p df/dp dv/dx term or whatever.  How good is the simple plane approx?
 
 Extra
 -----

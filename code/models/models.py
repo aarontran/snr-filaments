@@ -71,6 +71,8 @@ def maketab(snr, kevs, data_min, data_max, mu_vals, eta2_vals, n_B0,
     For each eta2, get range of B0 values that give reasonable FWHMs.
     Save B0 values and corresponding model FWHMs.
 
+    kwargs are passed to width_cont for calculations
+
     TODO: Verify that results are independent of input FWHMs (mins, maxs, etc)
         Generate two tables w/ slightly different FWHM inputs/ranges
         Fit procedure should give results consistent within error

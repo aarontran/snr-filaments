@@ -136,9 +136,9 @@ def build_dataf(fit_type, conf_intv=0.683, fit_kws=None, err_kws=None):
 
         # If eta2/B0 are held fixed, they won't have CI entries
         if 'eta2_free' in fit_kws and not fit_kws['eta2_free']:
-            ci_man['eta2'] = [(conf_intv, eta2), (0., eta2), (conf_intv, eta2)]
+            ci['eta2'] = [(conf_intv, eta2), (0., eta2), (conf_intv, eta2)]
         if 'B0_free' in fit_kws and not fit_kws['B0_free']:
-            ci_man['B0'] = [(conf_intv, B0), (0., B0), (conf_intv, B0)]
+            ci['B0'] = [(conf_intv, B0), (0., B0), (conf_intv, B0)]
 
         # (re)Store all data in res object
         res.chisqr, res.redchi = chisqr, redchi
