@@ -499,7 +499,7 @@ def width_cont(params, kevs, snr, verbose=True, rminarc=None, icut=None,
                       adaptive calculation
 
         idamp: boolean; toggle magnetic damping
-        damp_ab: float between [0,1], damping lengthscale if damping is on
+        damp_ab: float between [0,1], damping lengthscale
         damp_bmin: float, minimum magnetic field for damping
 
     Outputs:
@@ -562,15 +562,23 @@ def width_cont(params, kevs, snr, verbose=True, rminarc=None, icut=None,
         rminarc2 = irad_adapt_f * fwhms_prelim
 
     # Print settings, set rminarc to new adaptive value
-    if irad_adapt:
-        if verbose:
+    if verbose:
+        if idamp:
             print ('\tFull model: B0 = {:0.3f} muG; eta2 = {:0.3f}; '
-                   'mu = {:0.3f}; ').format(B0*1e6, eta2, mu)
+                   'mu = {:0.3f}; ab = {:0.3f}').format(B0*1e6, eta2, mu,
+                                                        damp_ab)
+        else:
+            print ('\tFull model: B0 = {:0.3f} muG; eta2 = {:0.3f}; '
+                   'mu = {:0.3f};').format(B0*1e6, eta2, mu)
+
+        if irad_adapt:
             print '\tinit rminarc = {}; adapted = {}'.format(rminarc, rminarc2)
+        else:
+            print '\trminarc = {}'.format(rminarc)
+
+    # Set rminarc to new adaptive value
+    if irad_adapt:
         rminarc = rminarc2
-    elif verbose:
-        print ('\tFull model: B0 = {:0.3f} muG; eta2 = {:0.3f}; mu = {:0.3f}; '
-               'rminarc = {}').format(B0*1e6, eta2, mu, rminarc)
 
     # Python full model port
     fwhms = fmp.fefflen(kevs, B0, eta2, mu, vs, v0, rs, rsarc, s,
@@ -589,7 +597,7 @@ def width_cont(params, kevs, snr, verbose=True, rminarc=None, icut=None,
 
 def _check_calc_errs(fwhms, rminarc):
     """Check for resolution or box errors (as in Sean's code)"""
-    reserr = fwhms < np.finfo(float).eps * 2  # Any fwhms = 0 (error output)
+    reserr = fwhms < np.finfo(float).eps * 2  # Any fwhms <= 0 (error output)
     boxerr = fwhms > (rminarc - np.finfo(float).eps * 2)  # Any FWHMs = 1
     return reserr, boxerr
 

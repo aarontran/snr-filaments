@@ -36,21 +36,21 @@ def main():
     #B0 = raw_input('Enter B0 (Gauss): ')
     #eta2 = raw_input('Enter eta2: ')
     #mu = raw_input('Enter mu: ')
-    B0 = 150e-6
-    eta2 = 1e0
+    B0 = 40e-6
+    eta2 = 1
     mu = 1.0
 
-    irmax, iradmax, ixmax = 1000, 400, 500
+    irmax, iradmax, ixmax = 200, 400, 500
     print 'irmax, iradmax, ixmax = {},{},{}'.format(irmax, iradmax, ixmax)
 
-    kevs = np.array([1., 2., 4., 8.])
-    rminarc = 36. * np.ones(len(kevs))
+    kevs = np.array([1., 2., 4.])
+    rminarc = 20. * np.ones(len(kevs))
 
     #fwhms = fefflen(kevs, B0, eta2, mu, 4.52e8, 4.52e8/4, 1.077e19, 240.,
     #                2*0.65+1, rminarc, True, irmax, iradmax, ixmax)  # Tycho
     fwhms = fefflen(kevs, B0, eta2, mu, 5e8, 5e8/4., 2.96e19, 900.,
                     2*0.6+1, rminarc, True, irmax, iradmax, ixmax,
-                    True, 0.5, 5e-6)  # SN 1006 with damping
+                    True, 0.001, 5e-6)  # SN 1006 with damping
     print 'rminarc = {}'.format(rminarc)
     for en, fwhm in zip(kevs, fwhms):
         print '{:0.2f} keV: {:0.5f}'.format(en, fwhm)

@@ -57,97 +57,6 @@ from fplot import fplot
 # ==============================
 # Run fits and save data to disk
 # ==============================
-
-def generate_fits(f_data, fobj, n_ID, mu_vals, outroot, save=True):
-    """Perform fits, save to pkl/json if desired;
-    return list of Parameters objects and Fitter()
-    """
-    p_list = []
-    for mu in mu_vals:
-        print '{} stdout'.format(fobj.title)
-        res = f_data(mu, fobj)
-        p_list.append(res.params)
-    if save:
-        save_fits(p_list, fobj, mu_vals, outroot + '-{:02d}'.format(n_ID))
-    return p_list, fobj
-
-def save_fits(p_list, fobj, mu_vals, outroot):
-    """Save full model fit parameters to pkl/json
-    Use the pkl though, seriously.
-    The json is just a backup, for when Python/pickle/etc are obsolute
-
-    please see build_dataf for info on stored data!
-
-    Input:
-        p_list: list of lmfit.Parameters objects (one per mu value)
-        fobj: Fitter() object
-        mu_vals: fixed mu values used for fitting
-        outroot: output file stem (will suffix stuff to this)
-    Output:
-        creates pkl of zipped (mu_vals, p_list); each Parameters object in the
-        tuple carries ci, info, metadata
-        also creates pkl with SNR information
-        JSON implementation coming -- have to deconstruct Parameters object
-        somehow.
-    """
-    ci_list = []
-    info_list = []
-    meta_list = []
-    for p, mu in zip(p_list, mu_vals):
-        ci_list.append(p.ci)
-        info_list.append(p.info)
-        meta_list.append(p.metadata)
-
-    # Spew metadata relevant to fits for all mu values
-    fobj_all = {}
-    fobj_all['title'] = fobj.title
-    fobj_all['kevs'] = fobj.kevs
-    fobj_all['data'] = fobj.data
-    fobj_all['eps'] = fobj.eps
-    fobj_all['inds'] = fobj.inds
-    fobj_all['snr-pars'] = fobj.snr.config_log()
-
-    # Output everything.  Doesn't check for overwriting
-    regparse.check_dir(outroot)
-
-    pkg = [p_list, mu_vals]
-
-    with open('{}-data.pkl'.format(outroot), 'w') as fpkl:
-        pickle.dump(pkg, fpkl)
-    with open('{}-fobj.pkl'.format(outroot), 'w') as fpkl:
-        pickle.dump(fobj_all, fpkl)
-
-    with open('{}-data.json'.format(outroot), 'w') as fjson:
-        json.dump([p_list, mu_vals, info_list, ci_list, meta_list],
-                  fjson, cls=LmfitJSONEncoder, indent=4)
-    with open('{}-fobj.json'.format(outroot), 'w') as fjson:
-        json.dump(fobj_all, fjson, cls=LmfitJSONEncoder, indent=4)
-
-def load_fit_pkls(inroot, want_fobj=False):
-    """Generator that iterates over each fitted region/filament
-    Input:
-        inroot (str) is base file stem, e.g.,
-        ../../data-tycho/fwhms/model-fits/simp-man_err
-    Yield, for each region fitted:
-        tuple of 1. list of Parameters(), 2. list of mu values, 3., region num
-                 4. fobj_all dict w/ fitting data, if desired
-    """
-    npkls = len(glob('{}-[0-9]*-data.pkl'.format(inroot)))
-    for n in xrange(npkls):
-        fname = '{}-{:02d}-data.pkl'.format(inroot, n+1)  # Enforce ordering
-        ffobj = '{}-{:02d}-fobj.pkl'.format(inroot, n+1)
-        with open(fname, 'r') as fpkl:
-            p_list, mu_vals = pickle.load(fpkl)
-        if want_fobj:
-            with open(ffobj, 'r') as fpkl:
-                fobj_dict = pickle.load(fpkl)
-            yield p_list, mu_vals, n+1, fobj_dict
-        else:
-            yield p_list, mu_vals, n+1
-
-# =========================
-# Functions to control fits
-# =========================
 def build_dataf(fit_type, conf_intv=0.683, fit_kws=None, err_kws=None):
     """Build function f to perform fits/errs; f(mu, fobj) returns res obj with
     fits, errors, fit properties, etc... (see src)
@@ -171,7 +80,8 @@ def build_dataf(fit_type, conf_intv=0.683, fit_kws=None, err_kws=None):
                            NOT TESTED, likely to hit bugs)
         fit_kws, *full model only*
             model_kws (dict):
-                rminarc, icut, irmax, iradmax, ixmax, irad_adapt, irad_adapt_f
+                rminarc, icut, irmax, iradmax, ixmax, irad_adapt, irad_adapt_f,
+                idamp, damp_ab, damp_bmin
             scale_covar=False (!) (lmfit.minimize)
             method='leastsq'
             epsfcn, maxfev, factor, diag, ftol, xtol, etc... (scipy leastsq)
@@ -263,6 +173,96 @@ def build_dataf(fit_type, conf_intv=0.683, fit_kws=None, err_kws=None):
 
     return assmb_data
 
+def generate_fits(f_data, fobj, n_ID, mu_vals, outroot, save=True):
+    """Perform fits, save to pkl/json if desired;
+    return list of Parameters objects and Fitter()
+    """
+    p_list = []
+    for mu in mu_vals:
+        print '{} stdout'.format(fobj.title)
+        res = f_data(mu, fobj)
+        p_list.append(res.params)
+    if save:
+        save_fits(p_list, fobj, mu_vals, outroot + '-{:02d}'.format(n_ID))
+    return p_list, fobj
+
+def save_fits(p_list, fobj, mu_vals, outroot):
+    """Save full model fit parameters to pkl/json
+    Use the pkl though, seriously.
+    The json is just a backup, for when Python/pickle/etc are obsolute
+
+    please see build_dataf for info on stored data!
+
+    Input:
+        p_list: list of lmfit.Parameters objects (one per mu value)
+        fobj: Fitter() object
+        mu_vals: fixed mu values used for fitting
+        outroot: output file stem (will suffix stuff to this)
+    Output:
+        creates pkl of zipped (mu_vals, p_list); each Parameters object in the
+        tuple carries ci, info, metadata
+        also creates pkl with SNR information
+        JSON implementation coming -- have to deconstruct Parameters object
+        somehow.
+    """
+    ci_list = []
+    info_list = []
+    meta_list = []
+    for p, mu in zip(p_list, mu_vals):
+        ci_list.append(p.ci)
+        info_list.append(p.info)
+        meta_list.append(p.metadata)
+
+    # Spew metadata relevant to fits for all mu values
+    fobj_all = {}
+    fobj_all['title'] = fobj.title
+    fobj_all['kevs'] = fobj.kevs
+    fobj_all['data'] = fobj.data
+    fobj_all['eps'] = fobj.eps
+    fobj_all['inds'] = fobj.inds
+    fobj_all['snr-pars'] = fobj.snr.config_log()
+
+    # Output everything.  Doesn't check for overwriting
+    regparse.check_dir(outroot)
+
+    pkg = [p_list, mu_vals]
+
+    with open('{}-data.pkl'.format(outroot), 'w') as fpkl:
+        pickle.dump(pkg, fpkl)
+    with open('{}-fobj.pkl'.format(outroot), 'w') as fpkl:
+        pickle.dump(fobj_all, fpkl)
+
+    with open('{}-data.json'.format(outroot), 'w') as fjson:
+        json.dump([p_list, mu_vals, info_list, ci_list, meta_list],
+                  fjson, cls=LmfitJSONEncoder, indent=4)
+    with open('{}-fobj.json'.format(outroot), 'w') as fjson:
+        json.dump(fobj_all, fjson, cls=LmfitJSONEncoder, indent=4)
+
+def load_fit_pkls(inroot, want_fobj=False):
+    """Generator that iterates over each fitted region/filament
+    Input:
+        inroot (str) is base file stem, e.g.,
+        ../../data-tycho/fwhms/model-fits/simp-man_err
+    Yield, for each region fitted:
+        tuple of 1. list of Parameters(), 2. list of mu values, 3., region num
+                 4. fobj_all dict w/ fitting data, if desired
+    """
+    npkls = len(glob('{}-[0-9]*-data.pkl'.format(inroot)))
+    for n in xrange(npkls):
+        fname = '{}-{:02d}-data.pkl'.format(inroot, n+1)  # Enforce ordering
+        ffobj = '{}-{:02d}-fobj.pkl'.format(inroot, n+1)
+        with open(fname, 'r') as fpkl:
+            p_list, mu_vals = pickle.load(fpkl)
+        if want_fobj:
+            with open(ffobj, 'r') as fpkl:
+                fobj_dict = pickle.load(fpkl)
+            yield p_list, mu_vals, n+1, fobj_dict
+        else:
+            yield p_list, mu_vals, n+1
+
+# =========================
+# Functions to display fits
+# =========================
 def generate_tabs(p_list, title, mu_vals):
     """Parse list of Parameters() objects, mu values, w/ Fitter()
     to generate quick tables for IPython, LaTeX display.
@@ -353,59 +353,6 @@ def generate_plots(p_list, fobj, mu_vals, fmt_vals, ax=None):
     ax.legend(loc='best')
     ax.set_title(fobj.title)
     return ax
-
-# Old, working version
-def _generate_tabs(f_data, fobj, title, mu_vals):
-    """f_data takes mu, Fitter(...) as arguments, return lmfit.Minimizer() w/fits+errors
-    Yes it's stupid but it will do the job...
-    LaTeX tables will NOT include standard errors
-    """
-    table = ListTable()
-    table.append(['mu', 'eta2', 'B0', 'chisqr'])
-    ltab = LatexTable([r'$\mu$ (-)', r'$\eta_2$ (-)', r'$B_0$ ($\mu$G)',
-                       r'$\chi^2$'],
-                      ['{:0.2f}', 2, 2, '{:0.4f}'], title)
-    plist = []
-
-    for mu in mu_vals:
-        # Get fit/error data
-        print '{} computation stdout'.format(title)
-        res = f_data(mu, fobj)
-        p = res.params
-
-        # Edit B0 parameter for table formatting
-        B0_min, p['B0'].min = p['B0'].min, None  # scrub but save B0 limits
-        B0_max, p['B0'].max = p['B0'].max, None
-        p['B0'].value *= 1e6
-        p['B0'].stderr *= 1e6
-        p['B0'].fullerr = 1e6 * np.array(p['B0'].fullerr)  # Hackish workaround
-
-        # Build iPython table
-        tr = ['{:0.2f}'.format(mu)]
-        tr.append(('{0.value:0.3f} +{1[0]:0.2f}/-{1[1]:0.2f} '
-                   '(std: &plusmn; {0.stderr:0.3f})').format(
-                  p['eta2'], p['eta2'].fullerr))
-        tr.append(('{0.value:0.3g} +{1[0]:0.3g}/-{1[1]:0.3g} '
-                   '(std: &plusmn; {0.stderr:0.3f})').format(
-                  p['B0'], p['B0'].fullerr))
-        tr.append('{:0.4f}'.format(res.chisqr))
-        table.append(tr)
-
-        # Build LaTeX table
-        ltab.add_row(mu,
-                     p['eta2'].value, p['eta2'].fullerr[0], p['eta2'].fullerr[1],
-                     p['B0'].value, p['B0'].fullerr[0], p['B0'].fullerr[1],
-                     res.chisqr)
-
-        # Reset B0 value, errors
-        p['B0'].value *= 1e-6
-        p['B0'].stderr *= 1e-6
-        p['B0'].fullerr *= 1e-6
-        p['B0'].min = B0_min  # Must follow value resetting
-        p['B0'].max = B0_max
-        plist.append(p)
-
-    return table, ltab, plist, fobj  # plist, fobj for convenience...
 
 # ========================
 # Functions to set-up fits

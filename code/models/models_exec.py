@@ -135,22 +135,13 @@ class Fitter(object):
     # Wrappers for fitting routines
     # -----------------------------
 
-    def fitter_full(self, mu, **kwargs):
-        """Full model fit (see models.full_fit for available **kwargs)"""
-        return models.full_fit(self.snr, self.kevs, self.data, self.eps,
-                               mu, **kwargs)
-
-    def fitter_simp(self, mu, **kwargs):
-        """Simple model fit (see models.simple_fit for available **kwargs)"""
-        return models.simple_fit(self.snr, self.kevs, self.data, self.eps,
-                                 mu, **kwargs)
-
     def get_fit(self, mu, appr, **kwargs):
         """Simple or full fit + manual 1-sigma errors
         **kwargs passed to models.full_fit, if appr='full'
         In particular, kws include: model_kws, method, epsfcn, maxfev, etc.
 
         Here, I specifically disable redchi-scaling for the covar matrix
+        unless specified otherwise (use kwarg 'scale_covar')
         """
         if 'scale_covar' not in kwargs:
             kwargs['scale_covar'] = False
@@ -158,7 +149,8 @@ class Fitter(object):
         self._vprint('Best {} fit, mu = {}'.format(appr, mu))
 
         if appr == 'simp':
-            res = self.fitter_simp(mu, **kwargs)
+            res = models.simple_fit(self.snr, self.kevs, self.data, self.eps,
+                                    mu, **kwargs)
 
         elif appr == 'full':
 
@@ -189,7 +181,8 @@ class Fitter(object):
             self._vprint('Initial guesses:',
                          'eta2 = {:0.3f},'.format(kwargs['eta2']),
                          'B0 = {:0.3f}'.format(kwargs['B0']*1e6))
-            res = self.fitter_full(mu, **kwargs)
+            res = models.full_fit(self.snr, self.kevs, self.data, self.eps,
+                                  mu, **kwargs)
 
         else:
             raise Exception('Invalid model choice')

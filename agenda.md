@@ -15,38 +15,37 @@ From poster session (July 31):
   compared to when the remnant cools, H starts recombining and emitting thermal
   lines, T ~ 10^4 K)
 * Terri/Amy -- why are the shocks so thin, anyways?  don't have a good answer
-  for that...
+  for that... (answer: simply, B-field amplification? small B-fields of only 4x
+  the ISM value give very large rims in our model)
 * Our analysis, if anything, confirms that the shocks are thin to begin with...
   but doesn't say "why".  Why shouldn't accelerated particles travel farther
   back?  Function of time / remnant evolution?
 * Madura -- 3D reconstruction?
 
+Misc questions/thoughts
+-----------------------
+
+Could magnetic damping be compatible with / less distinguishable, even more, if
+the e- cut-off is super-exponential?  Figure 12. of Tanaka et al.                                                   
+
+(but I don't think anyone wants to rederive the Green's functions solutions,
+for this.  we could always turn to finite differences etc but that introduces
+its own host of problems)
 
 Main TO-DOs
 -----------
 
-Material to discuss, Monday?
-* B-damping -- including electron cut-off adds a similar shift
-  (I suspect Sean's estimate of `m_E \sim -0.1` may be a bit conservative,
-  perhaps -0.2 is closer.  But needs validation)
-  Note that my numbers disagree w/ Sean's by about 1% (FWHMs), larger than I
-  would like (mainly, error is quite a bit larger than resolution error)
-* Procedure for validating B-damping: my thought/instinct is to run a series of
-  fits, estimate the smallest damping lengthscale ab that produces rims w/
-  chi-squared within +/-1 of the best fit w/o damping or whatever.  Compute the
-  relevant F-statistic.  Check a range of numbers -- it's possible that damping
-  could produce a BETTER fit, even.
-* Check Kepler numbers.
-
 In order:
 
-1. Magnetic damping! (validating)
+1. Magnetic damping! Code to run fits (manually) w/ various scale lengths.
+   Back to B-damping code.  Set up infrastructure and run calculations.
+   Aim to have completed numbers in a few days.
 2. Address resolution issue (Pacholczyk + internal integrals), before moving to
    more full model fits!
 3. Set radio spectral index to 0.58 (s = 2.16) (note this in rsch notes)
-4. regenerate tables for regions-6 fits.
-5. Check out outliers by hand (why did the fits go wonky), and check manual
+4. Check out outliers by hand (why did the fits go wonky), and check manual
    error computation speed.
+5. regenerate tables for regions-6 fits.
 6. Generate Kepler tables, too.
 
 Grouped by individual "pipeline":
@@ -71,10 +70,7 @@ Grouped by individual "pipeline":
            there's nothing -- but I want to check.
            (run after regions-6 is done)
 
-* Kepler -- for regions-3: cut 1,2,8,10,11 (on basis of poor FWHM fits)
-            Get spectra for regions-3
-            Generate simple model fits (... redo on regions-3)
-            Check full model resolution #s (ipynb)
+* Kepler -- Check full model resolution #s (ipynb)
             Generate full model table (check w/ Brian on numbers, first)
             Generate full model fits w/ errors
 

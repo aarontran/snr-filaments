@@ -22,16 +22,38 @@ Table of contents
 * Week 10 - (8/4) full model grid-best-"fits" (test fits, error annealing w/
             SN 1006). Port full model code to Python, optimize for speed
 * Week 11 - (8/11) one week break
+
 * Week 12 - (8/18) LaTeX table code; more precise manual error calculations.
             Debug/test new full model
 * Week 13 - (8/25) refactor model exec/disp code.  Debug error calculations
             extensively.  Back on GSFC campus.
 * Week 14 - (9/1) run suite of error calculations; start paper text/outlining
+
 * Week 15 - (9/8) tables, varied FWHM calculations, first Kepler picks; paper
-* Week 16 - (9/15) flesh out paper, many new plots/tables; new Tycho regions
+
+* Week 16 - (9/15) flesh out paper, many new plots/tables (variant fwhms,etc).
+            New Tycho region selections
 * Week 17 - (9/22) paper writing, cleanup/data for Tycho regions-5
             Cull Kepler regions, trial Cas A regions
-* Week 18 - (9/29) AAS abstract. Smooth out paper, results/disc.
+* Week 18 - (9/29) AAS abstract. Trim paper, flesh out results/disc/conclusion.
+            Port B-damping code.
+* Week 19 - (10/6) Investigate srcut break-D relation; B-damping
+            (in progress)
+
+* Week 20 - (10/13)
+* Week 21 - (10/20)
+* Week 22 - (10/27)
+* Week 23 - (11/3)
+* Week 24 - (11/10)
+* Week 25 - (11/17)
+* Week 26 - (11/24)
+* Week 27 - (12/1)
+* Week 28 - (12/8)
+* Week 29 - (12/15)
+* Week 30 - (12/22, 12/23 only) 
+
+* Week 31 - (12/29)
+* Week 32 - (1/5) AAS winter meeting
 
 (week 10 included for continuity)
 
@@ -2640,6 +2662,418 @@ Sean's, or whatever)
 
 (Week 19) Monday 2014 October 6
 ===============================
+
+Summary
+-------
+* Discussion w/ Rob (misc. small things, travel, synchrotron roll-off)
+* Looked over paper, added small comments/fixes
+* Reviewed roll-off freq arg, derived eta2 prediction.  Tested w/ srcut
+
+Mailed in AAS junior membership form w/ dues.
+
+Meeting with Rob
+----------------
+* Magnetic damping -- don't spend too much time on it.  Just run it through...
+* On using synchrotron roll-off -- try it with srcut.
+  Kind of hard because we don't have that kind of spatially resolved radio
+  spectroscopy to constrain radio flux, but give it a try... (probably won't
+  pan out? kind of tangential)
+* Roll-off -- Rob pulled up Tanaka et al. (2008, ApJ), Suzaku paper on
+  RX J1713.7-3946 spectrum in hard & soft X-rays
+* Small theory details (why Bohm limit?  why D propto E^2? etc), check w/Steve
+* Email Dave Holdridge about travel (done)
+
+
+Synchrotron roll-off and diffusion
+----------------------------------
+
+Idea: the synchrotron roll-off could give an independent constraint on
+diffusion in each of our regions/filaments.  DSA gives a prediction for the
+synchrotron roll-off in terms of diffusion coefficient only.  Whereas we
+estimated magnetic field and diffusion from the rim widths, set by diffusion
+affecting electrons propagating downstream of the shock, this estimates
+diffusion strictly from the DSA process at/near the shock.  If diffusion
+coefficients vary behind the shock these values could be quite different (would
+make sense in context of a magnetic damping model too).
+
+### Derivation
+(typing up paper notes)
+
+Assume that a DSA model explains the observed e-/synchrotron spectra
+cut-off/roll-off.  We estimate e- cut-off energy by equating
+`$\tau_{\mt{accel}} = \tau_{\mt{synch}}$`.  This gives (Parizot et al., 2006):
+
+    \frac{3r}{r-1} \frac{r D_d + D_u}{v_s^2} = \frac{1}{b B^2 \Ecut}
+
+(\emph{I don't know if this equality was designed to exactly obtain the electron
+cutoff energy, or is just a rough/scaling relation -- pull up Drury (1983) to
+check this})
+Following through the arguments/assumptions in Parizot et al. (2006) yields
+(using `$13.3 \unit{erg} = 8.3 \unit{TeV}$`):
+
+    \Ecut =
+        &\left( 13.3 \unit{erg} \right)^{2/(1+\mu)}
+        \left( \frac{B_0}{100 \muG} \right)^{-1/(1+\mu)} \nonumber \\
+        &\times
+        \left( \frac{v_s}{10^8 \unit{cm\;s^{-1}}} \right)^{2/(1+\mu)}
+        \eta^{-1 / (1+\mu)} .
+
+Now, we can convert this cut-off e- energy to a roll-off synchrotron energy by
+invoking the delta function assumption `$\nu_{\mt{cut}} = c_m \Ecut^2 B$` with
+`$c_m = 1.822 \times 10^{18}$`.
+(\emph{Again, I don't know if this is an equality or just a scaling.  We'd need
+to relate the electron spectrum cut-off to the derived synchrotron spectrum
+cut-off, as is done (I think) by Zirakashvili and Aharonian (2007).})
+
+    \nu_{\mt{cut}} = c_m
+        \left( 13.3 \unit{erg} \right)^{4/(1+\mu)}
+        \left( \frac{B}{100\muG} \right)^{-(1-\mu)/(1+\mu)}
+        \left( \frac{v_s}{10^8 \unit{cm/s}} \right)^{4/(1+\mu)}
+        \eta^{-2/(1+\mu)}
+
+In the case of `$\mu = 1$` this yields:
+
+    \nu_{\mt{cut}} = (0.133 \unit{keV} / h) 
+        \left( \frac{v_s}{10^8 \unit{cm/s}} \right)^{2}
+        \eta^{-1}
+
+Now, for `$\mu \neq 1$` this is no longer independent of magnetic field.  But,
+there is hope.  Rewrite this in terms of `$\eta_2$` using
+`$\eta = \eta_2 E_2^{1-\mu}$` and write:
+
+    \nu_{\mt{cut}} = c_m
+        \left( 13.3 \unit{erg} \right)^{4/(1+\mu)}
+        \left( E_2 \right)^{-2(1-\mu)/(1+\mu)}
+        \left( \frac{B}{100\muG} \right)^{-(1-\mu)/(1+\mu)}
+        \left( \frac{v_s}{10^8 \unit{cm/s}} \right)^{4/(1+\mu)}
+        \left( \eta_2 \right)^{-2/(1+\mu)}
+
+With `$E_2 = \left( (2 \unit{keV}/h) / (c_m B) \right)^{1/2}$`, or
+`$E_2 = \left( 0.2657 \unit{erg^2\;G} / B \right)^{1/2}$`, we obtain:
+
+    \nu_{\mt{cut}} = c_m
+        \left( 13.3 \unit{erg} \right)^{4/(1+\mu)}
+        \left( 0.2657 \unit{erg^2\;G} / B \right)^{-(1-\mu)/(1+\mu)}
+        \left( \frac{B}{100\muG} \right)^{-(1-\mu)/(1+\mu)}
+        \left( \frac{v_s}{10^8 \unit{cm/s}} \right)^{4/(1+\mu)}
+        \left( \eta_2 \right)^{-2/(1+\mu)}
+
+And, the magnetic field terms cancel!  Hey presto.
+
+### Result (synchrotron roll-off and eta2)
+
+Our final usable result is:
+
+    \nu_{\mt{cut}} = c_m
+        \left( 13.3 \unit{erg} \right)^{4/(1+\mu)}
+        \left( 0.2657 \unit{erg^2\;G} \right)^{-(1-\mu)/(1+\mu)}
+        \left( 100 \muG \right)^{(1-\mu)/(1+\mu)}
+        \left( \frac{v_s}{10^8 \unit{cm/s}} \right)^{4/(1+\mu)}
+        \left( \eta_2 \right) ^{-2/(1+\mu)}
+
+Now we have a prescription for estimating `$\eta_2$` from the
+synchrotron cut-off frequency and the shock velocity, no other info needed.
+You can verify that this reduces correctly when mu=1.
+Use this Python function for one-off interactive calculations:
+
+    from __future__ import division
+    
+    def cut_eta2(nu_cut, vs_sc, mu):
+        """Compute eta2 from synchrotron roll-off frequency, assuming that
+        e- roll-off occurs when synchrotron cooling timescale (~1/(B^2 E))
+        balances DSA timescale (~D/v^2)
+
+        Input:
+            nu_cut = synchrotron roll-off in Hz (from srcut or similar)
+            vs_sc = shock velocity scaled by 10^8 cm/s
+            mu = diffusion-energy scaling exponent (mu=1 for Bohm)
+        Output:
+            eta2 estimate
+        """
+
+        nu_pred = ( 1.82e18 * (13.3)**(4./(1+mu)) * 0.2657**(-(1.-mu)/(1.+mu))
+                    * (1e-4)**(2./(1.+mu)) * (vs_sc)**(4./(1+mu)) )
+        eta2 = (nu_pred / nu_cut)**((1.+mu)/2.)
+        return eta2
+
+If the cut-off frequency is less than 2 keV/h, eta2 will increase with mu.
+If the cut-off frequency is greater than 2 keV/h, eta2 decreases with mu.
+
+Why?  eta2 is independent of mu at 2 keV so it doesn't matter there.
+IF the cut-off freq occurs below 2 keV, larger mu would DECREASE eta2; thus
+eta2 must increase to reproduce the correct diffuion at the cut-off energy.
+And vice versa -- if cut-off freq occurs above 2 keV, larger mu would INCREAse
+eta2 and thus eta2 must drop to get the right diffusion.
+
+This is specifically an artifact of our choice of fiducial energy at 2 keV.
+
+Then, the more interesting question is -- why does eta2 decrease with mu
+in our modeling efforts?  Is this at all meaningful?
+
+Compute eta2 from srcut frequency for two regions
+-------------------------------------------------
+
+Using `phabs*srcut` model
+
+### Region 6 from regions-5
+
+    ========================================================================
+    Model phabs<1>*srcut<2>  Source No.: 1   Active/On
+    Model Model Component  Parameter  Unit     Value
+     par  comp
+       1    1   phabs      nH         10^22    0.646815     +/-  2.05401E-02  
+       2    2   srcut      alpha               0.580000     frozen
+       3    2   srcut      break      Hz       6.95027E+16  +/-  6.72192E+15  
+       4    2   srcut      norm                4.02326E-02  +/-  4.76079E-03  
+    ________________________________________________________________________
+    
+    
+    Fit statistic : Chi-Squared =         213.44 using 234 PHA bins.
+    
+    Test statistic : Chi-Squared =         213.44 using 234 PHA bins.
+     Reduced chi-squared =        0.92398 for    231 degrees of freedom 
+     Null hypothesis probability =   7.903088e-01
+
+The size of region 6 (up slice) is 0.0496 * 0.214 arcmin^2 = 0.0106 arcmin^2.
+Compare Tycho's size is 4 arcmin radius, or 50.27 arcmin^2.  Ratio of areas is
+0.00021; ratio of norm/total radio flux is (0.04 Jy)/(56 Jy) = 0.0007.
+Does not seem unreasonable, since this is likely a brighter part of the
+remnant.  So looks fine to me.
+
+Assume shock velocity `3.9e8 cm/s * 3/2.3 = 5.1e8 cm/s` and accept srcut
+roll-off freq 6.95e16 Hz (0.287 keV).  This gives:
+
+    mu      eta2
+    -------------
+    0        4.57
+    1/3      6.31
+    1/2      7.42
+    1       12.05
+    1.5     19.57
+    2       31.78
+
+Verdict: vaguely plausible?  I suspect this would give more consistent magnetic
+field estimates.
+
+
+### Region 17 from regions-5
+
+    ========================================================================
+    Model phabs<1>*srcut<2>  Source No.: 1   Active/On
+    Model Model Component  Parameter  Unit     Value
+     par  comp
+       1    1   phabs      nH         10^22    0.590624     +/-  2.39908E-02  
+       2    2   srcut      alpha               0.580000     frozen
+       3    2   srcut      break      Hz       7.29093E+16  +/-  8.86814E+15  
+       4    2   srcut      norm                2.81425E-02  +/-  4.09850E-03  
+    ________________________________________________________________________
+    
+       Using energies from responses.
+    
+    Fit statistic : Chi-Squared =         173.79 using 190 PHA bins.
+    
+    Test statistic : Chi-Squared =         173.79 using 190 PHA bins.
+     Reduced chi-squared =        0.92937 for    187 degrees of freedom 
+     Null hypothesis probability =   7.470014e-01
+
+    XSPEC12>error 1,3,4
+     Parameter   Confidence Range (2.706)
+         1     0.554489     0.633984    (-0.0361356,0.0433598)
+         3  5.91195e+16  8.80831e+16    (-1.37899e+16,1.51737e+16)
+         4    0.0225397    0.0366237    (-0.00560276,0.0084812)
+
+We take roll-off freq 7.29e16 Hz (0.302 keV) with
+shock velocity 3300 cm/s x 3/2.3 = 4300 cm/s.  This gives:
+
+    mu      eta2
+    -------------
+    0        3.17
+    1/3      4.35
+    1/2      5.09
+    1        8.17
+    1.5     13.10
+    2       21.03
+
+Again, verdict, vaguely plausible?  This procedure will yield very similar
+numbers all around the remnant.   The only things changing are cut-off
+frequency (varying by 5% maybe) and shock velocity (varying by factor of 2).
+
+
+Tuesday 2014 October 7
+======================
+
+Summary
+-------
+
+* Ran Kepler regions-3 through pipeline
+* Manually played with B-damping FWHMs, check weird behavior
+* Set up calculation (for one set of data, mu=1) to run overnight w/ several
+  scale lengths and a range of initial parameters (check how chisquared space
+  looks?..)
+
+Kepler regions-3
+----------------
+
+Short diversion.  Looking at Kepler notes from Sept 26: Brian wanted to
+throwing out regions where profiles bad, even at lowest bands.  The blacklist
+would be 1,2,8,9,10,11 -- but that seems a bit too many.  It would leave us
+with just 5 regions (3-7) all on Kepler's ear.
+
+Regions 9, 10 must go -- their bands with low counts look terrible.
+Region 1 is iffy... to be safe I will throw it out.
+
+So regions-3 we will have 2-7, 8, 11 (total 8 regions to get profiles/fits)
+
+Set up profiles/FWHMs for Kepler as usual (same settings, Hanning window length
+13 for smoothing), ran specextract.  Linked backgrounds and ran spectral fits,
+same procedure as Tycho.  Ran simple model fits.  Ready to go on full model...
+
+
+B-damping code
+--------------
+
+Filling in rest of framework for running fits...
+
+    tycho-fit-tables.ipynb
+    
+        Iterate over data with models_exec.Fitter generator
+        models_disp.build_dataf to generate fitting function
+        models_disp.generate_fits to run and save fits
+
+    models_disp.py
+
+        build_dataf passes **fit_kws to Fitter.get_fit(...),
+                           **err_kws to Fitter.get_errs(...)
+
+        The rest of functions don't affect fitting/model calculations,
+        just run or display fits (using function from build_dataf).
+        build_dataf is mainly to extract and parse data from fits and error
+        computations.  Fits/errors are run from one-liners
+
+    models_exec.py
+
+        Fitter.get_fit(...) passes **fit_kws to
+            models.simple_fit, models.full_fit
+
+            This method adds 'scale_covar':False to **fit_kws if not already
+            given.  For full fit, if 'B0'/'eta2' not added, method adds best
+            grid 'B0'/'eta2' from stored grid using self.grid_scan(mu).
+
+    models.py
+
+        simple_fit, full_fit accept kws:
+            eta2, B0, mu_free, eta2_free, B0_free, **lmf_kws
+        full_fit also accepts the kwarg 'model_kws'
+
+            **
+
+            (where **lmf_kws are settings passed to lmfit.minimize, and also
+            scipy.leastsq)
+
+As a small aside, I removed `Fitter.fitter_simp` and `Fitter.fitter_full` since
+they subsetted the functionality of `Fitter.get_fit` but were less useful.
+
+For manual fitting / getting numbers to play with, we have
+
+    models_exec.py
+
+        Fitter.width_full(..., **kwargs) passes kwargs to models.full_width,
+        which passes **kwargs straight to models.width_cont.
+
+
+Example B-damping calculation/numbers
+-------------------------------------
+With Bmin = 5e-6 (Sean's default).
+
+Best fit with no damping is eta2 = 3.7 (+2.4/-1.3), B0 = 208 (+17/-12), with
+chi-squared = 25.
+
+    ab      eta2    B0      chisqr
+    0.5     3.86    210     25.0
+    0.05    2.96    195     25.5
+    0.007   0.37    29.1
+    0.005   0.03    33.9    25.79
+    0.002   failed miserably (stalling at FWHMs too small)
+    0.001   failed miserably
+
+Examples of fits where eta2 is fixed
+
+    ab      eta2    B0      chisqr
+    0.005   0.01    35.6    -       (didn't record)
+    0.005   1.00    22.92   85.6
+
+At fixed eta2, I'm getting the impression that the widths are no longer nearly
+as sensitive to B0 as before, and MUCH smaller B0s are required just to get
+anywhere!  How should I best get a handle on parameter space?
+
+
+Manual B-damping calculations (log of testing)
+----------------------------------------------
+
+Testing some numbers... determined that decreasing eta2 can increase rim widths
+in the damped model, due to two effects:
+* Cut-off energy increases with smaller eta2, allowing larger rims (more high
+  energy e- available)
+* Without Ecut, rims still widen w/ smaller eta2 (which was very perplexing).
+  I think the answer lies in the diffusion equation:
+
+    v df/fx - d/dx(D df/dx) + ... = v df/dx - D d/dx(df/dx) - dD/dx df/dx
+
+  The last term, dD/dx df/dx, causes advection to slow down in the presence
+  of a strong _diffusion coefficient_ gradient!  This is really trippy and I
+  don't have an intuitive understanding of why this is.
+
+(I discarded my log, but the same effect persisted in Sean's original Fortran
+code -- so it's not just me)
+
+A bigger issue now is that the FWHM calculation fails on some (large) values of
+rminarc.  See the below code logging...
+
+mu = 1, Tycho Region 1, irmax = 200 fixed.
+
+First, just vary eta2 w/ other settings fixed (default settings)
+
+    eta2    B0      rminarc icut    idamp   ab      FWHMs (1 keV, 2 keV, 3 keV, 4.5 keV)
+    -------------------------------------------------------------------------------------------------
+    0.03    34      10      1       1       0.004   [ 7.2240338   5.89908341  5.2959738   4.77683576]
+    1       34      10      1       1       0.004   [ 3.29273975  2.91199758  2.73110823  2.57283302]
+    10      34      10      1       1       0.004   [ 2.34055386  2.13230373  2.01590829  1.90183956]
+
+Check if effect persists, when cut-off energy not introduced
+
+    0.03    34      10      0       1       0.004   [ 240.        240.        8.45320352  6.82156553]
+    1       34      10      0       1       0.004   [ 4.4062853   3.96766419  3.79779506  3.67446985]
+    10      34      10      0       1       0.004   [ 3.58824847  3.52330823  3.50092131  3.48572739]
+
+The code is also getting weird results for large rminarc, which I do NOT expect.
+
+    0.03    34      10      1       1       0.004   [ 7.2240338   5.89908341  5.2959738   4.77683576]
+    0.03    34      30      1       1       0.004   [ 240.        5.89989288  5.29563315  4.77711038]
+
+The scourge is found when I disable adaptive rminarc calculation.  When
+adaptive rminarc is on, it drops rminarc too small (overshooting), so that the
+FWHM isn't found and 240. is reported.  (fix) denotes `irad_adapt=False`
+
+    0.03    34      30(fix) 1       1       0.004   [-11.84010424 5.81935857  5.23547149  4.7287726 ]
+
+Quick sanity check that all is normal, when damping is off
+
+    1       100     60      1       0       -       [ 21.93518981  16.72890036  14.53880802  12.8070013 ]
+    10      100     60      1       0       -       [ 33.24745697  28.39278335  26.15818132  24.23900033]
+ 
+
+Next steps
+----------
+
+Set up some small B-damping calculations to run manually overnight.
+I don't really know what are reasonable starting parameter values, yet.
+So I'm entering my guesses in by hand... as we progress I'll remedy this.
+
+Tomorrow: run things by Rob/Brian, hunt down rminarc bug again...
+          tackle resolution error
+          explore fitting outliers (in non-damping code)
+
+
 
 
 

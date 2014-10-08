@@ -135,7 +135,7 @@ Output: `regions-n.reg`, `regions-n.physreg`
 ## Making nice images of regions
 
 Open RGB image of SNR data.  Twiddle colormap/scaling parameters as desired.
-Convert projection regions to boxes with:
+Convert projection regions to boxes (for image only) with:
 
     code/regions/ds9proj2box.py
 

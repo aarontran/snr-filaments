@@ -45,8 +45,8 @@
 
           print *, 'Enter B0'
           read *, B0            ! Gauss
-          !print *, 'Enter Eta2'
-          !read *, eta2          ! dimensionless
+          print *, 'Enter Eta2'
+          read *, eta2          ! dimensionless
           !print *, 'Enter mu'
           !read *, mu            ! dimensionless
           print *, 'Enter rminarc'
@@ -56,7 +56,7 @@
 
           ! For timing test
           !B0 = 150d-6
-          eta2=1d0
+          !eta2=1d0
           mu=1d0
           !rminarc=20d0
           snrflag=0  ! SN 1006
@@ -82,7 +82,7 @@
      &                          5d0*1.d8, 5d0*1.d8/4d0, 2.96d19, 900d0,
      &                          2d0*0.6d0+1d0, rminarcarray, 1,
      &                          1000, 400, 500,
-     &                          1, 0.5d0, 5d-6)
+     &                          1, 0.005d0, 5d-6)
           elseif (snrflag.eq.1) then
             call Fullefflengthsub(kevs, inumax, widtharc, B0, eta2, mu,
      &                            4.7d0*1.d8, 4.7d0*1.d8/4d0, 1.077d19,

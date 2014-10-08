@@ -33,16 +33,22 @@
         double precision spline,BIATX(1000)
         DOUBLE PRECISION BCOEF(1000), GTAU(1000), Q(112640), T(1006)
 
+        double precision eta2, eta  ! Extra...
+
         common/xrays/xex, fex, ir
 
         !Physics Parameters
         compratio = 4d0
         v0 = 5*1.d8/compratio
-        ab = .5d0       ! Damping length, between [0, 1]
+        ab = .005d0       ! Damping length, between [0, 1]
         Bmin =5d-6      ! Minimum magnetic field
         rs = 2.96e19    !tan(943.7'')*2.2 kpc
         alpha = .6d0
         s = 2d0*alpha+1d0
+
+        ! Extra (Aaron, testing varying eta)
+        eta2 = 0.01d0
+        eta = eta2 ! * (2d0 * 2.417989d17 / (cm*B0))**(-(mu-1d0)/2d0)
 
         !Constants
         cm = 1.82d18
@@ -78,10 +84,11 @@
         print *, 'Enter B0'
         Read *, Bfield
 
-        ! eta=1, mu=1 assumed
+        ! eta=1, mu=1 assumed; modified to accept non-1 eta
         if(icut.eq.1) then
           ecut = 8.3d0*(Bfield/(100d-6))**(-0.5d0)
      c           *(v0*4d0/1d8)*1.6021773d0
+     c           *(1d0/eta)**(1d0/2d0)  ! TESTING
         else
           ecut = 1d40
         endif
@@ -116,7 +123,8 @@
                 do irad = 1, iradmax
                     B = Bmin + (B0-Bmin)*dexp((rad-1d0)/ab)
                     en = dsqrt(nu/c1/B/xex(j))
-                    disttab(j,irad) = distr(En,B0, Ecut,ab, rad, Bmin)
+                    disttab(j,irad) = distr(En,B0, Ecut,ab, rad, Bmin,
+     c                                      eta)  ! Extra..
                     radtab(irad) = rad
                     ! write to disttab.dat if inu=3 (4 keV) and j=3
                     ! (i.e., fixed e- energy?)
@@ -364,7 +372,8 @@
 
 
       ! Assumes Bohm diffusion (so eta=1, mu=1)
-      function distr(E,Bmax, Ecut,absc, rsc, Bmin)
+      ! MODIFIED to accept non-unity eta
+      function distr(E,Bmax, Ecut,absc, rsc, Bmin, eta)
 
         double precision D0, B, a, b0, alpha
         double precision k0, s, v, Ecut, integrand
@@ -383,7 +392,7 @@
         double precision const, distr, absc, eta
 
         const = Bmax-Bmin
-        eta = 1d0
+        ! eta = 0.01d0
 
         D0 = eta*2.083d19/Bmax
         a = 1.57d-3

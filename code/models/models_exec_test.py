@@ -23,7 +23,7 @@ import snr_catalog as snrcat
 # SN 1006, test data
 # ==================
 
-KEVS = np.array([0.7, 1.0, 2.0]) 
+KEVS = np.array([0.7, 1.0, 2.0])
 DATA = np.array([35.5, 31.94, 25.34])
 EPS = np.array([1.73, .97, 1.71])
 
@@ -86,7 +86,7 @@ class TestSimpModelErrorsSN1006(object):
             dstr = ('Simple fit params agree w/ Sean to min(10%,error); '
                     'SN 1006, mu={:0.2f}'.format(mu))
 
-            res = self.fobj.fitter_simp(mu)
+            res = self.fobj.get_fit(mu, 'simp')
             B0 = res.params['B0'].value
             eta2 = res.params['eta2'].value
 
@@ -104,7 +104,7 @@ class TestSimpModelErrorsSN1006(object):
     def test_fit_errors(self):
         """Simple fit: check best-fit errors correspond to d(chisqr) of +1.
         Rather poor design...
-        
+
         need res, pstr to do everything
         need ci_val, dchisqr, chisqr_best for assertions"""
 
@@ -122,8 +122,8 @@ class TestSimpModelErrorsSN1006(object):
             aeq_(x2, x_true)
 
         for mu in TAB_7:
-            
-            res = self.fobj.fitter_simp(mu)
+
+            res = self.fobj.get_fit(mu, 'simp')
             chisqr_best = res.chisqr
             ci_dict = self.fobj.get_errs(res, 'simp', method='manual',
                                          ci_vals=(0.683,))

@@ -1233,7 +1233,7 @@ lengthscales of said radio rims).  Previous workers have certainly tried
 A new epoch of VLA and \Chandra observations in this year (PIs: J. Hewitt, B.
 Williams) will offer a rich dataset of sub-arcsecond observations that may
 reveal more about rim morphology and perhaps even temporal variation over a 10+
-year baseline.
+year baseline (compare to \citet{katsuda2010-sn1006}).
 
 % ================
 % Acknowledgements
@@ -1248,17 +1248,89 @@ This research has made use of NASA's Astrophysics Data System.
 
 {\it Facilities:} \facility{CXO (ACIS-I)}
 
-%\clearpage
-
 % ========
 % Appendix
 % ========
-%\appendix
-%
-%\setcounter{table}{0}
-%\renewcommand{\thetable}{A\arabic{table}}
-%\setcounter{figure}{0}
-%\renewcommand{\thefigure}{A\arabic{figure}}
+\clearpage
+\appendix
+
+\setcounter{table}{0}
+\renewcommand{\thetable}{A\arabic{table}}
+\setcounter{figure}{0}
+\renewcommand{\thefigure}{A\arabic{figure}}
+
+\section{Derivation for synchrotron roll-off and diffusion}
+
+% This is NOT optimized for 2-column layout
+
+Assume that a DSA model explains the observed e-/synchrotron spectra
+cut-off/roll-off.  We estimate e- cut-off energy by equating
+$\tau_{\mt{accel}} = \tau_{\mt{synch}}$.  This gives (Parizot et al., 2006):
+\[
+    \frac{3r}{r-1} \frac{r D_d + D_u}{v_s^2} = \frac{1}{b B^2 \Ecut}
+\]
+(\emph{I don't know if this equality was designed to exactly obtain the electron
+cutoff energy, or is just a rough/scaling relation -- pull up Drury (1983) to
+check this})
+Following through the arguments/assumptions in Parizot et al. (2006) yields
+(using $13.3 \unit{erg} = 8.3 \unit{TeV}$):
+\[
+    \Ecut =
+        \left( 13.3 \unit{erg} \right)^{\frac{2}{1+\mu}}
+        \left( \frac{B_0}{100 \muG} \right)^{-\frac{1}{1+\mu}}
+        \left( \frac{v_s}{10^8 \unit{cm\;s^{-1}}} \right)^{\frac{2}{1+\mu}}
+        \eta^{-\frac{1}{1+\mu}}
+\]
+Now, we can convert this cut-off e- energy to a roll-off synchrotron energy by
+invoking the delta function assumption $\nu_{\mt{cut}} = c_m \Ecut^2 B$ with
+$c_m = 1.822 \times 10^{18}$.
+(\emph{Again, I don't know if this is an equality or just a scaling.  We'd need
+to relate the electron spectrum cut-off to the derived synchrotron spectrum
+cut-off, as is done (I think) by Zirakashvili and Aharonian (2007).})
+\[
+    \nu_{\mt{cut}} = c_m
+        \left( 13.3 \unit{erg} \right)^{\frac{4}{1+\mu}}
+        \left( \frac{B}{100\muG} \right)^{-\frac{1-\mu}{1+\mu}}
+        \left( \frac{v_s}{10^8 \unit{cm/s}} \right)^{\frac{4}{1+\mu}}
+        \eta^{-\frac{2}{1+\mu}}
+\]
+In the case of $\mu = 1$ this yields:
+\[
+    \nu_{\mt{cut}} = (0.133 \unit{keV} / h)
+        \left( \frac{v_s}{10^8 \unit{cm/s}} \right)^{2}
+        \eta^{-1}
+\]
+For $\mu \neq 1$ this is no longer independent of magnetic field.  But,
+there is hope.  Rewrite this in terms of $\eta_2$ using
+$\eta = \eta_2 E_2^{1-\mu}$ and write:
+\[
+    \nu_{\mt{cut}} = c_m
+        \left( 13.3 \unit{erg} \right)^{\frac{4}{1+\mu}}
+        \left( E_2 \right)^{-\frac{2(1-\mu)}{1+\mu}}
+        \left( \frac{B}{100\muG} \right)^{-\frac{1-\mu}{1+\mu}}
+        \left( \frac{v_s}{10^8 \unit{cm/s}} \right)^{\frac{4}{1+\mu}}
+        \left( \eta_2 \right)^{-\frac{2}{1+\mu}}
+\]
+With $E_2 = \left( (2 \unit{keV}/h) / (c_m B) \right)^{1/2}$, or
+$E_2 = \left( 0.2657 \unit{erg^2\;G} / B \right)^{1/2}$, we obtain:
+\[
+    \nu_{\mt{cut}} = c_m
+        \left( 13.3 \unit{erg} \right)^{\frac{4}{1+\mu}}
+        \left( \frac{0.2657 \unit{erg^2\;G}}{B} \right)^{-\frac{1-\mu}{1+\mu}}
+        \left( \frac{B}{100\muG} \right)^{-\frac{1-\mu}{1+\mu}}
+        \left( \frac{v_s}{10^8 \unit{cm/s}} \right)^{\frac{4}{1+\mu}}
+        \left( \eta_2 \right)^{-\frac{2}{1+\mu}}
+\]
+And, the magnetic field terms cancel!  Hey presto.
+Our final usable result is:
+\[
+    \nu_{\mt{cut}} = c_m
+        \left( 13.3 \unit{erg} \right)^{\frac{4}{1+\mu}}
+        \left( 0.2657 \unit{erg^2\;G} \right)^{-\frac{1-\mu}{1+\mu}}
+        \left( 100 \muG \right)^{\frac{1-\mu}{1+\mu}}
+        \left( \frac{v_s}{10^8 \unit{cm/s}} \right)^{\frac{4}{1+\mu}}
+        \left( \eta_2 \right)^{-\frac{2}{1+\mu}}
+\]
 
 % --------------
 % SN 1006 tables
