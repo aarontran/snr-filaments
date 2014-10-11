@@ -14,37 +14,24 @@ From poster session (July 31):
   Rob/Brian note that the synchrotron radiation is very inefficient (esp.
   compared to when the remnant cools, H starts recombining and emitting thermal
   lines, T ~ 10^4 K)
-* Terri/Amy -- why are the shocks so thin, anyways?  don't have a good answer
-  for that... (answer: simply, B-field amplification? small B-fields of only 4x
-  the ISM value give very large rims in our model)
-* Our analysis, if anything, confirms that the shocks are thin to begin with...
-  but doesn't say "why".  Why shouldn't accelerated particles travel farther
-  back?  Function of time / remnant evolution?
-* Madura -- 3D reconstruction?
+
+(just to get a sense of energy -- how do we get physical units from CIAO
+processed mosaics?)
 
 Misc questions/thoughts
 -----------------------
 
-Could magnetic damping be compatible with / less distinguishable, even more, if
-the e- cut-off is super-exponential?  Figure 12. of Tanaka et al.                                                   
-(NEVER MIND WE HAVE BIGGER FISH TO FRY)
-
-(but I don't think anyone wants to rederive the Green's functions solutions,
-for this.  we could always turn to finite differences etc but that introduces
-its own host of problems)
-
-(can we edit our AAS abstract?)
+* Can we edit our AAS abstract?
+* What parameters did Sean use to compute SN 1006 profiles, or rule out damping
+in SN 1006?
 
 Main TO-DOs
 -----------
 
 In order:
 
-2. Magnetic damping!  Make magnetic damping tables, then run fits for all Tycho
-   regions.  Also fit with eta2 fixed to 1, 0.1, 10.
-3. Re-run spectral fits, both fitting Si/S lines and excising them.  Show that
-   we recover a clean power law (give the column density / photon indices
-   again).
+2. Magnetic damping!  Run fits for all Tycho regions.
+   Also fit with eta2 fixed to 1, 0.1, 10 at each scale length.
 4. Use srcutlog (from Brian) to run fits with eta2 fixed at values determined
    from synchrotron break frequency.
 5. Compute mE values for best loss-limited fits (to compare to data mE's).
@@ -54,11 +41,14 @@ In order:
 
 Prepare for Monday (or earlier), in order:
 
-* Magnetic damping fits (chisqr as a function of `m_E`)
-* mE values from model fit curves (B-damped or loss-limited)
-* Downstream spectral fits w/ lines accounted for
-* Loss-limited fits from srcutlog
-* Get Brian/Rob to okay Kepler numbers
+(NOTE: fix the automated line spectrum fit for Region 9... check what went
+wrong.)
+
+* Magnetic damping fits (chisqr as a function of `m_E`) (in progress)
+* mE values from model fit curves (B-damped or loss-limited) (...)
+* Downstream spectral fits w/ lines accounted for (done)
+* Loss-limited fits from srcutlog (...)
+* Get Brian/Rob to okay Kepler numbers (...)
 
 (once all results are in place, go back to paper!)
 
@@ -66,11 +56,11 @@ Moving to lower priority:
 
 2. Check out outliers by hand (why did the fits go wonky), and check manual
    error computation speed.
+   (partial reason: B0 table is imperfect... generate new table with dense B0
+   sampling and see if helps at all)
 3. regenerate tables for regions-6 fits (also damping tables if need be)
 4. Generate Kepler tables and run full model fits
 
-Question: what parameters did Sean use to compute SN 1006 profiles, or rule
-out damping in SN 1006?
 
 Data processing to-dos, by individual "pipeline":
 (i.e., getting FWHMs/regions/etc)

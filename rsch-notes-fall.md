@@ -3610,4 +3610,36 @@ But, feed damping numbers into scripts as:
     python tab_tycho_damping_141010.py  0.03  0.02   0.006
 
 to try to balance the load of calculations (I have gone diagonally in this
-table).
+table).  Started around 8:14pm, expect to finish by 1pm tomorrow.
+So I can come in the afternoon and set it up to actually run fits.
+
+
+Tycho downstream spectra
+------------------------
+
+I forgot to link downstream spectra to backgrounds, woops.  Fixed, and reran
+fits to absorbed power law.
+
+Approaches to fitting lines: 1. excise line energies, 2. fit lines with
+Gaussians.
+
+Modified `spec_fit.py` to fit/excise Sulfur line as well.
+* Energies excised are 1.7-2 keV, 2.3-2.6 keV.
+* Fixed Gaussian line fitting to properly keep previous freeze/thaw cycle
+  parameters
+* Changed parameter outputting (to npz/json/whatever) to avoid collision
+  between models w/ two same components (keying of dict changed)
+Reran ALL Tycho regions-5 spectra
+
+For Tycho regions-5, I don't compute eqwidth for region 19.  The downstream
+region is so tiny that it's useless for fitting.  Wait until next set of
+regions (When I manually excise FWHMs) and then this region will become okay.
+
+Added new table with fits/excisions (more formatting/patch-ups tbd, but good
+enough for now).
+
+
+Saturday 2014 October 11
+========================
+
+

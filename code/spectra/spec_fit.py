@@ -74,6 +74,9 @@ def main():
             print '\nProcessing file: {}'.format(grp_path)
             print 'Output plot: {}'.format(plt_path)
 
+        #if num+1 == 19:
+        #    continue  # Skip bad region
+
         # All XSPEC interaction here
         spec, model = perform_fit(grp_path, ftype)
         output_fit(spec, model, plt_path, log_root, ftype, wanterr)
@@ -99,11 +102,8 @@ def output_fit(s, m, pltname, logroot, ftype, wanterr):
     s.show()
     m.show()
     xs.Fit.show()
-    if ftype == 2:  # Fitting line
-        xs.AllModels.eqwidth(3)
     if wanterr:
         xs.Fit.error('1-{}'.format(m.nParameters))  # 90% conf. limit errors
-    xs.Xset.logChatter = 0
 
     # Save fit information to JSON file
     fdict = {}
@@ -111,16 +111,28 @@ def output_fit(s, m, pltname, logroot, ftype, wanterr):
     fdict['ftype'] = ftype
     fdict['fitstat'] = (xs.Fit.statMethod, xs.Fit.statistic)
     fdict['dof'] = xs.Fit.dof
-    if ftype == 2:
-        fdict['eqwidth'] = s.eqwidth[0]
-    fdict['pars']={}
-    for i in xrange(m.nParameters):
-        p = m(i+1)  # xs.Parameter object
-        pardict = fdict['pars'][p.name] = {}
-        pardict['value'] = p.values[0]
-        if wanterr:
-            pardict['error'] = p.error
-    
+
+    if ftype == 2:  # fitting line and need eqwidth
+        # These should generate output for XSPEC log too
+        xs.AllModels.eqwidth(3)
+        fdict['eqwidth-si'] = s.eqwidth[0]
+        xs.AllModels.eqwidth(4)
+        fdict['eqwidth-s'] = s.eqwidth[0]
+
+    # Hierarchy of keys: 'comps', 'gaussian', 'sigma', 'value'
+    fdict['comps']={}
+
+    for cname in m.componentNames:
+        comp = eval('m.'+cname)
+        compdict = fdict['comps'][cname] = {}
+        for pname in comp.parameterNames:
+            p = eval('m.'+cname+'.'+pname)  # So janky
+            compdict[pname] = {}
+            compdict[pname]['value'] = p.values[0]
+            if wanterr:
+                compdict[pname]['error'] = p.error
+
+
     with open(logroot+'.json','w') as fj:
         json.dump(fdict, fj, indent=2)  # Pretty print
 
@@ -135,6 +147,7 @@ def output_fit(s, m, pltname, logroot, ftype, wanterr):
              bkg = xs.Plot.backgroundVals())
 
     # Clean up
+    xs.Xset.logChatter = 0
     xs.AllData.clear()
     xs.AllModels.clear()
     xs.Xset.closeLog()
@@ -165,31 +178,66 @@ def perform_fit(fname, ftype=0):
 
     # Fit model
     xs.Fit.nIterations = 2000
-    xs.Fit.perform()  # First round fit, regardless of ftype
+    xs.Fit.perform()  # First round fit to phabs*po alone, regardless of ftype
 
-    # Additional steps to deal with silicon line
-    if ftype == 1:  # Excise line
+    # Additional steps to deal with silicon and sulfur lines
+    if ftype == 1:  # Excise lines
         s.ignore('1.7-2.0')
+        s.ignore('2.3-2.6')
         xs.Fit.perform()
-    elif ftype == 2:  # Fit line
+    elif ftype == 2:  # Fit lines
+
+        # Get parameter values from current phabs*po model
+        plist = [p.values[0] for p in [model(1), model(2), model(3)]]
+        plist.extend([1.85, 2e-2, 5e-6]) # LineE, Sigma, norm
+
+        # Make new model w/ Si line and add old parameters + guesses
         model = xs.Model('phabs*(powerlaw + gaussian)')
-        plist = [m.values[0] for m in [model(1), model(2), model(3)]]
-        plist.extend([1.85, 5e-2, 5e-6]) # LineE, Sigma, norm
         model.setPars(*plist)
+
         # Set soft/hard limits on Si line gaussian Sigma/LineE
-        model.gaussian.Sigma.values = [5e-2, 1e-4, 1e-4, 2e-3, 0.07, 0.1]
+        model.gaussian.Sigma.frozen=True
         model.gaussian.LineE.frozen=True
+        xs.Fit.perform()  # Fit with frozen lineE/sigma
+        model.gaussian.Sigma.frozen=False
+        #model.gaussian.Sigma.values = [2e-2, 1e-4, 1e-4, 2e-3, 0.07, 0.1]
         xs.Fit.perform()  # Fit with frozen LineE
-        model.gaussian.LineE.values = [1.85, 0.001, 1.75, 1.8, 1.9, 1.95]
         model.gaussian.LineE.frozen=False
+        #model.gaussian.LineE.values = [1.85, 0.001, 1.75, 1.8, 1.9, 1.95]
+        xs.Fit.perform()  # Fit all free
+
+        # Now, add sulfur line, repeating similar procedure
+        plist = [p.values[0] for p in [model(1), model(2), model(3), model(4),
+                                       model(5), model(6)]]  # Parameters
+        plist.extend([2.45, 2e-2, 5e-7]) # LineE, Sigma, norm
+        model = xs.Model('phabs*(powerlaw + gaussian + gaussian)')
+        model.setPars(*plist)
+
+        # Set soft/hard limits on S line gaussian Sigma/LineE
+        model.gaussian_4.Sigma.frozen=True
+        model.gaussian_4.LineE.frozen=True
+        xs.Fit.perform()
+        model.gaussian_4.Sigma.frozen=False
+        #model.gaussian_4.Sigma.values = [2e-2, 1e-4, 1e-4, 2e-3, 0.07, 0.1]
+        xs.Fit.perform()  # Fit with frozen LineE
+        model.gaussian_4.LineE.frozen=False
+        #model.gaussian_4.LineE.values = [2.45, 0.001, 2.35, 2.4, 2.5, 2.55]
         xs.Fit.perform()  # Now fit with unfrozen LineE
 
         # Finally, run fit without hard/soft limits
-        par4 = model.gaussian.LineE.values[0]
-        par5 = model.gaussian.Sigma.values[0]
-        model.gaussian.LineE.values = [par4, 0.01*par4, 0., 0., 1e6, 1e6]
-        model.gaussian.Sigma.values = [par5, 0.01*par5, 0., 0., 10., 20.]
-        xs.Fit.perform()
+        #par4 = model.gaussian.LineE.values[0]
+        #par5 = model.gaussian.Sigma.values[0]
+        #model.gaussian.LineE.values = [par4, 0.01*par4, 0., 0., 1e6, 1e6]
+        #model.gaussian.Sigma.values = [par5, 0.01*par5, 0., 0., 10., 20.]
+
+        #xs.Fit.perform()
+
+        #par7 = model.gaussian_4.LineE.values[0]
+        #par8 = model.gaussian_4.Sigma.values[0]
+        #model.gaussian.LineE.values = [par7, 0.01*par7, 0., 0., 1e6, 1e6]
+        #model.gaussian.Sigma.values = [par8, 0.01*par8, 0., 0., 10., 20.]
+
+        #xs.Fit.perform()
 
     return s, model
 
