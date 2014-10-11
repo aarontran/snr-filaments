@@ -88,7 +88,7 @@ def make_kepler():
     kepler.icut = True
     kepler.rminarc = 20  # Default rminarc, arcsec (remember w/ adaptive
                          # rminarc calculation, this isn't too important)
-    kepler.irmax = 400  # Currently unchanged from SN 1006
+    kepler.irmax = 200  # Currently unchanged from SN 1006
     kepler.iradmax = 100
     kepler.ixmax = 500
 
@@ -109,11 +109,10 @@ def make_tycho():
     tycho.dkpc = 3.0  # Distance to remnant in kpc (!)
     tycho.rsarc = 240  # Shock radius (arcsec) from Green's SNR catalog
                        # This is about right from image inspection.
-    tycho.s = 2.3  # e- spectrum index, 2.3 = 2*0.65 + 1;
-                   # 0.65 = radio spectral index
-                   # TODO this should be 2.16 = 2*0.58 + 1
-                   # following Sun et al. (2011)
-                   # I used 0.65 in all previous work from Kothes et al. (2006)
+    tycho.s = 2.16 # e- spectrum index, 2.16 = 2*0.58 + 1
+                   # 0.58 = radio spectral index from Sun et al. (2011)
+                   # also listed in Green's SNR catalog.
+                   # Before 2014 Oct 10 We used 0.65 from Kothes et al. (2006)
 
     tycho.vs = 3.6e8 * tycho.dkpc/2.3  # Average-ish shock velocity, cm/s
     # Mean of velocs from nonthermal regions, Williams et al. 2013
@@ -122,7 +121,7 @@ def make_tycho():
     # Model grid settings, resolutions
     tycho.icut = True
     tycho.rminarc = 20  # Default rminarc, arcsec
-    tycho.irmax = 400  # Currently unchanged from SN 1006
+    tycho.irmax = 200
     tycho.iradmax = 100
     tycho.ixmax = 500
 
@@ -151,7 +150,7 @@ def make_SN1006():
     # Model grid settings, resolutions
     sn1006.icut = True
     sn1006.rminarc = 60  # Default rminarc, arcsec
-    sn1006.irmax = 400
+    sn1006.irmax = 200
     sn1006.iradmax = 100
     sn1006.ixmax = 500
 

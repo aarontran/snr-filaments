@@ -29,16 +29,17 @@ Table of contents
             extensively.  Back on GSFC campus.
 * Week 14 - (9/1) run suite of error calculations; start paper text/outlining
 
-* Week 15 - (9/8) tables, varied FWHM calculations, first Kepler picks; paper
-
+* Week 15 - (9/8) manuscript tables, varied FWHM calculations,
+            first Kepler picks; paper text
 * Week 16 - (9/15) flesh out paper, many new plots/tables (variant fwhms,etc).
             New Tycho region selections
 * Week 17 - (9/22) paper writing, cleanup/data for Tycho regions-5
             Cull Kepler regions, trial Cas A regions
 * Week 18 - (9/29) AAS abstract. Trim paper, flesh out results/disc/conclusion.
             Port B-damping code.
-* Week 19 - (10/6) Investigate srcut break-D relation; B-damping
-            (in progress)
+* Week 19 - (10/6) Investigate srcut break-D relation; prelim B-damping fits.
+            Check code resolutions, apply new settings.
+            B-damping table
 
 * Week 20 - (10/13)
 * Week 21 - (10/20)
@@ -3079,7 +3080,7 @@ Wednesday 2014 October 8
 
 Summary
 -------
-* Preliminary B-damping results (email, discussed w/ Brian)
+* Preliminary B-damping results (email, talk w/ Brian)
 * Debug B-damping FWHMs
 * B-damping theory -- diffusion gradient, eff. veloc, lengthscales from YPL '05
 * Prep for B-damping tables
@@ -3370,12 +3371,243 @@ Output fits were saved to:
 Thursday 2014 October 9
 =======================
 
+Summary
+-------
+* Code resolution checks and debugging (mainly `fglists.dat`)
+* Submitted CRESST annual progress report snippet
+
+
+Resolution notebook modifications
+---------------------------------
+
+Simplified some functions/framework for varying model computation (no need to
+edit SNR parameters, just supply kwargs to fit functions).  I change the
+bounding parameter values in notebook to make things work (using new fglists
+has changed some FWHMs a good deal!).
+
+To allow for larger tables, I change xex/fex in Fortran code to accommodate up
+to 200 entries.  Also change disttab accordingly.
+
+Full model code modifications
+-----------------------------
+
+To do computations, I modified the code to accept different filenames for
+`fglists.dat`.  This requires us to re-read the table file on every calculation
+for both Python code and f2py compiled Fortran.
+
+    FullEfflength_port.py
+        fefflen arg: fgfname (sent to FullEfflength_mod.f)
+    FullEfflength_mod.f
+        readfglists arg: fname
+    models.py
+        width_cont **kwarg: fgfname='fglists.dat' passed to fmp.fefflen
+
+Next I pass through several internal integral resolution numbers...
+
+    FullEfflength_mod.f
+        distrmlt1, distrpohl, distrmgt1 args: itmax, inmax
+        (distrmlt1 doesn't have inmax)
+        distr args: itmax, inmax
+        Fullefflengthsub args: itmax, inmax
+    FullEfflength_port.py
+        fefflen arg: itmax, inmax
+
+
+Sources of model calculation error, in e- distribution table
+------------------------------------------------------------
+
+I first ran some tests using Sean's default `fglists.dat` with SN 1006
+parameter bounds (not addressing damping, yet).
+
+The effects to consider:
+* Sampling (both number of samples, and sample spacing)
+  It seems sensible to sample more finely near peak (most important
+  contribution and more curvature in spectrum).  But, interpolation in the
+  numerical calculation takes place in e- distribution, emissivity, and
+  elsewhere.  So it doesn't seem obvious that, e.g., extremes of e- energies
+  (low/high) are necessarily unimportant.
+
+* Errors in Pacholczyk values vs scipy computed values
+
+  Comparing hand-input Pacholczyk table values, with scipy computed values, the
+  errors in Pacholczyk values are generally 1% or so (probably consistent with
+  round-off error), but between x=3 and x=5 errors are as much as ~4-5%.
+
+  For reference, `scipy.special.kv` is drawn from the AMOS Fortran library, in
+  `zbesk.f` (last revised 1989?..) so I don't know if there are better routines
+  available.  But it ought to do.
+
+* Extending table values (to larger range of xex vlaues)
+
+  Appending entries at new y values (larger or smaller) changes FWHMs by a LOT.
+  I.e., 10% or more.  This is a huge problem.  Explore this by adding entries
+  at both ends of Sean's tabulated values.
+
+
+Error analysis for default fglists.dat
+--------------------------------------
+Scribbled notes.
+
+`scipy.special.kv` table gives max error 0.22%, typical errors 0.05% (median),
+0.07% (mean).
+
+Log-space sampling (w/ `scipy` computed values) gives max error 0.9%, typical
+errors 0.1-0.2% (median), 0.2% (mean).  So error due to resampling is important
+(at 35 table entries).  This holds even if we compare resampled FWHMs to
+hand-sampled FWHMs computed w/ scipy values (i.e., scipy errors are
+comparatively small).
+
+If we extend the number of entries, at the high frequency tail (1e1 out to
+5e1):
+* add `1.2e1`: max error is 10% (!), median 0.03-0.06%, mean 1.3%.  Maximum
+  change is ~10% in all bands
+* add `2e1` (alone, no value at 1.2e1): must change rminarc to 100 to fit one
+  set of FWHMs.  The error on that one is huge.  Max error is 42%, median error
+  is 0.1-0.3%, mean error is 5-6%.  It's just one point that blows up so badly
+  and skews a lot of the errors actually, for mu=0 and eta2 = 1000 (both B0
+  values).  The next largest FWHM errors here are about 5%, for mu=0 and eta2 =
+  100.
+* add all entries in Pacholczyk between 1e1 and 5e1: max error is now 73%
+  (again, only at that one set of points).  Otherwise the max error is now
+  about 1-5%, again at the mu=0/eta2=100 set of points.  The median error is
+  0.08-0.2%, mean error 5% must be heavily skewed.
+* Add entries 1e-5, 5e-5 (rest of table same up to 1e1): maximum error is
+  0.0025%, Median error is ~1e-12, mean is ~1e-6.  Okay, awesome, there's no
+  need to go below 1e-4.  Not surprising.
+
+NOW, performing a similar analysis w/ doubled # of entries between 1e-4 and 1e1
+(35 to 68/70)
+
+* Doubling number of entries (35 to 68) with hand selection gives max error
+  0.3%, typical errors 0.06% (median), 0.08% (mean).
+* Doubling number of entries (35 to 68) using `scipy` computed values w/ manual
+  sampling gives max error 0.2%, typical errors 0.03% (median), 0.05% (mean).
+* Doubling number of entries (35 to 70) with log-sampling and `scipy` values
+  gives max error 0.6%, typical error 0.05% (median), 0.1% (mean).  What if we
+  compare to hand-sampled entries + `scipy`?  Max error becomes 0.5%, typical
+  errors about the same or a bit smaller (0.05% median, 0.08% mean).
+
+So again, log-sampling vs. hand-sampling incurs the largest fractional change
+(but now the fractional change is a bit smaller than before).  It's not obvious
+which one is more accurate, though.
+
+__Conclusion:__ use a smart manual sampling, use more entries, and use scipy
+values.  The big questions are 1. error due to adding/cutting pts at tail end
+of distribution, and 2. error due to poor sampling of distribution.
+
+New e- table sampling in `fglists_mod.dat`
+------------------------------------------
+
+Created new table with 89 entries, see the file for notes / code to regenerate.
+
+Okay, I keep changing the sampling around as I run these resolution tests.
+Key observations:
+* xex values between 1e1 and 1e2 matter a LOT to the error, both in being
+  present and in their sampling density
+
+e- integral resolutions
+-----------------------
+For mu < 1, setting itmax below around 907 (default 1000) causes the
+integration to fail miserably -- distr returns nothing but nans.
+
+Investigating bug now...
+
+
+Friday 2014 October 10
+======================
+
+Summary
+-------
+* Code resolution error checks cont. (internal integrals etc.)
+* Apply new best settings.  Confirm Tycho, Tycho damping, SN 1006 errors
+  generally 1% at max.
+
+
+New resolution numbers / etc
+----------------------------
+After lots of resolution testing, and timing checks:
+
+    irmax = 200     (from 400)
+    itmax = 200     (from 1000)
+    inmax = 50      (from 100)
+    irhomax = 2000  (from 10000)
+
+along with new `fglists_mod.dat`.  Also changed Tycho e- spectrum index `s` to
+2.61 (for radio spectral index 0.58).
+
+Looking at error results for damping -- error from e- distr integrals does
+increase in damped calculation!  Which would explain why Sean chose itmax =
+5000 in the damped code.
+
+e- integral resolutions, cont.
+------------------------------
+
+Friday morning, caught the damned bug.  Turns out that at the end of the
+integral, the rescaled variable n is supposed to be zero but can be like -1e-14
+or 1e-14 or something.  In the negative case, this kills the integrand which
+becomes NaN, thereby killing everything else!
+I checked edge cases for the rest of the integrals.  I believe this shouldn't
+happen elsewhere (other integrals have different limits etc.).
+
+Now passing through `irhomax` (from Python port code) through as a parameter as
+well, in `FullEfflength_port.fefflen` and `models.width_cont`.
+
+### Timing check
+
+Now we are using itmax=200, inmax=50, irhomax=2000, vs. 1000/100/10000 before.
+We are using `fglists_mod.dat` with 2.5x more e- energy entries.
+Running kernprof on the FWHM calculation (not considering adaptive calculation,
+which would just be 2x longer), the time breakdown is now:
+
+Tycho, 5 energy bands: 1.02 seconds
+
+    77% time to fullmodel.distr
+    7% time to emistab = emisx(...)
+    4% time to emisgrid/intensity interpolation/integration
+    11% time to FWHM computation
+
+FWHM computation breakdown:
+    15% time to spopt.minimize_scalar (find intensity max)
+    42% time to spopt.bisect (right threshold)
+    41% time to spopt.bisect (left threshold)
+
+So, all looks good.
+
 
 B-damping tables (set-up)
 -------------------------
 
 Set up generating script (see relevant script for details), ready to go.
-Fixing shock speed vs to default, manually vary mu.  Call by hand for a range
-of ab values.  The initial guesses will be REALLY bad, but we'll see how it
-goes.
+Fixing shock speed vs to default.  Call by hand for a range of ab values.
+The simple model initial guesses are pretty bad, but the FWHMs are relatively
+insensitive to large values of B0 -- so that is good!
 
+Modified table generating code to not get stuck when we're getting unable to
+find FWHMs (and code returns 240 arcsec / 900 arcsec / remnant radius).
+B0-stepping code detects when a FWHM is at the SNR's shock radius, indicating
+error, and only fills in values between valid FWHMs.
+
+Quick time estimate:
+* 1 mu, 151 eta2, 50 B0 (ask for 30 points)
+* 12 `a_b` values
+* 2 sec/call (advective soln takes 1 sec/call)
+* Run in "parallel", so divide by 3
+
+Total time is: `1*151*50*12*2/3` = 60400 seconds or 17 hours.
+This should be a slight overestimate.
+
+`a_b` values I use are:
+
+    0.5,    0.05,   0.04,   0.03,
+    0.02,   0.01,   0.009,  0.008,
+    0.007,  0.006,  0.005,  0.004
+
+But, feed damping numbers into scripts as:
+
+    python tab_tycho_damping_141010.py  0.5   0.01   0.005
+    python tab_tycho_damping_141010.py  0.05  0.009  0.004
+    python tab_tycho_damping_141010.py  0.04  0.008  0.007
+    python tab_tycho_damping_141010.py  0.03  0.02   0.006
+
+to try to balance the load of calculations (I have gone diagonally in this
+table).

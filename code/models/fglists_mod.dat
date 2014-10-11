@@ -1,0 +1,138 @@
+1.00000000e-04      9.95908831e-02
+1.77827941e-04      1.20554312e-01
+3.16227766e-04      1.45872083e-01
+5.62341325e-04      1.76402997e-01
+1.00000000e-03      2.13139065e-01
+1.77827941e-03      2.57196004e-01
+3.16227766e-03      3.09772452e-01
+5.62341325e-03      3.72048704e-01
+1.00000000e-02      4.44972504e-01
+1.33352143e-02      4.85563049e-01
+1.77827941e-02      5.28839458e-01
+2.37137371e-02      5.74609206e-01
+3.16227766e-02      6.22510162e-01
+4.21696503e-02      6.71947375e-01
+5.62341325e-02      7.22011804e-01
+7.49894209e-02      7.71378655e-01
+1.00000000e-01      8.18185535e-01
+1.10069417e-01      8.32802705e-01
+1.21152766e-01      8.46747519e-01
+1.33352143e-01      8.59896660e-01
+1.46779927e-01      8.72115917e-01
+1.61559810e-01      8.83259891e-01
+1.77827941e-01      8.93171864e-01
+1.95734178e-01      9.01683870e-01
+2.15443469e-01      9.08617044e-01
+2.37137371e-01      9.13782306e-01
+2.61015722e-01      9.16981467e-01
+2.87298483e-01      9.18008863e-01
+3.16227766e-01      9.16653600e-01
+3.48070059e-01      9.12702540e-01
+3.83118685e-01      9.05944133e-01
+4.21696503e-01      8.96173210e-01
+4.64158883e-01      8.83196841e-01
+5.10896977e-01      8.66841327e-01
+5.62341325e-01      8.46960364e-01
+6.18965819e-01      8.23444353e-01
+6.81292069e-01      7.96230720e-01
+7.49894209e-01      7.65315030e-01
+8.25404185e-01      7.30762484e-01
+9.08517576e-01      6.92719246e-01
+1.00000000e+00      6.51422815e-01
+1.10069417e+00      6.07210468e-01
+1.21152766e+00      5.60524584e-01
+1.33352143e+00      5.11913536e-01
+1.46779927e+00      4.62026769e-01
+1.61559810e+00      4.11602795e-01
+1.77827941e+00      3.61449134e-01
+1.95734178e+00      3.12413819e-01
+2.15443469e+00      2.65348902e-01
+2.37137371e+00      2.21067496e-01
+2.61015722e+00      1.80297181e-01
+2.87298483e+00      1.43633819e-01
+3.16227766e+00      1.11500811e-01
+3.48070059e+00      8.41192917e-02
+3.83118685e+00      6.14942355e-02
+4.21696503e+00      4.34200131e-02
+4.64158883e+00      2.95063490e-02
+5.10896977e+00      1.92224082e-02
+5.62341325e+00      1.19534080e-02
+6.18965819e+00      7.06159879e-03
+6.81292069e+00      3.94247955e-03
+7.49894209e+00      2.06818801e-03
+8.25404185e+00      1.01300644e-03
+9.08517576e+00      4.60051798e-04
+1.00000000e+01      1.92238264e-04
+1.10069417e+01      7.32896684e-05
+1.21152766e+01      2.52567826e-05
+1.33352143e+01      7.78758441e-06
+1.46779927e+01      2.12433439e-06
+1.61559810e+01      5.06368522e-07
+1.77827941e+01      1.04041887e-07
+1.95734178e+01      1.81522639e-08
+2.15443469e+01      2.64522558e-09
+2.37137371e+01      3.16163146e-10
+2.61015722e+01      3.03801574e-11
+2.87298483e+01      2.29582678e-12
+3.16227766e+01      1.33179401e-13
+3.48070059e+01      5.77436142e-15
+3.83118685e+01      1.81716742e-16
+4.21696503e+01      4.01867360e-18
+4.64158883e+01      6.02737966e-20
+5.10896977e+01      5.89576112e-22
+5.62341325e+01      3.60258310e-24
+6.18965819e+01      1.31149233e-26
+6.81292069e+01      2.69983901e-29
+7.49894209e+01      2.96751106e-32
+8.25404185e+01      1.63486057e-35
+9.08517576e+01      4.21105803e-39
+1.00000000e+02      4.69754037e-43
+0                   0
+
+
+! Comparison to Wolfram|Alpha (as est. numerical integral error at large xex,
+! stated by scipy.integrate.quad, is ~1-10%).
+! for xex = 100, W|A gives fex = 4.69759e-43
+! for xex = 31.6227766, W|A gives fex = 1.33181e-13
+! for xex = 20.5352503, W|A gives fex = 7.09498e-9
+! for xex = 10, W|A gives fex = 1.92238e-4
+! Okay, close enough.  I don't know that W|A's integrator is any better than
+! scipy's, but not worth sweating...
+
+! This table mimics the first two columns of Table 1 of Pacholczyk, Radio
+! Astrophysics (Appendix 2, p. 221), listing x and F(x) values as defined on
+! p. 89.  This is the frequency-dependence of single-particle synchrotron
+! emissivity.  x is frequency in units of the critical frequency c_1 E^2 B.
+
+! Original table from Sean is 'fglists.dat', a direct copy of 35 entries from
+! Pacholczyk.  Roughly speaking, Sean's sampling looks like:
+! xex = [np.logspace(-4, -1, 6, base=10, endpoint=False),
+!        np.logspace(-1, 0, 12, base=10, endpoint=False),
+!        np.logspace(0, 1, 17, base=10)]
+
+! The new table contains 89 entries and attempts to mimic Sean's
+! sampling of x values.  I add more points throughout and sample farther out on
+! the tail of the spectrum.  The values are computed using Python as:
+
+! from __future__ import division
+! import numpy as np
+! import scipy as sp
+! from scipy import integrate
+! from scipy import special
+! 
+! def F(x):
+!     res = sp.integrate.quad(lambda z: sp.special.kv(5./3., z), x, np.inf)
+!     return x * res[0]
+! 
+! xex = [np.logspace(-4, -3, 4, base=10, endpoint=False),
+!        np.logspace(-3, -2, 4, base=10, endpoint=False),
+!        np.logspace(-2, -1, 8, base=10, endpoint=False),
+!        np.logspace(-1, 0, 24, base=10, endpoint=False),  # Peak at x ~ 0.3
+!        np.logspace(0, 1, 24, base=10, endpoint=False),  # Get spectrum curvature
+!        np.logspace(1, 2, 25, base=10)]  # Low e- electrons may contribute
+! 
+! xex = np.concatenate(xex)
+! fex = np.array(map(F,xex))
+! 
+! print xex, fex
+

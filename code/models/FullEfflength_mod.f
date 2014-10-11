@@ -36,12 +36,12 @@
           integer i
 
           ! Common block
-          double precision xex(100), fex(100)
+          double precision xex(200), fex(200)
           integer ir
           common /xrays/ xex, fex, ir
 
           ! Load common block first
-          call readfglists()
+          call readfglists('fglists.dat')
 
           print *, 'Enter B0'
           read *, B0            ! Gauss
@@ -82,13 +82,13 @@
      &                          5d0*1.d8, 5d0*1.d8/4d0, 2.96d19, 900d0,
      &                          2d0*0.6d0+1d0, rminarcarray, 1,
      &                          1000, 400, 500,
-     &                          1, 0.005d0, 5d-6)
+     &                          1, 0.005d0, 5d-6, 200, 50)
           elseif (snrflag.eq.1) then
             call Fullefflengthsub(kevs, inumax, widtharc, B0, eta2, mu,
      &                            4.7d0*1.d8, 4.7d0*1.d8/4d0, 1.077d19,
      &                            240d0, 2d0*0.65d0+1d0, rminarcarray,
      &                            1, 400, 100,500,
-     &                            0, 0.05d0, 5d-6)
+     &                            0, 0.05d0, 5d-6, 200, 50)
           endif
 
           do i = 1, inumax
@@ -126,7 +126,7 @@
       subroutine Fullefflengthsub(kevs, inumax, widtharc, B0, eta2, mu,
      &                            vs, v0, rs, rsarc, s, rminarc, icut,
      &                            irmax, iradmax, ixmax,
-     &                            idamp, ab, Bmin)
+     &                            idamp, ab, Bmin, itmax, inmax)
           implicit none
           ! Input parameters (widtharc is for output)
           integer inumax
@@ -136,7 +136,7 @@
           double precision vs, v0, rs, rsarc, s
           double precision rminarc(inumax)
           ! Settings
-          integer irmax, ixmax, iradmax
+          integer irmax, ixmax, iradmax, itmax, inmax
           integer icut, idamp
 
           ! "Fundamental" constants
@@ -145,7 +145,7 @@
           double precision ecut, eta  ! Derived constants
           double precision rmin(inumax) ! From rminarc(inumax)
           ! Emissivity data for common block
-          double precision xex(100), fex(100)
+          double precision xex(200), fex(200)
           integer ir  ! Should label as ifmax or so, to be consistent
 
           ! Extra parameter for B-damping
@@ -156,7 +156,7 @@
           integer inu
           ! Tabulate e- distribution over particle energy (1 to ir)
           ! and over radial coord ( (rsarc - rminarc) / iradmax )
-          double precision disttab(100, 1000), radtab(1000)
+          double precision disttab(200, 1000), radtab(1000)
           ! Iterate over radial coord (r, irmax pts), at each point
           ! Integrate over line of sight (x, ixmax pts)
           double precision r, delr(inumax), rgraph(10000,40)
@@ -211,12 +211,14 @@ cf2py depend(inumax) widtharc
 ! bottom of the loop).
           do inu = 1, inumax
             nu = kevs(inu) * nukev ! Convert keV to Hz
-            nugraph(inu) = nu  ! Store nu in array TODO redundant
+            nugraph(inu) = nu  ! Store nu in array
+            ! nugraph sent to FWHM subroutine for error reporting
 
             ! Tabulate electron distribution for fixed nu
             ! generating 2-D grid as function of energy, radial position
             call distr(disttab, radtab, iradmax, nu, rmin(inu), B0,Ecut,
-     &                 eta, mu, rs, v0, s, c1, idamp, ab, Bmin)
+     &                 eta, mu, rs, v0, s, c1, idamp, ab, Bmin,
+     &                 itmax, inmax)
 
             ! For each radial position in intensity profile
             ! Integrate over line of sight to get I_\nu(r)
@@ -224,14 +226,6 @@ cf2py depend(inumax) widtharc
             ! Compute synchrotron emissivity at radial coord
             ! rho = s**2 + r**2 (r = "viewer's" radial coord)
             ! (integrates over particle energy via emisx)
-
-            ! TODO DEBUG TODO
-            !if (inu.eq.3) then
-            !    open(1001, file = 'emistab.dat')
-            !    do i = 1, iradmax
-            !        emis1 = emisx(
-            !    enddo
-            !endif
 
             ! Step from r=1 to r=rmin (IRMAX resolution)
             delr(inu) = -(1d0-rmin(inu))/real(irmax)
@@ -319,21 +313,6 @@ cf2py depend(inumax) widtharc
             widtharc(inu) = width(inu)*rsarc  ! Convert to arcsec output
           enddo
 
-          ! TODO:  We may want intensity profiles, and/or
-          ! electron distributions, for debugging.  How to get out?
-          ! From best fit parameters, could get them manually...
-
-!          open (111, file = 'Intensity.dat') 
-!          open(243, file = 'distint.dat')
-!          do i =1, irmax
-!            norms = maxval(intensitygraph, dim = 2)
-!            write (111,*) rgraph(i,1), (intensitygraph(j,i)/norms(j)
-!     &                    , j = 1, inumax)
-!            write (243,*) rgraph(i,1), distgraph(i)
-!          enddo
-!          close(111)
-!          close(243)
-
           return
       end
 
@@ -343,16 +322,19 @@ cf2py depend(inumax) widtharc
 ! table to common block variables xex, fex, ir
 ! --------------------------------------------
 
-      subroutine readfglists()
+      subroutine readfglists(fname)
           implicit none
-          double precision xex(100), fex(100)
+          character(len=*) fname
+          double precision xex(200), fex(200)
           integer ir
           common /xrays/ xex, fex, ir
 
-          open(9, file='fglists.dat', status='old')
-          do 90 ir = 1, 300
+cf2py intent(in) fname
+
+          open(9, file=fname, status='old')
+          do 90 ir = 1, 200  ! Arbitrary limit on number of entries
               read(9,*) xex(ir), fex(ir)
-              if (xex(ir).eq.0.) go to 91  ! Break at end of file
+              if (xex(ir).eq.0.) go to 91  ! Break when x=0 detected
    90     continue
    91     continue
           ir = ir-1  ! Set ir = number of lines read
@@ -375,8 +357,8 @@ cf2py depend(inumax) widtharc
           implicit none
 
           double precision r, nu, B
-          double precision radtab(1000), disttab(100,1000)
-          double precision fex(100), xex(100)
+          double precision radtab(1000), disttab(200,1000)
+          double precision xex(200), fex(200)
           integer ir
 
           ! Variables to perform integration
@@ -438,10 +420,11 @@ cf2py depend(inumax) widtharc
 
       subroutine distr(disttab, radtab, iradmax, nu, rmin, B0, Ecut,
      &                                           eta, mu, rs, v0, s, c1,
-     &                                           idamp, ab, Bmin)
+     &                                           idamp, ab, Bmin,
+     &                                           itmax, inmax)
           implicit none
           ! Input arrays to modify
-          double precision disttab(100, 1000), radtab(1000)
+          double precision disttab(200, 1000), radtab(1000)
           ! Inputs
           integer iradmax ! Resolution for radtab
           double precision nu, rmin, B0, mu, rs, v0, s, c1  ! Input/constants
@@ -449,6 +432,8 @@ cf2py depend(inumax) widtharc
           ! Magnetic damping inputs
           integer idamp  ! Flag for magnetic damping
           double precision ab, Bmin  ! Magnetic damping params
+          ! Green's funct integral resolutions
+          integer itmax, inmax
 
           ! Extra variable -- compute energy w/ correct field
           double precision B
@@ -459,7 +444,7 @@ cf2py depend(inumax) widtharc
           ! Functions to use
           double precision distrmlt1, distrmgt1, distrpohl
           ! Emissivity data for common block
-          double precision xex(100), fex(100)
+          double precision xex(200), fex(200)
           integer ir ! Number of entries in Pacholczyk
 
           common /xrays/ xex, fex, ir
@@ -487,15 +472,18 @@ cf2py intent(out) disttab
               if (mu.lt.1d0) then
                 disttab(j,irad) = distrmlt1(en,B0, ecut,rad,
      &                                      eta,mu, rs, v0,s,
-     &                                      idamp, ab, Bmin)
+     &                                      idamp, ab, Bmin,
+     &                                      itmax)
               elseif (mu.gt.1d0) then
                 disttab(j,irad) = distrmgt1(en,B0, ecut,rad,
      &                                      eta,mu, rs, v0,s,
-     &                                      idamp, ab, Bmin)
+     &                                      idamp, ab, Bmin,
+     &                                      itmax, inmax)
               else
                 disttab(j,irad) = distrpohl(en,B0, ecut,rad,
      &                                      eta,mu, rs, v0,s,
-     &                                      idamp, ab, Bmin)
+     &                                      idamp, ab, Bmin,
+     &                                      itmax, inmax)
               endif
             enddo
 
@@ -528,7 +516,8 @@ cf2py intent(out) disttab
 ! Equation (15), from Lerche & Schlickeiser (1980)
 ! ------------------------------------------------
 
-      function distrmlt1(E,B, Ecut,r, eta,mu, rs,v,s, idamp,absc,Bmin)
+      function distrmlt1(E,B, Ecut,r, eta,mu, rs,v,s, idamp,absc,Bmin,
+     &                   itmax)
           implicit none
 
           ! Inputs
@@ -603,28 +592,35 @@ cf2py intent(out) disttab
             go to 444
           endif
 
-          ! Set up integral over t, where n = 1-t^2
+          ! Integral over t, where n = 1-t^2
           ! Using trapezoidal sum
-          itmax = 1000
           oldintegrand = 0d0
           integral = 0d0
           dt = (tmax-tmin)/dble(itmax-1)
           t = tmin
 
           do it = 1, itmax
+
             n = 1d0-t**2d0
+            if (it.eq.itmax) then
+                n = 0d0  ! n can be nonzero negative due to roundoff
+            endif  ! and cause integrand = NaN (e.g., n negative)
 
-            argexp = n**(-1d0/(1d0-mu))*E/Ecut+
-     &               ( lad/alpha*(1d0-n**(1d0/(1d0-mu)))-x )**2d0 /
-     &               (4d0*ldiff**2d0*(1d0-n)/alpha) * (1d0-mu)
+            if (it.eq.1) then  ! Avoid blowup at n=1 (t=tmin=0)
+                argexp = 1d35  ! due to (1-n) in denominator
+            else
+                argexp = n**(-1d0/(1d0-mu))*E/Ecut+
+     &                   ( lad/alpha*(1d0-n**(1d0/(1d0-mu)))-x )**2d0 /
+     &                   (4d0*ldiff**2d0*(1d0-n)/alpha) * (1d0-mu)
+            endif
 
-            if (n.eq.1d0) argexp = 1d35  ! Prevent argexp blowup
-
-            integrand = 2d0*(1d0-t**2d0)**((s+mu-2d0)/(1d0-mu))
+            integrand = 2d0*n**((s+mu-2d0)/(1d0-mu))
      &                  /dexp(argexp)
-            if (it.eq.1) go to 2222  ! Skip first point
-            integral = integral + (integrand + oldintegrand)*dt/2d0
- 2222       continue
+
+
+            if (it.ne.1) then ! Skip first point in trap sum
+              integral = integral + (integrand + oldintegrand)*dt/2d0
+            endif
             oldintegrand = integrand
 
             t = t + dt
@@ -632,7 +628,6 @@ cf2py intent(out) disttab
 
           integral = k0/2d0/dsqrt(pi*alpha*b0*D0*(1d0-mu))*
      &               E**(-1d0*(mu/2d0+1d0/2d0+s))*integral
-          distrmlt1 = integral
 
   444     continue  ! Exit point for lad >> ldiff case
           distrmlt1 = integral
@@ -645,8 +640,9 @@ cf2py intent(out) disttab
 ! Equation (14), from Rettig and Pohl (2012)
 ! ------------------------------------------
 
-      function distrpohl(E,B, Ecut,r, eta,mu, rs,v,s, idamp,absc,Bmin)
-          !implicit none
+      function distrpohl(E,B, Ecut,r, eta,mu, rs,v,s, idamp,absc,Bmin,
+     &                   itmax, inmax)
+          implicit none
 
           ! Inputs
           double precision E, r  ! Variables to grid over
@@ -664,7 +660,7 @@ cf2py intent(out) disttab
           double precision efinv, ef, en0, Xi  ! For lad >> ldiff case
           double precision t, tmin, tmax, dt  ! 1st variable change
           double precision y, q, nmin, dy  ! 2nd variable change
-          !integer i, inmax, it, itmax
+          integer i, inmax, it, itmax
           double precision n, argexp
           double precision integral, integrand, oldintegrand
 
@@ -722,39 +718,35 @@ cf2py intent(out) disttab
 
         ! This integral only runs from t=0 to t=1 (n=1 to n=e)
         ! Using trapezoidal sum
-        if (idamp.eq.0) then
-            itmax = 1000
-        else
-            itmax = 5000  ! TODO TEMPORARY just copied fr Sean's code
-        endif
         oldintegrand = 0d0
         integral = 0d0
         dt = (tmax-tmin)/dble(itmax-1)
         t = tmin
         do it = 1, itmax
+
+          if (it.eq.1) then  ! n = e^(0^2) = 1 at t=tmin=0
+            n = 1d0
+            argexp = 1d35  ! Prevent argexp blowup
+          else
             n = dexp(t**2d0)
-            argexp = n*E/Ecut+(lad/alpha*(1d0-1d0/n)-x)**2d0/
+            argexp = n*E/Ecut+(lad/alpha*(1d0-1d0/n)-x)**2d0 /
      &               (4d0*ldiff**2d0/alpha*dlog(n))
+          endif
 
-            if (n.eq.1d0) argexp = 1d35  ! Prevent argexp blowup
-            integrand = 2d0*dexp((1d0-s)*t**2d0)/dexp(argexp)
+          integrand = 2d0*dexp((1d0-s)*t**2d0)/dexp(argexp)
 
-            ! Spew numbers if bad things happen?
-            if (integrand.gt.1d45) then
-              print *, n,E,Ecut,lad, alpha, x, ldiff, t, s
-            endif
-        
-            if (it.eq.1) go to 2222 ! Skip first point
+          if (it.ne.1) then  ! Skip first point
             integral = integral + (integrand + oldintegrand)*dt/2d0
- 2222       continue
-            oldintegrand = integrand
+          endif
+          oldintegrand = integrand
 
-            t = t + dt
+          t = t + dt
         enddo
 
         ! Second part of integral from n=e to n=\infty
         ! Change variables, n = y / (1 - y^2)^q + n_min
-        inmax=100
+        ! integrate y from 0 to 1-dy (dy = 1/inmax)
+
         dy = 1d0/dble(inmax) ! y ranges JUST shy of y=1 (n=infty)
         y = 0d0
         q = 2d0
@@ -763,29 +755,24 @@ cf2py intent(out) disttab
         oldintegrand = 0d0
 
         do i = 1, inmax
-            n = y/(1d0-y**2d0)**q+nmin
-            argexp = n*E/Ecut+(lad/alpha*(1d0-1d0/n)-x)**2d0/
-     &               (4d0*ldiff**2d0/alpha*dlog(n))
-            integrand = n**(-1d0*s)/dsqrt(dlog(n))/dexp(argexp)*
-     &                  ((2d0*q-1d0)*y**2d0+1d0)/
-     &                  (1d0-y**2d0)**(q+1d0)
+          n = y/(1d0-y**2d0)**q+nmin
+          argexp = n*E/Ecut+(lad/alpha*(1d0-1d0/n)-x)**2d0/
+     &             (4d0*ldiff**2d0/alpha*dlog(n))
+          integrand = n**(-1d0*s)/dsqrt(dlog(n))/dexp(argexp)*
+     &                ((2d0*q-1d0)*y**2d0+1d0)/
+     &                (1d0-y**2d0)**(q+1d0)
+
          
-            ! Again, if integrand blows up, spew numbers
-            if (integrand.gt.1d45) then
-                print *, integrand, argexp
-            endif
-
-            if (i.eq.1) go to 1111 ! Skip first point
+          if (i.ne.1) then ! Skip first point
             integral = integral + (integrand+oldintegrand)*dy/2d0
- 1111       continue
-            oldintegrand = integrand
+          endif
+          oldintegrand = integrand
 
-            y = y + dy
+          y = y + dy
         enddo
 
         integral = k0/2d0/dsqrt(pi*alpha*b0*D0)*E**(-1d0*(1d0+s))
      &             *integral
-        distrpohl = integral
 
   444   continue  ! Exit point for lad >> ldiff
         distrpohl = integral
@@ -799,7 +786,8 @@ cf2py intent(out) disttab
 ! Equation (16), from Lerche & Schlickeiser (1980)
 ! ------------------------------------------------
 
-      function distrmgt1(E,B, Ecut,r, eta,mu, rs,v,s, idamp,absc,Bmin)
+      function distrmgt1(E,B, Ecut,r, eta,mu, rs,v,s, idamp,absc,Bmin,
+     &                   itmax, inmax)
           implicit none
           double precision E, r  ! Variables to grid over
           double precision B, mu, rs, v, s  ! Input/constants
@@ -874,71 +862,66 @@ cf2py intent(out) disttab
 
           ! Set up integral over t, n = 1+t^2 (not same as before!)
           ! Using trapezoidal sum
-          itmax = 1000
           oldintegrand = 0d0
           integral = 0d0
           dt = (tmax-tmin)/dble(itmax-1)
           t = tmin
           do it = 1, itmax
+
+            if (it.eq.1) then  ! n=1 for t=tmin=0
+              n = 1d0
+              argexp = 1d35  ! Catch argexp blowup from (1-n)
+            else
               n = 1d0+t**2d0
               argexp = n**(-1d0/(1d0-mu))*E/Ecut+
-     &                 (lad/alpha*(1d0-n**(1d0/(1d0-mu)))-x)**2d0/
+     &                 (lad/alpha*(1d0-n**(1d0/(1d0-mu)))-x)**2d0 /
      &                 (4d0*ldiff**2d0*(1d0-n)/alpha)*(1d0-mu)
+            endif
 
-              if (n.eq.1d0) argexp = 1d35 ! Catch argexp blowup
-              integrand = 2d0*(1d0+t**2d0)**((s+mu-2d0)/(1d0-mu))
-     &                    /dexp(argexp)
+            integrand = 2d0*n**((s+mu-2d0)/(1d0-mu)) / dexp(argexp)
 
-              if (it.eq.1) go to 2222 ! Skip first point
+            if (it.ne.1) then  ! Skip first point
               integral = integral + (integrand + oldintegrand)*dt/2d0
- 2222         continue
-              oldintegrand = integrand
+            endif
+            oldintegrand = integrand
 
-              t = t + dt
+            t = t + dt
           enddo
 
           ! Set up second integral, for n=2 to n=\infty
           ! Same change of variables as for mu=1
-          inmax=100
-          dy = 1d0/dble(inmax)
+          dy = 1d0/dble(inmax)  ! y ranges to just below 1
           y = 0d0
           q = 2d0
           nmin = 2d0
 
           oldintegrand = 0d0
           do i = 1, inmax
-              n = y/(1d0-y**2d0)**q+nmin
-              argexp = n**(-1d0/(1d0-mu))*E/Ecut+
-     &          (lad/alpha*(1d0-n**(1d0/(1d0-mu)))-x)**2d0/
-     &          (4d0*ldiff**2d0*(1d0-n)/alpha)*(1d0-mu)
+            n = y/(1d0-y**2d0)**q+nmin
+            argexp = n**(-1d0/(1d0-mu))*E/Ecut+
+     &        (lad/alpha*(1d0-n**(1d0/(1d0-mu)))-x)**2d0/
+     &        (4d0*ldiff**2d0*(1d0-n)/alpha)*(1d0-mu)
 
-              integrand = n**((s+mu-2d0)/(1d0-mu))/dsqrt(n-1d0)
-     &                    /dexp(argexp)*
-     &                    ((2d0*q-1d0)*y**2d0+1d0)/
-     &                    (1d0-y**2d0)**(q+1d0)
+            integrand = n**((s+mu-2d0)/(1d0-mu))/dsqrt(n-1d0)
+     &                  /dexp(argexp)*
+     &                  ((2d0*q-1d0)*y**2d0+1d0)/
+     &                  (1d0-y**2d0)**(q+1d0)
 
-          !Prints out numbers when bad things happen
-          if (integrand.gt.1d45) then
-              print *, integrand, argexp
-          endif
+            if (i.ne.1) then ! Skip first point
+              integral = integral + (integrand+oldintegrand)*dy/2d0
+            endif
+            oldintegrand = integrand
 
-          if (i.eq.1) go to 1111 ! Skip first point
-          integral = integral + (integrand+oldintegrand)*dy/2d0
- 1111     continue
-          oldintegrand = integrand
+            y = y + dy
+          enddo
 
-          y = y + dy
-        enddo
+          integral = k0/2d0/dsqrt(pi*alpha*b0*D0*(mu-1d0))*
+     &               E**(-1d0*(mu/2d0+1d0/2d0+s))*integral
 
-        integral = k0/2d0/dsqrt(pi*alpha*b0*D0*(mu-1d0))*
-     &             E**(-1d0*(mu/2d0+1d0/2d0+s))*integral
+  444     continue ! Exit point for lad >> ldiff case
+          distrmgt1 = integral
 
-        distrmgt1 = integral
-
-  444   continue ! Exit point for lad >> ldiff case
-        distrmgt1 = integral
-
-        return 
+          return 
       end
 
     
@@ -1057,8 +1040,8 @@ cf2py intent(out) disttab
           implicit none
 
           double precision r
-          double precision radtab(1000), disttab(100,1000)
-          double precision fex(100), xex(100)
+          double precision radtab(1000), disttab(200,1000)
+          double precision fex(200), xex(200)
           integer ir
 
           ! Variables to perform interpolation

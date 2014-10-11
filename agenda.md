@@ -40,10 +40,6 @@ Main TO-DOs
 
 In order:
 
-1. Address resolution issue (Pacholczyk + internal integrals), before running
-   more full model fits!
-   Check resolution separately for B-damping models as well.  So add one more
-   dimension to parameter space and take slices appropriately.
 2. Magnetic damping!  Make magnetic damping tables, then run fits for all Tycho
    regions.  Also fit with eta2 fixed to 1, 0.1, 10.
 3. Re-run spectral fits, both fitting Si/S lines and excising them.  Show that
@@ -55,7 +51,6 @@ In order:
    Do this for best damping-fits too, for completeness.
    Reason: we expect mE values for fits to be much smaller than data mE values,
    which are misleading (esp. due to large error bars on lowest energy FWHMs)
-
 
 Prepare for Monday (or earlier), in order:
 
@@ -69,7 +64,6 @@ Prepare for Monday (or earlier), in order:
 
 Moving to lower priority:
 
-1. Set radio spectral index to 0.58 (s = 2.16) (note this in rsch notes)
 2. Check out outliers by hand (why did the fits go wonky), and check manual
    error computation speed.
 3. regenerate tables for regions-6 fits (also damping tables if need be)
@@ -112,18 +106,11 @@ Data processing to-dos, by individual "pipeline":
 * Tycho (2003) -- try reprocessing ObsID 3837 on another computer.  If that
                   fails email the CXC or something
 
+* General note: final data for manuscript should always re-run and update
+  resolution notebook
+
 Lower priority / various checks
 -------------------------------
-
-* RESOLUTION -- check Pacholczyk tables (!)
-                check some internal numerical integrals
-                check accuracy of Pacholczyk's Bessel function values
-                (likely a tiny error -- but to be sure.  Generate
-                 1. table w/ more entries from Pacholczyk
-                 2. table w/ same entries, but more recent values
-                 3. table w/ more entries, more recent values)
-                More e- table values will slow down computation for sure...
-                (ask Sean: any reason for table selections)
 
 * Manual error computation -- test it out on one/two regions, estimate how much
   time it takes (and extrapolate).  Do this after the resolution checks.

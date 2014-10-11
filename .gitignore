@@ -42,6 +42,9 @@ working-interm
 *.errlog
 *.fitlog
 
+# Explicitly allow modified version of fglists_mod.dat
+!code/models/fglists_mod.dat
+
 # Spectra (specextract)
 *.pi
 *.arf

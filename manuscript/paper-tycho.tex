@@ -760,14 +760,16 @@ We required $\eta_2$ to be positive in all fits.  We also deemed
 best-fit and error bound values with $\eta_2 \geq 10^5$ and $B_0 \geq 10
 \unit{mG}$ to be effectively unconstrained. % Change this if needed.
 
-% TODO Come back after checking Pacholczyk resolution
 As the full model must be numerically solved, its predicted rim widths are
 subject to resolution error in the numerical integrals (discretization over
 radial coordinate, line-of-sight coordinate, electron distribution, Green's
-function integrals).  We chose our integration resolutions such that the
-fractional error in model FWHMs associated with halving/doubling integration
+function integrals).  We chose integration resolutions such that the
+fractional error in model FWHMs associated with halving or doubling integration
 resolution is less than $1\%$ for the parameter space relevant to our
-filaments.
+filaments (up to $\eta_2 = 10^3$ for loss-limited model; up to $\eta_2 = 10$
+for magnetic damping model).  In our error analysis, the maximum resolution
+errors in a small sample of parameter space are typically $0.1$--$1\%$,
+but mean and median errors are typically an order of magnitude smaller.
 
 % =======================
 % Results, FWHMs and fits

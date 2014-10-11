@@ -142,7 +142,9 @@ def maketab(snr, kevs, data_min, data_max, mu_vals, eta2_vals, n_B0,
 
             # Do the heavy work of computing FWHMs for many B0 values
             eta2_dict[eta2] = maketab_gridB0(snr, p, kevs, data_min, data_max,
-                                             n_B0, f_B0_init, f_B0_step,
+                                             n_B0,
+                                             f_B0_init = f_B0_init,
+                                             f_B0_step = f_B0_step,
                                              **kwargs)
 
             # Save data regularly, but keep tabulating if save fails...
@@ -254,10 +256,18 @@ def maketab_gridB0(snr, pars, kevs, fwhms_min, fwhms_max, n_tot,
     fwhms_all = fwhms_all[uniqsrt]
     r_all = r_all[uniqsrt]
 
+    # Select only FWHMs without rminarc errors for the "filling in FWHM range"
+    # step, so that it does not get stuck at the discontinuity in r-values
+    msk = np.all(fwhms_all < snr.rsarc*0.99, axis=1)  # Collapse FWHMs
+    B0_all = B0_all[msk]
+    fwhms_all = fwhms_all[msk]
+    r_all = r_all[msk]
+
     # Fill in the gaps
     print 'Filling in FWHM range to achieve desired spacing'
     B0_all, fwhms_all, r_all = mind_the_gaps(B0_all, fwhms_all, r_all, dr,
                                              f_rscale)
+    print 'Computed FWHMS for {} values of B0'.format(len(B0_all))
 
     return B0_all, fwhms_all  # No longer need r-values
 
@@ -470,9 +480,11 @@ def simple_width(snr, kevs, mu, eta2, B0):
 # =============================
 # Input: params, kevs, snr, **kwargs; output: model FWHMs
 
+# TODO move various defaults into snr_catalog
 def width_cont(params, kevs, snr, verbose=True, rminarc=None, icut=None,
     irmax=None, iradmax=None, ixmax=None, irad_adapt=True, irad_adapt_f=1.2,
-    idamp=False, damp_ab=0.05, damp_bmin=5.0e-6):
+    idamp=False, damp_ab=0.05, damp_bmin=5.0e-6, fgfname='fglists_mod.dat',
+    itmax=200, inmax=50, irhomax=2000):
     """Width function, wrapper for Python port of full model (equation 12)
 
     All **kwargs not specified (excepting verbose) are taken from snr object
@@ -503,6 +515,12 @@ def width_cont(params, kevs, snr, verbose=True, rminarc=None, icut=None,
         idamp: boolean; toggle magnetic damping
         damp_ab: float between [0,1], damping lengthscale
         damp_bmin: float, minimum magnetic field for damping
+
+        fgfname: str, pre-compiled table of 1-particle synchrotron emissivity
+                 originally from Pacholczyk
+
+        itmax, inmax: internal integral resolutions for e- distributions
+                      (Sean's defaults were itmax=1000, inmax=100)
 
     Outputs:
         np.array of modeled FWHMs (arcsec) for each energy in 'kevs'
@@ -545,7 +563,8 @@ def width_cont(params, kevs, snr, verbose=True, rminarc=None, icut=None,
 
         fwhms_prelim = fmp.fefflen(kevs, B0, eta2, mu, vs, v0, rs, rsarc, s,
                                    rminarc, icut, irmax, iradmax_prelim, ixmax,
-                                   idamp, damp_ab, damp_bmin)
+                                   idamp, damp_ab, damp_bmin, fgfname,
+                                   itmax, inmax, irhomax)
 
         # Replace error-code values
         res_msk, box_msk = _check_calc_errs(fwhms_prelim, rminarc)
@@ -585,7 +604,8 @@ def width_cont(params, kevs, snr, verbose=True, rminarc=None, icut=None,
     # Python full model port
     fwhms = fmp.fefflen(kevs, B0, eta2, mu, vs, v0, rs, rsarc, s,
                         rminarc, icut, irmax, iradmax, ixmax,
-                        idamp, damp_ab, damp_bmin)
+                        idamp, damp_ab, damp_bmin, fgfname,
+                        itmax, inmax, irhomax)
 
     res_msk, box_msk = _check_calc_errs(fwhms, rminarc)
     # Check for errors

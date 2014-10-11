@@ -14,9 +14,8 @@ def main():
     with open('FullEfflength_mod.f', 'r') as f:
         fsource = ''.join(list(f))
     np.f2py.compile(fsource, modulename='fullmodel', verbose=1)
-#                    extra_args='--opt="-Ofast"')
-#                    extra_args='--opt="-O3"')  # Not sure if this does anything
-#                    extra_args='--opt="-O3 -ffast-math -march=native -funroll-loops -fno-protect-parens -flto"')
+    # Adding -O3 flag via extra_args='--opt="-O3"' didn't appear
+    # to have any effect
 
 if __name__ == '__main__':
     main()

@@ -22,7 +22,6 @@ import scipy.integrate as spint
 #import fullmodel_recompile
 #fullmodel_recompile.main()
 import fullmodel
-fullmodel.readfglists()  # !! important
 import snr_catalog as snrcat
 
 # Constants
@@ -36,24 +35,29 @@ def main():
     #B0 = raw_input('Enter B0 (Gauss): ')
     #eta2 = raw_input('Enter eta2: ')
     #mu = raw_input('Enter mu: ')
-    B0 = 40e-6
-    eta2 = 1
+    B0 = 200e-6
+    eta2 = 1.0
     mu = 1.0
 
-    irmax, iradmax, ixmax = 200, 400, 500
+    irmax, iradmax, ixmax = 200, 100, 500
     print 'irmax, iradmax, ixmax = {},{},{}'.format(irmax, iradmax, ixmax)
 
-    kevs = np.array([1., 2., 4.])
+    kevs = np.array([0.7, 1., 2., 3., 4.5])
     rminarc = 20. * np.ones(len(kevs))
 
-    #fwhms = fefflen(kevs, B0, eta2, mu, 4.52e8, 4.52e8/4, 1.077e19, 240.,
-    #                2*0.65+1, rminarc, True, irmax, iradmax, ixmax)  # Tycho
-    fwhms = fefflen(kevs, B0, eta2, mu, 5e8, 5e8/4., 2.96e19, 900.,
-                    2*0.6+1, rminarc, True, irmax, iradmax, ixmax,
-                    True, 0.001, 5e-6)  # SN 1006 with damping
-    print 'rminarc = {}'.format(rminarc)
-    for en, fwhm in zip(kevs, fwhms):
-        print '{:0.2f} keV: {:0.5f}'.format(en, fwhm)
+    # Tycho
+    fwhms = fefflen(kevs, B0, eta2, mu, 4.52e8, 4.52e8/4, 1.077e19, 240.,
+                    2*0.58+1, rminarc, True, irmax, iradmax, ixmax,
+                    False, 0.001, 5e-6, 'fglists_mod.dat',
+                    200, 50, 2000)
+    # SN 1006 with damping
+    #fwhms = fefflen(kevs, B0, eta2, mu, 5e8, 5e8/4., 2.96e19, 900.,
+    #                2*0.6+1, rminarc, True, irmax, iradmax, ixmax,
+    #                False, 0.001, 5e-6, 'fglists_mod.dat',
+    #                200, 50, 2000)
+    #print 'rminarc = {}'.format(rminarc)
+    #for en, fwhm in zip(kevs, fwhms):
+    #    print '{:0.2f} keV: {:0.5f}'.format(en, fwhm)
 
     return fwhms
 
@@ -61,9 +65,9 @@ def main():
 # Main function to compute FWHMs
 # ==============================
 
-# @profile
+#@profile
 def fefflen(kevs, B0, eta2, mu, vs, v0, rs, rsarc, s, rminarc, icut, irmax,
-            iradmax, ixmax, idamp, ab, Bmin):
+            iradmax, ixmax, idamp, ab, Bmin, fgfname, itmax, inmax, irhomax):
     """Use numpy arrays for everything (kevs, rminarc)
 
     Note that irmax is not very important anymore.
@@ -80,6 +84,16 @@ def fefflen(kevs, B0, eta2, mu, vs, v0, rs, rsarc, s, rminarc, icut, irmax,
             ixmax = resolution for line of sight integration (500, SN 1006)
         idamp (bool), enable/disable damping
         ab, Bmin (float) damping scale length btwn [0,1], Bmin in Gauss
+        fgfname (str) filename for 1-particle synchrotron emissivity table
+        itmax, inmax, irhomax (int)
+            itmax = resolution on finite, transformed Green's funct integral
+                    for all cases (1000 default, SN 1006)
+            inmax = resolution on infinite (then transformed) integral
+                    for mu >=1 (100 default, SN 1006)
+            irhomax = resolution in emistab.  This should exceed iradmax!
+                      compute emissivity at irhomax pts, which is then summed
+                      on line of sight (interpolating) to get intensity
+                      irhomax < irmax should be okay.
     Output:
         np.ndarray of FWHMs for each entry in kevs
     """
@@ -98,7 +112,8 @@ def fefflen(kevs, B0, eta2, mu, vs, v0, rs, rsarc, s, rminarc, icut, irmax,
         Ecut = 1e40
 
     # 1-particle synchrotron emissivity
-    xex, fex = read_fglists()
+    xex, fex = read_fglists(fgfname)
+    fullmodel.readfglists(fgfname)  # !! important
 
     widths = []
 
@@ -111,13 +126,13 @@ def fefflen(kevs, B0, eta2, mu, vs, v0, rs, rsarc, s, rminarc, icut, irmax,
         # and Pacholczyk table < 100 entries
         idamp_flag = 1 if idamp else 0  # Convert bool to int for Fortran
         radtab = np.linspace(rmin_nu, 1.0, num=iradmax)
-        disttab = fullmodel.distr(np.zeros(1000), iradmax, nu, rmin_nu,
+        disttab = fullmodel.distr(np.empty(1000), iradmax, nu, rmin_nu,
                                   B0, Ecut, eta, mu, rs, v0, s, C_1,
-                                  idamp_flag, ab, Bmin)
+                                  idamp_flag, ab, Bmin, itmax, inmax)
         disttab = disttab[:len(xex), :iradmax]  # Slice off zeros
 
         # Tabulate emissivity over radial coord
-        rhotab = np.linspace(rmin_nu, 1., num=10000)  # TODO let num=irhomax?
+        rhotab = np.linspace(rmin_nu, 1., num=irhomax)
         emistab = emisx(rhotab, nu, B0, radtab, disttab, xex, fex,
                         idamp, ab, Bmin)
 
@@ -137,24 +152,22 @@ def fefflen(kevs, B0, eta2, mu, vs, v0, rs, rsarc, s, rminarc, icut, irmax,
         intensity = spint.simps(emisgrid, xgrid)
 
         def get_intensity(r):
-            """Non-vectorized intensity computation, for FWHM finding.
-            Gives nan for r=1 (spint.simps fails for dx = 0."""
+            """Non-vectorized intensity computation, for FWHM finding."""
             xmesh = np.linspace(0., np.sqrt(1.-r**2), num=ixmax)
             rhomesh = np.sqrt(xmesh**2 + r**2)
             emismesh = np.interp(rhomesh, rhotab, emistab)
+            if r == 1:  # spint.simps fails for dx = 0.
+                return 0.
             return spint.simps(emismesh, xmesh)
 
         # Finally, compute FWHMs precisely (use intensity grid as guide)
         w = fwhm(rmesh, intensity, get_intensity)
         widths.append(w)
 
-        # TODO DEBUG
-        print intensity
-
     return np.array(widths) * rsarc
 
 
-def read_fglists(fname='fglists.dat'):
+def read_fglists(fname):
     """Read frequency-dep. 1-particle emissivity, x and F(x)
     (or, y and G(y) in paper).  Pacholczyk, 1970.
     """
@@ -162,7 +175,6 @@ def read_fglists(fname='fglists.dat'):
     if fgl[-1, 0] == 0:  # Truncate Sean's row of zeros at end
         fgl = fgl[:-1,:]
     return fgl[:,0], fgl[:,1]
-
 
 # =======================================
 # Compute emissivity at radial position r
@@ -388,7 +400,7 @@ def fwhm(rmesh, intensity, f_int):
         print 'ERROR: intensity max not found (rminarc too small)'
         return 1  # Can't search r < rmin, no disttab/emisttab values computed
     elif idxmax == len(intensity)-1:
-        print 'Warning: intensity max not resolved in grid on right; searching'
+        #print 'Warning: intensity max not resolved in grid on right; searching'
         rpk_a = rmesh[-2]  # CANNOT be rmesh[-1], to find max
         rpk_b = search_crossing(rmesh[-1], 1., lambda r:f_int(r)-intensity[-1],
                                 eps2)  # Find r s.t. f_int(r) < intensity[-1]

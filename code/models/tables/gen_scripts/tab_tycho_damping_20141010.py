@@ -2,14 +2,32 @@
 Tabulate FWHMs for Tycho for various magnetic damping scale lengths
 Uses default shock velocity (3.6e8 * 3/2.3 = 4.696e8 cm/s ...)
 Uses default damping Bmin (5 microGauss)
+Using default rminarc
 
 151 eta2 values log-spaced between [0.01, 100] with 2x sampling in [0.1, 10].
-~30+ B0 values, sampled to give roughly linear spacing in FWHM widths
+~50 B0 values (ask for 30), sampled to give ~linear spacing in FWHM widths
 
 data_min/data_max set to a bit smaller range than before
 
+`a_b` values I use are:
+
+    0.5,    0.05,   0.04,   0.03,
+    0.02,   0.01,   0.009,  0.008,
+    0.007,  0.006,  0.005,  0.004
+
+But, feed damping numbers into scripts as:
+
+    python tab_tycho_damping_141010.py  0.5   0.01   0.005
+    python tab_tycho_damping_141010.py  0.05  0.009  0.004
+    python tab_tycho_damping_141010.py  0.04  0.008  0.007
+    python tab_tycho_damping_141010.py  0.03  0.02   0.006
+
+to try to balance the load of calculations (I have gone diagonally in this
+table).
+
+
 Aaron Tran
-2014 October 08
+2014 October 10
 """
 
 from __future__ import division
@@ -32,8 +50,8 @@ TYCHO_DATA_MAX = np.array([10.0, 8.866, 6.901, 7.508, 5.763])
 def main():
     # Read damping length
     parser = argparse.ArgumentParser(description='Table generator')
-    parser.add_argument('abvals', help='Damping lengths (% of shock radius)',
-                        nargs='+')
+    parser.add_argument('abvals', help='Damping lengths (%% of shock radius)',
+                        nargs='*')
     args = parser.parse_args()
     abvals = map(float, args.abvals)
 
@@ -50,13 +68,9 @@ def main():
     eta2_vals = [np.logspace(-2, -1, 25, base=10, endpoint=False),
                  np.logspace(-1, 1, 100, base=10, endpoint=False),
                  np.logspace(1, 2, 26, base=10, endpoint=True)]
-    eta2_vals = np.sort(np.flatten(eta2_vals))
-    n_B0 = 20  # In practice, you'll usually get ~1.5 to 2x as many points
-               # as code tries to achieve good spacing
-
-    # Set rminarc for gridding (determined manually)
-    # (using adaptive rminarc anyways, so it should be okay)
-    rminarc = np.array([18.5, 15., 10.77, 10.77, 10.77])
+    eta2_vals = np.sort(np.concatenate(eta2_vals))
+    n_B0 = 30  # In practice, you'll usually get ~1.5 to 2x as many points
+               # as code tries to achieve good spacing (esp. for small n_B0)
 
     for ab in abvals:
 
@@ -69,8 +83,8 @@ def main():
         # Set a few other twiddle-ables here
         models.maketab(snr, kevs, data_min, data_max,
                        mu_vals, eta2_vals, n_B0,
-                       fname = fname, f_B0_init = 1.1, f_B0_step = 0.10,
-                       rminarc = rminarc,
+                       fname = fname,
+                       f_B0_init = 1.1, f_B0_step = 0.10,
                        idamp = True, damp_ab = ab)
 
 if __name__ == '__main__':
