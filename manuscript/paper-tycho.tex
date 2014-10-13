@@ -1,6 +1,7 @@
 %\documentclass[manuscript]{aastex}  % one-column, double-spaced GENERATE BIB
 %\documentclass[12pt,preprint]{aastex}  % one-column, single-spaced
-\documentclass[iop, apj, numberedappendix, twocolappendix]{emulateapj}
+%\documentclass[iop, apj, numberedappendix, twocolappendix]{emulateapj}
+\documentclass[iop, apj, numberedappendix]{emulateapj}
 
 \shorttitle{Synchrotron Rims in Tycho's SNR}  % <~ 44 char
 \shortauthors{XXX et al.}  % Max three
@@ -1270,6 +1271,61 @@ This research has made use of NASA's Astrophysics Data System.
 \setcounter{figure}{0}
 \renewcommand{\thefigure}{A\arabic{figure}}
 
+\section{Best fit width-energy curve $m_\mt{E}$ values}
+
+\begin{table*}[ht]
+    \footnotesize
+    \centering
+    \caption{$m_\mt{E}$ computed from best loss-limited fit FWHMs}
+    \input{tab-fits-mE.tex}
+\end{table*}
+
+\clearpage
+\section{Magnetic damping best fit tables}
+
+\begin{table*}[ht]
+    \scriptsize
+    \centering
+    \caption{Damped fits to individual regions, Filament 1, $\mu = 1$}
+    \input{tab-fits-damp-f1.tex}
+\end{table*}
+
+\begin{table*}[ht]
+    \scriptsize
+    \centering
+    \caption{Damped fits to individual regions, Filament 2, $\mu = 1$}
+    \input{tab-fits-damp-f2.tex}
+\end{table*}
+
+\begin{table*}[ht]
+    \scriptsize
+    \centering
+    \caption{Damped fits to individual regions, Filament 2 (cont.), $\mu = 1$}
+    \input{tab-fits-damp-f2-pt2.tex}
+\end{table*}
+
+\begin{table*}[ht]
+    \scriptsize
+    \centering
+    \caption{Damped fits to individual regions, Filament 3, $\mu = 1$}
+    \input{tab-fits-damp-f3.tex}
+\end{table*}
+
+\begin{table*}[ht]
+    \scriptsize
+    \centering
+    \caption{Damped fits to individual regions, Filament 4, $\mu = 1$}
+    \input{tab-fits-damp-f4.tex}
+\end{table*}
+
+\begin{table*}[ht]
+    \scriptsize
+    \centering
+    \caption{Damped fits to individual regions, Filament 5, $\mu = 1$}
+    \input{tab-fits-damp-f5.tex}
+\end{table*}
+
+\clearpage
 \section{Derivation for synchrotron roll-off and diffusion}
 
 % This is NOT optimized for 2-column layout
@@ -1277,40 +1333,40 @@ This research has made use of NASA's Astrophysics Data System.
 Assume that a DSA model explains the observed e-/synchrotron spectra
 cut-off/roll-off.  We estimate e- cut-off energy by equating
 $\tau_{\mt{accel}} = \tau_{\mt{synch}}$.  This gives (Parizot et al., 2006):
-\[
+\begin{equation}
     \frac{3r}{r-1} \frac{r D_d + D_u}{v_s^2} = \frac{1}{b B^2 \Ecut}
-\]
+\end{equation}
 (\emph{I don't know if this equality was designed to exactly obtain the electron
 cutoff energy, or is just a rough/scaling relation -- pull up Drury (1983) to
 check this})
 Following through the arguments/assumptions in Parizot et al. (2006) yields
 (using $13.3 \unit{erg} = 8.3 \unit{TeV}$):
-\[
+\begin{equation}
     \Ecut =
         \left( 13.3 \unit{erg} \right)^{\frac{2}{1+\mu}}
         \left( \frac{B_0}{100 \muG} \right)^{-\frac{1}{1+\mu}}
         \left( \frac{v_s}{10^8 \unit{cm\;s^{-1}}} \right)^{\frac{2}{1+\mu}}
         \eta^{-\frac{1}{1+\mu}}
-\]
+\end{equation}
 Now, we can convert this cut-off e- energy to a roll-off synchrotron energy by
 invoking the delta function assumption $\nu_{\mt{cut}} = c_m \Ecut^2 B$ with
 $c_m = 1.822 \times 10^{18}$.
 (\emph{Again, I don't know if this is an equality or just a scaling.  We'd need
 to relate the electron spectrum cut-off to the derived synchrotron spectrum
 cut-off, as is done (I think) by Zirakashvili and Aharonian (2007).})
-\[
+\begin{equation}
     \nu_{\mt{cut}} = c_m
         \left( 13.3 \unit{erg} \right)^{\frac{4}{1+\mu}}
         \left( \frac{B}{100\muG} \right)^{-\frac{1-\mu}{1+\mu}}
         \left( \frac{v_s}{10^8 \unit{cm/s}} \right)^{\frac{4}{1+\mu}}
         \eta^{-\frac{2}{1+\mu}}
-\]
+\end{equation}
 In the case of $\mu = 1$ this yields:
-\[
+\begin{equation}
     \nu_{\mt{cut}} = (0.133 \unit{keV} / h)
         \left( \frac{v_s}{10^8 \unit{cm/s}} \right)^{2}
         \eta^{-1}
-\]
+\end{equation}
 For $\mu \neq 1$ this is no longer independent of magnetic field.  But,
 there is hope.  Rewrite this in terms of $\eta_2$ using
 $\eta = \eta_2 E_2^{1-\mu}$ and write:
@@ -1334,14 +1390,14 @@ $E_2 = \left( 0.2657 \unit{erg^2\;G} / B \right)^{1/2}$, we obtain:
 \]
 And, the magnetic field terms cancel!  Hey presto.
 Our final usable result is:
-\[
+\begin{equation}
     \nu_{\mt{cut}} = c_m
         \left( 13.3 \unit{erg} \right)^{\frac{4}{1+\mu}}
         \left( 0.2657 \unit{erg^2\;G} \right)^{-\frac{1-\mu}{1+\mu}}
         \left( 100 \muG \right)^{\frac{1-\mu}{1+\mu}}
         \left( \frac{v_s}{10^8 \unit{cm/s}} \right)^{\frac{4}{1+\mu}}
         \left( \eta_2 \right)^{-\frac{2}{1+\mu}}
-\]
+\end{equation}
 
 % --------------
 % SN 1006 tables

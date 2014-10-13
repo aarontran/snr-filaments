@@ -30,25 +30,21 @@ Main TO-DOs
 
 In order:
 
-2. Magnetic damping!  Run fits for all Tycho regions. (running now)
-4. Use srcutlog (from Brian) to run fits with eta2 fixed at values determined
+1. Use srcutlog (from Brian) to run fits with eta2 fixed at values determined
    from synchrotron break frequency.
-5. Compute mE values for best loss-limited fits (to compare to data mE's).
-   Do this for best damping-fits too, for completeness.
-   Reason: we expect mE values for fits to be much smaller than data mE values,
-   which are misleading (esp. due to large error bars on lowest energy FWHMs)
-   (code done, table not printed)
+3. Run new fits and magnetic damping fits for SN 1006 data?!...
+   (set up damping tables for SN 1006)
 
-Prepare for Monday (or earlier), in order:
+NOTE: fix the automated line spectrum fit for Region 9... check what went
+wrong.
 
-(NOTE: fix the automated line spectrum fit for Region 9... check what went
-wrong.)
-
-* Magnetic damping fits (chisqr as a function of `m_E`) (in progress)
-* mE values from model fit curves (B-damped or loss-limited) (...)
-* Downstream spectral fits w/ lines accounted for (done)
-* Loss-limited fits from srcutlog (...)
+For Tuesday:
+* Magnetic damping fits
+* mE values from model fit curves
+* Downstream spectral fits w/ lines accounted for
+* Loss-limited fits from srcutlog (ask Brian to send srcutlog)
 * Get Brian/Rob to okay Kepler numbers (...)
+
 
 (once all results are in place, go back to paper!)
 

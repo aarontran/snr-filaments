@@ -159,13 +159,17 @@ class Fitter(object):
                 if 'eta2' in kwargs:
                     self._vprint('Starting from provided eta2, best grid B0')
                     ind = np.searchsorted(eta2_vals, kwargs['eta2'])
+                    if ind >= len(eta2_vals):  # If eta2 outside gridded values
+                        ind = len(eta2_vals) - 1  # guess B0 fr largest eta2
                     kwargs['B0'] = B0_vals[ind]
                 elif 'B0' in kwargs:
-                    self._vprint('Starting from best grid eta2, provided B0')
+                    self._vprint('Starting from provided B0, best grid eta2')
                     msk = np.argsort(B0_vals)
                     eta2_vals = eta2_vals[msk]
                     B0_vals = B0_vals[msk]
                     ind = np.searchsorted(B0_vals, kwargs['B0'])
+                    if ind >= len(B0_vals):  # As above, if B0 outside all best
+                        ind = len(B0_vals) - 1  # values, get the closest one
                     kwargs['eta2'] = eta2_vals[ind]
                 else:
                     self._vprint('Starting from best grid eta2, B0')

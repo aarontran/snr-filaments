@@ -38,10 +38,9 @@ Table of contents
 * Week 18 - (9/29) AAS abstract. Trim paper, flesh out results/disc/conclusion.
             Port B-damping code.
 * Week 19 - (10/6) Investigate srcut break-D relation; prelim B-damping fits.
-            Check code resolutions, apply new settings.
-            B-damping table
+            Check code resolutions, apply new settings.  Make B-damping table
+* Week 20 - (10/13) 
 
-* Week 20 - (10/13)
 * Week 21 - (10/20)
 * Week 22 - (10/27)
 * Week 23 - (11/3)
@@ -3711,3 +3710,41 @@ it'll be done in the morning for sure)
 
 Set up code for printing out tables of magnetic damping fit results.
 Also added code for to compute mE values for best loss-limited fits.
+
+
+(Week 20) Monday 2014 October 13
+================================
+
+
+
+Magnetic damping results/tables
+-------------------------------
+
+Magnetic damping fits were quite fast!  Would have finished at around 11pm,
+except the very last one (ab = 0.004) appears to have bugged up.  Generated
+tables with damping results, `m_E` computed for best loss-limited and damped
+fits, printed for tomorrow.  I went through results by hand and highlighted in
+my tables.
+
+Key observations:
+* 13/20 regions are well-explained, w/ better chi-sqr values and a clear
+  "valley" in chi-sqr space (eta2 vs. ab) for reasonable values of eta2
+* 3/20 regions have damping fits w/ better chi-sqr values, but eta2 may be
+  larger.  So we don't see the same trend
+* 3/20 don't give damping fits w/ better chi-sqr values, but have damping fits
+  within +1 of best chisqr.  Damping could be favored if eta2 is fixed to 1 (or
+  similar).
+* 1/20 seems to favor loss-limited model, by not showing any clear chi-sqr
+  space trend (Region 18)
+
+Basically, the damping model is able to explain our observations just as well
+as a loss-limited model.  There aren't any cases where the chi-sqr difference
+is so strong that we can favor one model over another.
+
+SN 1006 damping tables
+----------------------
+
+151 eta2 values, 50 B0 values (x1.2 gives maybe 70), 12 ab values.
+I estimate 1 second/call (3 bands vs 5) = 30.2 hr, so hopefully should be done
+by tomorrow.
+

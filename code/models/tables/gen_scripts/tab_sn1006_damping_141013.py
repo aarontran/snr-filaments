@@ -1,6 +1,5 @@
 """
-Tabulate FWHMs for Tycho for various magnetic damping scale lengths
-Uses default shock velocity (3.6e8 * 3/2.3 = 4.696e8 cm/s ...)
+Tabulate FWHMs for SN1006 for various magnetic damping scale lengths
 Uses default damping Bmin (5 microGauss)
 Using default rminarc
 
@@ -17,17 +16,17 @@ data_min/data_max set to a bit smaller range than before
 
 But, feed damping numbers into scripts as:
 
-    python tab_tycho_damping_141010.py  0.5   0.01   0.005
-    python tab_tycho_damping_141010.py  0.05  0.009  0.004
-    python tab_tycho_damping_141010.py  0.04  0.008  0.007
-    python tab_tycho_damping_141010.py  0.03  0.02   0.006
+    python ....py  0.5   0.01   0.005
+    python ....py  0.05  0.009  0.004
+    python ....py  0.04  0.008  0.007
+    python ....py  0.03  0.02   0.006
 
 to try to balance the load of calculations (I have gone diagonally in this
 table).
 
 
 Aaron Tran
-2014 October 10
+2014 October 13
 """
 
 from __future__ import division
@@ -39,13 +38,14 @@ import numpy as np
 import models
 import snr_catalog as snrcat
 
-# Numbers are generated from regions-4 with simple 2-exponential fit
-# Max observed FWHM for 0.7-1keV was 6.092
-# But I use 10 to be more consistent w/ general trend
-# (matches previous tables)
-TYCHO_KEVS = np.array([0.7, 1.0, 2.0, 3.0, 4.5])
-TYCHO_DATA_MIN = np.array([1.628, 1.685, 1.510, 1.465, 1.370])
-TYCHO_DATA_MAX = np.array([10.0, 8.866, 6.901, 7.508, 5.763])
+# SN 1006 numbers (from Sean's script, originally)
+SN1006_KEVS = np.array([0.7, 1.0, 2.0])
+SN1006_DATA = {}
+SN1006_DATA[1] = np.array([35.5, 31.94, 25.34]), np.array([1.73, .97, 1.71])
+SN1006_DATA[2] = np.array([23.02, 17.46, 15.3]), np.array([.35,.139, .559])
+SN1006_DATA[3] = np.array([49.14, 42.76,29.34]), np.array([1.5, .718, .767])
+SN1006_DATA[4] = np.array([29, 23.9, 16.6]), np.array([.9, .39, .45])
+SN1006_DATA[5] = np.array([33.75, 27.2, 24.75 ]), np.array([2.37,.62,.61])
 
 def main():
     # Read damping length
@@ -56,12 +56,13 @@ def main():
     abvals = map(float, args.abvals)
 
     # Set SNR parameters
-    snr = snrcat.make_tycho()
+    snr = snrcat.make_SN1006()
 
     # Set data
-    kevs = TYCHO_KEVS
-    data_min = TYCHO_DATA_MIN / 1.1
-    data_max = TYCHO_DATA_MAX * 1.1
+    kevs = SN1006_KEVS
+    data_all = np.array([data for data, eps in SN1006_DATA.values()])
+    data_min = np.amin(data_all/1.1, axis=0)
+    data_max = np.amax(data_all*1.1, axis=0)
 
     # Set grid (values should be, preferably, sorted)
     mu_vals = [1.]
@@ -69,7 +70,7 @@ def main():
                  np.logspace(-1, 1, 100, base=10, endpoint=False),
                  np.logspace(1, 2, 26, base=10, endpoint=True)]
     eta2_vals = np.sort(np.concatenate(eta2_vals))
-    n_B0 = 30  # In practice, you'll usually get ~1.5 to 2x as many points
+    n_B0 = 50  # In practice, you'll usually get ~1.5 to 2x as many points
                # as code tries to achieve good spacing (esp. for small n_B0)
 
     for ab in abvals:
@@ -89,4 +90,5 @@ def main():
 
 if __name__ == '__main__':
     main()
+
 
