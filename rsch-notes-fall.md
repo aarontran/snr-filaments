@@ -3639,7 +3639,75 @@ Added new table with fits/excisions (more formatting/patch-ups tbd, but good
 enough for now).
 
 
-Saturday 2014 October 11
-========================
+Sunday 2014 October 12
+======================
+
+* Set up comprehensive magnetic damping fits
+* Table output code for magnetic damping fits + mE values from best fits
+
+Pretabulated damped FWHM tables
+-------------------------------
+
+General remarks: finished around 8-9am Saturday morning.  Lots of problems have
+arisen.  Small glitch with deleting the tee'd standard output/error, but that
+shouldn't matter so I haven't looked into it.  Some logs are weird (have
+multiple tables' logs), but all the output is saved at least.
+
+Observation: as damping gets stronger (ab ~ 0.03 to 0.01, for Tycho), we start
+to see smaller B0 values being accepted.   Not only that, but at large eta2
+values we see an increasing range of B0 values giving reasonable FWHMs.  Both
+larger and smaller than the range of B0's at smaller eta2.
 
 
+### Issue: calculations without damping enabled
+
+When the initial guess for B0 is bad and the code computes a new value and
+tries again, I forgot to pass the kwargs along (bug now fixed).  So many
+calculations had no damping!  I reviewed the terminal output and found:
+
+    ab = 0.006, eta2 = 83.18 to 100 are invalid (3 values)
+    ab = 0.005, eta2 = 33.11 to 100 are invalid (13 values)
+    ab = 0.004, eta2 = 7.24 to 100 are invalid (33 values)
+
+For all larger values of ab, the initial guess for B0 was always accepted and
+computations took place w/ damping.
+
+I have modified these dictionaries BY HAND to remove the bad values, so that
+free full-model fits don't attempt to use those values...
+
+### Issue: insufficient sampling of small B0 / large FWHMs
+
+B0 stepping overshoots badly, at large eta2 and moderate-strong damping.  The
+FWHMs are insensitive to B0 changes at large B0, but at small B0 it starts to
+matter much more.  But our linear stepping doesn't know this.  The following
+eta2 ranges are strongly undersampled, having not enough small B0 values.
+
+    ab = 0.01, eta2 = 75.86 to 100
+    ab = 0.009, eta2 = 52.48 to 100
+    ab = 0.008, eta2 = 33.11 to 100
+    ab = 0.007, eta2 = 22.91 to 100
+    ab = 0.006, eta2 = 13.18 to 100
+    ab = 0.005, eta2 = 6.61 to 100
+    ab = 0.004, eta2 = 0.79 to 100
+
+This is a "continuous" problem; it affects computations at smaller ab / eta2 as
+well.  In general, as eta2 increases the sampling of B0 gets coarser due to
+this problem.  So a lot of tables don't cover parameter space that well.
+
+
+Magnetic damping fits
+---------------------
+
+12 minutes for full/free fits at mu=1, for 22 regions... with a number of fits
+running to massive eta2 (sigh).
+
+With 12 ab values, and 6 eta2 values (1 free, 5 fixed) -- that's 12x12x6 = 14
+hours... so it should finish before 9am.  Hopefully earlier because the fixed
+eta2 fits should be faster.
+
+We'll give it a shot, and see how it goes...
+(status after approx 1 hr: 9/72 completed.  hopefully just 8 more hours, so
+it'll be done in the morning for sure)
+
+Set up code for printing out tables of magnetic damping fit results.
+Also added code for to compute mE values for best loss-limited fits.

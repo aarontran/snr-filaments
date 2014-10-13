@@ -213,11 +213,11 @@ def maketab_gridB0(snr, pars, kevs, fwhms_min, fwhms_max, n_tot,
     if all(fwhms_init > fwhms_max):
         pars.add('B0', value=B0_init * f_B0_init)
         return maketab_gridB0(snr, pars, kevs, fwhms_min, fwhms_max, n_tot,
-                              f_B0_init, f_B0_step)
+                              f_B0_init, f_B0_step, **kwargs)
     elif all(fwhms_init < fwhms_min):
         pars.add('B0', value=B0_init / f_B0_init)
         return maketab_gridB0(snr, pars, kevs, fwhms_min, fwhms_max, n_tot,
-                              f_B0_init, f_B0_step)
+                              f_B0_init, f_B0_step, **kwargs)
     print 'Initial guess accepted'
 
     # Grid evenly over rescaling of FWHMS (rscale)

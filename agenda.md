@@ -30,14 +30,14 @@ Main TO-DOs
 
 In order:
 
-2. Magnetic damping!  Run fits for all Tycho regions.
-   Also fit with eta2 fixed to 1, 0.1, 10 at each scale length.
+2. Magnetic damping!  Run fits for all Tycho regions. (running now)
 4. Use srcutlog (from Brian) to run fits with eta2 fixed at values determined
    from synchrotron break frequency.
 5. Compute mE values for best loss-limited fits (to compare to data mE's).
    Do this for best damping-fits too, for completeness.
    Reason: we expect mE values for fits to be much smaller than data mE values,
    which are misleading (esp. due to large error bars on lowest energy FWHMs)
+   (code done, table not printed)
 
 Prepare for Monday (or earlier), in order:
 

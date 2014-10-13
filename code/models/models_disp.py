@@ -81,7 +81,7 @@ def build_dataf(fit_type, conf_intv=0.683, fit_kws=None, err_kws=None):
         fit_kws, *full model only*
             model_kws (dict):
                 rminarc, icut, irmax, iradmax, ixmax, irad_adapt, irad_adapt_f,
-                idamp, damp_ab, damp_bmin
+                idamp, damp_ab, damp_bmin, fgfname, itmax, inmax, irhomax
             scale_covar=False (!) (lmfit.minimize)
             method='leastsq'
             epsfcn, maxfev, factor, diag, ftol, xtol, etc... (scipy leastsq)

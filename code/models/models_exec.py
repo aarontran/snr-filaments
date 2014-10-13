@@ -121,9 +121,7 @@ class Fitter(object):
     def width_full(self, mu, eta2, B0, **kwargs):
         """Full model widths for stored SNR and energy bands
 
-        **kwargs passed directly to full model code. kws (as of 2014 Sep 12):
-            verbose, rminarc, icut, irmax, iradmax, ixmax,
-            irad_adapt, irad_adapt_f
+        **kwargs passed directly to full model code (see models.width_cont)
         """
         return models.full_width(self.snr, self.kevs, mu, eta2, B0, **kwargs)
 

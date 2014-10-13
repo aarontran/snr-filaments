@@ -124,3 +124,30 @@ remaining grid in eta2.  Then I wrap up the gridding for mu=2.  The final grids
 need to be merged together.
 
 
+`Tycho_gen_2014-10-1*_*.pkl`
+----------------------------
+
+Damping tables.  See my notes from 2014 October 12, but I note the main issues
+here as well.
+
+Computed FWHMS for:
+
+    ab = 0.006, eta2 = 83.18 to 100 are invalid
+    ab = 0.005, eta2 = 33.11 to 100 are invalid
+    ab = 0.004, eta2 = 7.24 to 100 are invalid
+
+have been removed by hand!  Damping was not enabled for these calculations
+unfortunately.
+
+And, computed FWHMs for:
+
+    ab = 0.01, eta2 = 75.86 to 100
+    ab = 0.009, eta2 = 52.48 to 100
+    ab = 0.008, eta2 = 33.11 to 100
+    ab = 0.007, eta2 = 22.91 to 100
+    ab = 0.006, eta2 = 13.18 to 100
+    ab = 0.005, eta2 = 6.61 to 100
+    ab = 0.004, eta2 = 0.79 to 100
+
+are strongly undersampled due to the algorithm being dumb.  So do not assume
+these tables cover parameter space all that well...
