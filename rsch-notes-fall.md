@@ -3748,3 +3748,67 @@ SN 1006 damping tables
 I estimate 1 second/call (3 bands vs 5) = 30.2 hr, so hopefully should be done
 by tomorrow.
 
+
+Tuesday 2014 October 14
+=======================
+
+Mostly assessing results, reading/thinking/math-ing today.  Not super
+productive...
+
+Meeting on damping results
+--------------------------
+
+* Spectra (lines / excision fits) -- just go ahead and state it in words.
+* Results -- show the whole slew of results for a few regions, the best and
+  worst.  Show that no matter what, the models will fit fine.  Plot data with
+  errors and best fit curves.  At the end, give some kind of parameter range of
+  best fits.
+
+We have, in a sense, a more useful (certainly more correct) result.  Not as
+useful or as satisfying a conclusion as we had thought, but still useful.
+
+SN 1006 damping fits
+--------------------
+FWHM tables finished by this morning.  Set up same set of 72x damped model fits for
+SN1006 (started around 8:45am).
+
+Sent results around to Rob/Brian, after meeting.
+
+Similar to Tycho -- Filaments 1, 2, 5 can be well-fit w/ a damped model.
+Filaments 3, 4 (sub-Bohm in Sean's paper) aren't well fit w/ damping.  They
+require loss-limited model + negligible diffusion to match the extreme drop-off
+in rim widths.
+
+But, again, we don't know if the individual region fits might differ...
+
+Reviewing e- distr solutions (Lerche & Schlickeiser 1980)
+---------------------------------------------------------
+
+Walked through a little bit of Pacholczyk on plasma processes (not really
+directly helpful), and went over the Green's function derivation by Lerche &
+Schlickeiser.  This is basically reproduced verbatim by Rettig & Pohl.
+
+The spatial dependence of `D(z) B^2(z)` mucks things up when we try to take a
+Fourier transform to simplify.  The assumption is that
+
+    \alpha = 1 + \frac{B_0 - B_{\mt{min}}}{B_\mt{min}} e^{-z/a_b}
+
+is constant, to obtain analytic solutions.  This does become roughly constant
+a few scale lengths behind the shock, when the B-field spatial dependence is
+very weak.  But we are most interested in e- transport at and immediately
+behind the shock, and I see no sign that we can neglect the exponential
+variation there.
+
+How can we circumvent this assumption, obtain an approximate solution, or show
+that it doesn't matter?  Perturbation analysis, finite difference/element
+solution, ???  I don't know the best way to go about this.
+
+Wednesday 2014 October 15
+=========================
+
+Today: write everything up.  Be prepared to run questions by Brian tomorrow...
+plan to email Sean/Steve w/ discussion updates?  srcutlog?
+
+For fun -- rederive 1st order Fermi accel, following Bell's paper.
+
+srcutlog, plots...

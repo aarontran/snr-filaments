@@ -21,45 +21,41 @@ processed mosaics?)
 Misc questions/thoughts
 -----------------------
 
-* Can we edit our AAS abstract?
 * What parameters did Sean use to compute SN 1006 profiles, or rule out damping
 in SN 1006?
 
 Main TO-DOs
 -----------
 
-In order:
+Paper -- figures, tables, text of results...
+investigate mathematics / equations / whatever.  Key assumptions.
 
-1. Use srcutlog (from Brian) to run fits with eta2 fixed at values determined
-   from synchrotron break frequency.
-3. Run new fits and magnetic damping fits for SN 1006 data?!...
-   (set up damping tables for SN 1006)
+Pitch thoughts to Sean and Steve?...
+* physicality of a strongly varying diffusion coefficient (Due simply to
+  massive variation in gyroradius w/ distance into the shock - BOHM diffusion
+  coefficient rises sharply as we move past the damped region.
+  But, I thought I saw somewhere (Pacholczyk?) that this assumption of
+  MFP = gyroradius, with time set by gyrofreq, was a maximum?!
+  Which seems to contradict all I've been told about the Bohm "limit".
+* How to assess the extent to which this assumption works or fails?
+  Sean argued for "flux conservation" - how does this apply in the damped case.
 
-NOTE: fix the automated line spectrum fit for Region 9... check what went
-wrong.
-
-For Tuesday:
-* Magnetic damping fits
-* mE values from model fit curves
-* Downstream spectral fits w/ lines accounted for
-* Loss-limited fits from srcutlog (ask Brian to send srcutlog)
-* Get Brian/Rob to okay Kepler numbers (...)
-
-
-(once all results are in place, go back to paper!)
+Anyways in the morning, type all of this up.  Outline the material for
+results/discussion, make the relevant figures, should be done within tomorrow.
 
 Moving to lower priority:
 
+1. Use srcutlog (from Brian) to run fits with eta2 fixed at values determined
+   from synchrotron break frequency. (may not even be needed)
 2. Check out outliers by hand (why did the fits go wonky), and check manual
    error computation speed.
-   (partial reason: B0 table is imperfect... generate new table with dense B0
-   sampling and see if helps at all)
 3. regenerate tables for regions-6 fits (also damping tables if need be)
 4. Generate Kepler tables and run full model fits
 
 
 Data processing to-dos, by individual "pipeline":
 (i.e., getting FWHMs/regions/etc)
+(set aside while we address magnetic damping etc...)
 
 * Tycho -- Cull regions-6 out of regions-5, apply blacklist, and manually port
            over derived data products as needed... (add notes in README files).
@@ -76,7 +72,8 @@ Data processing to-dos, by individual "pipeline":
            there's nothing -- but I want to check.
            (run after regions-6 is done)
 
-* Kepler -- Check full model resolution #s (ipynb)
+* Kepler -- Get Rob/Brian to okay Kepler numbers...
+            Check full model resolution #s (ipynb)
             Generate full model table (check w/ Brian on numbers, first)
             Generate full model fits w/ errors
 
