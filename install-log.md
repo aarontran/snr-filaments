@@ -87,6 +87,20 @@ Now execute the configure/make/make install
     make
     make install
 
+HEASOFT 6.16 reinstall
+----------------------
+2014 October 17
+
+Building from source again, to be sure.  Did I not build from source the first
+time around?  Seems like it from the directory structure, though my notes above
+suggest otherwise.  Maybe because I specified a prefix to `./configure`?
+Well, whatever.
+
+    export PERL=/usr/bin/perl
+    export FC=/usr/local/bin/gfortran
+    ./configure > config.out 2>&1
+    make > build.log 2>&1 &
+    make install > install.log 2>&1 &
 
 Updating file permissions (from FAT32 USB key...)
 -------------------------------------------------

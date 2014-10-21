@@ -39,7 +39,7 @@ Table of contents
             Port B-damping code.
 * Week 19 - (10/6) Investigate srcut break-D relation; prelim B-damping fits.
             Check code resolutions, apply new settings.  Make B-damping table
-* Week 20 - (10/13) 
+* Week 20 - (10/13) B-damping fits (Tycho, SN 1006).  e- distr derivations?
 
 * Week 21 - (10/20)
 * Week 22 - (10/27)
@@ -3715,6 +3715,9 @@ Also added code for to compute mE values for best loss-limited fits.
 (Week 20) Monday 2014 October 13
 ================================
 
+Summary
+-------
+* Assemble B-damping results
 
 
 Magnetic damping results/tables
@@ -3769,8 +3772,8 @@ useful or as satisfying a conclusion as we had thought, but still useful.
 
 SN 1006 damping fits
 --------------------
-FWHM tables finished by this morning.  Set up same set of 72x damped model fits for
-SN1006 (started around 8:45am).
+FWHM tables finished by this morning.  Set up same set of 72x damped model fits
+for SN1006 (started around 8:45am).
 
 Sent results around to Rob/Brian, after meeting.
 
@@ -3806,9 +3809,393 @@ solution, ???  I don't know the best way to go about this.
 Wednesday 2014 October 15
 =========================
 
-Today: write everything up.  Be prepared to run questions by Brian tomorrow...
-plan to email Sean/Steve w/ discussion updates?  srcutlog?
+Write everything up.  Material/questions for Brian, Sean, Steve soon.
 
-For fun -- rederive 1st order Fermi accel, following Bell's paper.
+srcutlog local model for XSPEC from Brian. Doesn't seem to initialize properly
+at the moment, come back to this later...
 
-srcutlog, plots...
+
+Thursday 2014 October 16
+========================
+
+Summary
+-------
+* Some work on manuscript
+* Attempt to fit with damping length `a_b` free
+
+Paper updates
+-------------
+Integrate comments/markup from October 3 draft (last iteration that got sent
+around to Rob/Brian).
+
+Integrate comments on spectra fits (line fits / excision) into text.
+
+Magnetic damping free fits
+--------------------------
+Modify model code to allow fitting on ab.
+When calling `Fitter.get_fit`, add another kwarg `ab_fit` and be sure to enable
+damping in `models.width_cont`.  Also modified fit saving code to handle `ab`.
+Manual error bound code is NOT tested with ab.  Use at your own risk...
+
+Tested out -- code runs into error saving.  But, it looks fairly useless
+anyways.  The code is unable to explore chi-sqr space and stays very close to
+the initial ab value (0.005, in this test).
+
+Downstream spectra fits
+-----------------------
+Checking a few of the lower quality chi-squared values
+
+* Region 5, redchi with 2 lines = 1.60
+  Basically just a slew of lines.  I'm able to fit:
+  0.84 keV (O/Ne mush?), 1.35 keV (Mg XI),
+  1.86 keV (Si XIII, He alpha), 2.02 keV (Si Ly alpha), 2.22 keV (Si He beta),
+  2.44 keV (S XV), 2.85 keV (S Ly alpha/He beta mush?),
+  3.1 keV (Ar He alpha), 6.45 keV (Fe XXV whatever)
+  Strongest line, other than Si/S He alpha, is that 3.1 keV Argon line.
+  but generally just a lot going on
+* Region 20 -- same problem, just a whole rigmarole of lines that have to be
+  fit.  This one is even harder to fit than Region 5.
+
+
+Random thoughts on B-damping (also, radio rims)
+-----------------------------------------------
+
+* Simple (catastrophic dump) equation can be formulated with magnetic damping
+  too, entering via the `+ f/\tsynch` term (cooling timescale changes,
+  lengthens as we move downstream).
+
+  Naive attempts to solve ODE with `scipy.integrate.odeint` did not work;
+  solutions blow up.  My _guess_ is that the solution is being dominated by an
+  exponential-blowup-like solution (akin to exponential solutions for 2nd order
+  ODEs, think modified Bessel functions or w/e).  My naive boundary conditions
+  (f = 1, f' = 0 at shock) are most likely wrong, at least the f'=0 part.
+
+  Better approach: try solving as a 2-point BVP, using shooting/relaxation
+  methods.  We don't know what the interior boundary value is.  e- distr should
+  decrease, but no justification for it to be zero at center (and there could
+  be an age limit on propagation too -- ignoring all ejecta interaction etc).
+  Or, w/ shooting method, maybe the increasing exponential will be forced to
+  near zero and there will be effectively only one free parameter,
+  normalization set at the shock.  So we wouldn't have to worry about the
+  interior.  But try it first...
+
+* Damping solution to transport equation could give better agreement with
+  radio rims?  From punching in numbers briefly -- I think the transport model
+  setup can reproduce these little mini-rims on top of a smush of radiation.
+
+  Cassam-Chenai obtained radio profiles with rims, but the absolute intensities
+  did not match data (trying to match radio / X-ray data concurrently).  The
+  fall-off in radio peaks is also a bit steeper than some I've seen, so our
+  models could be useful?
+
+  Idea would be to simultaneously fit X-ray and radio profiles -- instead of
+  just fitting FWHMs, fit all data together.  Should be more robust too.
+
+  Reynoso et al. (1997) used VLA data at 1.4 GHz from 1994, 1995 (~1 arcsec
+  resolution).  John Hewitt's VLA proposal stated 5 GHz in A configuration
+  (max basline -> sub-arcsec resolution!)
+
+  1 GHz     4.136 x 10^-9 keV
+  1.5 GHz   6.2 x 10^-9 keV
+  5 GHz     2.07 x 10^-8 keV
+
+  Since e- energy losses are small, small differences in energy shouldn't
+  matter much; and, the diffusion coefficient will be pretty small.
+  Generate plots for range of parameters and see how they look.
+
+
+Friday 2014 October 17
+======================
+
+Summary
+-------
+* Plot modeled intensity profiles (X-ray and radio)
+* Reinstall heasoft (srcutlog works, PyXSpec no longer needs 32-bit Python!)
+
+### Short drop-in to Brian's office
+
+* parameter numbers/bounds -- yeah, eyeballing should be okay.  Look at the
+numbers Monday and see.
+
+* `srcutlog`: try sending spectra to Brian and he can compare fit #s real fast.
+  Addendum: I reinstalled heasoft from source and it works `-_-`
+
+Plots for paper restructure
+---------------------------
+
+Add region numbers to plots of spectra, profiles (to help keep straight)
+
+* Region 1 -- no 0.7-1 keV profile, B-damping just barely better, chisqr ~ 25
+* Region 10 -- B-damping barely worse, chisqr ~ 1 (redchi ~ 0.4)
+* Region 14 -- only region where B-damping is a lot better than loss-limited
+               chisqr ~ 10-20
+* Region 16 -- B-damping just barely better, chisqr ~ 4
+* Region 18 -- B-damping disfavored, chisqr ~ 10
+* Region 19 -- B-damping just barely worse, chisqr ~ 90
+
+How about -- walk through pipeline with Regions 1, 14, 18.
+
+Modeled intensity profiles
+--------------------------
+
+Added flag to `FullEfflength_port.fefflen`, `models.width_cont`.
+Breaks fitting functionality, of course!
+
+Pass kwarg to `Fitter.width_full` or `models.full_width` and it will spit out
+intensity data, r-grid values alongside FWHM output.  Need to also set
+`rminarc`, `irad_adapt`, `iradmax` appropriately to get good profiles.
+
+* Nice plots of tycho data with model fits (subplot if you need)
+  (done)
+* Nice plots of SN 1006 data with model fits
+* RUN fits to individual SN 1006 regions, see what happens
+* Run fits for SN 1006 AND Tycho with e- cutoff disabled, see what happens.
+* Add text for Sean/Steve...
+* srcutlog work.
+
+* ODE solution to B-damping from simple model
+  (tackled)
+
+* MAKE profiles of radio/X-ray profiles for various damping parameters
+  1. from our best fit numbers,
+  2. from some "standard"/"nice" values
+  3. to produce the funny radio shapes
+  Done -- main observation is that strong B field amplification AND damping
+  produces very sharp radio rims; weaker amplification and damping gives rise
+  to shapes closer to what we might expect
+
+
+Saturday 2014 October 18
+========================
+
+Summary
+-------
+* SN 1006 plots, fits w/ no e- cutoff
+* Attempts to solve simple model ODE with B-damping
+
+SN 1006 stuff
+-------------
+
+SN 1006 plots -- generated plots w/ loss-limited + damped predictions, profiles
+
+Run fits without e- cut-off energy, to see if that accounts for the
+expectation of constant rims (`m_E ~ -0.1`).
+Result: box errors in many places for small damping lengths (`a_b`).
+Essentially our initial guesses give FWHMs far too large, since without a
+cut-off energy we get tons more electrons.  Results may not be reliable... but
+investigate this later.
+
+Naive IVP ODE solution to catastrophic dump equation
+----------------------------------------------------
+This one, with f'(0) = 0, gives reasonable numbers and goes straight to zero at
+around `x = 40*ab`.  But, not sure if the shape is right.  It is clearly mixing
+both the decaying and blowing-up solution, and I suppose there's no way to
+discard the latter in our numeric solution except by fortuitous choice of
+boundary/initial values...
+
+Possible approaches considered:
+* change of variables (results in only one non-constant coefficient, but it's
+  specified in terms of a Lambert W / product log function)
+* Series solution (not well explored).  Same issue of needing good choice of
+  IV/BVs, using the Runge-Kutta or whatever is probably simpler here
+* Laplace transform -- results in ugly convolution-like integral in
+  non-constant coefficients.
+
+But I haven't explored these that deeply.  Anyways here's the code snippet for
+scipy's ODE solver.  See also `code/models/models.py`, since I suspect there's
+a good chance no one will ever go through these notes in the future.
+
+    from __future__ import division
+
+    import numpy as np
+    import scipy as sp
+    from scipy.integrate import odeint
+    import matplotlib.pyplot as plt
+
+    CD = 2.083e19   # c/(3e)
+    b = 1.57e-3     # Synchrotron cooling constant
+
+    eta = 1  # Regular eta, not eta2
+    mu = 1
+
+    v = 1.25e8  # shock veloc, 1/4 of 5e8 = 5000 km/s
+    E = 36.5    # e- energy for 1 keV photon at B = 100 \muG
+    Bmin = 5e-6
+    B0 = 30e-6
+    ab = 1e17   # Damping length ~1% of Tycho's shock radius
+
+    rs_tycho = 240 * np.pi/180. /3600. * 3.0 * 1e3 * 3.085678e16 * 1e2
+    print rs_tycho
+
+    def B(x):
+        """Damped B-field"""
+        return Bmin + (B0 - Bmin) * np.exp(-x/ab)
+
+    def Bprime(x):
+        """Spatial derivative of damped B-field"""
+        return -1/ab * (B0 - Bmin) * np.exp(-x/ab)
+
+    def D(x):
+        """Diffusion coefficient"""
+        return eta * CD * E**mu / B(x)
+
+    def odefunc(vec, x):
+        """Function for ODE derivatives at x """
+        f, g = vec
+        c1 = - b* np.power(B(x),2) * E / D(x)
+        c2 = v/D(x) + Bprime(x) / B(x)
+        return g, c1*f + c2*g
+
+    ic = [1, 0]  # f(x=0) = 1, f'(x=0) = 0
+
+    xvec = np.linspace(0,100*ab,1000)
+    svec = odeint(odefunc, ic, xvec); fvec = svec[:,0]
+    plt.plot(xvec,fvec); plt.ylim(0,1); plt.show()
+
+
+(Week 21) Monday 2014 October 20
+================================
+
+Summary
+-------
+* Damping analysis plots/tables for Tycho/SN1006; paper updates
+* Email to Steve/Sean on damping results
+* Install CASA for EVLA data (symlinks in `/usr/bin/`)
+* New Tycho tables with (1) more `a_b` values, and (2) Bmin = 1e-6
+
+Morning meeting
+---------------
+* Email to Steve/Sean today (done), need their feedback (make sure we're doing
+  it right, close the hole by having Sean confirm this)
+* Discussion! Write it up (`-_-` should have been done last week but it's okay)
+* ODE solving -- probably not going to yield much in that alley.
+  Check literature, in case solution is already obtained (I think not, though)
+* VLA data -- Jack gone this week, but can look through manuals and bombard him
+  with questions next Monday!  Drag him into this project... (poor guy)
+
+* Brian: for data plots, show the best region, w/ consistent decreasing trend,
+  that we can get.
+* Any consistent trends within filaments -- comparable B fields or eta2 values?
+  Try fixing eta2 = 1 and get best fits for moderate damping, or with either of
+  loss-limited/damped.
+
+* Rob is out Thursday/Friday-ish.  Next Monday Brian out in the morning, meet
+  after lunch.
+
+Stuff to Sean & Steve (Rob/Brian)
+-------------------------------
+(Brian sent email ~2pm today)
+
+Attached are plots of width-energy data and model predictions, for the
+following two cases (SN 1006 figure has legend).  Damping length is fixed (ab =
+length / shock radius) and injected e- spectra have exponential cutoffs.
+Solid black curve is best damped fit with mu = 1, dotted/dashed curves are
+loss-limited with varying mu.
+
+SN 1006, Filament 1
+    Best damped fit: ab = 0.006, eta2 = 0.04, B0 =  34.6 muG, chisqr = 0.15;
+    best loss-limited fit: eta2 = 2.59, B0 = 102.5 muG, chisqr = 0.14
+    (ab = 0.006 is 5.4" in SN 1006)
+
+Tycho, Region 16.
+    Best damped fit: ab = 0.004, eta2 = 0.22, B0 = 341 muG, chisqr = 3.58;
+    best loss-limited fit: eta2 = 3.82, B0 = 583 muG, chisqr = 4.25.
+    (ab = 0.004 is 0.96" in Tycho)
+
+Big questions: 1. can Sean replicate our results (how was `m_E ~ -0.1`
+determined), and 2. are the transport equations correct?  Specific points:
+* Does an exponentially varying diffusion coefficient make sense?
+  A diffusion gradient term `-dD/dx * df/dx`, from `-d/dx (D(x) df/dx))`
+  becomes important, and, where damping is strong, increasing diffusion
+  coefficient can even cause rims to become _narrower_!
+* How can we assess the validity of the assumption that `D(x) B^2(x)` is
+  constant? (needed to derive equations (14-16) in Sean's paper)
+* Could other assumptions be undermined by the presence of damping (plane
+  shock without curvature, constant downstream velocity, ???)
+* If equations are right -- can we safely apply the transport model to radio?
+
+Note to Sean: I am using slightly different resolutions + a larger
+`fglists.dat` (~2x resolution for single e- emissivity); SN 1006 fits use 3
+data points.
+
+SN 1006, compare results with/without e- cutoff
+-----------------------------------------------
+
+Summary: yes, e- cutoff makes it harder to get good fits (although should be
+noted that we are now comparing loss-limited and damped fits, both without e-
+cutoff).  Only Filament 5 was able to find a better damped fit.
+
+Values of `m_E` to compare between loss-limited fit, damped fits with/without
+cutoff energy.  All evaluated at mu = 1.  Damped fits are best fits for ab less
+than 0.01 (where we tried free fits at 0.01, 0.009, 0.008, ... 0.004).
+
+            Loss-limited fit    Damped fit, cutoff        Damped, no cutoff
+            ----------------  -----------------------  -----------------------
+    Region  mE(1-2) mE(2-3)   ab      mE(1-2) mE(2-3)  ab      mE(1-2) mE(2-3)
+    ---------------------------------------------------------------------------
+    1       -0.35   -0.31     0.006   -0.34   -0.30    0.005   -0.27   -0.26
+    2       -0.49   -0.48     0.004   -0.69   -0.42    0.010   -0.24   -0.27
+    3       -0.51   -0.51     0.010   -0.63   -0.41    0.006   -0.59   -0.38
+    4       -0.51   -0.50     0.008   -0.65   -0.47    0.004   -0.61   -0.34
+    5       -0.19   -0.18     0.010   -0.20   -0.18    0.006   -0.26   -0.17
+
+Funny how steep the `m_E` values are for the best damped fits, even in the
+case without damping!  Curious.
+
+In general, the damped fits with no e- cutoff have eta2 < 1 (sub-Bohm).  A lot
+of the free fits failed pretty badly, but I think the identified "best fits"
+are reasonably representative of the actual best fits (looking at fits with
+eta2 fixed, they're not any better).
+
+
+Sean's reply and more plots/work
+--------------------------------
+
+Generate plots showing variation in profiles at low energy (overlay of profiles
+in loss-limited and damped cases; width-energy relation to 0.1 keV).
+
+What plots do we have so far:
+
+    energywidth         data + model predictions, width vs. energy
+    energywidth-lowE    0.1 to 5 keV, mu=1 only
+    prfs                profiles for all energy bands fitted
+    prfs-radio          radio and X-ray bands
+    prfs-modelcomp      kevs = np.array([0.05, 0.1, 0.2, 0.5, 1., 2., 4.])
+
+These are somewhat time consuming to run (especially the energywidth plots).
+Regenerated all Tycho, SN1006 plots w/ new annotations etc as needed.
+
+Generate new table with Bmin = 1e-6 (other parameters same)
+
+Paper plots/tables layout
+-------------------------
+
+Following some meeting discussion, re-generate all relevant tables and plots.
+
+* FWHM table
+* Best loss-limited fits (mu varying)
+* Best magnetic damping fits (ab varying) (state DOFs in footnotes)
+* Plots of fitted profiles (use dashed lines for loss-limited fit)
+* Table of best damped + loss-limited fits for all regions, side by side
+* Table of best damped + loss-limited fits as above, with eta2 = 1 fixed!
+
+Now throwing out:
+* table of loss-limited full model fits for all regions, all mu values
+* table of alternate spectral fits
+* table of filament-averaged parameter values
+Some of these tables are useful to draw numbers from, and can/should be
+regenerated on the fly.  But they won't make it into the final paper.
+
+Planning to throw out simple model fits completely, at this point.  But just
+comment out in text for now, don't discard.
+
+Updated tables/plots to use Tycho Region 16.  Added data to compare
+loss-limited / damped fits side-by-side (incl. with eta2 = 1)
+
+
+Tuesday 2014 October 21
+=======================
+
+Generate Regions 6, with regions culled and better spectra.
+Bring plots and numbers in for Brian, to answer Sean's suggestions
+Doesn't seem obvious to me there's any trend in filament numbers.

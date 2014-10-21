@@ -18,39 +18,55 @@ From poster session (July 31):
 (just to get a sense of energy -- how do we get physical units from CIAO
 processed mosaics?)
 
-Misc questions/thoughts
------------------------
-
-* What parameters did Sean use to compute SN 1006 profiles, or rule out damping
-in SN 1006?
-
 Main TO-DOs
 -----------
 
-Paper -- figures, tables, text of results...
-investigate mathematics / equations / whatever.  Key assumptions.
+* Manuscript work (!)
+  - add code / stuff to generate all tables needed (done)
+  - assemble any remaining figures (done)
+  - write procedure / results / discussion
 
-Pitch thoughts to Sean and Steve?...
-* physicality of a strongly varying diffusion coefficient (Due simply to
-  massive variation in gyroradius w/ distance into the shock - BOHM diffusion
-  coefficient rises sharply as we move past the damped region.
-  But, I thought I saw somewhere (Pacholczyk?) that this assumption of
-  MFP = gyroradius, with time set by gyrofreq, was a maximum?!
-  Which seems to contradict all I've been told about the Bohm "limit".
-* How to assess the extent to which this assumption works or fails?
-  Sean argued for "flux conservation" - how does this apply in the damped case.
+* Make tables and run fits with Bmin = 1e-6 to address Sean's query
+  Run with ab down to 0.003 or 0.002 too, just to give it a shot...
+  It likely won't end well but that's okay.
 
-Anyways in the morning, type all of this up.  Outline the material for
-results/discussion, make the relevant figures, should be done within tomorrow.
+* Set-up and re-run Tycho fits with new default resolutions (double check
+  resolutions).
+  Generate regions-6, cull FWHMs, subtract bkg from FWHM rims.
+  Work on MS w/ regions-5 data, but prepare to move to newer data very soon.
+  Try letting tables run down to ab = 0.003, ab = 0.002... just see what
+  happens
 
-Moving to lower priority:
+* Radio rims: explore parameter space, based the various best fits in Tycho.
+  In which cases do we get sharp radio rims, small blips on a rolling rise, or
+  almost no blip at all?
+
+* EVLA data reduction (casaguides.nrao.edu) (prepare questions for Jack)
+
+* Run fits to SN 1006, individual filaments (pending response/remarks from
+  Steve/Sean too, perhaps)
+
+* The diffusion coefficient timescale depends on both upstream/downstream
+  coefficients, and requires a simple integral.  What happens if we allow the
+  diffusion coefficients to vary?  Does this timescale change significantly?
+* Rederive the advective (transport) solution in damped and non-damped cases...
+
+* Figure out how best to fit profiles in their entirety.
+  One idea -- use FWHMs to line up profiles, roughly (since we don't precisely
+  know the shock location + precursor may be seen ahead of shock...)
+
+### Lower priority:
 
 1. Use srcutlog (from Brian) to run fits with eta2 fixed at values determined
-   from synchrotron break frequency. (may not even be needed)
-2. Check out outliers by hand (why did the fits go wonky), and check manual
-   error computation speed.
-3. regenerate tables for regions-6 fits (also damping tables if need be)
+   from synchrotron break frequency.
+   First make short pyxspec script to get srcutlog fits, then compute the
+   desired diffusion coefficients.
+2. Check outliers by hand (why did the fits go wonky), and check manual
+   error computation speed. (barely relevant anymore)
+3. regenerate tables for regions-6 fits (also damping tables)
 4. Generate Kepler tables and run full model fits
+5. ODE solving, simple model with damped B-field.  Not likely to do much, esp.
+   if our full model comes up correct...
 
 
 Data processing to-dos, by individual "pipeline":

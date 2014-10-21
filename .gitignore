@@ -6,6 +6,7 @@ chandra/**
 *.fits
 *.img
 *.tar
+*.tar.gz
 
 # Articles, many binary files
 papers
@@ -76,6 +77,15 @@ __pycache__/
 *.out
 *.toc
 
+# Bibliography auxiliary files
+*.bbl
+*.bcf
+*.blg
+*-blx.aux
+*-blx.bib
+*.brf
+*.run.xml
+
 # Build tool auxiliary files:
 *.fdb_latexmk
 *.synctex.gz
@@ -99,3 +109,26 @@ Session.vim
 ehthumbs.db
 Thumbs.db
 
+# C++/Fortran ignores
+# Compiled object files
+*.slo
+*.lo
+*.o
+*.obj
+# Precompiled headers
+*.gch
+*.pch
+*.so
+*.dylib
+*.dll
+# Fortran module files
+*.mod
+# Compiled static libraries
+*.lai
+*.la
+*.a
+*.lib
+# Executables
+*.exe
+*.out
+*.app

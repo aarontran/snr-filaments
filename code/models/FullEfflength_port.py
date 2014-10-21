@@ -49,12 +49,12 @@ def main():
     fwhms = fefflen(kevs, B0, eta2, mu, 4.52e8, 4.52e8/4, 1.077e19, 240.,
                     2*0.58+1, rminarc, True, irmax, iradmax, ixmax,
                     False, 0.001, 5e-6, 'fglists_mod.dat',
-                    200, 50, 2000)
+                    200, 50, 2000, False)
     # SN 1006 with damping
     #fwhms = fefflen(kevs, B0, eta2, mu, 5e8, 5e8/4., 2.96e19, 900.,
     #                2*0.6+1, rminarc, True, irmax, iradmax, ixmax,
     #                False, 0.001, 5e-6, 'fglists_mod.dat',
-    #                200, 50, 2000)
+    #                200, 50, 2000, False)
     #print 'rminarc = {}'.format(rminarc)
     #for en, fwhm in zip(kevs, fwhms):
     #    print '{:0.2f} keV: {:0.5f}'.format(en, fwhm)
@@ -67,7 +67,8 @@ def main():
 
 #@profile
 def fefflen(kevs, B0, eta2, mu, vs, v0, rs, rsarc, s, rminarc, icut, irmax,
-            iradmax, ixmax, idamp, ab, Bmin, fgfname, itmax, inmax, irhomax):
+            iradmax, ixmax, idamp, ab, Bmin, fgfname, itmax, inmax, irhomax,
+            get_prfs):
     """Use numpy arrays for everything (kevs, rminarc)
 
     Note that irmax is not very important anymore.
@@ -94,6 +95,8 @@ def fefflen(kevs, B0, eta2, mu, vs, v0, rs, rsarc, s, rminarc, icut, irmax,
                       compute emissivity at irhomax pts, which is then summed
                       on line of sight (interpolating) to get intensity
                       irhomax < irmax should be okay.
+        get_prfs (bool)
+            if True, return computed intensity profile as a list of np.ndarray
     Output:
         np.ndarray of FWHMs for each entry in kevs
     """
@@ -116,6 +119,9 @@ def fefflen(kevs, B0, eta2, mu, vs, v0, rs, rsarc, s, rminarc, icut, irmax,
     fullmodel.readfglists(fgfname)  # !! important
 
     widths = []
+    if get_prfs:
+        rgrids = []
+        prfs = []
 
     for en_nu, rmin_nu in zip(kevs, rmin):
         # Convert keV to s^{-1}
@@ -163,8 +169,16 @@ def fefflen(kevs, B0, eta2, mu, vs, v0, rs, rsarc, s, rminarc, icut, irmax,
         # Finally, compute FWHMs precisely (use intensity grid as guide)
         w = fwhm(rmesh, intensity, get_intensity)
         widths.append(w)
+        if get_prfs:
+            rgrids.append(rmesh * rsarc)
+            prfs.append(intensity)
 
-    return np.array(widths) * rsarc
+    fwhms = np.array(widths) * rsarc
+
+    if get_prfs:
+        return fwhms, prfs, rgrids
+
+    return fwhms
 
 
 def read_fglists(fname):

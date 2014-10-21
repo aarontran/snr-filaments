@@ -28,7 +28,9 @@ Idealized, update as needed... (set-up 2014 July 8, somewhat following
 the idea from a Software Carpentry lecture
 [link](http://software-carpentry.org/v4/data/mgmt.html).
 
-Ordered in order of generation (to try to make data dependencies clearer)
+Ordered in order of generation, roughly (to make data dependencies clearer).
+Paper tables are copy-pasted from IPython notebooks (computed from these data).
+Paper plots in `region-ID/fwhms/plots` and `region-ID/fwhms/model-fits/plots`.
 
     data-*/ *.fits
             README.md
@@ -48,8 +50,14 @@ Ordered in order of generation (to try to make data dependencies clearer)
                               fwhms_spec_cut.npz
                               fwhms_spec_cut.dat
 
+                              plots/ prfs_*.pdf  # Fitted profiles/spectra
+                                     spec_*.pdf
+
                               model-fits/ *.pkl  # All model fit results!
                                           *.json
+                                          plots/ *prfs*.pdf
+                                                 *prfs-radio*.pdf
+                                                 *energywidth*.pdf
 
                         fwhms-cap/ ...  # Same structure
                         fwhms-nobkg/ ...  # BUT, spectra must always be

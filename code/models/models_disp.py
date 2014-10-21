@@ -78,6 +78,9 @@ def build_dataf(fit_type, conf_intv=0.683, fit_kws=None, err_kws=None):
             eta2, B0: provide custom (non-grid) initial guesses.
             mu_free=False (I recommend not to change, esp. if using full model!
                            NOT TESTED, likely to hit bugs)
+            ab_fit: if provided, will allow damping length ab to vary in fit
+                be sure to enable damping in model_kws as well!
+                value of ab_fit will override any specified damp_ab value
         fit_kws, *full model only*
             model_kws (dict):
                 rminarc, icut, irmax, iradmax, ixmax, irad_adapt, irad_adapt_f,
@@ -130,6 +133,9 @@ def build_dataf(fit_type, conf_intv=0.683, fit_kws=None, err_kws=None):
         eta2, B0 = res.params['eta2'].value, res.params['B0'].value
         eta2_stderr = res.params['eta2'].stderr
         B0_stderr = res.params['B0'].stderr
+        if 'ab' in res.params:
+            ab = res.params['ab']
+            ab_stderr = res.params['ab'].stderr
 
         # Compute errors (whether stderr, lmfit, or my manual procedure)
         ci = fobj.get_errs(res, fit_type, ci_vals=(conf_intv,), **err_kws)
@@ -147,6 +153,9 @@ def build_dataf(fit_type, conf_intv=0.683, fit_kws=None, err_kws=None):
         res.params['eta2'].stderr = eta2_stderr
         res.params['B0'].value = B0
         res.params['B0'].stderr = B0_stderr
+        if 'ab' in res.params:
+            res.params['ab'].value = ab
+            res.params['ab'].stderr = ab_stderr
 
         # Hacky workaround to send fit information downstream
         # Using params because it's pickle-able for IPython's parallel stuff

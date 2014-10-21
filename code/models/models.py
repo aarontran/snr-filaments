@@ -32,7 +32,6 @@ def chi_squared(y, y_err, y_model):
     """Compute chi-squared statistic"""
     return np.sum( ((y_model - y) / y_err)**2 )
 
-
 # =========================================
 # Tabulate FWHM values from full model code
 # =========================================
@@ -412,7 +411,7 @@ def simple_fit(snr, kevs, data, eps, mu, eta2=None, B0=None,
     return res
 
 def full_fit(snr, kevs, data, eps, mu, eta2=None, B0=None, mu_free=False,
-    eta2_free=True, B0_free=True, model_kws=None, **lmf_kws):
+    eta2_free=True, B0_free=True, ab_fit=None, model_kws=None, **lmf_kws):
     """Perform full model fit (equation 12; Table 8 of Ressler et al.)
     Default fit: B0 free; mu, eta2 fixed
 
@@ -420,6 +419,8 @@ def full_fit(snr, kevs, data, eps, mu, eta2=None, B0=None, mu_free=False,
         kevs, data, eps (np.ndarray) as usual
         mu, B0, eta2 (float) initial guesses, but mu fixed
         mu_free, eta2_free (bool) which parameters shall vary in fits?
+        ab_fit (float) if specified, allow ab to be a fit parameter
+            (if you don't want it to vary, specify via model_kws instead)
         **lmf_kws takes extra kwargs for lmfit.minimize (includes lsq kws)
         Probably should set epsfcn via **lsq_kws
 
@@ -435,8 +436,12 @@ def full_fit(snr, kevs, data, eps, mu, eta2=None, B0=None, mu_free=False,
         pval = locals()[pstr]
         if pval is None:
             pval = snr.par_init[pstr]
-        p.add(pstr, value = pval, vary = locals()[pstr+'_free'],
-              min = snr.par_lims[pstr][0], max = snr.par_lims[pstr][1])
+        p.add(pstr, value=pval, vary=locals()[pstr+'_free'],
+              min=snr.par_lims[pstr][0], max=snr.par_lims[pstr][1])
+
+    if ab_fit is not None:
+        # TODO default ab_fit settings could be stored in each SNR
+        p.add('ab', value=ab_fit, vary=True, min=0, max=1e3)
 
     res = lmfit.minimize(objectify(width_cont), p, args=(data, eps, kevs, snr),
                          kws=model_kws, **lmf_kws)
@@ -484,7 +489,7 @@ def simple_width(snr, kevs, mu, eta2, B0):
 def width_cont(params, kevs, snr, verbose=True, rminarc=None, icut=None,
     irmax=None, iradmax=None, ixmax=None, irad_adapt=True, irad_adapt_f=1.2,
     idamp=False, damp_ab=0.05, damp_bmin=5.0e-6, fgfname='fglists_mod.dat',
-    itmax=200, inmax=50, irhomax=2000):
+    itmax=200, inmax=50, irhomax=2000, get_prfs=False):
     """Width function, wrapper for Python port of full model (equation 12)
 
     All **kwargs not specified (excepting verbose) are taken from snr object
@@ -492,6 +497,8 @@ def width_cont(params, kevs, snr, verbose=True, rminarc=None, icut=None,
     Inputs:
         params: lmfit.Parameters object with entries B0, eta2, mu
             B0 (Gauss), eta2 (-), mu (-)
+            IF ab (-) is in params, it will override damp_ab (!)
+            BUT, you still have to toggle idamp=True or it will do nothing
         kevs: scalar/vector of observed photon energies
         snr: object with SNR physical attributes
     **kwargs:
@@ -506,8 +513,8 @@ def width_cont(params, kevs, snr, verbose=True, rminarc=None, icut=None,
                  (energy resolution for e- distr. set by fglists.dat)
         ixmax: resolution on line of sight for emissivity integration
 
-        irad_adapt: boolean, run two calculations to improve model FWHM precision
-                    (slower but should be significantly more precise and is
+        irad_adapt: boolean, compute FWHMs 2x for better precision
+                    (slower, but should be much more precise and is
                     comparatively faster than increasing grid resolution)
         irad_adapt_f: float, should be > 1; margin-of-error for rminarc in
                       adaptive calculation
@@ -521,6 +528,9 @@ def width_cont(params, kevs, snr, verbose=True, rminarc=None, icut=None,
 
         itmax, inmax: internal integral resolutions for e- distributions
                       (Sean's defaults were itmax=1000, inmax=100)
+        get_prfs: get intensity profiles and r grid values alongside FWHMs
+                  NOTE -- this BREAKS the fitting functionality
+                  so, obviously, don't use if you are fitting stuff
 
     Outputs:
         np.array of modeled FWHMs (arcsec) for each energy in 'kevs'
@@ -532,6 +542,9 @@ def width_cont(params, kevs, snr, verbose=True, rminarc=None, icut=None,
     B0 = params['B0'].value
     eta2 = params['eta2'].value
     mu = params['mu'].value
+
+    if 'ab' in params:
+        damp_ab = params['ab'].value
 
     vs = snr.vs
     v0 = snr.v0()
@@ -564,7 +577,7 @@ def width_cont(params, kevs, snr, verbose=True, rminarc=None, icut=None,
         fwhms_prelim = fmp.fefflen(kevs, B0, eta2, mu, vs, v0, rs, rsarc, s,
                                    rminarc, icut, irmax, iradmax_prelim, ixmax,
                                    idamp, damp_ab, damp_bmin, fgfname,
-                                   itmax, inmax, irhomax)
+                                   itmax, inmax, irhomax, False)
 
         # Replace error-code values
         res_msk, box_msk = _check_calc_errs(fwhms_prelim, rminarc)
@@ -602,10 +615,15 @@ def width_cont(params, kevs, snr, verbose=True, rminarc=None, icut=None,
         rminarc = rminarc2
 
     # Python full model port
-    fwhms = fmp.fefflen(kevs, B0, eta2, mu, vs, v0, rs, rsarc, s,
-                        rminarc, icut, irmax, iradmax, ixmax,
-                        idamp, damp_ab, damp_bmin, fgfname,
-                        itmax, inmax, irhomax)
+    out = fmp.fefflen(kevs, B0, eta2, mu, vs, v0, rs, rsarc, s,
+                      rminarc, icut, irmax, iradmax, ixmax,
+                      idamp, damp_ab, damp_bmin, fgfname,
+                      itmax, inmax, irhomax, get_prfs)
+
+    if get_prfs:
+        fwhms = out[0]
+    else:
+        fwhms = out
 
     res_msk, box_msk = _check_calc_errs(fwhms, rminarc)
     # Check for errors
@@ -614,8 +632,7 @@ def width_cont(params, kevs, snr, verbose=True, rminarc=None, icut=None,
     if any(box_msk):
         print '\t\tBox error! at {}'.format(kevs[box_msk])
 
-
-    return fwhms
+    return out
 
 def _check_calc_errs(fwhms, rminarc):
     """Check for resolution or box errors (as in Sean's code)"""
@@ -697,6 +714,68 @@ def objectify(f):
     """
     return lambda pars, data, eps_data, *args, **kwargs: \
         (f(pars, *args, **kwargs) - data)/eps_data
+
+# ===========================
+# Prototype code (not usable)
+# ===========================
+
+#from __future__ import division
+#import numpy as np
+#import scipy as sp
+#from scipy.integrate import odeint
+#import matplotlib.pyplot as plt
+
+#def width_dump_distr():
+#    """Code to numerically solve for f(E,x) for simple model with magnetic
+#    field damping.  See my notes from 2014 October 18.  Not functional at this
+#    time (blows up for f'(x=0) != 0, basically)
+#    If used, would be integrated into width_dump appropriately...
+#    """
+#
+#    CD = 2.083e19   # c/(3e)
+#    b = 1.57e-3     # Synchrotron cooling constant
+#
+#    eta = 1  # Regular eta, not eta2
+#    mu = 1
+#
+#    v = 1.25e8  # shock veloc, 1/4 of 5e8 = 5000 km/s
+#    E = 36.5    # e- energy for 1 keV photon at B = 100 \muG
+#    Bmin = 5e-6
+#    B0 = 30e-6
+#    ab = 1e17   # Damping length ~1% of Tycho's shock radius
+#
+#    rs_tycho = 240 * np.pi/180. /3600. * 3.0 * 1e3 * 3.085678e16 * 1e2
+#    print rs_tycho
+#
+#    def B(x):
+#        """Damped B-field"""
+#        return Bmin + (B0 - Bmin) * np.exp(-x/ab)
+#
+#    def Bprime(x):
+#        """Spatial derivative of damped B-field"""
+#        return -1/ab * (B0 - Bmin) * np.exp(-x/ab)
+#
+#    def D(x):
+#        """Diffusion coefficient"""
+#        return eta * CD * E**mu / B(x)
+#
+#    def odefunc(vec, x):
+#        """Function for ODE derivatives at x """
+#        f, g = vec
+#        c1 = - b* np.power(B(x),2) * E / D(x)
+#        c2 = v/D(x) + Bprime(x) / B(x)
+#        return g, c1*f + c2*g
+#
+#    ic = [1, 0]  # f(x=0) = 1, f'(x=0) = 0
+#
+#    xvec = np.linspace(0,100*ab,1000)
+#    svec = odeint(odefunc, ic, xvec); fvec = svec[:,0]
+#
+#    plt.plot(xvec,fvec)
+#    plt.ylim(0,1)
+#    plt.show()
+#
+#    return xvec, svec
 
 
 # ===================================

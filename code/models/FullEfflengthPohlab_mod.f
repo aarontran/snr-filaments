@@ -47,7 +47,7 @@
         s = 2d0*alpha+1d0
 
         ! Extra (Aaron, testing varying eta)
-        eta2 = 0.01d0
+        eta2 = 0.04d0
         eta = eta2 ! * (2d0 * 2.417989d17 / (cm*B0))**(-(mu-1d0)/2d0)
 
         !Constants
