@@ -4196,6 +4196,127 @@ loss-limited / damped fits side-by-side (incl. with eta2 = 1)
 Tuesday 2014 October 21
 =======================
 
-Generate Regions 6, with regions culled and better spectra.
-Bring plots and numbers in for Brian, to answer Sean's suggestions
-Doesn't seem obvious to me there's any trend in filament numbers.
+Summary
+-------
+* Review plots, address Sean's suggestions
+* Paper writing
+* CASA tutorial (EVLA observation of 3C391) meddling
+
+Working with damping results
+----------------------------
+Ran numbers/stuff by Brian.  Seems like we're at a bit of a question mark
+point.  Edited plots of different model FWHMs to show half-max line,
+illustrating where the measurement is being taken.  Replied to Sean's email
+with plots (fits with Bmin = 2e-6 pending).
+
+Hold off on generating Regions 6 w/ culled regions.  If we end up fitting
+profiles, rather than FWHMs, that will change our strategy entirely.
+
+Doesn't seem obvious to me there's any trend within filament numbers.
+
+### Ramblings
+
+Some observations: the best fits with small magnetic field are the ones that
+give us strong plateaus behind the rim, + give "spurious" energy dependence due
+to measurement being taken near the base of the rim.
+
+How about fits where damped rims are thin and don't show a plateau, so the
+energy dependence is not so suspect?
+E.g., region 14 w/ the best decrease in chi-squared value w/ a damped model.
+Best fit damped length is 0.005 or 1.2 arcsec, rim widths are 2-3 arcsec.
+The rims show practically the same energy dependence at our X-ray energies, as
+the loss-limited model, with eta2 = 100 and eta2 = 3 (not unreasonable; if we
+set eta2 = 1 then B0 = 50 is needed with still pretty good chi-sqr).
+
+Answer: the width-energy dependence is pretty weak, so no wonder -- it does
+just fine.
+
+Where energy dependence is weak, no one cares.  Magnetic damping works.
+Where (best-fit-curve) energy dependence is stronger, magnetic damping goes
+weird / tricksome.  BUT this is the only way to get smaller B fields.
+We note too that the magnetic damping in "good" cases still gives
+pretty strong magnetic fields, if smaller than in the loss-limited case.
+(this is, roughly, the train of thought Parizot followed)
+
+That is interesting -- that in these cases with more mild energy dependence, we
+still see sizable fields in the damped model.
+... think more about this tomorrow.
+
+### PDE assumptions...
+
+Poked around with full model PDE work, seeing if anything could simplify.  Can
+rewrite in terms of Lambert W function, somewhat more simply (just passing
+through the integral transform in x/z-coordinate), but still looks intractable.
+
+I really don't know what to say about the `D(x) * B^2(x)` constant assumption.
+
+Thought: I am assuming the cut-off energy is set by `B = B_0`.  Should it be
+set at `B = B_min` instead?  Since behind the shock the diffusion coefficient
+is highest at low `B`... don't know if that makes sense.  And Bohm limit is
+supposed to be a minimum, we really need more constraints on this somehow.
+
+### Workarounds
+
+Spectral fits downstream?  To try to capture how we see higher plateaus behind
+damped rims...
+
+
+
+Damped fits with smaller Bmin
+-----------------------------
+
+Tables done, set up fits to start running overnight
+
+
+Wednesday 2014 October 22
+=========================
+
+Summary
+-------
+* Parameter space exploration (bad behavior for moderate energy dependence)
+* Paper -- update results/text, organize/start writing discussion (now
+  accepting that B-damping is okay)
+
+
+Parameter space exploration
+---------------------------
+
+Damping results with Bmin = 2e-6.  Not much difference is seen.
+
+Generated grid of plots to help visualize parameter space, in X-ray and radio
+both.  Only care about X-ray for now but I'm keen to see what happens in the
+radio (shapes much more diverse, may be more helpful in constraining parameter
+space...).
+
+Regenerated plots for paper too (following style/layout used for this grid)
+
+Drop-in with Brian
+------------------
+
+### Damping stuff
+
+Ran plots of parameter space and thoughts by Brian.  Idea: just X out all the
+plots that look non-sensical.  Just explain what we see; it would be useful if
+we could say something about what fits are favored, what damping fits are okay
+or are not okay. 
+
+Paper first, please -- it will help everyone see which holes need to be
+filled in, and assess how to do so.  Remember that we are focusing on an
+observational result -- leave more detailed/correct modeling to others!
+
+Get something as complete as possible -- clean up the little notes and other
+details.
+
+### Radio emission in SNRs
+
+Q: any other sources for radio emission?  E.g., in the remnant interior.<br>
+A: you still need GeV electrons for radio synchrotron emission.  The only thing
+that might compete with our rims is acceleration at the reverse shock.
+
+
+New Tycho tables
+----------------
+
+Generating new tabs with the new default resolutions for both
+loss-limited and damped cases.  Then we'll be ready to go with new numbers
+tomorrow...

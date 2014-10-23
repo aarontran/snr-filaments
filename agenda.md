@@ -22,38 +22,50 @@ Main TO-DOs
 -----------
 
 * Manuscript work (!)
-  - add code / stuff to generate all tables needed (done)
-  - assemble any remaining figures (done)
-  - write procedure / results / discussion
+  - finish up discussion.  Generate whatever new fits I need to get things to
+    match up (Regions 6)
 
-* Make tables and run fits with Bmin = 1e-6 to address Sean's query
-  Run with ab down to 0.003 or 0.002 too, just to give it a shot...
-  It likely won't end well but that's okay.
+* Last thing -- try running computations with 2x exponential damping.  I don't
+expect it will change much (I think it would really exaggerate what we're
+seeing).  But, just for completeness...
+Answer: wait, Sean already accounted for that (Following R/P).  Woops...
+Okay, so that's fine.  Might have to ask whether breaking that assumption does
+anything (what happens if i push through a single exponential dependence)
 
-* Set-up and re-run Tycho fits with new default resolutions (double check
-  resolutions).
-  Generate regions-6, cull FWHMs, subtract bkg from FWHM rims.
-  Work on MS w/ regions-5 data, but prepare to move to newer data very soon.
-  Try letting tables run down to ab = 0.003, ab = 0.002... just see what
-  happens
+After moving forward with paper -- get srcutlog diffusion coefficients and hold
+them FIXED.  Run fits to X-ray data with damping and see how the B-fields come
+out for a range of damping lengths, and get radio profiles at those varied
+damping lengths.
 
-* Radio rims: explore parameter space, based the various best fits in Tycho.
-  In which cases do we get sharp radio rims, small blips on a rolling rise, or
-  almost no blip at all?
+### Radio thingies
 
 * EVLA data reduction (casaguides.nrao.edu) (prepare questions for Jack)
 
+* Figure out how best to fit profiles in their entirety.
+  One idea -- use FWHMs to line up profiles, roughly (since we don't precisely
+  know the shock location + precursor may be seen ahead of shock...)
+  (consider the work of Warren 2005?)
+  Relevant links:
+  http://mathematica.stackexchange.com/questions/866/simultaneously-fitting-multiple-datasets
+  http://forums.wolfram.com/mathgroup/archive/2011/Sep/msg00555.html
+
+* Radio rims -- how to get intensities to work out right?
+  Can we show/prove that _thin_ radio rims are not possible in a loss-limited
+  model?
+
+### Data stuff (just checking/solidifying results)
 * Run fits to SN 1006, individual filaments (pending response/remarks from
   Steve/Sean too, perhaps)
+* Set-up loss-limited Tycho fit tables w/ new default resolutions.
+  Generate damping tables down to ab = 0.003, ab = 0.002, to see what happens.
+  We'll be limited by the FWHM "disappearance" matter...
 
+### Theory stuff
 * The diffusion coefficient timescale depends on both upstream/downstream
   coefficients, and requires a simple integral.  What happens if we allow the
   diffusion coefficients to vary?  Does this timescale change significantly?
 * Rederive the advective (transport) solution in damped and non-damped cases...
 
-* Figure out how best to fit profiles in their entirety.
-  One idea -- use FWHMs to line up profiles, roughly (since we don't precisely
-  know the shock location + precursor may be seen ahead of shock...)
 
 ### Lower priority:
 

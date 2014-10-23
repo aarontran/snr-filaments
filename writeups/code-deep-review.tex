@@ -226,7 +226,7 @@ All equations use the generalized diffusion coefficient $D \propto E^\mu$.
 
 This is an analytic approximation; please see the relevant assumptions and
 approximations above.  Equation (6), multiplied by a projection factor
-$\beta=4.6$, is fit directly to measured rim widths as a function of energy.  
+$\beta=4.6$, is fit directly to measured rim widths as a function of energy.
 The predicted rim width is given by:
 \[
   \mt{FWHM} = \frac{2\beta D / v_d}
@@ -433,13 +433,15 @@ So, for now, I shall trust Sean's judgement and just move forward with the
 code.  In fact, it is the magnetic damping model that needs an extra factor of
 $\eta^{-1/2}$ (and consequently Sean's equation (18) is also incorrect).
 
+Further note: Sean's expression in the regular code is correct.  All is well.
+
 
 % -------------------------------
 % Electron distribution integrals
 % -------------------------------
 \subsection{Electron distribution calculations}
 
-First I'll reproduce the equations as seen in the code.  Then I'll 
+First I'll reproduce the equations as seen in the code.  Then I'll
 simplify and make corrections as needed.  I have \emph{not} rederived the
 equations from scratch.  In particular, I have no reference for the purely
 advective solution (though it should be straightforward, if tedious, to
@@ -505,7 +507,7 @@ Let $n = 1 - t^2$. Then $dn = -2t dt = -2\sqrt{1-n}dt$;
 this kills the denominator $\sqrt{1-n}$.  Numerically integrate:
 \[
     f(E,x) = \frac{Q_0 E^{-(\mu/2 + 1/2 + s)}}
-            {2 \sqrt{\pi \alpha b B^2 D_0 (1-\mu)}} 
+            {2 \sqrt{\pi \alpha b B^2 D_0 (1-\mu)}}
             \int_0^1 dt 2 (1-t^2)^{ (s+\mu-2) / (1-\mu) }
             \exp[ - \mathtt{argexp} ]
 \]
