@@ -25,12 +25,14 @@ Main TO-DOs
   - finish up discussion.  Generate whatever new fits I need to get things to
     match up (Regions 6)
 
-* Last thing -- try running computations with 2x exponential damping.  I don't
-expect it will change much (I think it would really exaggerate what we're
-seeing).  But, just for completeness...
-Answer: wait, Sean already accounted for that (Following R/P).  Woops...
-Okay, so that's fine.  Might have to ask whether breaking that assumption does
-anything (what happens if i push through a single exponential dependence)
+* check expressions for cut-off energy, diffusion terms in Sean's solution
+  (using Bmin vs. B0 in certain places).
+
+* Manually look at the "bad"/"spurious" energy dependence regions -- can we
+  still find good damping fits that don't show this spuriousness?  I know it
+  will be subjective, but just to check: if we attempt to rule certain
+  scenarios / parts of parameter space out, can we still find okay damping fits
+  for moderate energy dependence?
 
 After moving forward with paper -- get srcutlog diffusion coefficients and hold
 them FIXED.  Run fits to X-ray data with damping and see how the B-fields come
@@ -45,13 +47,17 @@ damping lengths.
   One idea -- use FWHMs to line up profiles, roughly (since we don't precisely
   know the shock location + precursor may be seen ahead of shock...)
   (consider the work of Warren 2005?)
+  (morlino/caprioli 2012, cassam-chenai 2007 have done this to some extent)
   Relevant links:
   http://mathematica.stackexchange.com/questions/866/simultaneously-fitting-multiple-datasets
   http://forums.wolfram.com/mathgroup/archive/2011/Sep/msg00555.html
 
 * Radio rims -- how to get intensities to work out right?
+  (Chandra photometry?... VLA already has the calibration routine)
   Can we show/prove that _thin_ radio rims are not possible in a loss-limited
   model?
+  Diffusion in radio?
+  time-dependence, aging, other effects may be important!
 
 ### Data stuff (just checking/solidifying results)
 * Run fits to SN 1006, individual filaments (pending response/remarks from

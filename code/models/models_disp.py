@@ -92,6 +92,7 @@ def build_dataf(fit_type, conf_intv=0.683, fit_kws=None, err_kws=None):
             method='manual' ('lmfit', 'stderr')
             if using 'manual':
                 anneal=True, eps=None, adapt=True (passed to mex.one_dir_root)
+                sp.optimize.brentq kwargs: xtol, rtol
             if using 'lmfit':
                 maxiter=200, prob_func=None (lmfit.conf_interval kwargs)
 

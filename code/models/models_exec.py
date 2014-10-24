@@ -204,7 +204,8 @@ class Fitter(object):
             **kwargs are passed to relevant functions
                 method='lmfit': maxiter=200, prob_func=None
                                 (see lmfit.conf_interval docstring)
-                method='manual': adapt=True, anneal=True
+                method='manual': adapt=True, anneal=True, eps=None;
+                                 remaining **kwargs sent to brentq
                                  (anneal keyword only if appr='full')
         Output:
             confidence interval dictionary
@@ -248,7 +249,7 @@ class Fitter(object):
         threshold, move to next eta2 (on left or right)
 
         Input: res is best fit lmfit.Minimizer
-            **kwargs passed through to one_dir_root
+            **kwargs passed through to one_dir_root (and brentq)
         Output: limits on parameter pstr
         """
         orig = lmfit.confidence.copy_vals(res.params)
@@ -435,7 +436,7 @@ class Fitter(object):
             mu_dist = np.abs(np.array(self.tab.keys()) - mu)
             mu2 = self.tab.keys()[mu_dist.argmin()]
             self._vprint('WARNING: mu ({:0.3f}) not in table; '
-                         'using closest table value ({:0.3f}) ').format(mu,mu2)
+                         'using closest table value ({:0.3f}) '.format(mu,mu2))
             mu = mu2
 
         eta2_vals = np.sort(self.tab[mu].keys())
@@ -583,7 +584,8 @@ def stubborn_brentq(f, a2, a, b, b2, **kwargs):
         x = sp.optimize.brentq(f, a2, b2, **kwargs)
     return x
 
-def one_dir_root(f, x_init, x_lim, eps=None, adapt=True, verbose=False):
+def one_dir_root(f, x_init, x_lim, eps=None, adapt=True, verbose=False,
+                 **kwargs):
     """Find root in function f from starting x with max/min limit
     Naive, brute force search in one direction, set by sgn(x_lim - x_init)
     If zero crossing is found, uses scipy.optimize.brentq to get root
@@ -592,10 +594,14 @@ def one_dir_root(f, x_init, x_lim, eps=None, adapt=True, verbose=False):
     Assumes monotonicity: if f(x_lim) doesn't cross, then you're SOL.
     But, code intended only for simple chisqr cases.  Beware of using elsewhere
 
-    Adaptive search: if absolute change in f (chisqr) < 0.1, multiply step size
-    by 1.5.  If above 0.5, divide step size by 1.5.
+    Adaptive search: if more than +/-1 from threshold, take 1.5x step size if
+            % change in f (chisqr) < 50%, take /1.5 if % change > 75%
+        If within +/-1 of threshold, same as above except use /absolute/ change
+
+        Want to pass threshold and let brentq (with rtol specified) take over
 
     Input: f has call signature f(x)
+           extra kwargs get sent to "stubborn brentq"
     Output: root within 2x machine precision, else x_lim if root was not found
     """
     if eps is None:  # Default is 1% of gap between initial/limit x
@@ -618,22 +624,31 @@ def one_dir_root(f, x_init, x_lim, eps=None, adapt=True, verbose=False):
         elif verbose:
             print '\tIncrementing x, step size {}'.format(eps)
 
-        # Store previous pt (for brentq, adaptive stepping)
         prev_x = x
         prev_dist = dist
-        # Increment x and compute new distance
+
         x += eps
         if (eps > 0 and x > x_lim) or (eps < 0 and x < x_lim):
             x = x_lim
         dist = f(x)
 
-        # Update step size if desired
+        # Update step size
+        # Note: since we can set brentq rtol, goal is to pass threshold
+        # asap and let brentq take over (no need for full fits at too many
+        # points.  So we can be somewhat aggressive in stepping.
         if adapt:
-            print '\t  Prev chisqr dist {}, current {}'.format(dist, prev_dist)
-            if abs(dist - prev_dist) < 0.1:
-                eps *= 1.5
-            elif abs(dist - prev_dist) > 0.5:
-                eps /= 1.5
+            print '\t  Prev chisqr dist {}, current {}'.format(prev_dist, dist)
+
+            if dist > 1:  # Get close to threshold first
+                if abs(dist - prev_dist)/dist < 0.5:
+                    eps *= 1.5
+                elif abs(dist - prev_dist)/dist > 0.75:
+                    eps /= 1.5
+            else:  # We want to pass threshold -- if not too far
+                if abs(dist - prev_dist) < 0.5:
+                    eps *= 1.5
+                elif abs(dist - prev_dist) > 0.75:
+                    eps /= 1.5
 
     # Broke out of loop (x = x_lim, dist < 0),
     # or hit crossing right on (dist == 0)
@@ -655,7 +670,7 @@ def one_dir_root(f, x_init, x_lim, eps=None, adapt=True, verbose=False):
         lims.reverse()
 
     try:
-        x_ret = stubborn_brentq(f, *lims)
+        x_ret = stubborn_brentq(f, *lims, **kwargs)
     except ValueError:
         print ('WARNING: brentq failed; reporting guess; '
                'limit = {}, last step size eps={}'.format(x, eps))

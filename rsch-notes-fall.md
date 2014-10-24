@@ -4320,3 +4320,58 @@ New Tycho tables
 Generating new tabs with the new default resolutions for both
 loss-limited and damped cases.  Then we'll be ready to go with new numbers
 tomorrow...
+
+
+Thursday 2014 October 23
+========================
+
+Paper!
+
+Error on damping fits
+---------------------
+
+Trial error computation on the best fits on Regions 1, 16, with `a_b` fixed
+Changed adaptive computation algorithm -- now step by % change in chisqr, up
+until within +/- 1 of threshold.  Prevent it from getting stuck far from
+threshold.
+
+Also now accepts brentq kwargs, so user can set relative/absolute tolerance on
+errors (same for both eta2/B0, should be ok given that our errors are quite
+large -- tolerance in bounds should be like 1% of (bound - true\_val)).
+
+Errors (saved as test output data somewhere as well)
+(bounds now good to 0.01%)
+
+* Region 1, ab = 0.008
+
+    Best fit: B0 = 24.55, eta2 = 2.01, mu = 1
+    Error bounds:
+        B0 = [19.123, 24.55, 31.751 muG]
+        eta2 = [0.48, 2.01, 11.04]
+
+    Best fit: B0 = 19.21, eta2 = 11.18, mu = 2
+    Error bounds:
+        B0 = [17.45, 19.21, 21.48]
+        eta2 = [4.33, 11.18, 30.63]
+
+* Region 16, ab = 0.004
+
+    Best fit: B0 = 340.54, eta2 = 0.220, mu = 1
+    Error bounds:
+        B0 = [326.4, 340.54, 355.1]
+        eta2 = [0.112, 0.220, 0.381]
+
+    Best fit: B0 = 318.6, eta2 = 0.235, mu = 2
+    Error bounds:
+        B0 = [300.5, 318.6, 336.1]
+        eta2 = [0.107, 0.235, 0.461]
+
+A big problem is that we're not varying `a_b`.  But, the best fits at other
+values of `a_b` may give a rough estimate of the spread in `B_0`, and that
+spread is somewhat large.
+
+
+Friday 2014 October 24
+======================
+
+Sent paper draft with sketched out discussion to Rob and Brian
