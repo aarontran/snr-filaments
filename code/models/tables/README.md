@@ -123,9 +123,16 @@ Here, I resume gridding from (mu, eta2) = (1.50, 15.26) and finish up the
 remaining grid in eta2.  Then I wrap up the gridding for mu=2.  The final grids
 need to be merged together.
 
+`Tycho_gen_2014-08-30_grid_6-110-20_vs-*.pkl`
+---------------------------------------------
 
-`Tycho_gen_2014-10-1*_*.pkl`
-----------------------------
+New Tycho tables, with different vs values (4.59e8, 4.76e8, 4.94e8, 5.11e8).
+These values are closer to our data values and should give better coverage
+(speed up fits).
+
+
+`Tycho_gen_2014-10-1[1,2]_grid_1-151-30_ab-*.pkl`
+-------------------------------------------------
 
 Damping tables.  See my notes from 2014 October 12, but I note the main issues
 here as well.
@@ -137,7 +144,7 @@ Computed FWHMS for:
     ab = 0.004, eta2 = 7.24 to 100 are invalid
 
 have been removed by hand!  Damping was not enabled for these calculations
-unfortunately.
+unfortunately.  Fixed in all subsequent damping tables.
 
 And, computed FWHMs for:
 
@@ -151,3 +158,30 @@ And, computed FWHMs for:
 
 are strongly undersampled due to the algorithm being dumb.  So do not assume
 these tables cover parameter space all that well...
+
+`SN1006_gen_2014-10-1[3,4]_grid_1-151-50_ab-*.pkl`
+--------------------------------------------------
+
+As above but for SN 1006
+
+`Tycho_gen_2014-10-2[0,1]_grid_1-151-50_ab-*_Bmin-2e-6.pkl`
+-----------------------------------------------------------
+
+Damping tables as above, with Bmin = 2e-6 (in response to Sean's email, to see
+what happens if we change the minimum B field).
+
+These span ab = 0.5, 0.05, ..., 0.004, 0.003, 0.002
+
+`Tycho_gen_2014-10-23_grid_6-151-20_vs-*.pkl`
+---------------------------------------------
+
+Loss-limited tables with same shock velocity values as August 30 tables.
+Now even finer gridding in eta2 values.
+
+
+`Tycho_gen_2014-10-24_grid_1-151-50_ab-*.pkl`
+---------------------------------------------
+
+Damped tables with ab down to 0.003, 0.002; Bmin = 5e-6; more B values sampled
+(to improve sampling at small ab where we're only getting ~10 values, even if
+30+ are requested).

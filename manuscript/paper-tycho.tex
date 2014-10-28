@@ -206,8 +206,7 @@ proposed discriminating based on filament spectra -- the expectation is that
 damped spectra are softer, loss-limited harder.  Recently, \citet{ressler2014}
 further extended the idea of discriminating between damped or loss-limited
 rims by measuring rim width energy dependence in X-ray energies and found that
-rims consistently narrowed in the remnant of SN 1006, favoring synchrotron
-loss-limited rims.
+rims consistently narrowed in the remnant of SN 1006.
 
 % Why Tycho's SNR
 To further test these models, we follow \citet{ressler2014} (hereafter,
@@ -215,7 +214,7 @@ To further test these models, we follow \citet{ressler2014} (hereafter,
 remnant of Tycho's 1572 supernova (hereafter, Tycho).  Tycho exhibits an
 extensive shell of synchrotron-dominated thin rims around its periphery; the
 rims show very little thermal emission, consistent with expansion into a low
-density ISM \citet{williams2013}.  Tycho, being a nearby galactic SNR, is close
+density ISM \citep{williams2013}.  Tycho, being a nearby galactic SNR, is close
 enough that its rims are easily resolved by \textit{Chandra} spatial
 resolution. A deep $750 \unit{ks}$ exposure of the entire remnant from 2009
 (PI: J. Hughes) also allows us to sample the remnant rims quite finely.
@@ -251,11 +250,11 @@ and the implications for future studies of young supernova remnant shocks.
 
 % Twiddle-ables in our model (the most useful part, since just modeling
 % alone don't do much)
-Our model fitting explores the space of varying diffusion (a bulk
-representative of the underlying MHD turbulence and what have you)
-and considers the two scenarios of constant magnetic field (resulting in
-so-called loss-limited rims) and a damped field that falls off exponentially
-behind the forward shock, as suggested by \citet{pohl2005}.
+%Our model fitting explores the space of varying diffusion (a bulk
+%representative of the underlying MHD turbulence and what have you)
+%and considers the two scenarios of constant magnetic field (resulting in
+%so-called loss-limited rims) and a damped field that falls off exponentially
+%behind the forward shock, as suggested by \citet{pohl2005}.
 % this might go at the front before we launch into model details.
 
 \subsection{Particle transport}\label{sec:transport}
@@ -266,14 +265,16 @@ shock controls the synchrotron rims we see in X-ray and radio.  We assume that
 diffusive shock acceleration creates a power-law distribution of electrons with
 an exponential cut-off at the forward shock, located at $x = 0$ with $x > 0$
 increasing downstream of the shock, given as
-$f(E,x=0) = K_0 E^{-s} e^{-E/\Ecut}$.  Here $K_0$ is an arbitrary
-normalization, $E$ is electron energy, and the cut-off energy $\Ecut$ is given
-below in Section~\ref{sec:diffcoeff}; the spectral index $s$ is taken from
-the radio index $\alpha$ as $s = 2\alpha + 1$.  \citet{zirakashvili2007} have
-derived from DSA a slightly different energy spectrum with super-exponential
-cut-off $e^{-(p/p_{\mt{cut}})^2}$, which may impact our results; we use a
-simple exponential cut-off for simplicity and consistency with
-\citetalias{ressler2014}.
+\begin{equation}
+    f(E, x=0) = K_0 E^{-s} e^{-E/\Ecut} .
+\end{equation}
+Here $K_0$ is an arbitrary normalization, $E$ is electron energy, and the
+cut-off energy $\Ecut$ is given below in Section~\ref{sec:diffcoeff}; the
+spectral index $s$ is taken from the radio index $\alpha$ as $s = 2\alpha + 1$.
+\citet{zirakashvili2007} have derived from DSA a slightly different energy
+spectrum with super-exponential cut-off $e^{-(p/p_{\mt{cut}})^2}$, which may
+impact our results; we use a simple exponential cut-off for simplicity and
+consistency with \citetalias{ressler2014}.
 
 All constants and equations are given in CGS (Gaussian) units.  Our
 presentation is somewhat abbreviated, but a fuller exposition and literature
@@ -1058,7 +1059,9 @@ energy, then we may see an increase in $|\mE|$ as advection becomes important.
 Although magnetic damping is able to fit observed rim widths, our model assumes
 diffusive shock acceleration in computing $\Ecut$ and hence we may not use our
 model fits to assess whether magnetic damping can independently account for
-decreasing $|\mE|$.
+decreasing $|\mE|$.  This applies for loss-limited fits as well; since $\eta_2$
+varies freely, $\Ecut$ may be anywhere -- and thus the model behavior is not
+necessarily physically reasonable.
 
 % Curious effects of damping competing with other things
 Downstream energy losses in a well damped field (multiple $e$-folding
@@ -1257,6 +1260,23 @@ $a_b$ here is given in units of shock radius $r_s$.
     \tablecomments{Best fits correspond to those given in
         Table~\ref{tab:fits-all}}
 \end{table*}
+
+
+\begin{figure}
+    \centering
+    \iftoggle{manuscript}{
+        \includegraphics[width=0.48\textwidth]{figures/full-std_err-mE-damp-all.pdf}
+        \includegraphics[width=0.48\textwidth]{figures/full-std_err-mE-damp-log.pdf}
+    }{
+        \plotone{figures/full-std_err-mE-damp-all.pdf}
+        \plotone{figures/full-std_err-mE-damp-log.pdf}
+    }
+    \caption{Curves of $\mE$ values for best damping fits for all regions.
+        Note the sharp contrast between most curves, and a small minority that
+        blow up at low energies.
+    \label{fig:mE}}
+\end{figure}
+
 
 Width-energy dependence is not as sensitive a discriminant on damping versus
 loss-limited models as may be intuitively expected.  Only in cases of very

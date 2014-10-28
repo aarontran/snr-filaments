@@ -24,6 +24,19 @@ Main TO-DOs
 * Manuscript work (!)
   - finish up discussion.  Generate whatever new fits I need to get things to
     match up (Regions 6)
+  - add text on SN 1006
+
+* We need a systematic way to tackle this damping issue.  And I want to patch
+  up a lot of other, smaller holes/gaps/things-tbd as well.  Need to address:
+  - results with smaller ab (done... equivocal/messy)
+  - SN 1006 `m_E` plot, similar to Tycho
+  - script to run srcutlog
+  - vary distance in damped fits
+  - Regions 6, run whole new slew of fits with better FWHMs
+
+* Big question: how to articulate this clearly?  Tecnically, these
+  "spurious" fits are still okay, still reasonable, we have no reason to throw
+  them out.
 
 * check expressions for cut-off energy, diffusion terms in Sean's solution
   (using Bmin vs. B0 in certain places).
@@ -33,6 +46,9 @@ Main TO-DOs
   will be subjective, but just to check: if we attempt to rule certain
   scenarios / parts of parameter space out, can we still find okay damping fits
   for moderate energy dependence?
+  (answer -- look at my giant tables of best fits for varying eta2 and ab.
+  Some more moderate values may exist, but it seems like there's a jump in
+  classes of solution)
 
 After moving forward with paper -- get srcutlog diffusion coefficients and hold
 them FIXED.  Run fits to X-ray data with damping and see how the B-fields come

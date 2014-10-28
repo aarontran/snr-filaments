@@ -41,7 +41,7 @@ Table of contents
             Check code resolutions, apply new settings.  Make B-damping table
 * Week 20 - (10/13) B-damping fits (Tycho, SN 1006).  e- distr derivations?
 
-* Week 21 - (10/20)
+* Week 21 - (10/20) Emails w/ Sean, paper writeup on damping results
 * Week 22 - (10/27)
 * Week 23 - (11/3)
 * Week 24 - (11/10)
@@ -4374,4 +4374,71 @@ spread is somewhat large.
 Friday 2014 October 24
 ======================
 
-Sent paper draft with sketched out discussion to Rob and Brian
+Summary
+-------
+* Paper draft with discussion/conclusions to Rob and Brian
+* Plot of best damped fit `m_E` values (takes a little time to generate)
+* CASA tutorial (for VLA data)
+
+
+(Week 22) Monday 2014 October 27
+================================
+
+Summary
+-------
+* Review / markup paper.  Minor fixes to manuscript
+* New Tycho FWHM tables finished
+* Inspect Tycho best fits w/ smaller damping lengths (ab = 0.003, 0.002)
+* CASA tutorial on VLA 3C391 data, up to CLEANing step
+
+Paper markup
+============
+
+Small fixes.  I totally forgot paragraph on SN 1006 results (and how they would
+change).
+
+New Tycho tables, regions-6, tweaks to plots/whatever
+=====================================================
+
+### `m_E` dichotomy due to poor FWHM measurement
+
+Generated better version of plot showing `m_E` values for best damped fits, as
+function of energy.  Unequivocally shows that damped fits behave like Sean
+explained, but only the spurious / edge cases blow up like crazy!
+
+Regions 1, 2, 4, 5, 12, 18 (Tycho regions-5) all exhibit this blow up.
+
+IF I repeat all of this, now with new fits at ab=0.003, 0.002, will other
+regions do this as well?  Most likely, yes.  So let's try it.
+
+But, remember, it's a spurious effect tied to us just picking that best fit, it
+doesn't mean that other good (non-spurious) fits don't exist!
+Is there a systematic way to sieve out these bad fits?
+(e.g., require that damped rim is present at 0.1 keV or 0.01 keV?)
+(but that also imposes a limitation, on downstream emission essentially)
+(kind of arbitrary selection criteria)
+
+### New Tycho tables
+
+New tables (started Wednesday October 22) have Bmin = 5e-6, more data pts
+(asked for 50 B0 values), more ab values (0.002, 0.003).  Damping tables all
+completed on 2014 October 24.  Loss limited tables all completed on October 23.
+
+Checked error logs, all clear.
+
+Now using tables to generate new fits for ab = 0.003, 0.002 for regions-5, with
+Bmin=5e-6.  Region 18 seems to be getting stuck on the free eta2/B0 fit.
+I am wondering if smaller damping values could give smaller B-field values for
+the Tycho regions w/ weaker energy dependence.
+
+
+Tuesday 2014 October 28
+=======================
+
+### Regions 6
+
+Almost identical to regions-5, but I cut out regions 21, 22 and apply cuts to
+FWHMs (blacklist the known bad quality ones -- though I'm afraid we could be
+throwing out good data, it is consistent with our procedure and we mention this
+smapling bias in the discussion).
+
