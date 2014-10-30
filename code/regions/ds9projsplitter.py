@@ -41,7 +41,7 @@ def main():
               'according to profile fit cuts and FWHMs'))
     parser.add_argument('fitreg', help='DS9 fk5 region file of projections')
     parser.add_argument('regimg', help='Valid FITS file for input regions')
-    parser.add_argument('fcut', help='npz file w/ spectrum cuts')
+    parser.add_argument('fcut', help='npz file w/ spectrum cuts (fwhms folder)')
     parser.add_argument('-b', '--binsize', default=1, type=float,
                         help='Bin size of images used to select regions')
     parser.add_argument('-o', '--outreg', help=('Root name for output region '

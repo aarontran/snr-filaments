@@ -21,20 +21,33 @@ processed mosaics?)
 Main TO-DOs
 -----------
 
+Note: srcutlog fits.  The question becomes, does variation in eta2 between
+different filaments match what we expect in terms of B0?
+
+I.e., if eta2 is larger in one filament (lower Ecut), does this explain the
+variation in rim widths that we see?
+E.g., regions 12, 13 have unusually large Ecut, hence small eta2, but they are
+not unusually thin or anything.
+
+Run Kepler numbers by Brian so I can generate tables over the weekend
+Check Kepler resolutions first, then set up tables
+
 Current roughly ordered list:
 * Tycho regions 6
   - running loss-limited fits now
+  - run loss-limited fits with eta2 = srcutlog derived values
+    (update fitting notebook while you're at it)
   - run loss-limited fits with eta2 = 1 fixed
   - run slew of damping fits
   - generate spectra
   - prepare complete set of tables, plots, etc (save with regions-6)
 * Make publication ready figure for Tycho (APLpy)
-* srcutlog calculations
-* CRESST poster (for next week)
+* CRESST poster (for next week) (ask Jack Hewitt if he's going...)
 * Kepler data
 * VLA imaging stuff
 * Code to run fits on multiple profiles at once
   (also see about not normalizing intensities)
+
 
 
 ### Manuscript, Tycho tidbits
@@ -43,7 +56,7 @@ Pending feedback from Steve, Sean (almost set)
 
 * Other small holes/gaps:
   - Tycho regions-6 (in works)
-  - script to run srcutlog (maybe don't even run fits, just get numbers)
+  - srcutlog based fits
   - vary distance in damped fits
   - run fits to individual SN 1006 regions?!...
 * check expressions for cut-off energy, diffusion terms in Sean's solution
@@ -74,6 +87,7 @@ Pending feedback from Steve, Sean (almost set)
 * Radio flux measurements -- how badly will CLEAN mess things up?
 
 ### Theory stuff
+
 * The diffusion coefficient timescale depends on both upstream/downstream
   coefficients, and requires a simple integral.  What happens if we allow the
   diffusion coefficients to vary?  Does this timescale change significantly?
@@ -89,8 +103,6 @@ Pending feedback from Steve, Sean (almost set)
 
 1. Use srcutlog (from Brian) to run fits with eta2 fixed at values determined
    from synchrotron break frequency.
-   First make short pyxspec script to get srcutlog fits, then compute the
-   desired diffusion coefficients.
 2. Check outliers by hand (why did the fits go wonky), and check manual
    error computation speed. (barely relevant anymore)
 4. Generate Kepler tables and run full model fits
@@ -139,8 +151,10 @@ Lower priority / various checks
 * Update code deep review eventually (discuss: correction to the negative sign
   in electron distribution functions, explain the Ecut scaling / calculation)
 
-* Check all constants.  `snr_catalog.py`, model fitting code both
-  wrapper and fortran.  Go back to Sean's transport eq'n and rederive.
+* Rederive synchrotron spectrum results from scratch (carefully accounting for
+  factors of sin theta).  All of Sean's synchrotron constants are confirmed
+  (although not better than 0.1% as Pacholczyk's values are old + due to
+  roundoff, etc).
 
 * Check transport equation for pure advection case and for damping case
 

@@ -212,7 +212,9 @@ _Remove all dashes from filenames_
 
 _Edit the shell scripts to use correct ObsIDs, weights, evt2 files!_
 
-Code:   `../code-specs/[newregion,newspectrum,mergespectra].sh`
+First run `heainit`, then `ds9&` for `newregion.sh`
+
+Code:   `../code/spectra/[newregion,newspectrum,mergespectra].sh`
 Input:  `regions_n_[up,down]_box.reg` (WCS fk5 coords)
 Output: `spectra/[up,down]/*.[pi,rmf,arf]`
 

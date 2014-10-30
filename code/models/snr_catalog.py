@@ -8,19 +8,20 @@ Aaron Tran
 from __future__ import division
 import numpy as np
 
-# TODO verify that constants are correct!
 # Constants are also defined in Fortran code, check those as well
 # All constants in CGS (Gaussian) units
 
 SYNCH_B = 1.57e-3  # Synchrotron cooling time const
+                   # 2/3 * 2e^4 / (3m^4 c^7)
+                   # 2/3 * 2*(4.803204e-10)^4 / (3 *(9.109382e-28)^4 * (2.99792458e10)^7)
+                   # = 1.578e-3 (CLOSE ENOUGH)
 SYNCH_CM = 1.82e18  # Synchrotron characteristic freq const
+                    # \approx 0.29 * SYNCH_C1
 SYNCH_C1 = 6.27e18  # for synchrotron emissivity (eq'n 20; see Pacholczyk)
-                    # I believe C_1 = 3e/(4\pi m^3 c^5), in CGS units
+                    # C_1 = 3e/(4\pi m^3 c^5)
                     # e = e- charge, m = e- mass, c = 3e10 cm/s
-                    # i.e., prefactor for critical freq. as in
-                    # cv.nrao.edu/course/astr534/SynchrotronSpectrum.html
-                    # anyways this is all one giant TODO that should be typed
-                    # up and thrown into the code deep review PDF
+                    # 3*(4.803204e-10) / (4*pi*(9.109382e-28)^3 * (2.99792458e10)^5)
+                    # = 6.264e18 (CLOSE ENOUGH)
 
 CD = 2.083e19  # Bohm diffusion const; Cd = c/(3e) (confirmed)
 BETA = 4.6  # Projection factor for exponential emissivity (Ballet, 2006)

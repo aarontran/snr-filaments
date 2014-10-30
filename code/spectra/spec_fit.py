@@ -1,14 +1,13 @@
 """
-Perform phabs*powerlaw XSPEC fit to spectra and output
-plots and fit parameters
+Perform various XSPEC fits and output plots and fit parameters
 Aaron Tran
-2014 June 17
-(last modified: 2014 July 12)
 
 Initialize HEASOFT (`heainit`) before running this script!
-Run script with 32-bit python (use `arch -i386 python ...`)
 Run script from directory of actual spectra (so that XSPEC can resolve relative
-links to response and background files.
+links to response and background files).
+
+NOTE: current starting guesses are generally tuned for Tycho, may need to be
+adjusted for other SNRs
 """
 
 import argparse
@@ -21,18 +20,22 @@ import xspec as xs
 
 import regparse
 
+SRCUTLOG_PATH_DEFAULT = '/Users/atran3/snr-research/code/srcutlog/'
+ALPHA_DEFAULT = 0.58
+
 def main():
-    """Main method"""
-    # argparse setup
+    """Parse input and tell XSPEC what to do"""
     parser = argparse.ArgumentParser(description=
-             ('Apply XSPEC model fits and output spectra/fits/data. '
-              'Run script from spectra-containing directory, '
+             ('Apply XSPEC model fits to all spectra w/ given filestem '
+              'and output best fit plots, parameters. '
+              'Run from spectra-containing directory '
               'so XSPEC can locate response/background files.'))
     parser.add_argument('specroot', help='Directory stem for spectra')
-    parser.add_argument('fittype', help=('Type of fit to apply; '
+    parser.add_argument('fittype', help=('Type of fit to apply: '
                                          '0=phabs*po, '
                                          '1=excise Si line, '
-                                         '2=fit Si line'), type=int)
+                                         '2=fit Si line, '
+                                         '3=srcutlog'), type=int)
     parser.add_argument('plotroot', help='Output stem for plots')
     parser.add_argument('fitproot', help='Output stem for fit logs, data')
     parser.add_argument('-v', '--verbose', action='store_true',
@@ -40,26 +43,40 @@ def main():
     parser.add_argument('-e', '--error', action='store_true',
                         help=('Compute/output errors from 90pct confidence lims'
                               ' (may need user input / take extra time).'))
+    parser.add_argument('-p', '--path',
+                        help=('Override path to srcutlog local model; default '
+                              'is: ' + SRCUTLOG_PATH_DEFAULT))
+    parser.add_argument('-a', '--alpha',
+                        help='alpha value for SNR (default 0.58 for Tycho)')
 
     args = parser.parse_args()
     specroot, pltroot, fitproot = args.specroot, args.plotroot, args.fitproot
     ftype = args.fittype
     verbose = args.verbose
     wanterr = args.error
+    srcutlog_path, alpha = args.path, args.alpha
 
-    # Get number of spectra to fit (count grouped spectrum files)
+
+    init_xspec(verbose)
+
+    regparse.check_dir(pltroot, verbose)  # Creates new directories if needed
+    regparse.check_dir(fitproot, verbose)
+
     n = regparse.count_files_regexp(specroot + r'_src[0-9]+_grp\.pi')
     if verbose:
         print '\n{} spectra to process'.format(n)
-        if wanterr:
-            print 'Computing errors from 90% confidence limits'
+    if verbose and wanterr:
+        print 'Computing errors from 90% confidence limits'
 
-    # Check plot output directory, create if needed
-    regparse.check_dir(pltroot, verbose)
-    regparse.check_dir(fitproot, verbose)
-
-    # Set up XSPEC
-    init_xspec(verbose)
+    xs.Fit.nIterations = 2000
+    if ftype == 3:
+        if srcutlog_path is None:
+            srcutlog_path = SRCUTLOG_PATH_DEFAULT
+        if alpha is None:
+            alpha = ALPHA_DEFAULT
+        if verbose:
+            print 'Using alpha = {}'.format(alpha)
+        xs.AllModels.lmod('neipkg', srcutlog_path)
 
     for num in xrange(n):
         # Create paths, with assumptions about filename structure
@@ -69,17 +86,20 @@ def main():
         log_root = '{}_src{:d}_grp'.format(fitproot, num+1)
         if not os.path.isfile(grp_path):
             print 'Bad path: {}'.format(grp_path)
-            raise Exception('ERROR: file does not exist!')
+            raise Exception('ERROR: spectrum does not exist!')
         if verbose:
             print '\nProcessing file: {}'.format(grp_path)
             print 'Output plot: {}'.format(plt_path)
 
-        #if num+1 == 19:
-        #    continue  # Skip bad region
+        s = xs.Spectrum(grp_path)
+        s.ignore('**-0.5, 7.0-**')  # 0.5 keV to verify no oxygen line
 
         # All XSPEC interaction here
-        spec, model = perform_fit(grp_path, ftype)
-        output_fit(spec, model, plt_path, log_root, ftype, wanterr)
+        if ftype < 3:
+            model = phabspo_fit(s, ftype)
+        elif ftype == 3:
+            model = srcutlog_fit(s, alpha)
+        output_fit(s, model, plt_path, log_root, ftype, wanterr)
 
     if verbose:
         print '\nDone!'
@@ -119,14 +139,17 @@ def output_fit(s, m, pltname, logroot, ftype, wanterr):
         xs.AllModels.eqwidth(4)
         fdict['eqwidth-s'] = s.eqwidth[0]
 
+    # Crappy way to extract component values and errors
     # Hierarchy of keys: 'comps', 'gaussian', 'sigma', 'value'
     fdict['comps']={}
-
     for cname in m.componentNames:
-        comp = eval('m.'+cname)
+        comp = eval('m.'+cname)  # Get component object, e.g. m.gaussian1
         compdict = fdict['comps'][cname] = {}
         for pname in comp.parameterNames:
-            p = eval('m.'+cname+'.'+pname)  # So janky
+            if pname == 'break':  # Hacky workaround for srcutlog break
+                p = comp.__getattribute__('break')
+            else:
+                p = eval('m.'+cname+'.'+pname)  # Still hacky workaround
             compdict[pname] = {}
             compdict[pname]['value'] = p.values[0]
             if wanterr:
@@ -152,8 +175,31 @@ def output_fit(s, m, pltname, logroot, ftype, wanterr):
     xs.AllModels.clear()
     xs.Xset.closeLog()
 
+def srcutlog_fit(s, alpha):
+    """Fit spectrum s to srcutlog model.  First fits break/norm with nH frozen
+    at 0.6, then lets nH run free as well.  alpha frozen to user specified value
+    srcutlog must be already loaded!
+    """
 
-def perform_fit(fname, ftype=0):
+    model = xs.Model('phabs*srcutlog')
+    model.phabs.nH = 0.6
+    model.srcutlog.alpha = alpha
+    model.srcutlog.alpha.frozen = True  # Keep frozen in all fits
+
+    par_break = model.srcutlog.__getattribute__('break')  # Yeah...
+
+    model.phabs.nH.frozen = True
+    par_break.frozen = False
+    model.srcutlog.norm.frozen = False
+    xs.Fit.perform()  # Only break, norm free
+
+    model.phabs.nH.frozen = False
+    xs.Fit.perform()  # break, norm, nH all free
+
+    return model
+
+
+def phabspo_fit(s, ftype=0):
     """Fit spectrum to desired XSPEC model (magic numbers galore!)
     Here, twiddle with desired fit guesses, freezing/thawing, etc
 
@@ -166,10 +212,6 @@ def perform_fit(fname, ftype=0):
     Output
         2-tuple of xs.Spectrum, xs.Model objects
     """
-    # Import and fit data
-    s = xs.Spectrum(fname)
-    s.ignore('**-0.5, 7.0-**')  # 0.5 keV to verify no oxygen line
-
     # Set up model
     model = xs.Model('phabs*powerlaw')
     model.phabs.nH = 0.6
@@ -177,21 +219,24 @@ def perform_fit(fname, ftype=0):
     model.powerlaw.norm = 1
 
     # Fit model
-    xs.Fit.nIterations = 2000
     xs.Fit.perform()  # First round fit to phabs*po alone, regardless of ftype
 
     # Additional steps to deal with silicon and sulfur lines
     if ftype == 1:  # Excise lines
+
         s.ignore('1.7-2.0')
         s.ignore('2.3-2.6')
         xs.Fit.perform()
+        s.notice('1.7-2.0')  # So they show up in plots
+        s.notice('2.3-2.6')
+
     elif ftype == 2:  # Fit lines
 
         # Get parameter values from current phabs*po model
         plist = [p.values[0] for p in [model(1), model(2), model(3)]]
         plist.extend([1.85, 2e-2, 5e-6]) # LineE, Sigma, norm
 
-        # Make new model w/ Si line and add old parameters + guesses
+        # Make new model w/ Si line, restore old parameters and add guesses
         model = xs.Model('phabs*(powerlaw + gaussian)')
         model.setPars(*plist)
 
@@ -206,14 +251,14 @@ def perform_fit(fname, ftype=0):
         #model.gaussian.LineE.values = [1.85, 0.001, 1.75, 1.8, 1.9, 1.95]
         xs.Fit.perform()  # Fit all free
 
-        # Now, add sulfur line, repeating similar procedure
+        # Now, add sulfur line
         plist = [p.values[0] for p in [model(1), model(2), model(3), model(4),
                                        model(5), model(6)]]  # Parameters
         plist.extend([2.45, 2e-2, 5e-7]) # LineE, Sigma, norm
         model = xs.Model('phabs*(powerlaw + gaussian + gaussian)')
         model.setPars(*plist)
 
-        # Set soft/hard limits on S line gaussian Sigma/LineE
+        # Set soft/hard limits on S line gaussian Sigma/LineE (not in use)
         model.gaussian_4.Sigma.frozen=True
         model.gaussian_4.LineE.frozen=True
         xs.Fit.perform()
@@ -239,7 +284,7 @@ def perform_fit(fname, ftype=0):
 
         #xs.Fit.perform()
 
-    return s, model
+    return model
 
 
 def init_xspec(verbose=False):

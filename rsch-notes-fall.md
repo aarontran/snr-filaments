@@ -2663,6 +2663,10 @@ Sean's, or whatever)
 (Week 19) Monday 2014 October 6
 ===============================
 
+**EDIT 2014 October 30: WARNING, equations/numbers have errors!
+(missing factor of 100e-6 G, code given has wrong exponent hidden inside).
+Do NOT use provided values of eta2**
+
 Summary
 -------
 * Discussion w/ Rob (misc. small things, travel, synchrotron roll-off)
@@ -4557,3 +4561,68 @@ Run with the commands (after usual initialization):
                 args[0], args[1], mu_vals, outroot, save=True), gen_tycho())
 
 Started around 8:52 pm today.
+
+
+Thursday 2014 October 30
+========================
+
+Summary
+-------
+* srcutlog calculations of eta2 (equation for `nu_cut` fixed)
+* synchrotron constant check
+* generate regions-6 spectra
+
+regions-6 spectra set up to generate overnight (up regions first)
+
+srcutlog
+--------
+Fitting functionality added to `spectra/spec_fit.py` (fit type 3)
+
+Add cell in plotter-prfs-spec to tabulate srcutlog fit parameters
+(quickly get sense of fit quality and break frequency, compare to plain fits)
+
+New scripts:
+* code to interpolate shock velocities from azimuth angles, Brian's table
+  (note: must supply distance scaling by hand, not hard-coded)
+* code to parse break frequencies from `spec_fit.py` output, and compute
+  table of eta2 values
+
+Error in existing `nu_cut` formula -- off by a factor of 100 microGauss.
+Also combined two constant terms w/ same exponent.  Correct eqn reads:
+
+    \nu_{\mt{cut}} = c_m
+        \left( 13.3 \unit{erg} \right)^{4/(1+\mu)}
+        \left( 100 \muG \right)
+        \left( 2657 \unit{erg^2} \right)^{-(1-\mu)/(1+\mu)}
+        \left( \frac{v_s}{10^8 \unit{cm/s}} \right)^{4/(1+\mu)}
+        \left( \eta_2 \right) ^{-2/(1+\mu)}
+
+Now computed values are reasonable, and match those of Parizot (2006)
+The only thing left to do is to run fits with eta2 values fixed, but regions-6
+is still being computed.
+
+Synchrotron derivations
+-----------------------
+
+Looking through synchrotron constants again and got caught up in details.
+Finally figured out that Sean's `c_m \approx 0.29 c_1` (see Condon and Ransom).
+When averaging single electron power over solid angle, the factor of
+`\sin\vartheta` (where cursive theta is pitch angle) just makes life suck.
+
+But happily all the constants check out nicely.  I realized that
+`\langle \sin^2 \vartheta \rangle = 2/3` and so all stated constant values
+check out.  The only question is of the synchrotron emissivity, and the
+delta function invocation when converting electron cut-off energy to
+synchrotron break frequency.
+
+Little factors don't matter much here.  Back to important things...
+
+APLpy figure generation
+-----------------------
+
+Installed `pyregion` from `pip` so APLpy can parse DS9 regions.
+`pyregion` can't parse projections, must be boxes.
+
+Note: need to disable TeX usage in matplotlibrc!  Too slow otherwise
+
+Meddling with APLpy
