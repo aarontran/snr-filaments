@@ -451,6 +451,7 @@ def full_fit(snr, kevs, data, eps, mu, eta2=None, B0=None, mu_free=False,
 
 def full_width(snr, kevs, mu, eta2, B0, **kwargs):
     """Full model FWHMs for given SNR, input parameters, energy bands
+    (wrapper for width_cont, can pass through intensities/r-coord grids too)
     Input:
         snr (snrcat.SupernovaRemnant): container w/various physical parameters
         kevs (np.ndarray): energies at which to compute profile FWHMs
@@ -534,6 +535,8 @@ def width_cont(params, kevs, snr, verbose=True, rminarc=None, icut=None,
 
     Outputs:
         np.array of modeled FWHMs (arcsec) for each energy in 'kevs'
+        if get_prfs, then also returns intensity profiles and r grid values
+        as 3-tuple of fwhms, intensities, rgrids
     """
     # -----------------------
     # Load parameter/settings

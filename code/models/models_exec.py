@@ -120,6 +120,7 @@ class Fitter(object):
 
     def width_full(self, mu, eta2, B0, **kwargs):
         """Full model widths for stored SNR and energy bands
+        Wrapper for models.width_cont, can pass through intensities/etc as well
 
         **kwargs passed directly to full model code (see models.width_cont)
         """

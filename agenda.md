@@ -21,43 +21,38 @@ processed mosaics?)
 Main TO-DOs
 -----------
 
-* Manuscript work (!)
-  - finish up discussion.  Generate whatever new fits I need to get things to
-    match up (Regions 6)
-  - add text on SN 1006
+Current roughly ordered list:
+* Tycho regions 6
+  - running loss-limited fits now
+  - run loss-limited fits with eta2 = 1 fixed
+  - run slew of damping fits
+  - generate spectra
+  - prepare complete set of tables, plots, etc (save with regions-6)
+* Make publication ready figure for Tycho (APLpy)
+* srcutlog calculations
+* CRESST poster (for next week)
+* Kepler data
+* VLA imaging stuff
+* Code to run fits on multiple profiles at once
+  (also see about not normalizing intensities)
 
-* We need a systematic way to tackle this damping issue.  And I want to patch
-  up a lot of other, smaller holes/gaps/things-tbd as well.  Need to address:
-  - results with smaller ab (done... equivocal/messy)
-  - SN 1006 `m_E` plot, similar to Tycho
-  - script to run srcutlog
+
+### Manuscript, Tycho tidbits
+
+Pending feedback from Steve, Sean (almost set)
+
+* Other small holes/gaps:
+  - Tycho regions-6 (in works)
+  - script to run srcutlog (maybe don't even run fits, just get numbers)
   - vary distance in damped fits
-  - Regions 6, run whole new slew of fits with better FWHMs
-
-* Big question: how to articulate this clearly?  Tecnically, these
-  "spurious" fits are still okay, still reasonable, we have no reason to throw
-  them out.
-
+  - run fits to individual SN 1006 regions?!...
 * check expressions for cut-off energy, diffusion terms in Sean's solution
   (using Bmin vs. B0 in certain places).
-
-* Manually look at the "bad"/"spurious" energy dependence regions -- can we
-  still find good damping fits that don't show this spuriousness?  I know it
-  will be subjective, but just to check: if we attempt to rule certain
-  scenarios / parts of parameter space out, can we still find okay damping fits
-  for moderate energy dependence?
-  (answer -- look at my giant tables of best fits for varying eta2 and ab.
-  Some more moderate values may exist, but it seems like there's a jump in
-  classes of solution)
-
-After moving forward with paper -- get srcutlog diffusion coefficients and hold
-them FIXED.  Run fits to X-ray data with damping and see how the B-fields come
-out for a range of damping lengths, and get radio profiles at those varied
-damping lengths.
 
 ### Radio thingies
 
 * EVLA data reduction (casaguides.nrao.edu) (prepare questions for Jack)
+  (how to extract image data for analysis?)
 
 * Figure out how best to fit profiles in their entirety.
   One idea -- use FWHMs to line up profiles, roughly (since we don't precisely
@@ -67,6 +62,7 @@ damping lengths.
   Relevant links:
   http://mathematica.stackexchange.com/questions/866/simultaneously-fitting-multiple-datasets
   http://forums.wolfram.com/mathgroup/archive/2011/Sep/msg00555.html
+  Guessing it may be necessary to do this manually a la XSPEC
 
 * Radio rims -- how to get intensities to work out right?
   (Chandra photometry?... VLA already has the calibration routine)
@@ -75,18 +71,18 @@ damping lengths.
   Diffusion in radio?
   time-dependence, aging, other effects may be important!
 
-### Data stuff (just checking/solidifying results)
-* Run fits to SN 1006, individual filaments (pending response/remarks from
-  Steve/Sean too, perhaps)
-* Set-up loss-limited Tycho fit tables w/ new default resolutions.
-  Generate damping tables down to ab = 0.003, ab = 0.002, to see what happens.
-  We'll be limited by the FWHM "disappearance" matter...
+* Radio flux measurements -- how badly will CLEAN mess things up?
 
 ### Theory stuff
 * The diffusion coefficient timescale depends on both upstream/downstream
   coefficients, and requires a simple integral.  What happens if we allow the
   diffusion coefficients to vary?  Does this timescale change significantly?
 * Rederive the advective (transport) solution in damped and non-damped cases...
+
+* Solution to transport equations -- Tang and Chevalier (arxiv:1410.7510v1,
+  posted October 28) compute a much more general solution (time-dependent,
+  arbitrary injection spectrum, using an inverse Laplace transform computed
+  numerically with Talbot's method?!!! (geez)
 
 
 ### Lower priority:
@@ -97,7 +93,6 @@ damping lengths.
    desired diffusion coefficients.
 2. Check outliers by hand (why did the fits go wonky), and check manual
    error computation speed. (barely relevant anymore)
-3. regenerate tables for regions-6 fits (also damping tables)
 4. Generate Kepler tables and run full model fits
 5. ODE solving, simple model with damped B-field.  Not likely to do much, esp.
    if our full model comes up correct...
@@ -107,20 +102,9 @@ Data processing to-dos, by individual "pipeline":
 (i.e., getting FWHMs/regions/etc)
 (set aside while we address magnetic damping etc...)
 
-* Tycho -- Cull regions-6 out of regions-5, apply blacklist, and manually port
-           over derived data products as needed... (add notes in README files).
-           Generate all spin-off/variant data products needed...
-           (full model errors, after checking resolution + manual approach)
-
-           Try splitting 1-1.7 and 2-3 bands into smaller pieces! (low priority)
+* Tycho -- Try splitting 1-1.7 and 2-3 bands into smaller pieces! (low priority)
              (run `reproject_obs` and `flux_obs`, double check that I get the
               same files that Brian has sent, then make new cuts and numbers)
-
-           For my own verification -- run full model fits w/ capped/bkg-subbed
-           FWHMs, to compare to non-corrected FWHMs.  Do chi-sqr values drop
-           consistently?  Does eta2 increase from ~0 values?  Possible that
-           there's nothing -- but I want to check.
-           (run after regions-6 is done)
 
 * Kepler -- Get Rob/Brian to okay Kepler numbers...
             Check full model resolution #s (ipynb)
@@ -187,5 +171,6 @@ i.e., things that no one cares about
 Write/find short scripts / hooks to git, to clear out ipynb output cells or
 something... 
 
-
+For data storage / archiving / keeping track of variant computations -- learn
+to use SQL databases.
 

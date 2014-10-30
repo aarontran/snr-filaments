@@ -182,6 +182,16 @@ Output: `fwhms/fwhms_*.[pkl,json]`, `fwhms/fwhms_spec_cuts.[npz,dat]`
 Review code in IPython notebook and make any necessary changes, adjustments,
 etc.
 
+## Generate plots of profiles and fits for paper
+
+Code:   `code/profiles/plotter-prfs-specs.ipynb`
+Input:  `fwhms/fwhms_*.[pkl,json]`, `fwhms/fwhms_spec_cuts.[npz,dat]`
+Output: `fwhms/plots/prfs_{:02d}.pdf`
+
+Plots of profiles and data in all energy bands, optimized for manuscript
+Create the directory `plots` before running.
+
+
 
 Pipeline 2: extract and fit spectra
 ===================================
@@ -237,6 +247,14 @@ Output: `spectra/[up,down]/plot/plt_*.pdf`
 NOTE: double check fit logs before proceeding, to make sure that background
 spectra are linked correctly!
 
+## Plot spectra and profiles
+
+Code:   `../code-models/plotter_prfs_specs.ipynb`
+Input:  `fwhms/fwhms.pkl`, `spectra/[up,down]/fit/fit_*.[log,npz,json]`
+Output: `fwhms/plots/spec_*.pdf`
+
+Uses both profiles and spectra to generate three-panel plot
+
 
 Pipeline 3: fit FWHM data to filament models
 ============================================
@@ -262,29 +280,31 @@ Code:   `code-models/models.py`, called from `code-models/tables/gen-scripts/*`
 Input:  bunch of magic numbers, settings, SNR object from `snr_catalog.py`
 Output: `*_gen_2014-*_grid_*-*-*.[pkl,log,errlog]`
 
-## Fit to simple/full models
+## Fit to simple/full/damped models
 See Ressler et al. 2014 for exposition of models, calculations
 
 Code:   `code-models/*-fit-tables.ipynb`
-Input:  `./tables/*.pkl`, `data/fwhms/*.pkl` or what have you
+Input:  `./tables/*.pkl`, `data-*/regions-*/fwhms/fwhms_*.pkl`
 Output: `data/fwhms/model-fits/*.[pkl, json]`
 
-Also generates interactive/prototype output in `.ipynb`, absolutely necessary
-for debugging/etc.
+Make directories `model-fits` and `model-fits-damp` first.
+Use IPython's parallel setup.  Generates interactive output in `.ipynb`,
+absolutely necessary for debugging/etc.
 
-Use saved data for "final" LaTeX tables and nice figures.
 
+Pipeline 4: generate tables for paper
+=====================================
+Prerequisite: 1, 2, 3, depends
 
-Pipeline 4: plotting FWHM measurements, profiles
-================================================
-Prerequisite: 1, 2 (so far)
-
-## Plot spectra and profiles
+## Data FWHMs, mE values, spectral fit parameters (all)
 
 Code:   `../code-models/plotter_prfs_specs.ipynb`
 Input:  `fwhms/fwhms.pkl`, `spectra/[up,down]/fit/fit_*.[log,npz,json]`
+Output: table of FWHMs and mE values, table of absorbed power law fits,
+        table of power law fits with gaussians for lines, or excised lines
 
-
+Currently, fits accounting for lines aren't included in paper,
+but the table is useful to get parameter values to cite in text
 
 
 

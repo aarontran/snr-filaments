@@ -4435,10 +4435,125 @@ the Tycho regions w/ weaker energy dependence.
 Tuesday 2014 October 28
 =======================
 
-### Regions 6
+Summary
+-------
+* Meddling with CASA CLEAN (done)
+* Meeting w/Rob, Brian on paper
+
+Running CLEAN, put together some plots/tables for SN 1006 to look at this more
+closely...
+
+Meeting notes
+-------------
+
+* About ready to send around to Steve/Sean, minor fixes... how to explain SN
+  1006 results (discussion of dichotomy in fits looks okay)
+* CRESST retreat is a go (good dry run for AAS)
+* Leave for Dec 5 is fine
+* No meeting next week (both Brian, Rob out on plane out of country...)
+
+Next steps?
+* Kepler -- finish passing through the pipeline
+* VLA stuff ... maybe in brian/jack's paper(s) somewhere
+  Remains low priority but especially pending feedback from Steve/Sean
+* Poster next week!
+
+
+Paper updates - plots and fixes
+-------------------------------
+Generated 4x5 subplot of energy-width curves (lot of twiddling plot settings,
+tickmarks, etc)
+
+Refactored plotting code, not optimal but much cleaner now.
+
+Incorporate comments from Brian and my own notes
+
+
+Wednesday 2014 October 29
+=========================
+
+Summary
+-------
+* Paper sent to all collaborators
+* Start pipeline for Tycho regions-6, loss-limited fits
+
+Misc: download/install astropy, APLpy to make nice Tycho image (publication
+quality)
+
+Paper
+-----
+
+Finished incorporating all comments, add text, plots, figures on SN 1006
+Now describing the dichotomy in energy-dependent fits by "weak-field" damping
+and "strong-field" damping.
+
+
+Tycho Regions 6
+---------------
 
 Almost identical to regions-5, but I cut out regions 21, 22 and apply cuts to
 FWHMs (blacklist the known bad quality ones -- though I'm afraid we could be
 throwing out good data, it is consistent with our procedure and we mention this
 smapling bias in the discussion).
 
+Generated:
+* `regions-6.reg`
+* `regions-6.physreg`
+* `regions-6-box.reg`  (for display purposes)
+* `regions-6-az.txt`
+
+Profiles generated with prefixes `prfs`, `prf-cts`, `prf-proc`
+Processed profiles with fit domain cuts:
+* `profiles/prf-proc_fit_cuts.dat, profiles/prf-proc_fit_cuts.npz`
+
+Applied FWHM blacklist with `code/profiles/profile-fit-tycho.ipynb`
+* `fwhms-subbkg/fwhms_*` (and `fwhms_spec_cuts.[dat,npz]`)
+* `fwhms-subbkg/plots/prfs_*.pdf`
+
+Run loss-limited and damped model fits with new tables:
+* `tables/Tycho_gen_2014-10-23_grid_6-151-20_vs-*.pkl`
+* `tables/Tycho_gen_2014-10-24_grid_1-151-50_ab-*.pkl`
+Shock velocities interpolated from:
+* `data-tycho/tycho_velocs.txt` (Williams et al. 2013), d = 3 kpc assumed
+One-particle synchrotron emissivity taken from
+* `code/models/fglists_mod.dat`
+All default settings used (copy-paste from `models.py` and `snr_catalog.py`):
+
+    def width_cont(params, kevs, snr, verbose=True, rminarc=None, icut=None,
+        irmax=None, iradmax=None, ixmax=None, irad_adapt=True, irad_adapt_f=1.2,
+        idamp=False, damp_ab=0.05, damp_bmin=5.0e-6, fgfname='fglists_mod.dat',
+        itmax=200, inmax=50, irhomax=2000, get_prfs=False):
+
+    tycho.dkpc = 3.0
+    tycho.rsarc = 240
+    tycho.s = 2.16 # e- spectrum index, 2.16 = 2*0.58 + 1
+                   # 0.58 = radio spectral index from Sun et al. (2011)
+
+    tycho.vs = 3.6e8 * tycho.dkpc/2.3  # Overriden by interpolated vs values
+    tycho.cratio = 4.0
+
+    tycho.icut = True
+    tycho.rminarc = 20
+    tycho.irmax = 200
+    tycho.iradmax = 100
+    tycho.ixmax = 500
+
+    tycho.par_init = {'mu': 1.0, 'eta2': 1.0, 'B0': 300e-6}
+    tycho.par_lims = {'mu': (0., 2.),
+                      'eta2': (1e-16, 1e5),  # model code div by zero on eta2=0
+                      'B0': (1e-6, 1e-2)}
+
+No kwargs passed to `scipy.leastsq`
+
+Run with the commands (after usual initialization):
+
+    mu_vals = [0., 1./3, 0.5, 1, 1.5, 2.]
+    outroot = TYCHO_OUTDIR + 'full-man_err'
+
+    f_data = mdsp.build_dataf('full', conf_intv=0.683)
+
+    dview.push(dict(f_data=f_data, mu_vals=mu_vals, outroot=outroot))
+    plists = dview.map_async(lambda args: mdsp.generate_fits(f_data,
+                args[0], args[1], mu_vals, outroot, save=True), gen_tycho())
+
+Started around 8:52 pm today.

@@ -31,6 +31,11 @@ In the "metadata" pickle:
     fobj_all['inds'] = fobj.inds
     fobj_all['snr-pars'] = fobj.snr.config_log()
 
+    NOTE: kevs, data, eps ALREADY have inds applied
+    so do not reapply inds when recreating fitter object.
+    Bad design, should be set up to save "original" kevs/data/eps
+    then apply inds.  But leave for now...
+
 Aaron Tran
 August 2014
 """
@@ -248,6 +253,15 @@ def save_fits(p_list, fobj, mu_vals, outroot):
     with open('{}-fobj.json'.format(outroot), 'w') as fjson:
         json.dump(fobj_all, fjson, cls=LmfitJSONEncoder, indent=4)
 
+# =====================================================
+# Load best fits, compute FWHMs or return useful things
+# =====================================================
+
+# NOTE code to read/parse saved best fits is not well designed (Oct 28 2014)
+# there should be a hierarchy of items passed through / returned
+# to allow easy retrievals / operations with Fitter objects
+
+# NOT TOUCHING FOR NOW TO PRESERVE EXISTING FUNCTIONALITY
 def load_fit_pkls(inroot, want_fobj=False):
     """Generator that iterates over each fitted region/filament
     Input:
@@ -269,6 +283,144 @@ def load_fit_pkls(inroot, want_fobj=False):
             yield p_list, mu_vals, n+1, fobj_dict
         else:
             yield p_list, mu_vals, n+1
+
+def load_fit_pkls_new(inroot):
+    """Generator iterating over each fitted region/filament
+    Input:
+        inroot (str) is base file stem, e.g.,
+        ../../data-tycho/fwhms/model-fits/simp-man_err
+    Yield, for each region fitted:
+        list of Parameters()
+        list of mu values
+        Fitter() object
+        region number
+    """
+    npkls = len(glob('{}-[0-9]*-data.pkl'.format(inroot)))
+    for n in xrange(npkls):  # Enforces ordering
+        p_list, mu_vals, fobj = load_fit_pkl(inroot, n+1)
+        yield p_list, mu_vals, fobj, n+1
+
+
+def load_fit_pkl(inroot, n):
+    """Get best fit information/usables from specified fit pickle
+
+    Input:
+        inroot (str): base file stem for best fit pickles
+        n (int): region number for inroot
+    Output:
+        (p_list, mu_list, fobj)
+
+        p_list is list of lmfit.Parameters objects
+        mu_vals contains all fitted mu values
+        fobj is a regenerated models_exec.Fitter object
+            (assumed same for all mu values considered)
+            set to verbose by default
+    """
+
+    fname = '{}-{:02d}-data.pkl'.format(inroot, n)
+    ffobj = '{}-{:02d}-fobj.pkl'.format(inroot, n)
+
+    with open(fname, 'r') as fpkl:
+        p_list, mu_vals = pickle.load(fpkl)
+    with open(ffobj, 'r') as fpkl:
+        fdict = pickle.load(fpkl)
+
+    p0 = p_list[0]  # Fitter object assumed same for all mu values
+    fobj = mex.Fitter(p0.snr, fdict['kevs'], fdict['data'], fdict['eps'],
+                      None,  # No table needed
+                      inds=None, verbose=True)
+    return p_list, mu_vals, fobj
+
+
+def best_fit_fwhms(p_list, mu_vals, fobj, kevs_calc=None, mu_calc=None,
+                   get_mask=False, verbose=True, **kwargs):
+    """Compute model FWHMs from best fit pickle specified by inroot, n
+    n is indexed from 1 (!)
+
+    Input:
+        inroot (str): base file stem referring to files given by
+                          inroot + '-{:02d}-data.pkl'.format(n)
+                          inroot + '-{:02d}-fobj.pkl'.format(n)
+        n (int): region number for inroot
+        kevs_calc (list): energies (keV) at which to compute model FWHMs
+                          if none specified, data keVs used
+        mu_calc (list): mu values at which to get best fit parameters
+                        if none specified, [1] used
+                        if invalid mu values given, they are ignored
+        get_mask (bool): return masks used to screen good FWHMs
+        verbose (bool): print model kws being used or not
+        **kwargs: passed to fobj.width_full(...); overrides stored model kws
+    Output:
+        kevs_out: list of kevs_calc for each mu, masked where valid FWHMs found
+        fwhms_out: list of FWHMs for each mu, masked where valid FWHMs found
+        msk_out: list of boolean masks (size matches kevs_calc) for each mu
+            (only if get_mask is True)
+
+        if only one mu value is desired (or present),
+        kevs, fwhms, mask are returned directly (automatically unpacked...)
+
+        WARNING: if get_prfs=True is passed in, mask will not be applied.
+        function will return kevs, model_outputs as below
+        but model outputs will be 3 tuple of FWHMs, intensities, r-coord grids
+    """
+    if kevs_calc is None:
+        kevs_calc = fobj.kevs
+    if mu_calc is None:
+        mu_calc = [1]
+
+    getting_prfs = 'get_prfs' in kwargs and kwargs['get_prfs']
+    # Assumes that get_prfs will not be enabled in saved best fit kws
+
+    kevs_out = []
+    model_out = []
+    masks_out = []
+
+    fobj.set_kevs(kevs_calc)  # Usage of inds in fobj is very sketchy... beware
+
+    for p, mu in zip(p_list, mu_vals):
+        if mu not in mu_calc:
+            continue
+
+        # Set up and run fit
+        try:
+            mkws = p.metadata['fit-kws']['model_kws']
+        except KeyError:
+            mkws = {}
+        eta2 = p['eta2'].value
+        B0 = p['B0'].value
+        if verbose:
+            print 'Original fit kwargs:', mkws
+        mkws.update(kwargs)
+        if verbose:
+            print' Using fit kwargs:', mkws
+
+        # width_cont_return may be FWHMs or (FWHMS, intensities, rgrids)
+        width_cont_return = fobj.width_full(mu, eta2, B0, **mkws)
+
+        if getting_prfs:  # NO MASKING IS APPLIED
+            kevs_out.append(kevs_calc)
+            model_out.append(width_cont_return)
+        else:
+            fwhms_m = width_cont_return
+            mask = fwhms_m < 0.99*p.snr.rsarc  # Mask gives pts w/ valid FWHMs
+
+            kevs_out.append(kevs_calc[mask])
+            model_out.append(fwhms_m[mask])
+            masks_out.append(mask)
+
+    if len(mu_calc) == 1:
+        kevs_out = kevs_out[0]
+        model_out = model_out[0]
+        if not getting_prfs:
+            masks_out = masks_out[0]
+
+    if getting_prfs:
+        return kevs_out, model_out
+
+    if get_mask:  # Redundant code, but makes control flow clearer...
+        return kevs_out, model_out, masks_out
+    else:
+        return kevs_out, model_out
 
 # =========================
 # Functions to display fits

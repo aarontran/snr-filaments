@@ -1,0 +1,43 @@
+# Region file format: DS9 version 4.1
+global color=green dashlist=8 3 width=1 font="helvetica 10 normal roman" select=1 highlite=1 dash=0 fixed=0 edit=1 move=1 delete=1 include=1 source=1
+fk5
+box(6.204576,64.093248,25.137985",23.588",324.57255) # width=4
+box(6.1897672,64.101045,18.179588",8.7168599",326.32522) # width=3
+box(6.1869249,64.10292,18.320285",7.1646098",327.07139) # width=3
+box(6.181938,64.112236,26.686821",12.2726",340.49465) # width=3
+box(6.1786549,64.115326,24.05761",11.8554",341.0917) # width=3
+box(6.1739216,64.118311,16.519065",12.8185",343.12821) # width=3
+box(6.1723116,64.121636,17.858478",11.1858",345.43971) # width=3
+box(6.1705947,64.127625,21.97606",6.81869",355.68046) # width=3
+box(6.1723745,64.12962,28.634025",6.7122399",355.46026) # width=3
+box(6.1719598,64.131799,28.770985",8.8840401",355.76274) # width=3
+box(6.1691868,64.142504,18.515464",6.09757",10.532104) # width=3
+box(6.1699375,64.144205,18.450725",5.8671699",11.548573) # width=3
+box(6.1735372,64.151887,13.577062",13.3476",10.692491) # width=3
+box(6.2147839,64.180495,25.270102",5.7862398",46.498531) # width=3
+box(6.2174711,64.181591,25.211157",5.76252",47.872883) # width=3
+box(6.2198326,64.183051,21.933361",6.23902",50.485963) # width=4
+box(6.2227569,64.184375,20.100354",6.3000698",51.850456) # width=3
+box(6.356321,64.208069,23.967072",23.4545",114.73286) # width=3
+box(6.3660213,64.206162,23.745808",9.3826801",114.65689) # width=3
+box(6.3710366,64.205439,21.662858",6.8959399",114.31414) # width=3
+# text(0:24:46.126,+64:05:19.74) font="times 20 bold roman" text={1}
+# text(0:24:50.441,+64:11:20.44) font="times 20 bold roman" text={16}
+# text(0:24:43.188,+64:05:46.26) font="times 20 normal roman" text={2}
+# text(0:24:41.680,+64:06:02.47) font="times 20 normal roman" text={3}
+# text(0:24:40.317,+64:06:29.01) font="times 20 normal roman" text={4}
+# text(0:24:39.185,+64:06:43.75) font="times 20 normal roman" text={5}
+# text(0:24:38.352,+64:06:58.49) font="times 20 normal roman" text={6}
+# text(0:24:37.745,+64:07:11.77) font="times 20 normal roman" text={7}
+# text(0:24:37.435,+64:07:31.44) font="times 20 normal roman" text={8}
+# text(0:24:37.203,+64:07:44.72) font="times 20 normal roman" text={9}
+# text(0:24:37.198,+64:07:58.00) font="times 20 normal roman" text={10}
+# text(0:24:36.958,+64:08:31.46) font="times 20 normal roman" text={11}
+# text(0:24:37.327,+64:08:45.73) font="times 20 normal roman" text={12}
+# text(0:24:38.594,+64:09:12.32) font="times 20 normal roman" text={13}
+# text(0:24:47.888,+64:10:55.80) font="times 20 normal roman" text={14}
+# text(0:24:48.938,+64:11:08.11) font="times 20 normal roman" text={15}
+# text(0:24:53.152,+64:11:22.93) font="times 20 normal roman" text={17}
+# text(0:25:26.454,+64:12:52.65) font="times 20 normal roman" text={18}
+# text(0:25:29.092,+64:12:44.28) font="times 20 normal roman" text={19}
+# text(0:25:31.429,+64:12:37.38) font="times 20 normal roman" text={20}
