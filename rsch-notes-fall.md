@@ -41,8 +41,13 @@ Table of contents
             Check code resolutions, apply new settings.  Make B-damping table
 * Week 20 - (10/13) B-damping fits (Tycho, SN 1006).  e- distr derivations?
 
+
+
 * Week 21 - (10/20) Emails w/ Sean, paper writeup on damping results
-* Week 22 - (10/27)
+* Week 22 - (10/27) Tycho regions-6, fits w/ srcutlog eta2
+
+
+
 * Week 23 - (11/3)
 * Week 24 - (11/10)
 * Week 25 - (11/17)
@@ -4454,7 +4459,9 @@ Meeting notes
   1006 results (discussion of dichotomy in fits looks okay)
 * CRESST retreat is a go (good dry run for AAS)
 * Leave for Dec 5 is fine
-* No meeting next week (both Brian, Rob out on plane out of country...)
+* No meeting next week, Nov. 3 (both Brian, Rob on plane at that time)
+* Nov. 10 Rob most likely out; Nov. 17, 24 should be around (24 is thanksgiving
+  week already!)
 
 Next steps?
 * Kepler -- finish passing through the pipeline
@@ -4623,6 +4630,94 @@ APLpy figure generation
 Installed `pyregion` from `pip` so APLpy can parse DS9 regions.
 `pyregion` can't parse projections, must be boxes.
 
-Note: need to disable TeX usage in matplotlibrc!  Too slow otherwise
+Notes:
+* maybe disable TeX usage in matplotlibrc!  Too slow otherwise
+* run `ipython --pylab` or change the backend to OS X or whatever, to get the
+  figure to display properly
 
-Meddling with APLpy
+Seems like we must generate RGB images (png, FITS in DS9 first,
+then pass it on to APLpy
+
+    import aplpy
+    f = aplpy.FITSFigure('rgbimg.fits')  # Saved from DS9
+    f.show_rgb('rgbtest.png')            # Saved from DS9
+    f.show_regions('regions-6-box.reg')
+    def ra2deg(h,m,s):
+        return (h+m/60.+s/3600.)/24.*360.
+    f.recenter(ra2deg(0,25,18), 64.14, width=10./60, height=10./60)
+
+
+Friday 2014 October 31
+======================
+
+Summary
+-------
+* Regions-6 fits and spectra
+* APLpy image for paper
+* Kepler full model resolution check, spectrum fits, FWHM table
+
+Misc things from Brian
+----------------------
+
+Flux question -- stupid question, it was right in the `merge_obs`
+documentation...  units are photons/cm^2/sec.
+Convenient unit conversion
+[form](http://www.stsci.edu/hst/nicmos/tools/conversion_form.html)
+Okay to experiment around a bit, waiting on our collaborators anyways.
+
+Brian and Rob are in Japan... send poster by end of day Tuesday (their Weds
+morning), they can look it and send back in the same day.
+
+Tycho regions-6 (cont)
+----------------------
+
+Regions-6 rim and downstream spectra merged, linked to backgrounds.
+Backgrounds taken from `data-tycho/bkg-2`
+Rim spectrum fits: phabs x powerlaw, phabs x srcutlog; alpha = 0.58
+Downstream fits: phabx x powerlaw plain, lines excised, lines fit.
+All look good (enough counts in all sections, rim or downstream)
+
+Loss-limited fits with full errors are done.
+Saved tables of interpolated shock velocities, srcutlog-derived eta2 estimates
+Set up fits with eta2 values from srcutlog fixed (very quick, only took ~20
+minutes).
+
+APLpy figure (cont.)
+--------------------
+
+Pulled out some files/notes on figure generation that were created/kept in
+`data-tycho/regions-4`, to use for CRESST/AAS posters.  Easier to find now.
+The images/settings should be independent of the regions I'm using.
+
+Kepler: 5kpc, shock radius 1.9 arcmin, shock veloc 4700 km/s assuming 5kpc at
+ear, radio index -0.64.  Brian suggested just averaging the measurements
+between Katsuda/Vink (Katsuda: 4700 km/s from Regions 4,5; Vink: 5250 km/s from
+some kind of sector-wise full fitting routine, though he treated the SE ear
+filament separately).  Average is 4975 km/s which I just call 5000 km/s for
+simplicity.
+
+Kepler resolutions, first FWHM tables
+=====================================
+
+Note: last Kepler work was October 7 -- I generated regions-3 and sent it
+through the pipeline, simply needed to run full model fits.
+
+BUT, I don't have spectrum fits yet!  The spectra are linked to background
+files (`data-kepler/bkg-1`).  I run fits for rim and downstream spectra (same
+procedure as for Tycho regions-6) with alpha = 0.64.
+
+Current setup: regions-3 has 7 region selections on Kepler's SE ear, and one
+sitting on the more mangled NW ear.  Satoru's proper motion paper didn't sample
+the mangled region, and Vink's paper does it by sector -- so that area's motion
+gets averaged out with the slower NW stuff behind it.
+
+So for simplicity I will assume 5000 km/s throughout, no need for tables at
+multiple velocities.
+
+Resolution -- see notebook.  All looks good for Kepler
+
+
+
+(Week 23) Monday 2014 November 3
+================================
+

@@ -1,6 +1,5 @@
 Notes on handpicked regions for Tycho SNR profiles
 ==================================================
-(last modified: 2014 Jun 26)
 
 This is generally an append-only log, to record what was done for region
 selection (what regions were added/discarded and on what grounds).
@@ -529,3 +528,17 @@ actually usable at 1-2, 2-7 keV.
    remaining regions in regions-all.  Create regions-all-5.
    This is ad hoc as hell... I guess as long as I list the specific
    criteria/goals I aim to hit with the regions.
+
+Regions-5, Regions-6
+====================
+
+TODO: dig up notes on region-5 selection and place them here.
+I used the number of counts in each of the 12 regions (regions-4) to determine
+how to partition regions-5 and get more boxes.  We ended up with 22 regions,
+sampling the filaments more finely.
+
+In regions-6 I threw out 2 of the 22 regions, and blacklisted the FWHMs from a
+few more (so abt 7-8 regions don't have 0.7-1 keV FWHMs).  Downside of finer
+sampling of course is more noise, and the blacklisted FWHMs are right at the
+threshold of "resolvability" -- they would not have FWHMs if the intensity max
+was fixed at the data maximum, rather than the fitted profile maximum.

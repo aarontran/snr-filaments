@@ -212,7 +212,9 @@ _Remove all dashes from filenames_
 
 _Edit the shell scripts to use correct ObsIDs, weights, evt2 files!_
 
-First run `heainit`, then `ds9&` for `newregion.sh`
+First initialize `heainit`, then `ds9&` for `newregion.sh`
+First initialize `ciao` for `newspectrum.sh`
+First initialize `heainit` then `ciao` for `mergespectra.sh`
 
 Code:   `../code/spectra/[newregion,newspectrum,mergespectra].sh`
 Input:  `regions_n_[up,down]_box.reg` (WCS fk5 coords)
@@ -226,6 +228,8 @@ _Run in debug mode first, check that filepaths to be linked are correct.
 Then check in DS9 that the background/region linkings look correct.
 Then, go ahead and modify files_
 
+Run CIAO before running this script
+
 Code:   `../code/spec_linkbg.py`
 Input:  spectra, `regions-n_[up,down].reg`, `backgrounds-n.reg`
 Output: N/A (modifies spectra in place)
@@ -234,8 +238,8 @@ Also, yes, the background link is the ungrouped file.  See this
 [CIAO thread](http://cxc.harvard.edu/ciao/threads/extended/index.html#up).
 
 ## Fit spectra to absorbed powerlaw with(out) Si line
-Run with 32 bit python (`arch -i386 python`), `heainit` (not in same window as
-CIAO), and run in same directory as spectra files (to resolve links)
+Run `heainit` first (not in same window as CIAO), and run in same directory as
+spectra files (to resolve links to background spectra)
 
 Code:   `../code/spec_fit.py`
 Input:  `spectra/[up,down]/*.[pi,rmf,arf]`

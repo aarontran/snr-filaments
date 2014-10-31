@@ -21,46 +21,31 @@ processed mosaics?)
 Main TO-DOs
 -----------
 
-Note: srcutlog fits.  The question becomes, does variation in eta2 between
-different filaments match what we expect in terms of B0?
-
-I.e., if eta2 is larger in one filament (lower Ecut), does this explain the
-variation in rim widths that we see?
-E.g., regions 12, 13 have unusually large Ecut, hence small eta2, but they are
-not unusually thin or anything.
-
-Run Kepler numbers by Brian so I can generate tables over the weekend
 Check Kepler resolutions first, then set up tables
 
-Current roughly ordered list:
-* Tycho regions 6
-  - running loss-limited fits now
-  - run loss-limited fits with eta2 = srcutlog derived values
-    (update fitting notebook while you're at it)
+Current list:
+* Manuscript data (Tycho regions-6, SN 1006)
+  - loss-limited fits (done)
+  - loss-limited fits with srcutlog-derived eta2 values (done)
   - run loss-limited fits with eta2 = 1 fixed
-  - run slew of damping fits
-  - generate spectra
-  - prepare complete set of tables, plots, etc (save with regions-6)
-* Make publication ready figure for Tycho (APLpy)
-* CRESST poster (for next week) (ask Jack Hewitt if he's going...)
+  - run damping fits
+  - run damping fits with variable distance
+  - generate spectra (running)
+  - prepare complete set of tables, plots, etc (save with regions-6, low
+    priority)
+  - run fits to individual SN 1006 regions?!
+* CRESST poster for next week (ask Jack Hewitt if he's going...)
 * Kepler data
-* VLA imaging stuff
+* VLA imaging tutorials and stuff (download archived Tycho data and look at
+  rims yourself)
 * Code to run fits on multiple profiles at once
   (also see about not normalizing intensities)
-
-
-
-### Manuscript, Tycho tidbits
-
-Pending feedback from Steve, Sean (almost set)
-
-* Other small holes/gaps:
-  - Tycho regions-6 (in works)
-  - srcutlog based fits
-  - vary distance in damped fits
-  - run fits to individual SN 1006 regions?!...
 * check expressions for cut-off energy, diffusion terms in Sean's solution
   (using Bmin vs. B0 in certain places).
+
+Leave radio/x-ray intensity calibration / calculation match up until a little
+later, once I have simultaneous profile fitting.
+
 
 ### Radio thingies
 
@@ -79,6 +64,7 @@ Pending feedback from Steve, Sean (almost set)
 
 * Radio rims -- how to get intensities to work out right?
   (Chandra photometry?... VLA already has the calibration routine)
+  (
   Can we show/prove that _thin_ radio rims are not possible in a loss-limited
   model?
   Diffusion in radio?
@@ -101,8 +87,6 @@ Pending feedback from Steve, Sean (almost set)
 
 ### Lower priority:
 
-1. Use srcutlog (from Brian) to run fits with eta2 fixed at values determined
-   from synchrotron break frequency.
 2. Check outliers by hand (why did the fits go wonky), and check manual
    error computation speed. (barely relevant anymore)
 4. Generate Kepler tables and run full model fits
@@ -118,8 +102,7 @@ Data processing to-dos, by individual "pipeline":
              (run `reproject_obs` and `flux_obs`, double check that I get the
               same files that Brian has sent, then make new cuts and numbers)
 
-* Kepler -- Get Rob/Brian to okay Kepler numbers...
-            Check full model resolution #s (ipynb)
+* Kepler -- Check full model resolution #s (ipynb)
             Generate full model table (check w/ Brian on numbers, first)
             Generate full model fits w/ errors
 

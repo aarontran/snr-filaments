@@ -78,10 +78,10 @@ def make_kepler():
                      # 0.64 = radio spectral index, Green's SNR catalog
                      # consistent w/ DeLaney et al. (2002)
 
-    kepler.vs = 4.71e8 * kepler.dkpc/5 # Shock velocity, cm/s (with dkpc = 5)
-                        # mean measurements of Reg-4/5, Katsuda et al. (2008)
-                        # scaled to 5 kpc.  Vink (2008) give 5.25e8
-                        # but within error the values are barely consistent
+    kepler.vs = 5e8 * kepler.dkpc/5 # Shock velocity, cm/s (with dkpc = 5)
+                        # mean of measurements by Katsuda (2008), Vink (2008)
+                        # scaled to 5 kpc.  Katsuda gives 4.7e8; Vink, 5.25e8
+                        # within error the values are barely consistent
 
     kepler.cratio = 4.0  # Compression ratio, strong adiabatic shock (R-H)
 
@@ -100,6 +100,7 @@ def make_kepler():
                        'B0': (1e-6, 1e-2)}
 
     return kepler
+
 
 def make_tycho():
     """Physical parameters, model/fit settings for Tycho's SNR

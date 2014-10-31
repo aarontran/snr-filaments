@@ -1,3 +1,10 @@
+README
+======
+
+Converted over from my notes on poster figures (for NASA intern session).
+Here I store images of Tycho (single band or RGB) and the relevant
+parameters/experimentation used to generate them.
+
 2014 July 29
 ============
 
@@ -82,3 +89,31 @@ Borrowing settings from Nina's Tycho image:
 
     Export as tiff (no regions) and save image w/ 1208x1207 frame, zoom=1
     (and no colorbar, as before, mind you)
+
+
+2014 October 31
+===============
+
+Now using APLpy to generate publication quality figures (regions to be vector
+overlay on RGB image of appropriate size/quality)
+
+See new Python script `tycho_aplpy.py`.
+Main trouble is that there's a lot of hand-tweaking of labels in DS9 to make
+sure they look okay on the paper.
+
+Using 9pt font for region labels, 10pt bold for the highlighted regions.
+Using default rgb settings (from `data-tycho/ds9-tycho-rgb.sh`), haven't played
+with contrast/bias/anything to make the image better.  Generate RGB fits image,
+export to RGB png and jpeg for comparison
+
+One more attempt (to be sure, and cut down filesize) crop the FITS in ds9
+first, then export to jpeg and make the figure in APLpy.  See if that helps
+filesize.
+Note -- don't use save as for the crop, use export...
+
+    DS9 crop: (ra, dec) = (6.324, 64.143) (degrees), 0.18 degrees square
+
+Filesize w/ png-pdf: 761 KB (150 dpi), 2.5 MB (300 dpi)
+Filesize w/ jpg-pdf: 839 KB (150 dpi), 2.5 MB (284 dpi)
+
+Why are these figures so big!  Oh well.  They look pretty nice at least
