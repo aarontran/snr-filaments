@@ -21,30 +21,39 @@ processed mosaics?)
 Main TO-DOs
 -----------
 
-Check Kepler resolutions first, then set up tables
+### Current list:
 
-Current list:
-* Manuscript data (Tycho regions-6, SN 1006)
-  - loss-limited fits (done)
-  - loss-limited fits with srcutlog-derived eta2 values (done)
-  - run loss-limited fits with eta2 = 1 fixed
-  - run damping fits
-  - run damping fits with variable distance
-  - generate spectra (running)
-  - prepare complete set of tables, plots, etc (save with regions-6, low
-    priority)
-  - run fits to individual SN 1006 regions?!
-* CRESST poster for next week (ask Jack Hewitt if he's going...)
-* Kepler data
-* VLA imaging tutorials and stuff (download archived Tycho data and look at
-  rims yourself)
+* Spectral variation -- how to probe this?  Fits to continuum, remove lines?
+  See the results I already have, first, compare Rettig Pohl, take notes
+* VLA imaging tutorials (esp. image analysis, RFI removal)
+* Test out Pannuti's Tycho dataset
 * Code to run fits on multiple profiles at once
   (also see about not normalizing intensities)
 * check expressions for cut-off energy, diffusion terms in Sean's solution
   (using Bmin vs. B0 in certain places).
 
+* Manuscript data (Tycho regions-6, SN 1006)
+  - Kepler loss-limited fits (done)
+  - Kepler damping fits (done)
+  - Tycho loss-limited fits (done)
+  - Tycho loss-limited fits with srcutlog-derived eta2 values (done)
+  - Tycho loss-limited fits with eta2 = 1 fixed
+  - Tycho damping fits (running)
+  - Tycho damping fits with variable distance
+  - Tycho damping fits with variable mu (eta2=1 fixed, for Steve) (done)
+  - Tycho, complete set of tables, plots (save with regions-6, low priority)
+  - SN 1006, fits for individual regions?!
+* CRESST poster for next week (draft sent)
+
+Manuscript/etc tweaks:
+* Add scale bar (arcsec) to Tycho SNR image...
+* plots for Regions 4,5 might better show the "hybrid" behavior (but Region 1
+  shows ex.  with 4 bands and ragged, broad profiles)
+
 Leave radio/x-ray intensity calibration / calculation match up until a little
 later, once I have simultaneous profile fitting.
+(for intensity -- our models give us intensity in erg/cm^2/s whatever, but we
+have been simply comparing to photon counts)
 
 
 ### Radio thingies

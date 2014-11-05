@@ -1,7 +1,7 @@
 """
 Tabulate FWHMs for Kepler for
-#1. no damping, all 6 mu values; default shock velocity (5000 km/s, 5 kpc)
-#   20+ B0 values (ask for 20, expect ~30)
+1. no damping, all 6 mu values; default shock velocity (5000 km/s, 5 kpc)
+   20+ B0 values (ask for 20, expect ~30)
 2. various magnetic damping scale lengths
    50+ B0 values (ask for 50, expect 10--70)
 
@@ -39,7 +39,7 @@ import snr_catalog as snrcat
 AB_VALS_ALL = [[0.5,  0.015,  0.008, 0.003],
                [0.05, 0.012, 0.007, 0.006, 0.002],
                [0.04, 0.011, 0.01, 0.005],
-               [0.03, 0.02,  0.009, 0.004]]
+               [0.03, 0.02,  0.009, 0.004]]  # This one also does loss-lim tab
 
 # Numbers are generated from regions-3, background subtracted
 KEPLER_KEVS = np.array([0.7, 1.0, 2.0, 4.0])

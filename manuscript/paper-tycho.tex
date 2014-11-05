@@ -1,13 +1,13 @@
-%\documentclass[manuscript]{aastex}  % one-column, double-spaced GENERATE BIB
+\documentclass[manuscript]{aastex}  % one-column, double-spaced GENERATE BIB
 %\documentclass[12pt,preprint]{aastex}  % one-column, single-spaced
 %\documentclass[iop, apj, numberedappendix, twocolappendix]{emulateapj}
-\documentclass[iop, apj, numberedappendix]{emulateapj}
+%\documentclass[iop, apj, numberedappendix]{emulateapj}
 
 % Customize figures/sizing for 2 column vs. manuscript printout
 \usepackage{etoolbox}
 \newtoggle{manuscript}
-%\toggletrue{manuscript}
-\togglefalse{manuscript}
+\toggletrue{manuscript}
+%\togglefalse{manuscript}
 
 \shorttitle{Tycho's Synchrotron Rims (\today)}  % <~ 44 char
 \shortauthors{XXX et al. (\today)}  % Max three
@@ -395,9 +395,9 @@ to estimate shock diffusion and is given by:
 \begin{align} \label{eq:rolloff}
     \nu_{\mt{cut}} =
         &c_m \left(13.3 \unit{erg}\right)^{\frac{4}{1+\mu}}
-        \left(0.2657 \unit{erg^2\;G}\right)^{-\frac{1-\mu}{1+\mu}} \nonumber \\
-        &\left( 100 \muG \right)^{\frac{1-\mu}{1+\mu}}
-        \left( \frac{v_s}{10^8 \unit{cm/s}} \right)^{\frac{4}{1+\mu}}
+        \left(100 \muG\right)
+        \left(2657 \unit{erg^2}\right)^{-\frac{1-\mu}{1+\mu}} \nonumber \\
+        &\left( \frac{v_s}{10^8 \unit{cm/s}} \right)^{\frac{4}{1+\mu}}
         \left( \eta_2 \right)^{-\frac{2}{1+\mu}} .
 \end{align}
 In particular, this equation is independent of magnetic field $B$ for all

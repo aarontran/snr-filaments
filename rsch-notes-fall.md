@@ -4697,7 +4697,7 @@ filament separately).  Average is 4975 km/s which I just call 5000 km/s for
 simplicity.
 
 Kepler resolutions, first FWHM tables
-=====================================
+-------------------------------------
 
 Note: last Kepler work was October 7 -- I generated regions-3 and sent it
 through the pipeline, simply needed to run full model fits.
@@ -4720,4 +4720,103 @@ Resolution -- see notebook.  All looks good for Kepler
 
 (Week 23) Monday 2014 November 3
 ================================
+
+Summary
+-------
+* Data pipelines (Kepler loss-lim, damped fits)
+* CASA tutorial, small Tycho EVLA observation (TDEM0020, Pannuti + students)
+* Plots of FWHM vs. E in parameter space (Steve's email)
+
+Sean and Steve's comments
+-------------------------
+
+Started assembling plots (to address Steve's questions/comments)
+
+Kepler table
+------------
+
+Kepler tables finished early Sunday morning.  Log observations:
+ab = 0.003, 0.002 seem to have had some trouble w/ getting B0 points.
+ab = 0.004 got 15 pts at eta2 = 100, ab = 0.005 got 41 pts.  So those are okay
+
+Set up for Kepler loss-limited and damping fits, running now.
+At very small ab values the fits don't appear to move very much, and I'm not
+sure if that's due to the fit or due to the bad starting parameters (from FWHM
+table).
+
+
+Radio data meddling
+-------------------
+
+Continuing CASA 3c391 tutorial with multiscale cleaning
+Python crashed unexpectedly partway through iterations... (was running pretty
+slowly to begin with)
+
+> unhandled exception: Unrecognized map name '' 
+> libc++abi.dylib: terminate called throwing an exception
+> Caught an ABORT  signal. Please wait ...Abort trap: 6
+
+Downloading very recent TDEM0020 data from September 2014
+(`TDEM0020.sb29665410.eb29703711.56924.434018796295.ms`)
+Demo Tycho observation by T. Pannuti and Morehead State students
+
+
+Tuesday 2014 November 4
+=======================
+
+Summary
+-------
+* Draft CRESST poster
+* Damped fits with mu = [0, 1./3, ..., 2], Tycho regions-6
+* Varied plots of parameter space for Steve/Sean email
+* Kepler regions-3 damping fits, inspect some plots/tables
+
+Most time today generating/twiddling plots, writing email response... need to
+work more efficiently.
+
+Sean/Steve's comments (cont)
+----------------------------
+
+New set of parameter grids (profiles), plots of FWHM-energy dependence w/
+varying parameters, plots of `a_b / FWHM` (no particular trend/constant
+behavior, we observe a good range).
+
+Sent email with plots, discussion of damped fits with variable mu
+
+CRESST poster draft
+-------------------
+
+Modified and updated NASA poster appropriately.  Presenting equivocal
+results, but AAS poster should have more.
+
+Tycho regions-6, Kepler regions-3 pipeline
+------------------------------------------
+
+Tycho damped fits with eta2 = 1 fixed, multiple mu values (Steve) (done)
+Running slew of damped fits for regions-6 overnight
+Then run loss-limited fits with eta2 = 1 fixed.
+
+Kepler regions-3 damped fits complete.  Starting to inspect plots and tables...
+results look comparable to Tycho.
+
+    Region & $\eta_2$ (-) & $B_0$ ($\mu$G) & $\chi^2$
+           & $\eta_2$ (-) & $B_0$ ($\mu$G) & $\chi^2$ & $a_b$ \\
+    \midrule
+    1 & 752.07 & 1373.1 &  1.95 &     0.08 & 204.9 &  1.62 & 0.006 \\
+    2 &   2.70 &  446.2 &  4.80 &     2.70 &  22.9 &  4.45 & 0.003 \\
+    3 & 599.67 & 1251.9 &  8.63 &     0.01 &  46.4 &  6.06 & 0.003 \\
+    4 &   2.40 &  403.5 &  3.73 &     0.00 & 290.3 &  3.30 & 0.008 \\
+    5 &   0.16 &  337.0 & 32.41 &  2021.65 &  10.1 & 30.18 & 0.006 \\
+    6 & 531.97 & 1351.3 & 60.92 &     0.00 & 247.8 & 58.78 & 0.005 \\
+    7 & 667.60 &  912.7 &  3.61 &     0.00 &  87.3 &  0.24 & 0.007 \\
+    8 &   0.00 &  266.0 &  1.73 & 15941.01 &   7.6 &  0.02 & 0.008 \\
+
+Regions 1, 3, 4, 6 (looks like crap), 7 are acceptably fit with a "strong"
+damping model.  Regions 2, 5, 8 give "hybrid" fits to reproduce strong energy
+dependence (borne out by plot of `m_E` vs. energy, hitlist is 2, 5, 8).
+Funnily all the damped fits are better, though.
+
+Wednesday 2014 November 5
+=========================
+
 
