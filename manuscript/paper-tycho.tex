@@ -1,13 +1,13 @@
-\documentclass[manuscript]{aastex}  % one-column, double-spaced GENERATE BIB
+%\documentclass[manuscript]{aastex}  % one-column, double-spaced GENERATE BIB
 %\documentclass[12pt,preprint]{aastex}  % one-column, single-spaced
 %\documentclass[iop, apj, numberedappendix, twocolappendix]{emulateapj}
-%\documentclass[iop, apj, numberedappendix]{emulateapj}
+\documentclass[iop, apj, numberedappendix]{emulateapj}
 
 % Customize figures/sizing for 2 column vs. manuscript printout
 \usepackage{etoolbox}
 \newtoggle{manuscript}
-\toggletrue{manuscript}
-%\togglefalse{manuscript}
+%\toggletrue{manuscript}
+\togglefalse{manuscript}
 
 \shorttitle{Tycho's Synchrotron Rims (\today)}  % <~ 44 char
 \shortauthors{XXX et al. (\today)}  % Max three
@@ -648,13 +648,19 @@ same synchrotron continuum may be recovered from beneath thermal line emission.
     \tablecomments{Absorbed power law fit parameters are photon index $\Gamma$
         and hydrogen column density $N_{\mt{H}}$.  Horizontal rules group
         individual regions into filaments.}
-    \tablecomments{(DRAFT) Region 5 has unusually poor chi-squared due to a
-        silicon line bump.  The 0.7--1 keV FWHM in Region 5 is $\abt 9\arcsec$
-        and very poorly-fit, being close to not measurable.  In the next
-        iteration of the data pipeline, I will cull the FWHMs by hand (Regions
-        1--3, 5, 11--12, 18--19 will not have FWHMS at 0.7--1 keV); after bad
-        FWHMs are removed, the spectral fits for Regions 5, 19 should improve.}
 \end{table*}
+
+\begin{table*}
+    \scriptsize
+    \centering
+    \caption{Region spectra fit parameters\label{tab:spec-pt2}}
+    \input{suppl-spec-pt2.tex}
+    \tablecomments{As described in text,
+    we consider absorbed power law fits with lines fitted to two Gaussians
+    (here characterized by equivalent width and line energy), or with lines
+    manually excised.  See comments on Table~\ref{tab:spec}.}
+\end{table*}
+
 
 % This table is still useful to look at the fit parameters (to make
 % qualitative statements about excised/Gaussian line fit quality,

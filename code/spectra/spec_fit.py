@@ -13,12 +13,12 @@ adjusted for other SNRs
 import argparse
 import json
 import os
-import re
 import numpy as np
 
 import xspec as xs
 
 import regparse
+import spec_fit_utils as xsutils
 
 SRCUTLOG_PATH_DEFAULT = '/Users/atran3/snr-research/code/srcutlog/'
 ALPHA_DEFAULT = 0.58
@@ -33,9 +33,9 @@ def main():
     parser.add_argument('specroot', help='Directory stem for spectra')
     parser.add_argument('fittype', help=('Type of fit to apply: '
                                          '0=phabs*po, '
-                                         '1=excise Si line, '
-                                         '2=fit Si line, '
-                                         '3=srcutlog'), type=int)
+                                         '1=excise Si,S lines, '
+                                         '2=fit Si,S lines, '
+                                         '3=phabs*srcutlog'), type=int)
     parser.add_argument('plotroot', help='Output stem for plots')
     parser.add_argument('fitproot', help='Output stem for fit logs, data')
     parser.add_argument('-v', '--verbose', action='store_true',
@@ -56,10 +56,8 @@ def main():
     wanterr = args.error
     srcutlog_path, alpha = args.path, args.alpha
 
-
-    init_xspec(verbose)
-
-    regparse.check_dir(pltroot, verbose)  # Creates new directories if needed
+    # Check and create new directories if needed
+    regparse.check_dir(pltroot, verbose)
     regparse.check_dir(fitproot, verbose)
 
     n = regparse.count_files_regexp(specroot + r'_src[0-9]+_grp\.pi')
@@ -68,8 +66,10 @@ def main():
     if verbose and wanterr:
         print 'Computing errors from 90% confidence limits'
 
+    # Set up XSPEC for fitting
+    xsutils.init_xspec(verbose)
     xs.Fit.nIterations = 2000
-    if ftype == 3:
+    if ftype == 3:  # srcutlog fits need to load local model
         if srcutlog_path is None:
             srcutlog_path = SRCUTLOG_PATH_DEFAULT
         if alpha is None:
@@ -78,9 +78,8 @@ def main():
             print 'Using alpha = {}'.format(alpha)
         xs.AllModels.lmod('neipkg', srcutlog_path)
 
+    # Fit spectra and dump output on each iteration
     for num in xrange(n):
-        # Create paths, with assumptions about filename structure
-        # Check that grouped spectrum exists
         grp_path = '{}_src{:d}_grp.pi'.format(specroot, num+1)
         plt_path = '{}_src{:d}_grp.ps'.format(pltroot, num+1)
         log_root = '{}_src{:d}_grp'.format(fitproot, num+1)
@@ -91,15 +90,18 @@ def main():
             print '\nProcessing file: {}'.format(grp_path)
             print 'Output plot: {}'.format(plt_path)
 
+        # Most XSPEC interaction here - the rest is set-up
         s = xs.Spectrum(grp_path)
+
+        # Default "full-spectrum" fits
         s.ignore('**-0.5, 7.0-**')  # 0.5 keV to verify no oxygen line
 
-        # All XSPEC interaction here
         if ftype < 3:
             model = phabspo_fit(s, ftype)
         elif ftype == 3:
             model = srcutlog_fit(s, alpha)
-        output_fit(s, model, plt_path, log_root, ftype, wanterr)
+
+        dump_fit(s, model, plt_path, log_root, ftype, wanterr)
 
     if verbose:
         print '\nDone!'
@@ -109,71 +111,38 @@ def main():
 # Subroutines to control XSPEC
 # ============================
 
-def output_fit(s, m, pltname, logroot, ftype, wanterr):
-    """Plot and print results of fit.  Also computes errors."""
+def dump_fit(spec, model, pltname, logroot, ftype, wanterr):
+    """Plot, print, save fitting results.  Computes errors if requested."""
 
-    # Print color postscript plot
-    xs.Plot.device = pltname + '/cps'
-    xs.Plot('ldata', 'residual', 'ratio')
+    # Generates plot and saves spectrum, background, model data/errs
+    xsutils.plot_dump_data(spec, model, pltname, logroot+'.npz')
 
-    # Save spectrum/model/fit information to log file
-    logFile = xs.Xset.openLog(logroot+'.log')
-    xs.Xset.logChatter = 10
-    s.show()
-    m.show()
-    xs.Fit.show()
-    if wanterr:
-        xs.Fit.error('1-{}'.format(m.nParameters))  # 90% conf. limit errors
+    # Must run logging before saving fit information
+    # so we can compute eqwidth, errors (and have that logged)
+    def run_extras():
+        """XSPEC commands that should be logged"""
+        if wanterr:  # Get 90% conf. intv errors for all parameters
+            xs.Fit.error('1-{}'.format(model.nParameters))
+        if ftype == 2:  # fitting line and need eqwidth
+            xs.AllModels.eqwidth(3)
+            eqwidth_si = spec.eqwidth[0]
+            xs.AllModels.eqwidth(4)
+            eqwidth_s = spec.eqwidth[0]
+            return eqwidth_si, eqwidth_s  # eqwidths not saved elsewhere
 
-    # Save fit information to JSON file
-    fdict = {}
-    fdict['fname'] = s.fileName
-    fdict['ftype'] = ftype
-    fdict['fitstat'] = (xs.Fit.statMethod, xs.Fit.statistic)
-    fdict['dof'] = xs.Fit.dof
+    # Generate log file
+    extras = xsutils.dump_fit_log(spec, model, logroot+'.log', run_extras)
 
-    if ftype == 2:  # fitting line and need eqwidth
-        # These should generate output for XSPEC log too
-        xs.AllModels.eqwidth(3)
-        fdict['eqwidth-si'] = s.eqwidth[0]
-        xs.AllModels.eqwidth(4)
-        fdict['eqwidth-s'] = s.eqwidth[0]
+    # Generate and customize fit information to save
+    fdict = xsutils.fit_dict(spec, model, want_err=wanterr)
+    if ftype == 2:
+        fdict['eqwidth-si'], fdict['eqwidth-s'] = extras
+    xsutils.dump_fit_dict(fdict, logroot+'.json')
 
-    # Crappy way to extract component values and errors
-    # Hierarchy of keys: 'comps', 'gaussian', 'sigma', 'value'
-    fdict['comps']={}
-    for cname in m.componentNames:
-        comp = eval('m.'+cname)  # Get component object, e.g. m.gaussian1
-        compdict = fdict['comps'][cname] = {}
-        for pname in comp.parameterNames:
-            if pname == 'break':  # Hacky workaround for srcutlog break
-                p = comp.__getattribute__('break')
-            else:
-                p = eval('m.'+cname+'.'+pname)  # Still hacky workaround
-            compdict[pname] = {}
-            compdict[pname]['value'] = p.values[0]
-            if wanterr:
-                compdict[pname]['error'] = p.error
-
-
-    with open(logroot+'.json','w') as fj:
-        json.dump(fdict, fj, indent=2)  # Pretty print
-
-
-    # Save spectrum data and fit to .npz
-    np.savez(logroot,
-             x = xs.Plot.x(),
-             xE = xs.Plot.xErr(),
-             y = xs.Plot.y(),
-             yE = xs.Plot.yErr(),
-             m = xs.Plot.model(),
-             bkg = xs.Plot.backgroundVals())
-
-    # Clean up
-    xs.Xset.logChatter = 0
+    # Clean up for next fit
     xs.AllData.clear()
     xs.AllModels.clear()
-    xs.Xset.closeLog()
+
 
 def srcutlog_fit(s, alpha):
     """Fit spectrum s to srcutlog model.  First fits break/norm with nH frozen
@@ -240,67 +209,32 @@ def phabspo_fit(s, ftype=0):
         model = xs.Model('phabs*(powerlaw + gaussian)')
         model.setPars(*plist)
 
-        # Set soft/hard limits on Si line gaussian Sigma/LineE
         model.gaussian.Sigma.frozen=True
         model.gaussian.LineE.frozen=True
-        xs.Fit.perform()  # Fit with frozen lineE/sigma
-        model.gaussian.Sigma.frozen=False
-        #model.gaussian.Sigma.values = [2e-2, 1e-4, 1e-4, 2e-3, 0.07, 0.1]
-        xs.Fit.perform()  # Fit with frozen LineE
-        model.gaussian.LineE.frozen=False
-        #model.gaussian.LineE.values = [1.85, 0.001, 1.75, 1.8, 1.9, 1.95]
-        xs.Fit.perform()  # Fit all free
+        xs.Fit.perform()
 
-        # Now, add sulfur line
+        model.gaussian.Sigma.frozen=False
+        xs.Fit.perform()
+        model.gaussian.LineE.frozen=False
+        xs.Fit.perform()
+
+        # Add sulfur line (same hacky parameter porting)
         plist = [p.values[0] for p in [model(1), model(2), model(3), model(4),
                                        model(5), model(6)]]  # Parameters
         plist.extend([2.45, 2e-2, 5e-7]) # LineE, Sigma, norm
         model = xs.Model('phabs*(powerlaw + gaussian + gaussian)')
         model.setPars(*plist)
 
-        # Set soft/hard limits on S line gaussian Sigma/LineE (not in use)
         model.gaussian_4.Sigma.frozen=True
         model.gaussian_4.LineE.frozen=True
         xs.Fit.perform()
+
         model.gaussian_4.Sigma.frozen=False
-        #model.gaussian_4.Sigma.values = [2e-2, 1e-4, 1e-4, 2e-3, 0.07, 0.1]
-        xs.Fit.perform()  # Fit with frozen LineE
+        xs.Fit.perform()
         model.gaussian_4.LineE.frozen=False
-        #model.gaussian_4.LineE.values = [2.45, 0.001, 2.35, 2.4, 2.5, 2.55]
-        xs.Fit.perform()  # Now fit with unfrozen LineE
-
-        # Finally, run fit without hard/soft limits
-        #par4 = model.gaussian.LineE.values[0]
-        #par5 = model.gaussian.Sigma.values[0]
-        #model.gaussian.LineE.values = [par4, 0.01*par4, 0., 0., 1e6, 1e6]
-        #model.gaussian.Sigma.values = [par5, 0.01*par5, 0., 0., 10., 20.]
-
-        #xs.Fit.perform()
-
-        #par7 = model.gaussian_4.LineE.values[0]
-        #par8 = model.gaussian_4.Sigma.values[0]
-        #model.gaussian.LineE.values = [par7, 0.01*par7, 0., 0., 1e6, 1e6]
-        #model.gaussian.Sigma.values = [par8, 0.01*par8, 0., 0., 10., 20.]
-
-        #xs.Fit.perform()
+        xs.Fit.perform()
 
     return model
-
-
-def init_xspec(verbose=False):
-    """Set global parameters for XSPEC plots, fits
-    Returns XSPEC model for fitting
-    """
-    xs.Plot.xAxis = 'keV'
-    xs.Plot.yLog = True
-    xs.Plot.background = True
-
-    xs.Xset.addModelString('neivers', '2.0')
-    if verbose:
-        xs.Xset.chatter = 10
-    else:
-        xs.Xset.chatter = 10  # hah.
-    xs.Xset.logChatter = 0
 
 
 if __name__ == '__main__':

@@ -18,32 +18,46 @@ From poster session (July 31):
 (just to get a sense of energy -- how do we get physical units from CIAO
 processed mosaics?)
 
+Useful reference: http://www.nist.gov/pml/data/asd.cfm
+(to go with AtomDB -- but probably won't need this again)
+
 Main TO-DOs
 -----------
 
+Print poster today!  Twiddle details if needed...
+* Spectral lines -- run manual fits (only attempt S, Ar lines, freeze at
+  reasonable line widths).  Compute resultant spectrum differences
+* Try spectral lines from 2.6 keV and up (avoid little edge uptick for more
+  robust fit)
+
 ### Current list:
 
-* Spectral variation -- how to probe this?  Fits to continuum, remove lines?
-  See the results I already have, first, compare Rettig Pohl, take notes
 * VLA imaging tutorials (esp. image analysis, RFI removal)
 * Test out Pannuti's Tycho dataset
+* AS IN EMAIL -- MAP OUT PARAMETER SPACE OF MODEL (!)
 * Code to run fits on multiple profiles at once
   (also see about not normalizing intensities)
 * check expressions for cut-off energy, diffusion terms in Sean's solution
   (using Bmin vs. B0 in certain places).
 
+### Somewhat done:
+* Spectral variation -- how to deal with thermal lines?  Other gaps?
+  Can this tell us about the strength of damping -- B field, eta2?  We might
+  have to run the model computations to do this right...
+  Consider radio spectral variation as well?
+
+### Lower priority / details
 * Manuscript data (Tycho regions-6, SN 1006)
   - Kepler loss-limited fits (done)
   - Kepler damping fits (done)
   - Tycho loss-limited fits (done)
   - Tycho loss-limited fits with srcutlog-derived eta2 values (done)
   - Tycho loss-limited fits with eta2 = 1 fixed
-  - Tycho damping fits (running)
+  - Tycho damping fits (done)
   - Tycho damping fits with variable distance
   - Tycho damping fits with variable mu (eta2=1 fixed, for Steve) (done)
   - Tycho, complete set of tables, plots (save with regions-6, low priority)
   - SN 1006, fits for individual regions?!
-* CRESST poster for next week (draft sent)
 
 Manuscript/etc tweaks:
 * Add scale bar (arcsec) to Tycho SNR image...

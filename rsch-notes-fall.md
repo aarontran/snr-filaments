@@ -4816,7 +4816,254 @@ damping model.  Regions 2, 5, 8 give "hybrid" fits to reproduce strong energy
 dependence (borne out by plot of `m_E` vs. energy, hitlist is 2, 5, 8).
 Funnily all the damped fits are better, though.
 
+
 Wednesday 2014 November 5
 =========================
+
+Summary
+-------
+* Inspect rim/downstream photon index variation
+* XSPEC fakeit to test effect of curved spectrum
+* Review physics of thermal (ionized) line emission (see new md file)
+* New spectrum fits for 2-7 keV only -- larger change in photon indices
+
+Tycho regions-6 damped fits completed this morning
+
+Spectral variation between downstream/rim
+-----------------------------------------
+
+### First look at spectrum fits
+
+Following Sean's suggestion, try examining differences between rim and
+plateau energy spectra.  Rettig & Pohl (2012) give predictions of spectral
+index for loss-limited + strong damping cases (varies smoothly over soft
+X-rays).
+
+Set-up: update spectrum table code (remove hacky workaround to ignore Region
+19, for Tycho regions-5). Updating a few tables to Regions 6 in manuscript
+(inconsistently) so I can look at spectrum fit parameters quickly.
+
+The average spectral indices are:
+* thin rim: 2.8043
+* downstream, excised: 2.8406
+* downstream, line fit: 2.8427
+
+The differences between indices are 0.036 (excise) and 0.038 (line fit).
+Not bad!  Compared to Rettig & Pohl, this could be consistent with either
+loss-limited rims or weak damping.  Hard to say, though.
+
+### Check results for power-law fit to smoothly steepening thing
+
+Because Rettig/Pohl predict the spectral index to smoothly increase (spectrum
+gets steeper), I wonder how our fits are affected by this.
+
+I attempt to fakeit in XSPEC with a 2-break power law.  I download the ACIS-I
+responses from [CXC](http://cxc.harvard.edu/caldb/prop_plan/imaging/), using
+the Cycle 16 on-aimpoint files (`acisi_aimpt_cy16.rmf, acisi_aimpt_cy16.arf`).
+I require a normalization of 1e-4 (similar to our spectra) and 750 ks exposure.
+Here is a loss-limited model:
+
+__Loss-limited fakeit__
+
+    ========================================================================
+    Model phabs<1>*bkn2pow<2> Source No.: 1   Active/Off
+    Model Model Component  Parameter  Unit     Value
+     par  comp
+       1    1   phabs      nH         10^22    0.600000     +/-  0.0          
+       2    2   bkn2pow    PhoIndx1            2.25000      +/-  0.0          
+       3    2   bkn2pow    BreakE1    keV      1.00000      +/-  0.0          
+       4    2   bkn2pow    PhoIndx2            2.40000      +/-  0.0          
+       5    2   bkn2pow    BreakE2    keV      3.00000      +/-  0.0          
+       6    2   bkn2pow    PhoIndx3            2.60000      +/-  0.0          
+       7    2   bkn2pow    norm                1.00000E-04  +/-  0.0          
+    ________________________________________________________________________
+
+If I fit this to an absorbed power law, best fits are:
+
+    ========================================================================
+    Model phabs<1>*powerlaw<2> Source No.: 1   Active/On
+    Model Model Component  Parameter  Unit     Value
+     par  comp
+       1    1   phabs      nH         10^22    0.758752     +/-  2.33789E-02  
+       2    2   powerlaw   PhoIndex            2.73490      +/-  3.85094E-02  
+       3    2   powerlaw   norm                1.35289E-04  +/-  5.91311E-06  
+    ________________________________________________________________________
+
+    ========================================================================
+    Model phabs<1>*powerlaw<2> Source No.: 1   Active/On
+    Model Model Component  Parameter  Unit     Value
+     par  comp
+       1    1   phabs      nH         10^22    0.600000     frozen
+       2    2   powerlaw   PhoIndex            2.50952      +/-  1.95295E-02  
+       3    2   powerlaw   norm                1.01600E-04  +/-  1.60192E-06  
+    ________________________________________________________________________
+
+__Damped fakeit__
+
+Okay, looks plausible.  What about if I consider the damped filament?
+The spectral indices are smaller overall.
+
+    ========================================================================
+    Model phabs<1>*bkn2pow<2> Source No.: 1   Active/Off
+    Model Model Component  Parameter  Unit     Value
+     par  comp
+       1    1   phabs      nH         10^22    0.600000     +/-  0.0          
+       2    2   bkn2pow    PhoIndx1            2.10000      +/-  0.0          
+       3    2   bkn2pow    BreakE1    keV      1.00000      +/-  0.0          
+       4    2   bkn2pow    PhoIndx2            2.25000      +/-  0.0          
+       5    2   bkn2pow    BreakE2    keV      3.00000      +/-  0.0          
+       6    2   bkn2pow    PhoIndx3            2.45000      +/-  0.0          
+       7    2   bkn2pow    norm                1.00000E-04  +/-  0.0          
+    ________________________________________________________________________
+
+Fit faked data to absorbed powerlaw now.
+
+    ========================================================================
+    Model phabs<1>*powerlaw<2> Source No.: 1   Active/On
+    Model Model Component  Parameter  Unit     Value
+     par  comp
+       1    1   phabs      nH         10^22    0.746972     +/-  2.23844E-02  
+       2    2   powerlaw   PhoIndex            2.60887      +/-  3.58063E-02  
+       3    2   powerlaw   norm                1.40123E-04  +/-  5.79448E-06  
+    ________________________________________________________________________
+
+    ========================================================================
+    Model phabs<1>*powerlaw<2> Source No.: 1   Active/On
+    Model Model Component  Parameter  Unit     Value
+     par  comp
+       1    1   phabs      nH         10^22    0.600000     frozen
+       2    2   powerlaw   PhoIndex            2.40638      +/-  1.81683E-02  
+       3    2   powerlaw   norm                1.08007E-04  +/-  1.62775E-06  
+    ________________________________________________________________________
+
+__fakeit conclusions__
+
+The overall, very rough shift on filament spectrum appears discernable as a
+shift in best fit PhoIndex of ~ 0.1.
+ 
+XSPEC fitting code (spectral variation)
+---------------------------------------
+
+### Procedure
+
+Fit spectra between 2.0 and 7.0 keV.  Freeze nH=0.7 (see Hayato et al. (2010),
+Cassam-Chenai (2007?)).  First try this automatically (with excised or line
+fits).  Then, try manual fits to account for extra lines if needed (in rim and
+downstream spectra).
+
+In Region 5 of Tycho regions-6, besides Si/S He alpha the next strongest line
+is 3.1 keV Ar (from notes, 2014 October 16, toying around in XSPEC).
+Just to be aware of.
+
+### Work/results
+
+Refactored PyXSPEC code somewhat, to make fit information dumping/etc more
+practical.  Confirmed that fits w/ cleaned code look identical.
+
+Added spin-off script (`code/spectra/spec_var_fit.py`) to generate fits over
+domain 2-7 keV.  Then quickly parse results in IPython.
+The results appear even stronger now!  Average photon indices are:
+
+* thin filament:    2.92 (std=0.15)
+* downstr excise:   3.23 (std=0.14)
+* downstr fit:      3.17 (std=0.19)
+
+Average differences are thus 0.31 (excise) and 0.26 (fit).
+Stdev of differences are 0.17 (excise), 0.22 (fit).
+
+So this appears consistent with weak to moderate damping, compared to the
+loss-limited model.  It's certainly not rigorous, but I think it's compelling.
+
+### Manual fitting (Ar He alpha and more)
+
+Inspect automatic line fit plots -- which regions could benefit most from
+manual fitting?
+
+* Region 2 -- some bump at ~ 3 keV (possible S He beta, Ar He alpha)
+* Region 5 -- clear 3.1 keV Ar line, maybe 3.9 keV Ca
+* Region 6 -- maybe 3.9 keV Ca
+* Region 7 -- maybe 3.1 keV Ar
+* Region 8 -- 2.9 keV S He beta? 3.1 keV Ar? maybe Ca..
+* Region 9 -- maybe 3.9 Ca
+* Region 10 -- try 2.9 keV S He beta
+* Region 11 -- try S, Ar
+* Region 13 -- Si He beta (2.2 keV), Ly beta (2.38 keV), Ar (3.1 keV)
+* Region 14 -- Ar (3.1 keV, 3.7 keV?)
+* Region 15 -- try 3.9 Ca
+* Region 19 -- Si Ly beta (2.38 keV)
+* Region 20 -- S He beta, Ar He alpha
+
+Summary -- most are worth a shot.  Strong contenders differ, but S He beta, Ar
+He alpha, maybe Ar He beta / Ca He alpha.
+
+Try Region 5 first.  The automatic fits gave:
+
+    Region 5
+        rim, rim-excise, rim-fit: 3.047, 3.342, 3.318
+        3.047, 0.2954, 0.2710
+
+which is actually pretty average (probably large # of counts help).
+
+Attempting to fit an Si Ly alpha line makes a big difference!...
+Current fit has:
+- 2.21 keV Si He beta (bad attempt)
+- 2.44 keV S He alpha
+- 3.12 keV Ar He alpha
+PhoIndex changes from 3.275 to 3.125 with/without 2.00 keV Si Ly alpha.
+Huge difference!  Because the line is right at the edge of the fit, it
+sort of tips the falloff around too easily...
+
+But, I'm not sure if the fit is even physically reasonable.
+Here we have:
+
+    1    1   phabs      nH         10^22    0.700000     frozen
+    2    2   powerlaw   PhoIndex            3.12517      +/-  8.62544E-02  
+    3    2   powerlaw   norm                2.27262E-04  +/-  2.55635E-05  
+    4    3   gaussian   LineE      keV      2.00000      frozen
+    5    3   gaussian   Sigma      keV      4.30906E-02  +/-  5.00851E-02  
+    6    3   gaussian   norm                1.07679E-06  +/-  6.04577E-07  
+
+vs. the fit without:
+ 
+    1    1   phabs      nH         10^22    0.700000     frozen
+    2    2   powerlaw   PhoIndex            3.27552      +/-  6.34065E-02  
+    3    2   powerlaw   norm                2.79041E-04  +/-  2.13870E-05   
+
+The fitted gaussian has with 0.04 keV and has normalization 1/3rd that of the
+Sulfur line.  But, we expect Ly alpha lines to be narrower (not sure how much
+broadening to expect.  Looking at Hayato et al., the line is very weak and
+might well be covered over by the Si He alpha line's spread.  BUT, we are
+looking right behind the shock -- could the near-shock Si be more strongly
+ionized?
+
+    ========================================================================
+    Model Model Component  Parameter  Unit     Value
+     par  comp
+       1    1   phabs      nH         10^22    0.700000     frozen
+       2    2   powerlaw   PhoIndex            3.32061      +/-  5.86091E-02  
+       3    2   powerlaw   norm                2.97017E-04  +/-  2.04703E-05  
+       4    3   gaussian   LineE      keV      2.44056      +/-  7.06256E-03  
+       5    3   gaussian   Sigma      keV      3.28679E-02  +/-  1.23684E-02  
+       6    3   gaussian   norm                2.43370E-06  +/-  2.60479E-07  
+       7    4   gaussian   LineE      keV      3.11902      +/-  0.179961     
+       8    4   gaussian   Sigma      keV      1.00787E-03  +/-  7.46441E-02  
+       9    4   gaussian   norm                5.18801E-07  +/-  1.07458E-07  
+    ________________________________________________________________________
+
+Verdict -- trying to fit Si lines near edge is fishy (can cause changes of ~0.1
+in photon index), but adding stuff in the middle is probably not so bad.
+
+I might well trust the excised fits more at this point, which actually gives a
+stronger spectrum difference.  Let me try one more, now excising the Argon line
+too to be very very safe (cut 3.0 to 3.1).
+
+Excising S line (2.3-2.6 keV) only: mean PhoIndex = 3.2311
+Excising S, Ar lines (2.3-2.6, 3.0-3.2 keV): mean PhoIndex = 3.2316
+
+Summary: negligible...?
+
+
+2014 Thursday November 6
+========================
 
 
