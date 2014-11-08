@@ -18,23 +18,28 @@ From poster session (July 31):
 (just to get a sense of energy -- how do we get physical units from CIAO
 processed mosaics?)
 
-Useful reference: http://www.nist.gov/pml/data/asd.cfm
-(to go with AtomDB -- but probably won't need this again)
-
 Main TO-DOs
 -----------
 
-Print poster today!  Twiddle details if needed...
-* Spectral lines -- run manual fits (only attempt S, Ar lines, freeze at
-  reasonable line widths).  Compute resultant spectrum differences
-* Try spectral lines from 2.6 keV and up (avoid little edge uptick for more
-  robust fit)
+### Material for Monday
+
+* Kepler fit tables, plots
+* Spectral index variation (fakeit tests, procedures) (bring rettig/pohl)
+* Load all plots/images from emails (incl. Steve's radio image)
 
 ### Current list:
 
-* VLA imaging tutorials (esp. image analysis, RFI removal)
-* Test out Pannuti's Tycho dataset
+* RFI removal tutorial on TDEM0020
+* Code to compute model spectra from our full model intensities
+  (look at Sean's old code)
 * AS IN EMAIL -- MAP OUT PARAMETER SPACE OF MODEL (!)
+  (criterion: when does the 0.7 keV FWHM blow up?  What are the min/max values
+  attained at various values of eta2, B0, ab?)
+* Jack's Tycho data -- how to throw data from all configurations together?
+  Just throw all the baselines in one?  I'm wondering if the indiv.
+  configurations are set up to get, e.g., nice beam functions (PSF whatever),
+  and if merging data willy-nilly from multiple configs would mess it up.
+
 * Code to run fits on multiple profiles at once
   (also see about not normalizing intensities)
 * check expressions for cut-off energy, diffusion terms in Sean's solution
@@ -44,18 +49,12 @@ Print poster today!  Twiddle details if needed...
 * Spectral variation -- how to deal with thermal lines?  Other gaps?
   Can this tell us about the strength of damping -- B field, eta2?  We might
   have to run the model computations to do this right...
-  Consider radio spectral variation as well?
+* Consider radio spectral variation as well?
 
 ### Lower priority / details
 * Manuscript data (Tycho regions-6, SN 1006)
-  - Kepler loss-limited fits (done)
-  - Kepler damping fits (done)
-  - Tycho loss-limited fits (done)
-  - Tycho loss-limited fits with srcutlog-derived eta2 values (done)
   - Tycho loss-limited fits with eta2 = 1 fixed
-  - Tycho damping fits (done)
   - Tycho damping fits with variable distance
-  - Tycho damping fits with variable mu (eta2=1 fixed, for Steve) (done)
   - Tycho, complete set of tables, plots (save with regions-6, low priority)
   - SN 1006, fits for individual regions?!
 
@@ -68,18 +67,23 @@ Leave radio/x-ray intensity calibration / calculation match up until a little
 later, once I have simultaneous profile fitting.
 (for intensity -- our models give us intensity in erg/cm^2/s whatever, but we
 have been simply comparing to photon counts)
+(answer: we are computing model profiles at a fixed energy -- so it's a
+constant scaling factor, doesn't matter)
 
 
 ### Radio thingies
 
 * EVLA data reduction (casaguides.nrao.edu) (prepare questions for Jack)
-  (how to extract image data for analysis?)
+  (how to extract image data for analysis? -- solution: export to FITS.  Units
+  are Jy/beam = 10^-26 W/s/m^2/Hz/beam)
 
 * Figure out how best to fit profiles in their entirety.
   One idea -- use FWHMs to line up profiles, roughly (since we don't precisely
   know the shock location + precursor may be seen ahead of shock...)
   (consider the work of Warren 2005?)
   (morlino/caprioli 2012, cassam-chenai 2007 have done this to some extent)
+  Another: match up profiles to peaks.  But where/how to cut-off front/back for
+  fitting?...
   Relevant links:
   http://mathematica.stackexchange.com/questions/866/simultaneously-fitting-multiple-datasets
   http://forums.wolfram.com/mathgroup/archive/2011/Sep/msg00555.html
@@ -87,7 +91,6 @@ have been simply comparing to photon counts)
 
 * Radio rims -- how to get intensities to work out right?
   (Chandra photometry?... VLA already has the calibration routine)
-  (
   Can we show/prove that _thin_ radio rims are not possible in a loss-limited
   model?
   Diffusion in radio?
@@ -112,7 +115,6 @@ have been simply comparing to photon counts)
 
 2. Check outliers by hand (why did the fits go wonky), and check manual
    error computation speed. (barely relevant anymore)
-4. Generate Kepler tables and run full model fits
 5. ODE solving, simple model with damped B-field.  Not likely to do much, esp.
    if our full model comes up correct...
 
@@ -124,10 +126,6 @@ Data processing to-dos, by individual "pipeline":
 * Tycho -- Try splitting 1-1.7 and 2-3 bands into smaller pieces! (low priority)
              (run `reproject_obs` and `flux_obs`, double check that I get the
               same files that Brian has sent, then make new cuts and numbers)
-
-* Kepler -- Check full model resolution #s (ipynb)
-            Generate full model table (check w/ Brian on numbers, first)
-            Generate full model fits w/ errors
 
 * Cas A -- pick subset of regions-0 for regions-1 from FWHMs/profiles/counts,
              ensuring that all regions can get decent FWHMs.

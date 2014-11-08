@@ -33,7 +33,8 @@ def main():
                                          '0=phabs*po, '
                                          '1=excise S line, '
                                          '2=excise S, Ar lines, '
-                                         '3=fit S line'), type=int)
+                                         '3=fit S line '
+                                         '4=phabs*po, 2.6-7keV'), type=int)
     parser.add_argument('plotroot', help='Output stem for plots')
     parser.add_argument('fitproot', help='Output stem for fit logs, data')
     parser.add_argument('-v', '--verbose', action='store_true',
@@ -51,8 +52,6 @@ def main():
     n = regparse.count_files_regexp(specroot + r'_src[0-9]+_grp\.pi')
     if verbose:
         print '\n{} spectra to process'.format(n)
-    if verbose and wanterr:
-        print 'Computing errors from 90% confidence limits'
 
     # Set up XSPEC for fitting
     xsutils.init_xspec(verbose)
@@ -92,53 +91,71 @@ def run_fit(spec, ftype=0):
     Input
         fname (str): file of single spectrum
         ftype (int): 0,1,2 -- type of fit to perform
-            0: fit to absorbed power law
-            1: fit to absorbed power law, ignoring 2.3-2.6 keV data
-            2: fit to absorbed power law + gaussian at 2.45 keV
+            0: fit to absorbed power law (2-7 keV)
+            1: fit to absorbed power law (2-7 keV), ignoring 2.3-2.6 keV data
+            2: fit to absorbed power law (2-7 keV), ignoring 2.3-2.6 and 3.0-3.2 keV
+            3: fit to absorbed power law (2-7 keV) + gaussian at 2.45 keV
+            4: fit to absorbed power law (2.6-7 keV)
     Output
         2-tuple of xs.Spectrum, xs.Model objects
     """
 
-    spec.ignore('**-2.0, 7.0-**')  # Tail only for spectral variation!
+    if ftype <= 3:  # All fits between 2-7 keV
 
-    model = xs.Model('phabs*powerlaw')
-    model.phabs.nH = 0.7
-    model.phabs.nH.frozen = True
-    model.powerlaw.PhoIndex = 1
-    model.powerlaw.norm = 1
-    xs.Fit.perform()  # First round fit to phabs*po alone, regardless of ftype
+        spec.ignore('**-2.0, 7.0-**')  # Tail only for spectral variation!
 
-    if ftype == 1:  # Excise S line
+        model = xs.Model('phabs*powerlaw')
+        model.phabs.nH = 0.7
+        model.phabs.nH.frozen = True
+        model.powerlaw.PhoIndex = 1
+        model.powerlaw.norm = 1
+        xs.Fit.perform()  # First round fit to phabs*po alone, regardless of ftype
 
-        spec.ignore('2.3-2.6')
-        xs.Fit.perform()
-        spec.notice('2.3-2.6')
+        if ftype == 1:  # Excise S line
 
-    elif ftype == 2:  # Excise S and Ar lines
+            spec.ignore('2.3-2.6')
+            xs.Fit.perform()
+            spec.notice('2.3-2.6')
 
-        spec.ignore('2.3-2.6, 3.0-3.1')
-        xs.Fit.perform()
-        spec.notice('2.3-2.6, 3.0-3.1')
+        elif ftype == 2:  # Excise S and Ar lines
 
-    elif ftype == 3:  # Fit S line
+            spec.ignore('2.3-2.6, 3.0-3.2')
+            xs.Fit.perform()
+            spec.notice('2.3-2.6, 3.0-3.2')
 
-        # Get parameter values from current phabs*po model
-        plist = [p.values[0] for p in [model(1), model(2), model(3)]]
-        plist.extend([2.45, 2e-2, 5e-7]) # LineE, Sigma, norm
+        elif ftype == 3:  # Fit S line
 
-        # Make new model w/ Si line, restore old parameters and add guesses
-        model = xs.Model('phabs*(powerlaw + gaussian)')
-        model.setPars(*plist)
-        model.phabs.nH.frozen=True  # Must reissue freeze command
+            # Get parameter values from current phabs*po model
+            plist = [p.values[0] for p in [model(1), model(2), model(3)]]
+            plist.extend([2.45, 2e-2, 5e-7]) # LineE, Sigma, norm
 
-        model.gaussian.Sigma.frozen=True
-        model.gaussian.LineE.frozen=True
-        xs.Fit.perform()
+            # Make new model w/ Si line, restore old parameters and add guesses
+            model = xs.Model('phabs*(powerlaw + gaussian)')
+            model.setPars(*plist)
+            model.phabs.nH.frozen=True  # Must reissue freeze command
 
-        model.gaussian.Sigma.frozen=False
-        xs.Fit.perform()
-        model.gaussian.LineE.frozen=False
-        xs.Fit.perform()
+            model.gaussian.Sigma.frozen=True
+            model.gaussian.LineE.frozen=True
+            xs.Fit.perform()
+
+            model.gaussian.Sigma.frozen=False
+            xs.Fit.perform()
+            model.gaussian.LineE.frozen=False
+            xs.Fit.perform()
+
+    elif ftype == 4:  # All fits between 2.6-7 keV
+
+        spec.ignore('**-2.6, 7.0-**')
+
+        model = xs.Model('phabs*powerlaw')
+        model.phabs.nH = 0.7
+        model.phabs.nH.frozen = True
+        model.powerlaw.PhoIndex = 1
+        model.powerlaw.norm = 1
+        xs.Fit.perform()  # First round fit to phabs*po alone, regardless of ftype
+
+    else:
+        raise Exception('Invalid fit type specified (got {})'.format(ftype))
 
     return model
 

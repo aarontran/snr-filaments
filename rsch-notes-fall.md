@@ -45,10 +45,9 @@ Table of contents
 
 * Week 21 - (10/20) Emails w/ Sean, paper writeup on damping results
 * Week 22 - (10/27) Tycho regions-6, fits w/ srcutlog eta2
+* Week 23 - (11/3) Emails (param space), spectral variation, VLA tutorials,
+            CRESST retreat and poster
 
-
-
-* Week 23 - (11/3)
 * Week 24 - (11/10)
 * Week 25 - (11/17)
 * Week 26 - (11/24)
@@ -5066,4 +5065,173 @@ Summary: negligible...?
 2014 Thursday November 6
 ========================
 
+Summary
+-------
+* Ran few more spectral variation fits (testing..), inspect data
+* Plan for full model spectra to go w/ best fits
+* Print CRESST poster
+* Finished 3C391 VLA tutorial
+
+
+Spectral variation summary
+--------------------------
+
+Here are a few examples.  These are photon indices for phabs x powerlaw fits,
+for, in order:
+* rim spectrum (2-7 keV)
+* downstream spectrum (2-7 keV) with
+  - 2.3-2.6 keV excised
+  - 2.3-2.6, 3.0-3.2 keV excised
+  - 2.45 keV line fit
+* downstream spectrum (2.6-7 keV)
+
+And the differences between the downstream and rim spectra
+
+    Region 1
+        rim; excise, excise_ar, line, tail: [ 2.845  3.219  3.221  3.172  3.17 ]
+        diffs: [ 0.374  0.376  0.327  0.325]
+    Region 5
+        rim; excise, excise_ar, line, tail: [ 3.047  3.342  3.345  3.318  3.255]
+        diffs: [ 0.295  0.299  0.271  0.208]
+    Region 16
+        rim; excise, excise_ar, line, tail: [ 2.92   3.359  3.36   3.318  3.067]
+        diffs: [ 0.439  0.44   0.398  0.147]
+
+For comparison, if I fit the rim spectrum between 2.6-7 keV ("tail"), I get
+photon indices of 2.889, 3.124, 2.875 for Regions 1, 5, 16.
+
+Now looking at just the averages (fit over 2-7 keV unless otherwise stated):
+
+    Fit type           Photon index        Diff fr rim      Diff fr rim (2.6-7)
+    ---------------------------------------------------------------------------
+    rim                2.918 (std 0.151)   -                -
+    rim, 2.6-7 keV     2.936 (std 0.152)   -                -
+    down, excise S     3.231 (std 0.137)   0.31 (std 0.17)  0.30 (std 0.17)
+    down, excise S/Ar  3.233 (std 0.138)   0.32 (std 0.17)  0.30 (std 0.17)
+    down, fit S line   3.173 (std 0.185)   0.26 (std 0.22)  0.24 (std 0.22)
+    down, 2.6-7 keV    3.166 (std 0.180)   0.25 (std 0.19)  0.23 (std 0.18)
+
+These are averaged photon indices, averaged differences (same as difference of
+averages, but we can get a std-dev from indiv. differences).
+
+Differences are just downstream index - rim index.  So we do see that the rim
+spectra are harder in most cases -- and to be precise, I haven't even gone
+through and munged the fits by hand or anything
+
+Here are the full data for reference 
+
+               Rim indices           Downstream indices*
+             ----------------   ------------------------------
+    Region  2-7keV  2.6-7keV   cut S   cut S/Ar  fit S   tail
+    ------  -------------------------------------------------
+    1       2.84    2.89       3.22    3.22      3.17    3.17
+    2       2.98    3.05       3.44    3.45      3.41    3.32
+    3       2.83    2.92       3.25    3.24      3.25    3.22
+    4       2.95    3.04       3.2     3.19      3.18    3.25
+    5       3.05    3.12       3.34    3.35      3.32    3.25
+    6       2.93    3.14       3.12    3.12      3.12    2.97
+    7       2.95    2.99       3.22    3.22      3.05    3.47
+    8       2.79    2.76       2.86    2.86      2.86    2.94
+    9       2.92    2.95       3.13    3.14      2.59    3.04
+    10      2.76    2.92       3.02    3.02      3.01    3.09
+    11      2.82    2.69       3.09    3.1       3.09    2.66
+    12      2.51    2.5        3.22    3.22      3.21    3.03
+    13      2.85    2.87       3.35    3.35      3.31    3.34
+    14      3.08    2.97       3.35    3.36      3.24    3.34
+    15      3.03    2.9        3.26    3.27      3.26    3.3 
+    16      2.92    2.87       3.36    3.36      3.32    3.07
+    17      2.97    2.97       3.33    3.34      3.34    3.19
+    18      3.3     3.13       3.16    3.16      3.14    3.07
+    19      2.86    2.91       3.27    3.27      3.25    3.27
+    20      3.03    3.1        3.41    3.41      3.32    3.32
+
+    *Fit on domain 2-7 keV, except tail is 2.6-7 keV
+
+Inspecting the data by hand -- only in Region 18 is the downstream spectrum
+consistently __harder__ than the rim spectrum (spectral index smaller by 0.14
+to 0.23), everywhere else we see clear softening (one or two isolated places
+where the downstream spectral index might be smaller than upstream, depending
+on fit type being considered).  The effect is not as dramatic if we compare to
+the 2.6-7 keV rim fit.
+
+This is not predicted in either the loss-limited or damped cases, so something
+may be up with Region 18, but it's not obvious to me what exactly is up, based
+on profiles/spectra/region location.
+
+How can we best present this tabular data??  Right now it's probably easiest to
+just state in text and compare to the model predictions/output.  Might want to
+show rim/downstream spectra overlaid on each other.
+
+Modeling spectral variation
+---------------------------
+
+How to use our model to discuss/investigate this?
+As Sean attempted before -- we can extract intensity based on best fits.
+
+The downstream rim extraction region is very variable, depended on fits.
+In model, go from the 0.7 keV FWHM out back by one more FWHM distance.
+(so the regions should have the same length.
+
+So, take our fits -- extract the radial intensity profiles with fixed rminarc
+at multiple, finely spaced energies.  This gives us keV/cm^2/s/keV...
+
+
+
+Friday 2014 November 7
+======================
+
+Summary
+-------
+* CRESST retreat
+* New (1994) VLA image from Steve (from D. Moffett?)
+* Mucking around with test EVLA Tycho observation (TDEM0020, Sep 2014)
+* Generate rest of Kepler tables for Monday -- very quick
+* Generate fits (and all derived products) to assess Kepler spectral variation
+
+Notes
+-----
+
+Comparing VLA and Chandra images, the expansion between 1994 and 2009 is very
+visible.  Very cool.
+
+Spent some time exploring Tycho TDEM0020 dataset (strong RFI everywhere),
+pulled antenna corrections / basic data flagging / inspect RFI contamination.
+All set to run through tutorial on automatic RFI excision.
+
+Remark: Kepler data, when rerunning fits, seem to sometimes not find FWHM even
+if repeating same calculation.  Adaptive FWHM blows up right at edge I guess...
+Not precisely sure why this occurs (and, why this didn't occur in Tycho fits?)
+
+For fun, run the spectral variation tests on Kepler very quickly.  Already have
+it set up.  So we get a slew of "spectral variation" fits:
+
+    python ~/snr-research/code/spectra/spec_var_fit.py regions3_up 0 plot_var/plt_var_up fit_var/fit_var_up -v
+    python ~/snr-research/code/spectra/spec_var_fit.py regions3_up 4 plot_var/plt_var_up_tail fit_var/fit_var_up_tail
+    python ~/snr-research/code/spectra/spec_var_fit.py regions3_down 0 plot_var/plt_var_down fit_var/fit_var_down
+    python ~/snr-research/code/spectra/spec_var_fit.py regions3_down 1 plot_var/plt_var_down_excise fit_var/fit_var_down_excise
+    python ~/snr-research/code/spectra/spec_var_fit.py regions3_down 2 plot_var/plt_var_down_excise_ar fit_var/fit_var_down_fit
+    python ~/snr-research/code/spectra/spec_var_fit.py regions3_down 3 plot_var/plt_var_down_fit fit_var/fit_var_down_fit
+    python ~/snr-research/code/spectra/spec_var_fit.py regions3_down 4 plot_var/plt_var_down_tail fit_var/fit_var_down_tail
+
+Average spectral indices are:
+* 2.77 (rim, 2-7 keV)       std = 0.13
+* 2.83 (rim, 2.6-7 keV)     std = 0.26
+* 3.31 (down, excise S)     std = 0.25
+* 3.33 (down, excise S/Ar)  std = 0.26
+* 2.96 (down, fit line)     std = 0.55
+* 3.11 (down, 2.6-7 keV)    std = 0.37
+
+Average differences (for excise S, excise S/Ar, fit, 2.6-7 keV respectively):
+(compared to rim spectrum fit over 2-7 keV)
+* 0.54 (std 0.27) excise S
+* 0.56 (std 0.28) excise S/Ar
+* 0.19 (std 0.60) fit
+* 0.34 (std 0.42) 2.6-7 keV
+
+If we compare to the rim spectrum fit over 2.6-7 keV, subtract 0.06 from all
+these numbers and ramp up the standard deviations slightly.
+
+
+(Week 24) Monday 2014 November 10
+=================================
 
