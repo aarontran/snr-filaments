@@ -21,17 +21,26 @@ processed mosaics?)
 Main TO-DOs
 -----------
 
-### Material for Monday
+### Pending material to be reviewed
 
 * Kepler fit tables, plots
 * Spectral index variation (fakeit tests, procedures) (bring rettig/pohl)
+* Spectral index variation (full model)
 * Load all plots/images from emails (incl. Steve's radio image)
+
+
+### Current main things to check:
+* map out parameter space (compute 0.7-1keV FWHM as a function of B0, ab, eta2)
+* obtaining and fitting profiles from radio data
+
+* Kepler -- generate nice PDF of tables to present, w/ plots
+  (one approach -- save the comprehensive tables / misc. in their own folder,
+  and generate a unique PDF output.  Port over the tables you like to the final
+  manuscript)
 
 ### Current list:
 
 * RFI removal tutorial on TDEM0020
-* Code to compute model spectra from our full model intensities
-  (look at Sean's old code)
 * AS IN EMAIL -- MAP OUT PARAMETER SPACE OF MODEL (!)
   (criterion: when does the 0.7 keV FWHM blow up?  What are the min/max values
   attained at various values of eta2, B0, ab?)
@@ -190,5 +199,5 @@ Write/find short scripts / hooks to git, to clear out ipynb output cells or
 something... 
 
 For data storage / archiving / keeping track of variant computations -- learn
-to use SQL databases.
+to use SQL databases.  Or pandas dataframes.
 

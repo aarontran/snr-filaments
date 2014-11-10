@@ -44,7 +44,8 @@ Table of contents
 
 
 * Week 21 - (10/20) Emails w/ Sean, paper writeup on damping results
-* Week 22 - (10/27) Tycho regions-6, fits w/ srcutlog eta2
+* Week 22 - (10/27) Tidy, augment, send manuscript. FWHM fits w/ srcutlog eta2
+            Run Tycho regions-6, Kepler regions-3 through data pipeline
 * Week 23 - (11/3) Emails (param space), spectral variation, VLA tutorials,
             CRESST retreat and poster
 
@@ -5235,3 +5236,138 @@ these numbers and ramp up the standard deviations slightly.
 (Week 24) Monday 2014 November 10
 =================================
 
+Summary
+-------
+* Spectral variation computed from full model code
+
+Misc: skimming VLA/CASA tutorials, threw Kepler tables into a (crappy) PDF
+for easier review.  Didn't get quite enough done today...
+
+Spectral variation from full model profiles
+-------------------------------------------
+
+Procedure:
+* compute intensity profiles from best fit parameters over 25 log-spaced
+  energies between 1.05-7 keV.
+* Using the largest FWHM (at 1.05 keV), integrate intensities from shock
+  to 1 FWHM behind shock (rim), and from 1 to 2 FWHM behind shock (plateau)
+* Plot integrated rim/plateau intensities vs. energy to get energy spectra
+* Fit spectra between 2-7 keV and back out spectral indices
+* Subtract rim/plateau indices to get difference
+
+
+Just wrangling data/presentation at the moment.
+The spectral indices are very scattered.  But, interestingly, the spectral
+differences are very small in the damping model.
+
+Generally, I observe that the spectral index difference gets _larger_ at lower
+energies for our best damped fits.  This strongly contrasts with the results
+that Rettig/Pohl present.
+
+Rettig/Pohl use w = 5 arcsec (assuming d = 2.5 kpc), which is very large -- the
+plateau region is _well_ behind the rim.
+
+### Spectral variation, best damped fits (`a_b < 0.01`), Tycho regions-6
+
+Mean change is 0.035 (std = 0.030).  Maximum change is 0.088 (Region 12).
+Perhaps unsurprisingly, the largest spectral index change is associated with
+(1) weak-field damping, and (2) smallest damping length.
+
+    Region	rim	    down	delta	ab	    B0	    eta2
+    1	    -2.626	-2.672	0.046	0.008	25.4	1.63
+    2	    -3.452	-3.540	0.088	0.003	16.8	19
+    3	    -4.790	-4.840	0.051	0.003	14.1	184
+    4	    -2.643	-2.691	0.047	0.004	25.2	1.72
+    5	    -2.388	-2.459	0.071	0.003	27.6	0.487
+    6	    -1.680	-1.688	0.0075	0.003	114.4	0.000356
+    7	    -2.019	-2.021	0.0016	0.004	241.6	0.0172
+    8	    -2.080	-2.097	0.016	0.003	52.2	0.152
+    9	    -1.802	-1.841	0.039	0.002	46.8	0.0176
+    10	    -2.271	-2.306	0.035	0.002	36.1	0.363
+    11	    -2.216	-2.298	0.083	0.002	31.0	0.2
+    12	    -2.020	-2.100	0.08	0.002	35.0	0.0518
+    13	    -1.930	-1.927	-0.0032	0.004	243.4	0.00072
+    14	    -1.790	-1.805	0.015	0.003	89.9	0.0119
+    15	    -2.916	-2.935	0.019	0.003	31.3	4.48
+    16	    -2.425	-2.416	-0.0096	0.004	340.5	0.22
+    17	    -2.349	-2.350	0.001	0.003	98.4	0.463
+    18	    -9.919	-9.977	0.058	0.006	8.7	4.1e+03
+    19	    -1.847	-1.894	0.047	0.002	45.8	0.0241
+    20	    -2.622	-2.632	0.0097	0.003	47.3	1.7
+
+### Spectral variation, best damped fits w/eta2=1, Tycho regions-6
+
+Mean change: 0.020 (std=0.025)
+Max, min are 0.067, -0.008.  A lot more (barely) negative changes this time.
+
+    Region  rim     down    delta       ab      B0      eta2
+    1       -2.510  -2.550  0.04        0.008   27.7    1
+    2       -2.534  -2.592  0.058       0.003   25.4    1
+    3       -2.723  -2.714  -0.0083     0.010   406.5   1
+    4       -2.513  -2.552  0.039       0.004   27.7    1
+    5       -2.554  -2.621  0.067       0.003   24.5    1
+    6       -2.459  -2.463  0.0033      0.004   68.0    1
+    7       -2.597  -2.598  0.00079     0.006   290.9   1
+    8       -2.489  -2.490  0.00069     0.005   137.8   1
+    9       -2.461  -2.468  0.007       0.004   78.3    1
+    10      -2.504  -2.544  0.04        0.002   29.1    1
+    11      -2.689  -2.693  0.0033      0.010   316.8   1
+    12      -2.541  -2.597  0.056       0.003   25.9    1
+    13      -2.591  -2.591  -0.00054    0.006   257.7   1
+    14      -2.508  -2.517  0.0093      0.004   59.8    1
+    15      -2.514  -2.521  0.0064      0.003   47.8    1
+    16      -2.722  -2.724  0.0019      0.006   434.1   1
+    17      -2.578  -2.578  0.00062     0.004   232.1   1
+    18      -2.602  -2.664  0.062       0.003   23.9    1
+    19      -2.494  -2.494  -0.00023    0.004   77.6    1
+    20      -2.494  -2.504  0.01        0.003   57.5    1
+
+
+### Spectral variation, best loss-limited fits w/ eta2=1, Tycho regions-6
+
+Mean change: 0.0005 (std = 0.006).  Max/min are 0.01, -0.01.
+This all seems consistent with a net change of zero -- which sounds reasonable.
+
+    Region	rim	    down	delta	    B0	    eta2
+    1	    -2.776	-2.784	0.0079	    183.3	1
+    2	    -2.778	-2.783	0.0058	    313.0	1
+    3	    -2.778	-2.784	0.0055	    427.0	1
+    4	    -2.780	-2.786	0.0058	    284.8	1
+    5	    -2.783	-2.785	0.0027	    288.8	1
+    6	    -2.784	-2.786	0.002	    410.9	1
+    7	    -2.785	-2.783	-0.0016	    419.0	1
+    8	    -2.785	-2.784	-0.00052	388.2	1
+    9	    -2.786	-2.781	-0.0041	    415.1	1
+    10	    -2.786	-2.782	-0.0043	    466.3	1
+    11	    -2.789	-2.787	-0.0028	    355.6	1
+    12	    -2.790	-2.787	-0.0036	    318.0	1
+    13	    -2.792	-2.793	0.0006	    400.3	1
+    14	    -2.811	-2.804	-0.0069	    383.9	1
+    15	    -2.805	-2.815	0.01	    431.8	1
+    16	    -2.807	-2.816	0.0088	    493.4	1
+    17	    -2.810	-2.818	0.0085	    467.8	1
+    18	    -2.812	-2.801	-0.012	    283.1	1
+    19	    -2.803	-2.801	-0.0022	    401.4	1
+    20	    -2.805	-2.794	-0.011	    463.6	1
+
+But, anyways, we do see that the loss-limited spectra are even more invariant
+than the damped ones.
+
+### What have we found so far?
+
+The measurements in Tycho suggested a typical change of 0.2 to 0.3 (spectral
+index at rim ~ 2.9, downstream ~ 3.2).
+
+The best model fit parameters are showing much smaller changes in spectral
+index.  Damped fits see changes of around 0.02-0.03, loss-limited fits see
+almost no change.
+
+So something is going on here!  I don't know what, yet.
+
+I erred earlier in "extracting" full model spectra from the FWHMs for each
+energy -- e.g., at 4.5 keV I'd get spectra from rim to FWHM(4.5 keV), and
+FWHM(4.5 keV) to 2x FWHM(4.5keV).  I changed this to use just FWHM(1.05 keV) as
+the baseline.  But this made very little difference, except for giving more
+sensible results in the loss-limited spectral variation.
+
+I don't understand how Rettig/Pohl got their figures.
