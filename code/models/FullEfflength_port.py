@@ -170,6 +170,10 @@ def fefflen(kevs, B0, eta2, mu, vs, v0, rs, rsarc, s, rminarc, icut, irmax,
         w = fwhm(rmesh, intensity, get_intensity)
         widths.append(w)
         if get_prfs:
+            # Tack on point at r=1
+            rmesh = np.append(rmesh, 1.0)
+            intensity = np.append(intensity, 0.0)
+            # Then save to return, after we're done
             rgrids.append(rmesh * rsarc)
             prfs.append(intensity)
 

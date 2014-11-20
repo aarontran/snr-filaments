@@ -18,94 +18,43 @@ From poster session (July 31):
 (just to get a sense of energy -- how do we get physical units from CIAO
 processed mosaics?)
 
+Speculation:
+* effect of varying electron population spectrum (besides Zirakashvili and
+  Aharonian, see also new arXiv paper by Pohl, Wilhelm, Telezhinsky).
+  http://arxiv.org/abs/1411.2891 (figures are missing...)
+* radio relic modeling -- lots of parallel-seeming work to look at!...
+
 Main TO-DOs
 -----------
 
-### Pending material to be reviewed
+Keep end game in mind, where do we cut it off and start a new paper?
 
-* Kepler fit tables, plots
-* Spectral index variation (fakeit tests, procedures) (bring rettig/pohl)
-* Spectral index variation (full model)
-* Load all plots/images from emails (incl. Steve's radio image)
+* WRITEUP results, edit manuscript w/ fixes etc
+* Check spectral variation from models (damping case for R&P)
 
+* Radio reduction...
+* Test the strange D^2(x) B(x) assumption
+* Simple hydrodynamic codes?
+* Self-similar solutions for veloc, B behind the shock,
+  to get radio/X-ray profiles farther downstream
 
-### Current main things to check:
-* map out parameter space (compute 0.7-1keV FWHM as a function of B0, ab, eta2)
-* obtaining and fitting profiles from radio data
-
-* Kepler -- generate nice PDF of tables to present, w/ plots
-  (one approach -- save the comprehensive tables / misc. in their own folder,
-  and generate a unique PDF output.  Port over the tables you like to the final
-  manuscript)
-
-### Current list:
-
-* RFI removal tutorial on TDEM0020
-* AS IN EMAIL -- MAP OUT PARAMETER SPACE OF MODEL (!)
-  (criterion: when does the 0.7 keV FWHM blow up?  What are the min/max values
-  attained at various values of eta2, B0, ab?)
-* Jack's Tycho data -- how to throw data from all configurations together?
-  Just throw all the baselines in one?  I'm wondering if the indiv.
-  configurations are set up to get, e.g., nice beam functions (PSF whatever),
-  and if merging data willy-nilly from multiple configs would mess it up.
-
-* Code to run fits on multiple profiles at once
-  (also see about not normalizing intensities)
 * check expressions for cut-off energy, diffusion terms in Sean's solution
   (using Bmin vs. B0 in certain places).
-
-### Somewhat done:
-* Spectral variation -- how to deal with thermal lines?  Other gaps?
-  Can this tell us about the strength of damping -- B field, eta2?  We might
-  have to run the model computations to do this right...
-* Consider radio spectral variation as well?
 
 ### Lower priority / details
 * Manuscript data (Tycho regions-6, SN 1006)
   - Tycho loss-limited fits with eta2 = 1 fixed
   - Tycho damping fits with variable distance
-  - Tycho, complete set of tables, plots (save with regions-6, low priority)
-  - SN 1006, fits for individual regions?!
-
-Manuscript/etc tweaks:
+  - SN 1006, fits for individual regions?! (super low priority)
 * Add scale bar (arcsec) to Tycho SNR image...
-* plots for Regions 4,5 might better show the "hybrid" behavior (but Region 1
-  shows ex.  with 4 bands and ragged, broad profiles)
+* Check outliers by hand (why did the fits go wonky)
+* ODE solving, full model with damped B-field (see Tang/Chevalier)
 
-Leave radio/x-ray intensity calibration / calculation match up until a little
-later, once I have simultaneous profile fitting.
-(for intensity -- our models give us intensity in erg/cm^2/s whatever, but we
-have been simply comparing to photon counts)
-(answer: we are computing model profiles at a fixed energy -- so it's a
-constant scaling factor, doesn't matter)
+### Radio Qs for Jack
 
-
-### Radio thingies
-
-* EVLA data reduction (casaguides.nrao.edu) (prepare questions for Jack)
-  (how to extract image data for analysis? -- solution: export to FITS.  Units
-  are Jy/beam = 10^-26 W/s/m^2/Hz/beam)
-
-* Figure out how best to fit profiles in their entirety.
-  One idea -- use FWHMs to line up profiles, roughly (since we don't precisely
-  know the shock location + precursor may be seen ahead of shock...)
-  (consider the work of Warren 2005?)
-  (morlino/caprioli 2012, cassam-chenai 2007 have done this to some extent)
-  Another: match up profiles to peaks.  But where/how to cut-off front/back for
-  fitting?...
-  Relevant links:
-  http://mathematica.stackexchange.com/questions/866/simultaneously-fitting-multiple-datasets
-  http://forums.wolfram.com/mathgroup/archive/2011/Sep/msg00555.html
-  Guessing it may be necessary to do this manually a la XSPEC
-
-* Radio rims -- how to get intensities to work out right?
-  (Chandra photometry?... VLA already has the calibration routine)
-  Can we show/prove that _thin_ radio rims are not possible in a loss-limited
-  model?
-  Diffusion in radio?
-  time-dependence, aging, other effects may be important!
-
-* Radio flux measurements -- how badly will CLEAN mess things up?
+* How badly does CLEAN mess up radio flux measurements?
+* How to best use data from all configurations?  Throw all baselines together?
+  (would that mess up the beam functions etc)
 
 ### Theory stuff
 
@@ -119,34 +68,7 @@ constant scaling factor, doesn't matter)
   arbitrary injection spectrum, using an inverse Laplace transform computed
   numerically with Talbot's method?!!! (geez)
 
-
-### Lower priority:
-
-2. Check outliers by hand (why did the fits go wonky), and check manual
-   error computation speed. (barely relevant anymore)
-5. ODE solving, simple model with damped B-field.  Not likely to do much, esp.
-   if our full model comes up correct...
-
-
-Data processing to-dos, by individual "pipeline":
-(i.e., getting FWHMs/regions/etc)
-(set aside while we address magnetic damping etc...)
-
-* Tycho -- Try splitting 1-1.7 and 2-3 bands into smaller pieces! (low priority)
-             (run `reproject_obs` and `flux_obs`, double check that I get the
-              same files that Brian has sent, then make new cuts and numbers)
-
-* Cas A -- pick subset of regions-0 for regions-1 from FWHMs/profiles/counts,
-             ensuring that all regions can get decent FWHMs.
-           generate new FWHM fits (1-9 keV) and get spectra of rims
-           select specific regions outside rims and get spectra, need to figure
-             out how much thermal contamination
-
-* Tycho (radio) -- later, meddle with Sean's model and see if we can't
-                   reproduce the radio rims.
-
-* Tycho (2003) -- try reprocessing ObsID 3837 on another computer.  If that
-                  fails email the CXC or something
+* Diffusion in radio?
 
 * General note: final data for manuscript should always re-run and update
   resolution notebook
@@ -154,8 +76,11 @@ Data processing to-dos, by individual "pipeline":
 Lower priority / various checks
 -------------------------------
 
-* Manual error computation -- test it out on one/two regions, estimate how much
-  time it takes (and extrapolate).  Do this after the resolution checks.
+* Cas A -- pick subset of regions-0 for regions-1 from FWHMs/profiles/counts,
+             ensuring that all regions can get decent FWHMs.
+           generate new FWHM fits (1-9 keV) and get spectra of rims
+           select specific regions outside rims and get spectra, need to figure
+             out how much thermal contamination
 
 * SN 1006 -- re-run pipeline at very end and ensure all is still consistent
              re-run pipeline on _individual_ SN 1006 regions.
@@ -170,9 +95,6 @@ Lower priority / various checks
   roundoff, etc).
 
 * Check transport equation for pure advection case and for damping case
-
-* When paper is nearing finish -- re-run entire pipeline on SN 1006 as a sanity
-  check.  But, not now.
 
 * sanity check that when I run CIAO `merge_obs`, I get the same files that
   Brian has been sending me... (this requires the reprojected files)

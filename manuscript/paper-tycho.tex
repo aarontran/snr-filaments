@@ -1564,7 +1564,7 @@ This research has made extensive use of NASA's Astrophysics Data System.
 % ========
 % Appendix
 % ========
-%\clearpage
+\clearpage
 \appendix
 
 \setcounter{table}{0}
@@ -1595,8 +1595,8 @@ filament widths in SN 1006, from \citet{ressler2014}.
 \begin{figure*}[h]
     \centering
     \includegraphics[width=0.7\textwidth]{figures/energywidth-subplot-sn1006.pdf}
-    \caption{Rim width predictions for loss-limited and damped fits with
-    $\mu = 1$ fixed for all regions, SN 1006.}
+    \caption{Rim width predictions for loss-limited (dashed) and damped fits
+        (solid) with $\mu = 1$ fixed for all regions, SN 1006.}
 \end{figure*}
 
 % Fit results for ALL regions, mu = 1, loss-limited and damped
@@ -1605,12 +1605,14 @@ filament widths in SN 1006, from \citet{ressler2014}.
     \centering
     \caption{Best model fits for all regions, $\mu = 1$}
     \input{suppl-fits-all-sn1006.tex}
-    \tablecomments{Loss-limited fits fix $\mu=1$ to match the damping model;
-        best damped fits select best $a_b$ value below $0.01$ (to $0.002$),
+    \tablecomments{Loss-limited fits have $\mu=1$ fixed;
+        best damped fits select best $a_b$ value between $0.002$ and $0.01$
+        (1.8--9 arcsec; $a_b$ is given in units of shock radius $r_s$),
         enforcing moderate damping.  All fits have 1 dof.  The manual selection
         of a best $a_b$ value may be construed as removing one more dof.}
 \end{table}
 
+\clearpage
 \begin{figure}
     \centering
     \iftoggle{manuscript}{

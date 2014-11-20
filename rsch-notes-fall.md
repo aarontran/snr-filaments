@@ -48,16 +48,17 @@ Table of contents
             Run Tycho regions-6, Kepler regions-3 through data pipeline
 * Week 23 - (11/3) Emails (param space), spectral variation, VLA tutorials,
             CRESST retreat and poster
+* Week 24 - (11/10) Inspect radio data, more spectral variation, VLA RFI
+            tutorial
 
-* Week 24 - (11/10)
 * Week 25 - (11/17)
-* Week 26 - (11/24)
-* Week 27 - (12/1)
+* Week 26 - (11/24)     (Thanksgiving)
+* Week 27 - (12/1)      (out on Friday)
 * Week 28 - (12/8)
 * Week 29 - (12/15)
-* Week 30 - (12/22, 12/23 only) 
+* Week 30 - (12/22, 12/23 only)
 
-* Week 31 - (12/29)
+* Week 31 - (12/29) at home
 * Week 32 - (1/5) AAS winter meeting
 
 (week 10 included for continuity)
@@ -5246,6 +5247,10 @@ for easier review.  Didn't get quite enough done today...
 Spectral variation from full model profiles
 -------------------------------------------
 
+(edit, 2014 November 12: the tabulated results are WRONG -- I did not properly
+change the integration length to be over the 1 keV FWHM only!
+Please see notes from November 12 for corrected tables)
+
 Procedure:
 * compute intensity profiles from best fit parameters over 25 log-spaced
   energies between 1.05-7 keV.
@@ -5371,3 +5376,307 @@ the baseline.  But this made very little difference, except for giving more
 sensible results in the loss-limited spectral variation.
 
 I don't understand how Rettig/Pohl got their figures.
+
+Tuesday 2014 November 11
+========================
+
+Summary
+-------
+* RFI removal from TDEM0020 (tutorial), running overnight (bad parameters...)
+* Parameter range parsing for full model code, run overnight
+
+Automated/manual RFI removal in CASA
+------------------------------------
+
+This is tricky and subjective.  See my notes in the TDEM0020 folder.
+
+Mapping parameter space
+-----------------------
+
+Moved previous code for mapping parameter space, over to new notebook.
+Now figuring out what to do...
+
+What are the key qualitative behaviors that we know / have described?
+* Smaller B0 -> widening rims (and, more likely to show hybrid behavior?)
+* Smaller eta2 -> wider rims (small ab), or thinner rims (large ab)
+* Smaller mu --> marginally thinner rims, but not important
+* Smaller ab --> smaller rims
+
+Now, the tricky part is getting past the zero-th/first-order effects.
+* as eta2 -> 0, we get diminishing marginal returns.  This limits the max width
+  of damped rims, or the minimum width / energy-dependence of loss-limited rims
+* in strong damping, as B0 -> large, we see weakening effect.  The rims
+  converge to a loss-limited width beneath the damping lengthscale at
+  sufficiently high energy.  As B0 -> small, rim width blows up quickly.
+
+Questions to answer:
+* what combinations of parameters give rise to this "hybrid" model behavior?
+  The key to differentiating is that they give comparable FWHMs at X-ray
+  energies, but at lower photon energies (UV to visible) the FWHMs blow up.
+
+  This would be a 2 step approach:
+  1. find all parameters that give "reasonable" FWHMs at, e.g., 1 keV
+  2. for all those parameters, compute FWHM at 0.01 keV.  If it blows up, it's
+     not a "real" damping model.
+
+* What range of ab values can reproduce a given profile, as Steve asked?
+
+
+* Strong B-field, small ab value can set _upper_ bound on rim width
+  (thick rims not possible; strong-field damping)
+* Weak B-field, small ab value can set _upper_ bound on rim width
+  (thick rims buried by plateau above 50%; "blowup/hybrid" weak-field damping)
+* Weak B-field, moderate to large ab value cannot set _upper_ bound on rim
+  width.  Rim will simply widen, but will have measurable FWHM
+  (this encompasses the loss-limited case)
+
+In general, for a given damping length, there won't be a _lower_ bound on rim
+width -- just crank up magnetic field as far as possible.
+
+Also -- it would be nice to distinguish between blowup (plateau above 50%) and
+rims simply widening very far back.
+ 
+
+Wednesday 2014 November 12
+==========================
+
+Summary
+-------
+* spectral variation, round 2 (debugging and validation)
+* radio profiles, first look w/ plotting script
+
+(Philae landing day)
+
+Meeting with Brian
+------------------
+
+Brought material on Kepler, spectral variation, parameter space mapping, quick
+ad hoc plots of radio and X-ray profiles together.
+
+On modeling radio rims:
+* Relic electrons in the radio -- see his RCW 86 paper, they can diffuse out
+  and may persist for hundreds of years!
+* Jack -- here Friday for sure...
+
+* Spectral index variation -- yeah, interesting in that we explored, ran into
+  trouble. get sean's feedback.  Show reproduced version of Rettig/pohl plots
+  and explain that we can't use this?  Another paragraph for manuscript
+* Radio spectral index variation -- too close together, probably can't get a
+  good number out (large error bars).
+
+* Radio -- draw attention to the fact that we don't see rims.  Ask for feedback
+  explicitly on that.  Send plots around with rims/x-ray comparison
+* Send SN 1006 stuff (just had telecon -- discussing results) (done)
+
+Subsequently I compiled an email and sent radio profiles, better version of
+parameter grid.  Now easier to pattern match by eye.
+
+
+Spectral variation, round two (fixed, old tables bad)
+-----------------------------------------------------
+
+Caught a major bug -- I was not integrating properly over the same FWHM in each
+region.  Fixed, changed our results somewhat.
+
+Spent some time trying to reproduce Rettig/Pohl results.  No go on damping!
+If I supply smaller magnetic fields (55 muG vs. 85) it looks much closer.  But,
+the qualitative behavior is still wrong, and the 1 keV spectral index
+difference is still wrong.  So something is clearly up.
+
+### Best loss-limited fit, eta2=1 fixed
+
+    Region	rim	    down	delta	ab	    B0	    eta2
+    1	    -2.593	-2.638	0.045	nan	    183.3	1
+    2	    -2.596	-2.641	0.045	nan	    313.0	1
+    3	    -2.596	-2.642	0.045	nan	    427.0	1
+    4	    -2.598	-2.643	0.045	nan	    284.8	1
+    5	    -2.599	-2.644	0.045	nan	    288.8	1
+    6	    -2.600	-2.645	0.045	nan	    410.9	1
+    7	    -2.601	-2.646	0.045	nan	    419.0	1
+    8	    -2.602	-2.647	0.045	nan	    388.2	1
+    9	    -2.602	-2.648	0.045	nan	    415.1	1
+    10	    -2.603	-2.648	0.045	nan	    466.3	1
+    11	    -2.607	-2.652	0.045	nan	    355.6	1
+    12	    -2.608	-2.653	0.045	nan	    318.0	1
+    13	    -2.612	-2.657	0.045	nan	    400.3	1
+    14	    -2.634	-2.678	0.044	nan	    383.9	1
+    15	    -2.636	-2.680	0.044	nan	    431.8	1
+    16	    -2.638	-2.683	0.044	nan	    493.4	1
+    17	    -2.641	-2.685	0.044	nan	    467.8	1
+    18	    -2.633	-2.677	0.044	nan	    283.1	1
+    19	    -2.623	-2.668	0.045	nan	    401.4	1
+    20	    -2.626	-2.671	0.045	nan	    463.6	1
+
+    Mean 0.0449188299054
+    Stdev 0.000446049746373
+    Max 0.0454939453366
+    Min 0.0441799959736
+
+### Best damped fit, eta2=1 fixed
+
+    Region	rim	    down	delta	ab	    B0	    eta2
+    1	    -2.383	-2.450	0.067	0.008	27.7	1
+    2	    -2.389	-2.466	0.077	0.003	25.4	1
+    3	    -2.544	-2.594	0.05	0.010	406.5	1
+    4	    -2.387	-2.454	0.068	0.004	27.7	1
+    5	    -2.398	-2.481	0.082	0.003	24.5	1
+    6	    -2.380	-2.414	0.034	0.004	68.0	1
+    7	    -2.474	-2.513	0.039	0.006	290.9	1
+    8	    -2.406	-2.437	0.031	0.005	137.8	1
+    9	    -2.385	-2.418	0.033	0.004	78.3	1
+    10	    -2.389	-2.453	0.063	0.002	29.1	1
+    11	    -2.532	-2.579	0.047	0.010	316.8	1
+    12	    -2.404	-2.477	0.074	0.003	25.9	1
+    13	    -2.477	-2.515	0.037	0.006	257.7	1
+    14	    -2.430	-2.465	0.035	0.004	59.8	1
+    15	    -2.431	-2.471	0.04	0.003	47.8	1
+    16	    -2.569	-2.615	0.046	0.006	434.1	1
+    17	    -2.485	-2.518	0.033	0.004	232.1	1
+    18	    -2.449	-2.530	0.081	0.003	23.9	1
+    19	    -2.416	-2.449	0.033	0.004	77.6	1
+    20	    -2.416	-2.452	0.036	0.003	57.5	1
+
+    Mean 0.0504027841573
+    Stdev 0.0179311849968
+    Max 0.0823741798834
+    Min 0.0314484727336
+
+
+Thursday 2014 November 13
+=========================
+
+Summary
+-------
+* Radio tutorial on TDEM0200, trying to excise RFI more carefully
+* Email chain discussion...
+
+Some JVGR work
+
+Email chain discussion
+----------------------
+
+Explanation for lack of radio rims in loss-limited model, from Sean:
+we'd need to include self-similar solutions for B, v\_plasma, etc. behind the
+shock.
+
+Maybe: define metrics for various regimes
+* When do we see a thin rin within 10 arcsec of shock, in the radio?
+* When is the said thin rim just a thin bump (minimum behind shock about 80%)
+
+
+Friday 2014 November 14
+=======================
+
+* Radio work (TDEM0200), excision and calibration etc
+* JVGR work
+
+Picked up Steve's conference proceeding paper (eds. Roger and Landecker)
+
+
+Sunday 2014 November 16
+=======================
+
+Working on calibration for TDEM0020.  Not looking so great at the moment.
+See my notes.  The calibration is very poor.
+
+
+Monday 2014 November 17
+=======================
+
+Meeting deferred (Rob out, Brian Boston-bound early)
+Primarily JVGR work
+
+
+Tuesday 2014 November 18
+========================
+
+Summary
+-------
+* Clean up notes
+
+Morning JVGR work
+
+Short drop-in with Rob... not much new, but ran by some ideas/plots, and ideas
+for mapping parameter space.  Monday, Rob may or may not be in, will know soon
+(Rob in Cambridge, UK rest of week; Brian in Cambridge, MA).
+
+Read/scan/save Steve's paper (Roger/Landecker) briefly.  It seems like Steve
+explored the rim problem, accounting for some of these sphericity etc. effects
+(and varying magnetic fields somewhat?).  But, you simply can't get rims as
+thin as are seen in SN 1006.  Not directly helpful, but just a reference.
+
+Fitting entire profiles
+-----------------------
+
+First iteration setup of code.  More tomorrow.
+
+Considered and rejected iterative closest point type algorithms (iteratively
+compute best rotations/translations).  Although I've done some of this before,
+it's not worth it.
+
+How to line up / align / transform profiles, intensities, etc?
+
+  One idea -- use FWHMs to line up profiles, roughly (since we don't precisely
+  know the shock location + precursor may be seen ahead of shock...)
+  (consider the work of Warren 2005?)
+  (morlino/caprioli 2012, cassam-chenai 2007 have done this to some extent)
+  Another: match up profiles to peaks.  But where/how to cut-off front/back for
+  fitting?...
+
+
+Wednesday 2014 November 19
+==========================
+
+Summary
+-------
+* Finish profile fitting code
+* Explore fit behavior / compare to data
+
+Profile fitting
+---------------
+
+Code set-up and now working -- good number of bad quality fits.
+Radio fitting is of course much faster because diffusion is unimportant, and
+the advective solution is easy.
+
+Current set up can fit multiple profiles w/ single scaling+translation.
+But for now I just fit them separately, we have some issues to iron out first.
+(different issues in profile fitting for each case)
+
+Remarks/observations
+--------------------
+
+* Quality of best fit is generally very poor
+* Very hard to depress plateau emission in full model, even w/ damping
+* X-ray emission is always lower (after normalizing) than radio -- no surprise
+* Modeled rise (esp. in X-ray) seems much sharper than measurements -
+  precursor?
+* Fits often not well constrained -- slowly iterating through a valley in
+  chi-squared space by tuning B0, ab.
+
+Need more robust indicators/measurements of shape!
+
+Approaches and things...
+* The best fit model cannot have emission ABOVE the plateau of our measurements
+  (unphysical, unless our model is wrong)
+* Can we fit behind peak to avoid precursor like stuff?
+* Compute minimum emission behind shock
+* Map out parameter space based on local minimum behind peak (and, presence or
+  lack of a peak!)
+* Maximum FWHM allowed for a given damping length.  I think we can get this.
+* Self-similar Sedov-Taylor solutions to get slightly more correct downstream
+  profiles (add a flag to trigger this, then compare with/without)
+* Do we need to worry about smearing, deconvolution effects in radio image?
+  I assume CLEAN already handles the beam PSF
+
+EXAMPLE that fits NW rim (num=2) well in radio at bump, but falls off too fast
+vs. observation (downstream/relic e- not considered in our model...)
+
+        ab = 0.0165
+        B0 = 381.447e-6
+        amp = 3500
+        r_trans = 0.87
+
+        # X-ray
+        amp=55
+        r_trans = 1.5

@@ -377,9 +377,127 @@ def mind_the_gaps(x, yaux, y, dy_max, f):
 
     return x, yaux, y  # Match function call order...
 
-# ========================================
-# Wrappers for full/simple model functions
-# ========================================
+
+# ======================================================
+# Code to fit extracted image profiles to model profiles
+# ======================================================
+
+def profile_fit(snr, kevs, prfs, epss, r_prfs, mu, eta2=None, B0=None,
+    r_trans=0, amp=1, ab_fit=None, mu_free=False, eta2_free=False,
+    B0_free=True, rminarc_f = 1.2, model_kws=None, **lmfit_kws):
+    """Fit measured thin rim profiles to model profiles, with single
+    translation and amplitude shift for profiles at all energies
+
+    The model_kws 'get_prfs', 'irad_adapt', 'rminarc' are set/overriden so that
+    profile fitting will work correctly.
+
+    Inputs:
+        snr, kevs as usual
+        prfs, epss, r_prfs are lists of profiles, errors, r_grids
+        mu, B0, eta2 (float) initial guesses
+        mu_free, eta2_free (bool) which parameters shall vary in fits?
+        ab_fit (float) if specified, allow ab to be a fit parameter
+            (if you don't want it to vary, specify via model_kws instead)
+            (BUT, enable idamp=True for this to work)
+        **lmfit_kws takes extra kwargs for lmfit.minimize (includes lsq kws)
+
+        model_kws={'icut':True, 'verbose':True, 'rminarc':60, ...}
+    Output:
+        lmfit.Minimizer with fit information / parameters
+    """
+    if model_kws is None:
+        model_kws = {}
+    model_kws['get_prfs'] = True
+    model_kws['irad_adapt'] = False
+
+    # require rminarc to be larger than r_prfs at all energies
+    # default safety factor 1.2
+    rminarc = []
+    for r_prf in r_prfs:
+        rminarc.append(max(r_prf) - min(r_prf))
+        # r_prf needn't be sorted, technically
+    model_kws['rminarc'] = rminarc_f * np.array(rminarc)
+
+    p = lmfit.Parameters()
+    for pstr in ['mu', 'B0', 'eta2']:
+        pval = locals()[pstr]
+        if pval is None:
+            pval = snr.par_init[pstr]
+        p.add(pstr, value=pval, vary=locals()[pstr+'_free'],
+              min=snr.par_lims[pstr][0], max=snr.par_lims[pstr][1])
+
+    if ab_fit is not None:
+        #p.add('ab', value=ab_fit, vary=True, min=0, max=1e3)
+        # TODO TESTING ONLY
+        p.add('ab', value=ab_fit, vary=True, min=0, max=0.017)
+    p.add('r_trans', value=r_trans, vary=True)
+    p.add('amp', value=amp, vary=True)
+
+    res = lmfit.minimize(prf_objective_func, p,
+                         args=(prfs, epss, r_prfs, kevs, snr),
+                         kws=model_kws, **lmfit_kws)
+    return res
+
+
+def prf_objective_func(pars, prfs, epss, r_prfs, *args, **kwargs):
+    """Objective function for profile fitting, for use with lmfit
+
+    NOTES, please read:
+
+    1. Fits a single amplitude + translation shift for all profiles together.
+       If you want separate fits, run this code on each profile separately
+
+    2. Code will not warn you if best fit runs out of rminarc domain
+       (interpolation of model profile just takes edge points in such cases).
+       Please check that best fits lie within rminarc.
+
+    3. for profile fitting to work correctly, you must supply the correct
+       **kwargs (require profiles and don't use adaptive rminarc)
+
+    4. Best fit amplitude scale is not physically meaningful, as full model
+       code profiles don't have correct units.  Model profiles should scale
+       correctly w.r.t. each other though for multiple profile fits.  We don't
+       know the e- distribution scaling a priori, anyways.
+
+    Inputs:
+        pars: lmfit.Parameters object with entries B0, eta2, mu, r_trans, amp,
+              and ab; ab is optional
+        prfs: list of measured profiles (np.ndarray) corresponding to energies
+              passed into kevs (*args; see width_cont docstring)
+        epss: list of profile errors (np.ndarray), matching prfs/r_prfs
+        r_prfs: list of r-coordinate grids (np.ndarray), matching prfs/epss
+        *args: arguments for width_cont (kevs, snr as of 2014 Nov 19)
+        **kwargs: keyword arguments for width_cont, slew of flags goes here
+    Output:
+        np.ndarray of residuals for lmfit.minimize
+    """
+    r_trans = pars['r_trans'].value  # Translation shift
+    amp = pars['amp'].value  # Amplitude scaling
+    if 'verbose' not in kwargs or kwargs['verbose']:
+        print '\tshift = {:0.3g}\", amp = {:0.3g}'.format(r_trans,amp)
+
+    # Apply translation/scaling.  Will not modify "outside" inputs
+    r_prfs = map(lambda x: x + r_trans, r_prfs)
+    prfs = map(lambda x: x*amp, prfs)
+    epss = map(lambda x: x*amp, epss)
+
+    # Compute model profiles.  Don't need FWHMS (_)
+    _, igrids, rgrids = width_cont(pars, *args, **kwargs)
+
+    # Combine all profiles' weighted residuals
+    res_all = []
+    for _ in zip(prfs, epss, r_prfs, igrids, rgrids):
+        prf, eps, r_prf, igrid, rgrid = _
+        prf_fit = np.interp(r_prf, rgrid, igrid)
+        res = (prf_fit - prf)/eps
+        res_all.extend(list(res))
+
+    return np.array(res_all)
+
+
+# ==============================================
+# Wrappers for full/simple model functions, fits
+# ==============================================
 
 # Input: snr, kevs, data/eps/mu/(eta2,B0);   output: best fit (mu)/eta2/B0
 
@@ -440,7 +558,6 @@ def full_fit(snr, kevs, data, eps, mu, eta2=None, B0=None, mu_free=False,
               min=snr.par_lims[pstr][0], max=snr.par_lims[pstr][1])
 
     if ab_fit is not None:
-        # TODO default ab_fit settings could be stored in each SNR
         p.add('ab', value=ab_fit, vary=True, min=0, max=1e3)
 
     res = lmfit.minimize(objectify(width_cont), p, args=(data, eps, kevs, snr),
@@ -480,6 +597,7 @@ def simple_width(snr, kevs, mu, eta2, B0):
     p.add('eta2',value=eta2)
     p.add('B0', value=B0)
     return width_dump(p, kevs, snr)
+
 
 # =============================
 # Model functions, objectify(f)

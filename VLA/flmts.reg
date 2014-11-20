@@ -1,0 +1,11 @@
+# Region file format: DS9 version 4.1
+global color=green dashlist=8 3 width=1 font="helvetica 10 normal roman" select=1 highlite=1 dash=0 fixed=0 edit=1 move=1 delete=1 include=1 source=1
+fk5
+# projection(0:25:27.155,+64:11:34.61,0:25:31.595,+64:12:31.29,51.1537") color=white width=3
+# projection(0:24:54.619,+64:10:15.99,0:24:49.526,+64:10:59.47,24.0595") color=white width=3
+# projection(0:24:47.059,+64:08:30.71,0:24:38.344,+64:08:40.14,26.3302") color=white width=3
+# projection(0:25:06.080,+64:05:16.00,0:25:01.961,+64:04:18.25,44.2702") color=white width=3
+# text(0:25:37.540,+64:12:32.83) color=white width=3 text={NNE}
+# text(0:24:49.972,+64:11:18.59) color=white width=3 text={NW}
+# text(0:24:36.228,+64:08:53.98) color=white width=3 text={WNW}
+# text(0:24:57.643,+64:04:09.11) color=white width=3 text={SW}

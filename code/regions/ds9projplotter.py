@@ -45,7 +45,8 @@ def main():
     """
     parser = argparse.ArgumentParser(description=
              ('Plot and save data from DS9 projections. If only labels are '
-              'given, it will just plot existing dat files'))
+              'given, it will just plot existing dat files.'
+              'Other regions/objects in file are ignored.'))
 
     parser.add_argument('infile', help='Input DS9 region file (fk5 coords)')
     parser.add_argument('datroot', help='Stem for output profile data')
@@ -85,7 +86,7 @@ def main():
             print 'No pltroot supplied, generating data only'
 
     # Parse projections
-    rspecs = get_region_params(regions_file)
+    rspecs = get_projection_params(regions_file)
     if verbose:
         print 'Projections parsed from region file'
 
@@ -165,7 +166,7 @@ def generate_dat_files(rspecs, datroot, bands, labels):
     d.set('exit')
 
 
-def get_region_params(fname):
+def get_projection_params(fname):
     """Read in DS9 region file (version 4.1), return list of XPA arguments
     for projections ONLY!
     """
