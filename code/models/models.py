@@ -11,6 +11,8 @@ import cPickle as pickle
 from datetime import datetime
 import inspect
 import numpy as np
+from operator import add as op_add
+from operator import mul as op_mul
 import os
 import sys
 
@@ -383,10 +385,11 @@ def mind_the_gaps(x, yaux, y, dy_max, f):
 # ======================================================
 
 def profile_fit(snr, kevs, prfs, epss, r_prfs, mu, eta2=None, B0=None,
-    r_trans=0, amp=1, ab_fit=None, mu_free=False, eta2_free=False,
+    r_trans=0, amp=1, multishift=False, ab_fit=None, mu_free=False, eta2_free=False,
     B0_free=True, rminarc_f = 1.2, model_kws=None, **lmfit_kws):
     """Fit measured thin rim profiles to model profiles, with single
     translation and amplitude shift for profiles at all energies
+    (yet another convenience wrapper...)
 
     The model_kws 'get_prfs', 'irad_adapt', 'rminarc' are set/overriden so that
     profile fitting will work correctly.
@@ -405,17 +408,17 @@ def profile_fit(snr, kevs, prfs, epss, r_prfs, mu, eta2=None, B0=None,
     Output:
         lmfit.Minimizer with fit information / parameters
     """
+    assert len(kevs) == len(prfs) == len(epss) == len(r_prfs)
+
     if model_kws is None:
         model_kws = {}
     model_kws['get_prfs'] = True
     model_kws['irad_adapt'] = False
 
-    # require rminarc to be larger than r_prfs at all energies
-    # default safety factor 1.2
+    # require rminarc > r_prfs at all energies, default safety factor 1.2
     rminarc = []
     for r_prf in r_prfs:
         rminarc.append(max(r_prf) - min(r_prf))
-        # r_prf needn't be sorted, technically
     model_kws['rminarc'] = rminarc_f * np.array(rminarc)
 
     p = lmfit.Parameters()
@@ -427,59 +430,70 @@ def profile_fit(snr, kevs, prfs, epss, r_prfs, mu, eta2=None, B0=None,
               min=snr.par_lims[pstr][0], max=snr.par_lims[pstr][1])
 
     if ab_fit is not None:
-        #p.add('ab', value=ab_fit, vary=True, min=0, max=1e3)
-        # TODO TESTING ONLY
-        p.add('ab', value=ab_fit, vary=True, min=0, max=0.017)
-    p.add('r_trans', value=r_trans, vary=True)
-    p.add('amp', value=amp, vary=True)
+        p.add('ab', value=ab_fit, vary=True, min=0, max=1e3)
+
+    if multishift:
+        assert len(kevs) == len(r_trans) == len(amp)
+        for n in xrange(len(amp)):
+            p.add('r_trans_{:d}'.format(n), value=r_trans[n], vary=True)
+            p.add('amp_{:d}'.format(n), value=amp[n], vary=True)
+    else:
+        p.add('r_trans', value=r_trans, vary=True)
+        p.add('amp', value=amp, min=0, vary=True)
 
     res = lmfit.minimize(prf_objective_func, p,
-                         args=(prfs, epss, r_prfs, kevs, snr),
+                         args=(prfs, epss, r_prfs, multishift, kevs, snr),
                          kws=model_kws, **lmfit_kws)
     return res
 
 
-def prf_objective_func(pars, prfs, epss, r_prfs, *args, **kwargs):
+def prf_objective_func(pars, prfs, epss, r_prfs, multishift, *args, **kwargs):
     """Objective function for profile fitting, for use with lmfit
 
     NOTES, please read:
 
-    1. Fits a single amplitude + translation shift for all profiles together.
-       If you want separate fits, run this code on each profile separately
-
-    2. Code will not warn you if best fit runs out of rminarc domain
+    1. Code will not issue warning if best fit runs out of rminarc domain
        (interpolation of model profile just takes edge points in such cases).
        Please check that best fits lie within rminarc.
 
-    3. for profile fitting to work correctly, you must supply the correct
+    2. for profile fitting to work correctly, you must supply the correct
        **kwargs (require profiles and don't use adaptive rminarc)
 
-    4. Best fit amplitude scale is not physically meaningful, as full model
-       code profiles don't have correct units.  Model profiles should scale
-       correctly w.r.t. each other though for multiple profile fits.  We don't
-       know the e- distribution scaling a priori, anyways.
-
     Inputs:
-        pars: lmfit.Parameters object with entries B0, eta2, mu, r_trans, amp,
-              and ab; ab is optional
+        pars: lmfit.Parameters object with entries B0, eta2, mu, ab,
+              r_trans/amp or r_trans_[n]/amp_[n] (0 to len(prfs)-1)
+              ab is optional depending on *args/**kwargs to width_cont
+              r_trans/amp depend on multishift (see below)
         prfs: list of measured profiles (np.ndarray) corresponding to energies
               passed into kevs (*args; see width_cont docstring)
         epss: list of profile errors (np.ndarray), matching prfs/r_prfs
         r_prfs: list of r-coordinate grids (np.ndarray), matching prfs/epss
+        multishift: indicate whether you want a single scaling/translation for
+                    all profiles, or individual adjustments for each profile
+                    pars entries must reflect your choice
         *args: arguments for width_cont (kevs, snr as of 2014 Nov 19)
         **kwargs: keyword arguments for width_cont, slew of flags goes here
     Output:
         np.ndarray of residuals for lmfit.minimize
     """
-    r_trans = pars['r_trans'].value  # Translation shift
-    amp = pars['amp'].value  # Amplitude scaling
-    if 'verbose' not in kwargs or kwargs['verbose']:
-        print '\tshift = {:0.3g}\", amp = {:0.3g}'.format(r_trans,amp)
+    assert len(prfs) == len(epss)
+    assert len(epss) == len(r_prfs)
 
-    # Apply translation/scaling.  Will not modify "outside" inputs
-    r_prfs = map(lambda x: x + r_trans, r_prfs)
-    prfs = map(lambda x: x*amp, prfs)
-    epss = map(lambda x: x*amp, epss)
+    if multishift:
+        r_trans = [pars['r_trans_{:d}'.format(n)].value for n in xrange(len(prfs))]
+        amp = [pars['amp_{:d}'.format(n)].value for n in xrange(len(prfs))]
+    else:
+        r_trans = [pars['r_trans'].value] * len(prfs)
+        amp = [pars['amp'].value] * len(prfs)
+
+    if 'verbose' not in kwargs or kwargs['verbose']:
+        # Matches default of verbose=True in width_cont
+        print '\tshifts (\") = {}'.format(r_trans)
+        print '\tamps = {}'.format(amp)
+
+    r_prfs = map(op_add, r_prfs, r_trans)
+    prfs = map(op_mul, prfs, amp)
+    epss = map(op_mul, epss, amp)
 
     # Compute model profiles.  Don't need FWHMS (_)
     _, igrids, rgrids = width_cont(pars, *args, **kwargs)
@@ -608,7 +622,7 @@ def simple_width(snr, kevs, mu, eta2, B0):
 def width_cont(params, kevs, snr, verbose=True, rminarc=None, icut=None,
     irmax=None, iradmax=None, ixmax=None, irad_adapt=True, irad_adapt_f=1.2,
     idamp=False, damp_ab=0.05, damp_bmin=5.0e-6, fgfname='fglists_mod.dat',
-    itmax=200, inmax=50, irhomax=2000, get_prfs=False):
+    itmax=200, inmax=50, irhomax=2000, get_prfs=False, get_data=False):
     """Width function, wrapper for Python port of full model (equation 12)
 
     All **kwargs not specified (excepting verbose) are taken from snr object
@@ -650,6 +664,8 @@ def width_cont(params, kevs, snr, verbose=True, rminarc=None, icut=None,
         get_prfs: get intensity profiles and r grid values alongside FWHMs
                   NOTE -- this BREAKS the fitting functionality
                   so, obviously, don't use if you are fitting stuff
+        get_data: get useful information about profile shape (min/max pos,
+            existence of a trough, % above/below rim max)
 
     Outputs:
         np.array of modeled FWHMs (arcsec) for each energy in 'kevs'
@@ -698,7 +714,7 @@ def width_cont(params, kevs, snr, verbose=True, rminarc=None, icut=None,
         fwhms_prelim = fmp.fefflen(kevs, B0, eta2, mu, vs, v0, rs, rsarc, s,
                                    rminarc, icut, irmax, iradmax_prelim, ixmax,
                                    idamp, damp_ab, damp_bmin, fgfname,
-                                   itmax, inmax, irhomax, False)
+                                   itmax, inmax, irhomax, False, False)
 
         # Replace error-code values
         res_msk, box_msk = _check_calc_errs(fwhms_prelim, rminarc)
@@ -739,9 +755,9 @@ def width_cont(params, kevs, snr, verbose=True, rminarc=None, icut=None,
     out = fmp.fefflen(kevs, B0, eta2, mu, vs, v0, rs, rsarc, s,
                       rminarc, icut, irmax, iradmax, ixmax,
                       idamp, damp_ab, damp_bmin, fgfname,
-                      itmax, inmax, irhomax, get_prfs)
+                      itmax, inmax, irhomax, get_prfs, get_data)
 
-    if get_prfs:
+    if get_prfs or get_data:
         fwhms = out[0]
     else:
         fwhms = out

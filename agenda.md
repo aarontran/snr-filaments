@@ -41,6 +41,14 @@ Keep end game in mind, where do we cut it off and start a new paper?
 * check expressions for cut-off energy, diffusion terms in Sean's solution
   (using Bmin vs. B0 in certain places).
 
+* Check advective solution for damped case!  This will be crucial for the radio
+  rims, because we can make the case that our modeling is reasonable if D is
+  truly negligible (no need to invoke strange D^2 B assumption!)
+
+QUESTION: does the strength/intensity of radio emission from SNRs require any
+amplification, or is an ambient ISM field strength enough to produce the
+observed emission?
+
 ### Lower priority / details
 * Manuscript data (Tycho regions-6, SN 1006)
   - Tycho loss-limited fits with eta2 = 1 fixed
@@ -55,6 +63,7 @@ Keep end game in mind, where do we cut it off and start a new paper?
 * How badly does CLEAN mess up radio flux measurements?
 * How to best use data from all configurations?  Throw all baselines together?
   (would that mess up the beam functions etc)
+* NNLS algorithm to resolve shock structures?
 
 ### Theory stuff
 

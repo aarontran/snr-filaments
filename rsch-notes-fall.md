@@ -51,9 +51,12 @@ Table of contents
 * Week 24 - (11/10) Inspect radio data, more spectral variation, VLA RFI
             tutorial
 
-* Week 25 - (11/17)
-* Week 26 - (11/24)     (Thanksgiving)
-* Week 27 - (12/1)      (out on Friday)
+* Week 25 - (11/17) ..., ..., first fits to full xray/radio profiles
+* Week 26 - (11/24) Radio profile shape mapping
+            (Thanksgiving, out Weds-Fri [work remotely Weds])
+
+* Week 27 - (12/1)
+            (out Friday)
 * Week 28 - (12/8)
 * Week 29 - (12/15)
 * Week 30 - (12/22, 12/23 only)
@@ -5560,7 +5563,7 @@ we'd need to include self-similar solutions for B, v\_plasma, etc. behind the
 shock.
 
 Maybe: define metrics for various regimes
-* When do we see a thin rin within 10 arcsec of shock, in the radio?
+* When do we see a thin rim within 10 arcsec of shock, in the radio?
 * When is the said thin rim just a thin bump (minimum behind shock about 80%)
 
 
@@ -5680,3 +5683,220 @@ vs. observation (downstream/relic e- not considered in our model...)
         # X-ray
         amp=55
         r_trans = 1.5
+
+Thursday 2014 November 20
+=========================
+
+JVGR
+
+Friday 2014 November 21
+=======================
+
+JVGR
+
+Saturday 2014 November 22
+=========================
+
+## Summary: pulling out profile shape parameters
+
+Idea 1: constrain rims / damping based on downstream emission behind thin rim.
+How far does the rim drop in radio?  From my sample regions (NNE, NW, WNW, SW),
+I observe three cases for emission following initial rise at shock:
+
+1. emission keeps rising, but more slowly (d^2I/dx^2 < 0) (loss-limited)
+2. emission falls and keeps falling (weak damping)
+   slow fall, to ~70% over 40 arcsec
+3. emission falls, turns around (trough) and rises again (strong damping)
+   trough at 70-80%.
+
+Larger drop behind rim requires stronger B-field, in general.  Thinking about
+how to formulate something quantitative out of this work.  The drop behind the
+rim tells us, the damping / B-field must be at _least_ so strong.  Two effects:
+thin rim (width of the bump) tells us damping is fast.
+large drop behind rim tells us whether shock field is strong (larger contrast)
+
+We should separate these two effects, which both contribute to a perception of
+"sharp" thin rims.
+
+Between 220 and 240 arcsec.
+* does a max occur?
+  - if no (continuous rise over 20"), damping is slow (ab large)
+  - if yes, is there a trough? (damping is moderate to strong, ab small)
+    + if trough, how deep is the trough?
+      deeper trough means stronger field
+    + if no trough, how far does emission drop?
+      steeper drop means stronger field
+
+We could repeat this for a range of values.  But, actually it's better to take
+a moderate size range and see if that is enough.  Going back more will be more
+and more inaccurate.
+
+For each point in a grid of B0, `a_b`, run this simple algorithm on a grid.
+
+Idea 2: for better X-ray modeling (if we use only 4-7 keV), can we integrate
+model outputs over 4-7 keV?  Image from `merge_obs` is photon/cm^2/s, whereas
+the output from the full model is (I think) erg/cm^2/s.
+Then, we'd have to integrate I(E)/E^2 dE to get counts.
+
+(probably a small effect. you considered this before)
+
+
+(Week 26) Monday 2014 November 24
+=================================
+
+Summary
+-------
+
+
+Morning meeting
+---------------
+
+Reviewed (individual) profile fitting in X-ray and radio.  Some points
+raised by Rob/Brian:
+
+* What happens at smaller `a_b`? How about `a_b` values close to FWHM fit #s?
+* What happens in the loss-limited case (even if radio rims incompatible?)
+* Brian, on fit quality + B0 values estimated from indep. X-ray/radio fits:
+  factors of 2-3 are nothing to lose sleep over (to fit the astronomer cliche)
+* We don't know the data resolution for Steve's radio data (what configuration?
+  good question)
+* Joint fitting of profiles looks like the best approach
+* In joint fits, check difference of best fit translation factors and ensure
+  the number looks reasonable.
+
+Chandra mtg: rooms at Boston Park Plaza are small and old, apparently
+Brian talked w/ Steve, Frank Winkler, Knox Long... update to SN 1006 results is
+a big question.  We'll also want profile shapes/fits for SN 1006, in whatever
+comes out of next SN 1006 project work.
+
+New SN 1006 EVLA data (13A-154, PI: Dave Green, L band, 2013/2014) pending.
+Dave Green met w/ Rob last week -- EVLA is a whole new instrument, scientific
+community is still getting acclimatized.  Need some time (weeks to months?) to
+properly reduce and get scientifically usable data out.
+
+Notes to self:
+* compare model profiles from best _FWHM_ fits (old procedure) to data (!)
+* in fit plots, show all data (included and excluded from fitting)
+
+
+Radio profile shapes
+--------------------
+
+Using code (Saturday Nov 22) to calculate useful profile parameters:
+* does profile have a max?
+* max position?
+* does profile have a trough behind rim?
+* min position?
+* min intensity?
+
+Note that (does profile have trough?) is equivalent to
+(min position != rminarc), so this is redundant.
+
+Very interesting result -- if the trough behind the rim is resolved (by rminarc
+setting), the (relative) intensity drop from thin rim appears to be
+_independent_ of the damping length, yielding a nice curve of intensity vs. B
+field!.  If the trough is not resolved (weaker damping, larger `a_b`), we see
+curves splaying outwards from expected curve (smaller intensity drop at given
+B0 than expected.
+
+Why?  There is, I suspect, a self-similar-ish solution to be had.
+Something that depends on B(x)
+
+We also have nice curves of the trough location (if resolved).
+At small B field, the trough is very close to the rim for all damping lengths;
+as B field increases, trough move backwards.  Trough moves back faster for
+weaker damping (larger `a_b`), sensibly.
+
+Cleaned up some preliminary/prototype plots and code..
+
+
+Tuesday 2014 November 25
+========================
+
+Summary
+-------
+* Profile shape, bounding params from minimum intensity (plots, test etc)
+* Code to fit x-ray/radio profiles jointly, some tests
+
+Profile shape analysis
+----------------------
+
+The idea: see how far emission falls behind the thin rim, and use this to set
+a stringent lower bound on the magnetic field (and, a less certain upper bound
+on damping length).  My assumption is that relic / old emission _falls off
+monotonically_ towards the forward shock.
+
+Put together plots, material on constraining magnetic fields / damping length
+by using this new approach -- measuring the relative drop-off in downstream
+emission just behind rim (steeper yields better constraint).  Ran by Brian --
+just write it up, so they can all look at it and assess whether it's helpful.
+
+With an ad hoc script (doing by hand, essentially), I can extract the
+intensity minimums in X-ray and radio (large, new regions for VLA data), and
+the position behind the shock, roughly.  We need a way of pulling out the
+position + maximum drop (steepest drop).  Get a few data for each profile, and
+compare -- which datum gives the most stringent limit?
+
+This won't be that quantitative, because a whole subspace of parameters will
+work within our intensity bound (sufficiently small damping length and large B
+field will always suppress downstream intensity).  But, if the model is to
+exactly (pipe dream) match the observed shock falloff, we will favor a much
+smaller range of parameters (trade-off between B field and damping length).
+
+Right now, what I'm able to do is to grid over B0 and ab, as finely as I'd
+like, for an arbitrary rminarc value.  I think the procedure should look like,
+for radio profiles:
+
+1. pull out downstream limits from profiles, I suppose by "hand" for now
+2. compare to contours of various `a_b` values, and find roughly allowed values
+   of magnetic field and damping length.
+
+Another thing we can do, if the emission rises back up (in the model), is to
+use that to constrain things even further.  If emission must be suppressed
+behind the trough/minimum then we have to throw away more of parameter space.
+
+This needs a separate analysis/plot of its own.
+
+Profile fitting (joint)
+-----------------------
+
+Finished code.  When running fits, need to set the relative weights
+appropriately since the units are so different.  Currently, I'm using the
+average intensity...
+
+Fiddling around last week, I often had to bound `a_b` above to get the fit to
+converge (instead of running away towards higher B field and higher `a_b`) --
+but that depends strongly (!) on the applied profile cuts and starting
+parameters.  The way to go, it seems (from Monday meeting), is to fix `a_b`.
+
+Kind of icky but I am getting the plots out that I want.  Now how do I get more
+useful numbers/results out?
+
+Tidbit for plotting VLA data
+----------------------------
+
+Throwing here... temporarily? who knows.
+
+    # Note: scale/cmap settings not right for 1-1.7 keV image
+
+    ds9 -rgb \
+        -red ../VLA/TYCHO_IF1.FITS \
+            -scale limits 0.00015 0.0035 \
+            -cmap value 2.25 0.55 \
+        -green 1-1.7kev_mosaic.fits \
+            -scale limits 7e-9 4e-7 \
+            -cmap value 3.59 0.12 \
+        -blue 4-7kev_mosaic.fits \
+            -scale limits 7e-9 4e-7 \
+            -cmap value 3.59 0.12 \
+        -rgb lock scale yes \
+        -asinh
+
+        pan: 0:25:15.764, +64:08:25.00
+
+Paper
+-----
+
+Generate new (preliminary?) figure for profile shape analysis text.
+Paper, for this weekend.
+

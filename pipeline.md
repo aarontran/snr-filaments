@@ -106,8 +106,6 @@ Paper plots in `region-ID/fwhms/plots` and `region-ID/fwhms/model-fits/plots`.
                               # FWHM measurements!
                   (models.py, models_exec.py, parutils.py, full model codes)
 
-          prettify/
-
     # Parentheses denote utility/helper-type modules
 
 The key outputs are profiles, fitted FWHMs, spectra (based on FWHM fitting),

@@ -17,6 +17,7 @@ import numpy as np
 import scipy as sp
 import scipy.optimize as spopt
 import scipy.integrate as spint
+import scipy.signal as spsig  # TODO trial code (2014 nov 24)
 
 # Recompile Fortran full model code and load Pacholczyk tables
 #import fullmodel_recompile
@@ -68,7 +69,7 @@ def main():
 #@profile
 def fefflen(kevs, B0, eta2, mu, vs, v0, rs, rsarc, s, rminarc, icut, irmax,
             iradmax, ixmax, idamp, ab, Bmin, fgfname, itmax, inmax, irhomax,
-            get_prfs):
+            get_prfs, get_data):
     """Use numpy arrays for everything (kevs, rminarc)
 
     Note that irmax is not very important anymore.
@@ -119,9 +120,12 @@ def fefflen(kevs, B0, eta2, mu, vs, v0, rs, rsarc, s, rminarc, icut, irmax,
     fullmodel.readfglists(fgfname)  # !! important
 
     widths = []
-    if get_prfs:
+    if get_prfs or get_data:  # TODO trial code
         rgrids = []
         prfs = []
+    # TODO TRIAL CODE:
+    if get_data:
+        data = []
 
     for en_nu, rmin_nu in zip(kevs, rmin):
         # Convert keV to s^{-1}
@@ -169,7 +173,7 @@ def fefflen(kevs, B0, eta2, mu, vs, v0, rs, rsarc, s, rminarc, icut, irmax,
         # Finally, compute FWHMs precisely (use intensity grid as guide)
         w = fwhm(rmesh, intensity, get_intensity)
         widths.append(w)
-        if get_prfs:
+        if get_prfs or get_data:  # TODO trial code
             # Tack on point at r=1
             rmesh = np.append(rmesh, 1.0)
             intensity = np.append(intensity, 0.0)
@@ -177,10 +181,17 @@ def fefflen(kevs, B0, eta2, mu, vs, v0, rs, rsarc, s, rminarc, icut, irmax,
             rgrids.append(rmesh * rsarc)
             prfs.append(intensity)
 
+        # TODO TRIAL CODE
+        if get_data:
+            data.append(get_prf_stats(rmesh, intensity, get_intensity))
+
     fwhms = np.array(widths) * rsarc
 
     if get_prfs:
         return fwhms, prfs, rgrids
+    # TODO TRIAL CODE
+    if get_data:
+        return fwhms, prfs, rgrids, data
 
     return fwhms
 
@@ -400,6 +411,75 @@ def emisx(r, nu, B0, radtab, disttab, xex, fex,
 #    else:
 #        return distr_rpohl(Ec, rc, B, Ecut, eta, mu, rs, v, s)
 
+# ========================================
+# Extract useful information about profile
+# ========================================
+
+# TODO really needs a rewrite
+def get_prf_stats(rmesh, intensity, f_int):
+    """Extract useful information.  Specifically,
+    1. is there a maximum in the rminarc domain?
+        2. is there a trough?
+        3. how low is the trough, or how low does intensity drop?
+
+    Some code duplicated from FWHM finding code -- may be refactored sometime
+    Current design is not great, but works.
+    The actual value of min_pos is more reliable than has_trough
+    (in marginal cases, at least)
+    """
+    has_max = True
+    has_trough = True
+    max_pos = None
+    min_pos = None
+    min_pct = None
+
+    # Preliminary search for intensity max, using intensity samples
+    eps2 = np.finfo(float).eps * 2
+    idxmax = np.argmax(intensity)
+    if idxmax == 0:      # assumes reasonable sampling... may fail on bad functions
+        res = spsig.argrelmax(intensity)[0]
+        if len(res) == 0:  # No relative maximum found. requires good sampling
+            has_max = False  # may fail for extremely short damping lengths
+            has_trough = False
+        else:
+            idxmax = res[-1]
+
+    if has_max:
+        # Pin down maximum more precisely
+        if idxmax == len(intensity)-1:
+            rpk_a = rmesh[-2]  # CANNOT be rmesh[-1], to find max
+            rpk_b = 1
+        else:  # Most common case (!)
+            rpk_a = rmesh[idxmax - 1]
+            rpk_b = rmesh[idxmax + 1]
+        res = spopt.minimize_scalar(lambda x: -1*f_int(x), method='bounded',
+                                    bounds=(rpk_a, rpk_b), options={'xatol':eps2})
+        max_pos = res.x
+
+        # Now, find the rim minimum, identify whether in a trough or not!
+        idxmin = np.argmin(intensity[rmesh < max_pos])
+        if idxmin == 0:
+            rmin_a = rmesh[0]
+            rmin_b = max_pos
+        else:  # edge case of idxmin at edge is unlikely...
+            rmin_a = rmesh[idxmin - 1]
+            rmin_b = rmesh[idxmin + 1]
+        res = spopt.minimize_scalar(lambda x: f_int(x), method='bounded',
+                                    bounds=(rmin_a, rmin_b), options={'xatol':eps2})
+        min_pos = res.x
+        if abs(min_pos - rmesh[0]) < (rmesh[1] - rmesh[0]):  # Imperfect
+            has_trough = False
+        min_pct = f_int(min_pos) / f_int(max_pos)
+
+    stats = {}
+    stats['has_max'] = has_max
+    stats['has_trough'] = has_trough
+    stats['max_pos'] = max_pos
+    stats['min_pos'] = min_pos
+    stats['min_pct'] = min_pct
+
+    return stats
+
 
 # ============================
 # Find FWHM in intensity graph
@@ -415,7 +495,7 @@ def fwhm(rmesh, intensity, f_int):
     # Compute half max from grid initial guess by bracketing intensity max
     idxmax = np.argmax(intensity)
     if idxmax == 0:
-        print 'ERROR: intensity max not found (rminarc too small)'
+        print 'Warning: intensity max not found (rminarc too small)'
         return 1  # Can't search r < rmin, no disttab/emisttab values computed
     elif idxmax == len(intensity)-1:
         #print 'Warning: intensity max not resolved in grid on right; searching'
@@ -451,7 +531,7 @@ def fwhm(rmesh, intensity, f_int):
     inds_rmin = np.where(cross > 0)[0]  # Left (neg to pos)
 
     if inds_rmin.size == 0:  # No left crossing found
-        print ('ERROR: FWHM edge (rmin) not found '
+        print ('Warning: FWHM edge (rmin) not found '
                '(rminarc too small or peak FWHM cannot be resolved in profile)')
         return 1.  # Can't search r < rmin, no disttab/emisttab values computed
     else:
