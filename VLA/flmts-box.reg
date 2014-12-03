@@ -1,0 +1,11 @@
+# Region file format: DS9 version 4.1
+global color=green dashlist=8 3 width=1 font="helvetica 10 normal roman" select=1 highlite=1 dash=0 fixed=0 edit=1 move=1 delete=1 include=1 source=1
+fk5
+box(0:25:32.862,+64:11:51.30,63.6615",51.1537",117.046) # width=3 font="times 14 normal roman"
+box(0:24:53.535,+64:10:45.04,54.7527",24.0595",52.6733) # width=3 font="times 14 normal roman"
+box(0:24:43.030,+64:08:48.42,57.7869",26.3302",9.52849) # width=3 font="times 14 normal roman"
+box(0:25:00.962,+64:04:56.50,63.7532",44.2702",295.12) # width=3 font="times 14 normal roman"
+# text(0:25:37.541,+64:12:36.83) width=3 font="times 14 normal roman" text={NNE}
+# text(0:24:48.900,+64:11:21.58) width=3 font="times 14 normal roman" text={NW}
+# text(0:24:33.324,+64:08:50.95) width=3 font="times 14 normal roman" text={WNW}
+# text(0:24:57.033,+64:04:03.11) width=3 font="times 14 normal roman" text={SW}

@@ -38,12 +38,17 @@ Keep end game in mind, where do we cut it off and start a new paper?
 * Self-similar solutions for veloc, B behind the shock,
   to get radio/X-ray profiles farther downstream
 
+  could field increase?! behind the shock?! (Guo et al. 2012)
+* compare model profiles from best _FWHM_ fits (old procedure) to data (!)
+
 * check expressions for cut-off energy, diffusion terms in Sean's solution
   (using Bmin vs. B0 in certain places).
 
 * Check advective solution for damped case!  This will be crucial for the radio
   rims, because we can make the case that our modeling is reasonable if D is
   truly negligible (no need to invoke strange D^2 B assumption!)
+
+* Figure out the Bmin thing in diffusion coefficient calculations etc...
 
 QUESTION: does the strength/intensity of radio emission from SNRs require any
 amplification, or is an ambient ISM field strength enough to produce the

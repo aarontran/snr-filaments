@@ -5900,3 +5900,96 @@ Paper
 Generate new (preliminary?) figure for profile shape analysis text.
 Paper, for this weekend.
 
+
+(Week 27) Monday 2014 December 1
+================================
+
+## Morning meeting
+
+Rob out W/Th/F-ish next week (!)
+Send paper around by mid/late-week, so people can read over weekend.  Perhaps
+set up telecon next week.
+
+## Manuscript work
+
+Applied (small) comments/fixes, and corrected synchrotron cut-off derivation in
+manuscript appendix.  Cleaned and slightly restructured discussion for clarity.
+
+Updated manuscript tables to regions-6.
+* tab-fwhms.tex
+* tab-spec.tex (already updated)
+* tab-fits-loss.tex
+* tab-fits-all.tex
+* tab-fits-all-eta2one.tex
+
+Small point of concern -- some fits have changed even though FWHMs have
+ostensibly not changed (except regions 3/5/12/19).  The reason is likely that
+we're using new tables (and different code resolutions).  But the results look
+generally consistent.
+
+NEED TO REGENERATE NUMBERS FOR weak/strong DAMPING regions...!
+Since we're using new FWHMs -- I think I did already, but double check
+
+dof's for excised spectrum fits are incorrect (!).  BUT, doesn't matter since
+we don't show the table of downstream spectrum fits w/ lines fit or excised
+
+
+
+Tuesday 2014 December 2
+=======================
+
+## Paper updates/writing (cont.)
+
+Twiddle and add spectral variation figures to paper.
+Finish recomputing and writing up spectral variation results.
+
+Regenerate plots:
+* Profile and spectrum fits (`prf_*.pdf` and `spec_*.pdf`)
+  (should be same as Tycho regions-5, but replaced anyways)
+* Intensity profiles, model fit energy-width curves, grid of curves for all
+  regions, plot of `m_E` values
+* Spectrum modeling, damped case (eta2=1)
+
+Computed spectral variation for damping fits with eta2 free.  Also split code
+off to new notebook (and renamed notebooks a bit more sensibly...).
+
+    Region	rim	down	delta	ab	B0	eta2
+    1	-2.494	-2.563	0.069	0.008	25.4	1.63
+    2	-3.257	-3.370	0.11	0.003	16.8	19
+    3	-4.586	-4.693	0.11	0.003	14.1	184
+    4	-2.511	-2.581	0.07	0.004	25.2	1.72
+    5	-2.227	-2.311	0.085	0.003	27.6	0.487
+    6	-1.633	-1.660	0.028	0.003	114.4	0.000356
+    7	-1.861	-1.914	0.053	0.004	241.6	0.0172
+    8	-1.973	-2.026	0.053	0.003	52.2	0.152
+    9	-1.711	-1.760	0.049	0.002	46.8	0.0176
+    10	-2.151	-2.215	0.063	0.002	36.1	0.363
+    11	-2.047	-2.137	0.09	0.002	31.0	0.2
+    12	-1.831	-1.916	0.085	0.002	35.0	0.0518
+    13	-1.771	-1.825	0.055	0.004	243.4	0.00072
+    14	-1.717	-1.758	0.041	0.003	89.9	0.0119
+    15	-2.814	-2.865	0.051	0.003	31.3	4.48
+    16	-2.248	-2.298	0.05	0.004	340.5	0.22
+    17	-2.264	-2.297	0.033	0.003	98.4	0.463
+    18	-9.636	-9.766	0.13	0.006	8.7	4.1e+03
+    19	-1.746	-1.802	0.056	0.002	45.8	0.0241
+    20	-2.538	-2.577	0.039	0.003	47.3	1.7
+
+    Mean 0.0660162179528
+    Stdev 0.0270739322474
+    Max 0.130300989869
+    Min 0.0278355858292
+
+## Radio rim analysis
+
+I have to clean up my code / workflow for the radio data.
+This has to be done in a more systematic way.
+* generate new regions, better aligned w/ the X-ray selections so we can make
+  more useful statements about damping / lack thereof, especially in relation
+  to our FWHM measurements
+* make plot of profiles for selections, in radio + hard X-ray
+* identify steepest emission fall-off behind shock, if present
+* do the same in X-ray and see what that gets us when plotted...
+* Add more, whatever else is possible to better constrain profiles.
+
+But, need to send manuscript around first
