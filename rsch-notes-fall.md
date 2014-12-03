@@ -5993,3 +5993,19 @@ This has to be done in a more systematic way.
 * Add more, whatever else is possible to better constrain profiles.
 
 But, need to send manuscript around first
+
+Merged (very preliminary) VLA data/region set-up into regular `data-tycho`
+structure, roughly.  The derived data products will of course be different for
+the radio/X-ray region selections.  Generating new set of regions.
+
+Can we use the Dickel / Moffett / Hewitt VLA data to trace how structures,
+knots are moving in radio data?  Clearly some synchrotron emission is
+correlated w/ X-ray thermal emission, at knots and filaments.  Filaments are
+understood (we think), but what about the knots?
+
+Selecting new regions -- considerations are
+1. avoiding radio "structures",
+2. getting enough x-ray photons in 4-7 keV
+
+Get proper motions from Katsuda as a function of azimuth angle and then
+generate a table of 15 yr shifts (estimate..)
