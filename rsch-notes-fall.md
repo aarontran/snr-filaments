@@ -5934,7 +5934,6 @@ dof's for excised spectrum fits are incorrect (!).  BUT, doesn't matter since
 we don't show the table of downstream spectrum fits w/ lines fit or excised
 
 
-
 Tuesday 2014 December 2
 =======================
 
@@ -6009,3 +6008,168 @@ Selecting new regions -- considerations are
 
 Get proper motions from Katsuda as a function of azimuth angle and then
 generate a table of 15 yr shifts (estimate..)
+
+Note: in joint fits, there is some tension in trying to fit radio and X-ray
+profiles simultaneously -- perhaps suggests that allowed parameter ranges
+conflict? (if, e.g., x-ray rim is too sharp, but radio rim doesn't allow for
+much damping)
+
+Wednesday 2014 December 3
+=========================
+
+## Chat with Brian about fits and writing material
+
+Where are we going with these fits?
+Fuzzy, chi-by-eye... we're going for a plausibility argument.
+Can our model match what we see?
+
+(Brian [would have] thought we'd already chosen the appropriate regions, the
+first time around... get it right the first time, or move quickly out of the
+prototype stage)
+
+It will not be a precise science (vs. pulsar timing or what have you), just get
+used to it.  We shouldn't be overfitting, since we know so little about what's
+going on (all the stuff along the line of sight, plus projection effects, plus
+stuff behind too -- exaggerating slightly).
+
+Find some kind of sensible fits -- however you like to do it.  Can we
+reasonably make it work?  Use intuition.
+
+Put together best possible plots.  Show cases where it seems to work, show
+cases where it only works for one (radio or xray) and not the other.  As
+always, don't show all...  Show what happens when we plug in reasonable
+parameters.
+
+## Radio profile analysis pipeline
+
+Start with `regions-6-VLA`, 12 regions to test.  Generate profiles (radio and
+4-7 keV), convert projections to boxes for overlay image on SNR.  Generate az
+angles and interpolated proper motions as usual.
+
+__Proper motion__: use data from Katsuda et al. (2010) -- favor over data by
+Reynoso+ (1997) since our radio/X-ray data are from 1994/2009 respectively.
+Alignment definitely looks better w/ correct proper motions.
+Currently using nearest neighbor interp, seeing that Katsuda+(2010) averaged in
+each sector to get a mean proper motion.
+
+__Profile errors__: use RMS error from radio data; for X-ray data, use count
+errors as usual.  Since this may be a different image than that of
+Reynoso+(1997), the error could be larger.  The RMS I see in an annulus around
+the remnant is ~0.0003.  This seems reasonable, even looking at smaller regions
+outside of the remnant (sampling darker/brighter regions).  So the est.
+error is ~0.3 mJy/beam, about 3x larger than 0.110 mJy/beam stated by Reynoso+.
+(which makes sense, if this image is only A configuration).
+
+## Radio profile, region selections
+
+__Region selection__: After updating procedure to align radio/X-ray profiles,
+I extend radio profiles to extend back at least 10% of shock radius (24 arcsec)
+into remnant.  Threw out two regions that aren't necessary.  Adjust Region A
+(SSE, not coinciding w/ our original regions-6) to not overlap w/ a radio pt
+source behind shell emission (RA 00:25:26.02, dec +64:04:40.4; J2000)
+
+__Why pick new regions?__: because we need more counts for profile analysis,
+vs. just fitting for a FWHM, we would like more counts.  Also, we no longer
+need to resolve the FWHM at lower energies.  There is of course a tradeoff in
+taking larger regions, that we're averaging very heterogeneous behavior behind
+the shock (various knots, clumps, etc in radio and xray).
+
+__What's up with region 18?__: we don't select a radio/xray region in region
+\#18 (of Tycho regions-6) because the signal is faint, and the orientation
+changes a lot between radio/xray over 15 years.  Area appears somewhat special
+and may be associated w/ ejecta outbreak just behind.
+
+If the ejecta outburst is driving a new and very rapid shock into the ISM, or
+has somehow re-energized the shock, and the old radio image traces the same
+shock, then it's moving almost twice the speed of the rest of the remnant
+(~8000 to 10000 km/s).  Not rigorous at all, but this could plausibly explain
+why Region 18 shows a stronger fall-off in rim width.  Very qualitatively, the
+old radio image also appears to show a weaker / no rim around that area.
+
+__Selection bias__: we are definitely picking regions that have radio rims,
+over those that do not.  Why?  Simply, we can place better constraints on those
+areas, and they are typically associated with clear X-ray emission too.
+But we should take regions all around the remnant, to say something
+about damping/loss-limited behavior as a function of azimuth angle...
+
+As much as possible
+
+PLOT CONSTRAINT B FIELD AS FUNCTION OF AZ ANGLE... THAT WOULD BE USEFUL.
+
+What is the effect of ejecta clumps on radio synchrotron emission, particle
+acceleration?  Would the magnetic field be locally stronger, deformed around
+the clump?
+
+Structure near rims could give rise to spurious rims / fall-off, complicating
+interpretation.  I try as best as possible to stick to filament-y things
+
+
+
+Thursday 2014 December 4
+========================
+
+Orion EFT-1 launch scrubbed, today.
+
+## Radio profile pipeline
+
+Extract and shift relevant profiles.  Hand pick cuts for fitting profiles, and
+locations to extract min/max emission (allow numpy to identify max emission if
+possible, otherwise eyeball and select max location by hand).
+
+Generated plots of % emission drop vs. proper motion and azimuth angle -- no
+obvious correlations or anything.  Looking at total emission vs. azimuth,
+there's clearly some trend, but that's sort of obvious looking at the remnant.
+So the most useful analysis is probably to tie results to X-ray FWHM fits and
+qualitative observations about the shock structures -- associations with ejecta
+knots, comparison of X-ray/radio brightness, dynamical age of shock (suggested
+by proper motions).
+
+## Fitting profiles, again
+
+Fitting profiles -- as I noted before, often fits don't converge nicely.
+Models predict too steep a rise at the shock.  Fitting keeps running and
+hitting up against translation factor limits.  I don't really understand why...
+
+A little bit of reading on fitting / optimization problems:
+* MCMC for Bayesian inference, e.g. by Kwon, Looney, Mundy (2011, ApJ),
+  (http://adsabs.harvard.edu/abs/2011ApJ...741....3K)
+* Ad hoc penalty likelihood functions, e.g. Bissantz and Gerhard (2002, MNRAS)
+  (http://adsabs.harvard.edu/abs/2002MNRAS.330..591B)
+But these are sledgehammers for a nail.  Interesting, and lots of material I
+need to learn to use someday...
+
+One possibility might be to penalize the fit if it moves the data beyond the
+model computation domain (increase the safety factor though), but since we
+can't resolve the slow rise / precursor at the shock we don't want that to
+happen.
+
+Another is to not let the model rise above the observed emission at any point,
+since that is unphysical.
+
+Perhaps try generating a small grid.  Then twiddle the factors by hand on the
+ones that look passable.  Save the grid parameters to a file (just a JSON or
+something).
+
+I forgot that overloading the IPython notebook w/ console output will quickly
+slow things to a grinding halt.  Remember to use `%%capture` for that, and save
+your output to disk in case anything breaks.
+
+Ran by Brian -- send today or tomorrow, okay.  Meeting on Monday as usual...
+
+## Manually fitting (and muttering away)
+
+Looking at Region A.  The best fit I'm seeing is around ab = 0.02, B field
+around 50 microGauss.  But there's a lot of leeway in the fits.
+
+`$B_0 = 75$`, even `$100$ $\mu$G` looks passable.  Good amount of leeway in
+fitting rims, sort of tilting/sharpening rim edges slightly.  But, `$B_0 = 30$
+$\mu$G` looks bad -- starts to need a new mechanism to generate rims (ejecta or
+whatever).
+
+I didn't fit all the profiles yet, but just by eye:
+* Regions B, C, D, maybe O permit weak damping.
+* Regions J, L, M permit a loss-limited field
+* I think O is associated w/ the NW ejecta breakout; shock changes direction visibly over 1994–2009
+
+Sent email with some example profiles.  Notebook littered w/ cells testing
+varied parameters.

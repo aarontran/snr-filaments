@@ -1,0 +1,35 @@
+# Region file format: DS9 version 4.1
+global color=green dashlist=8 3 width=1 font="helvetica 10 normal roman" select=1 highlite=1 dash=0 fixed=0 edit=1 move=1 delete=1 include=1 source=1
+fk5
+box(0:25:29.153,+64:04:38.92,45.5733",30.6375",247.336) # width=3 font="times 14 normal roman"
+box(0:25:24.807,+64:04:27.60,44.7476",19.1723",250.845) # width=3 font="times 14 normal roman"
+box(0:25:03.405,+64:04:45.96,52.7364",13.9541",292.244) # width=3 font="times 14 normal roman"
+box(0:24:55.132,+64:05:10.55,47.4295",19.7889",298.438) # width=3 font="times 14 normal roman"
+box(0:24:49.004,+64:05:43.43,41.7857",28.5568",323.677) # width=3 font="times 14 normal roman"
+box(0:24:46.679,+64:06:04.18,42.191",18.7225",326.444) # width=3 font="times 14 normal roman"
+box(0:24:43.569,+64:06:50.59,40.9277",20.6249",339.991) # width=3 font="times 14 normal roman"
+box(0:24:42.490,+64:07:13.80,40.3794",23.0967",345.105) # width=3 font="times 14 normal roman"
+box(0:24:41.643,+64:07:58.08,44.1359",36.0803",358.791) # width=3 font="times 14 normal roman"
+box(0:24:41.921,+64:08:34.23,43.4105",18.7333",6.70087) # width=3 font="times 14 normal roman"
+box(0:24:42.588,+64:09:05.15,42.8894",14.2383",8.98912) # width=3 font="times 14 normal roman"
+box(0:24:45.465,+64:09:46.26,53.1927",7.00182",30.7196) # width=3 font="times 14 normal roman"
+box(0:24:48.729,+64:10:21.50,51.4367",25.956",40.3596) # width=3 font="times 14 normal roman"
+box(0:24:53.587,+64:10:48.95,52.5163",24.0595",50.9843) # width=3 font="times 14 normal roman"
+box(0:25:25.224,+64:12:23.82,44.127",20.5129",112.671) # width=3 font="times 14 normal roman"
+box(0:25:32.384,+64:12:05.94,46.8531",21.8347",113.535) # width=3 font="times 14 normal roman"
+# text(0:25:32.102,+64:03:47.30) width=3 font="times 14 normal roman" text={A}
+# text(0:25:26.917,+64:03:34.36) width=3 font="times 14 normal roman" text={B}
+# text(0:25:00.246,+64:03:51.50) width=3 font="times 14 normal roman" text={C}
+# text(0:24:51.249,+64:04:23.48) width=3 font="times 14 normal roman" text={D}
+# text(0:24:42.092,+64:05:08.42) width=3 font="times 14 normal roman" text={E}
+# text(0:24:39.493,+64:05:34.40) width=3 font="times 14 normal roman" text={F}
+# text(0:24:36.275,+64:06:31.37) width=3 font="times 14 normal roman" text={G}
+# text(0:24:35.045,+64:07:01.35) width=3 font="times 14 normal roman" text={H}
+# text(0:24:34.115,+64:07:54.34) width=3 font="times 14 normal roman" text={I}
+# text(0:24:34.256,+64:08:36.35) width=3 font="times 14 normal roman" text={J}
+# text(0:24:34.706,+64:09:10.35) width=3 font="times 14 normal roman" text={K}
+# text(0:24:37.444,+64:10:10.38) width=3 font="times 14 normal roman" text={L}
+# text(0:24:41.413,+64:10:57.42) width=3 font="times 14 normal roman" text={M}
+# text(0:24:48.450,+64:11:34.47) width=3 font="times 14 normal roman" text={N}
+# text(0:25:28.292,+64:13:14.35) width=3 font="times 14 normal roman" text={O}
+# text(0:25:36.103,+64:12:55.24) width=3 font="times 14 normal roman" text={P}

@@ -18,7 +18,9 @@ RAD_2_DEG = 180. / np.pi
 def main():
     """"""
     parser = argparse.ArgumentParser(description=('Get azimuth angles for rim '
-                                     'regions relative to circle center.'))
+                                     'regions relative to circle center. '
+                                     'Physical coords must be computed from '
+                                     'same image for both region files!'))
     parser.add_argument('freg', help=('DS9 region file, physical coords, of '
                                       'projection regions around SNR'))
     parser.add_argument('fcirc', help=('DS9 region file, physical coords, of '

@@ -2,7 +2,6 @@ README, code
 ============
 
 Aaron Tran
-(last updated: 2014 September 14)
 
 Region manipulation
 -------------------
@@ -30,6 +29,16 @@ files (using `regparse.conv_reg_coords`)
 `regparse.py`
 
 Module with useful region parsing methods
+
+`ds9projangle.py`
+
+Get azimuth angles for set of regions.
+
+`azangle_interp.py`
+
+Use azimuth angles for set of regions to interpolate some quantity of interest
+(shock velocity or proper motions)
+
 
 Plotting
 --------

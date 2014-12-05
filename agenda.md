@@ -38,7 +38,7 @@ Keep end game in mind, where do we cut it off and start a new paper?
 * Self-similar solutions for veloc, B behind the shock,
   to get radio/X-ray profiles farther downstream
 
-  could field increase?! behind the shock?! (Guo et al. 2012)
+* could field increase?! behind the shock?! (Guo et al. 2012)
 * compare model profiles from best _FWHM_ fits (old procedure) to data (!)
 
 * check expressions for cut-off energy, diffusion terms in Sean's solution
