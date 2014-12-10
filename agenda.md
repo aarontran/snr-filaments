@@ -24,22 +24,17 @@ Speculation:
   http://arxiv.org/abs/1411.2891 (figures are missing...)
 * radio relic modeling -- lots of parallel-seeming work to look at!...
 
+Shimoda, Inoue, Ohira, Yamazaki, Bamba, Vink,
+submitted to ApJL: http://arxiv.org/abs/1412.2874
+
 Main TO-DOs
 -----------
 
-Keep end game in mind, where do we cut it off and start a new paper?
-
-* WRITEUP results, edit manuscript w/ fixes etc
+* write everything(!)
 * Check spectral variation from models (damping case for R&P)
-
-* Radio reduction...
-* Test the strange D^2(x) B(x) assumption
-* Simple hydrodynamic codes?
-* Self-similar solutions for veloc, B behind the shock,
-  to get radio/X-ray profiles farther downstream
-
-* could field increase?! behind the shock?! (Guo et al. 2012)
 * compare model profiles from best _FWHM_ fits (old procedure) to data (!)
+  Align, normalize, and show as one extra figure
+* Repeat eyeballed fits for 2 microGauss (for a few regions, at least)
 
 * check expressions for cut-off energy, diffusion terms in Sean's solution
   (using Bmin vs. B0 in certain places).
@@ -48,7 +43,39 @@ Keep end game in mind, where do we cut it off and start a new paper?
   rims, because we can make the case that our modeling is reasonable if D is
   truly negligible (no need to invoke strange D^2 B assumption!)
 
-* Figure out the Bmin thing in diffusion coefficient calculations etc...
+* Figure out the Bmin thing in diffusion coefficient calculations
+
+Questions: do we know anything about diffusion of GeV electrons?  What should
+we expect -- especially since Bohm is a lower limit, I'd assume it should be
+set by the scale/strength of magnetic turbulence or something...
+
+Question: should we just throw out the errors on our fits?  They're not very
+useful, now.
+
+Question: how do we tie X-ray width measurements, and joint X-ray/radio profile
+modeling, together?  They are basically two separate investigations that use
+the same model/code
+
+Question: SNRs at mm/sub-mm wavelengths?  Too much dust?
+
+Eventually: review manuscript for tense, loss-limited/damping terminology /
+definitions, etc...  Check all equations, resolution, etc.
+
+### Other possible alleyways
+
+* Radio reduction...
+* Test the strange D^2(x) B(x) assumption?
+* Simple hydrodynamic codes?
+* Self-similar solutions for veloc, B behind the shock,
+  to get radio/X-ray profiles farther downstream?
+
+* Assuming synchrotron stuff in Tycho is predominantly from old
+  shock-accelerated electrons hanging around -- does that imply the radio
+  brightness should increase w/ time, as a function of the swept up mass and e-
+  acceleration efficiency?  Ought to be testable, esp with the youngest
+  galactic SNRs.
+
+* could field increase?! behind the shock?! (Guo et al. 2012)
 
 QUESTION: does the strength/intensity of radio emission from SNRs require any
 amplification, or is an ambient ISM field strength enough to produce the

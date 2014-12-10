@@ -66,10 +66,12 @@ def main():
 # Main function to compute FWHMs
 # ==============================
 
+# TODO implementation of get_data works but is hacky as sin
+
 #@profile
 def fefflen(kevs, B0, eta2, mu, vs, v0, rs, rsarc, s, rminarc, icut, irmax,
             iradmax, ixmax, idamp, ab, Bmin, fgfname, itmax, inmax, irhomax,
-            get_prfs, get_data):
+            get_prfs, get_data, get_fwhms):
     """Use numpy arrays for everything (kevs, rminarc)
 
     Note that irmax is not very important anymore.
@@ -98,6 +100,14 @@ def fefflen(kevs, B0, eta2, mu, vs, v0, rs, rsarc, s, rminarc, icut, irmax,
                       irhomax < irmax should be okay.
         get_prfs (bool)
             if True, return computed intensity profile as a list of np.ndarray
+        get_data (bool)
+            if True, returns intensity profiles/r-grids + dict of useful stats
+            locations of profile min/max, % drop from rim, etc
+            easiest to compute here since we can still calculate intensity
+            explicitly, vs. interpolating later (not much difference for
+            sufficient irmax value though)
+        get_fwhms (bool)
+            if True, returns FWHMs... output right now is rather messy
     Output:
         np.ndarray of FWHMs for each entry in kevs
     """
@@ -119,11 +129,11 @@ def fefflen(kevs, B0, eta2, mu, vs, v0, rs, rsarc, s, rminarc, icut, irmax,
     xex, fex = read_fglists(fgfname)
     fullmodel.readfglists(fgfname)  # !! important
 
-    widths = []
-    if get_prfs or get_data:  # TODO trial code
+    if get_fwhms:
+        widths = []
+    if get_prfs or get_data:
         rgrids = []
         prfs = []
-    # TODO TRIAL CODE:
     if get_data:
         data = []
 
@@ -171,29 +181,30 @@ def fefflen(kevs, B0, eta2, mu, vs, v0, rs, rsarc, s, rminarc, icut, irmax,
             return spint.simps(emismesh, xmesh)
 
         # Finally, compute FWHMs precisely (use intensity grid as guide)
-        w = fwhm(rmesh, intensity, get_intensity)
-        widths.append(w)
-        if get_prfs or get_data:  # TODO trial code
-            # Tack on point at r=1
-            rmesh = np.append(rmesh, 1.0)
-            intensity = np.append(intensity, 0.0)
-            # Then save to return, after we're done
+        # and other info if desired
+        if get_fwhms:
+            widths.append(fwhm(rmesh, intensity, get_intensity))
+        if get_prfs or get_data:
+            rmesh = np.append(rmesh, 1.0)  # Tack on point at r=1
+            intensity = np.append(intensity, 0.0)  # intensity(r=1) = 0
             rgrids.append(rmesh * rsarc)
             prfs.append(intensity)
-
-        # TODO TRIAL CODE
         if get_data:
             data.append(get_prf_stats(rmesh, intensity, get_intensity))
 
-    fwhms = np.array(widths) * rsarc
+    out = []
 
-    if get_prfs:
-        return fwhms, prfs, rgrids
-    # TODO TRIAL CODE
-    if get_data:
-        return fwhms, prfs, rgrids, data
+    if get_fwhms:
+        fwhms = np.array(widths) * rsarc
+        out.append(fwhms)
 
-    return fwhms
+    if get_prfs or get_data:
+        out.append(prfs)
+        out.append(rgrids)
+        if get_data:
+            out.append(data)
+
+    return out
 
 
 def read_fglists(fname):
@@ -495,7 +506,8 @@ def fwhm(rmesh, intensity, f_int):
     # Compute half max from grid initial guess by bracketing intensity max
     idxmax = np.argmax(intensity)
     if idxmax == 0:
-        print 'Warning: intensity max not found (rminarc too small)'
+        #print 'Warning: intensity max not found (rminarc too small)'
+        # No need to warn, nowadays
         return 1  # Can't search r < rmin, no disttab/emisttab values computed
     elif idxmax == len(intensity)-1:
         #print 'Warning: intensity max not resolved in grid on right; searching'
@@ -531,8 +543,8 @@ def fwhm(rmesh, intensity, f_int):
     inds_rmin = np.where(cross > 0)[0]  # Left (neg to pos)
 
     if inds_rmin.size == 0:  # No left crossing found
-        print ('Warning: FWHM edge (rmin) not found '
-               '(rminarc too small or peak FWHM cannot be resolved in profile)')
+        #print ('Warning: FWHM edge (rmin) not found '
+        #       '(rminarc too small or peak FWHM cannot be resolved in profile)')
         return 1.  # Can't search r < rmin, no disttab/emisttab values computed
     else:
         rmin_a = rmesh[inds_rmin[-1]]  # Crossing closest to peak (largest r)

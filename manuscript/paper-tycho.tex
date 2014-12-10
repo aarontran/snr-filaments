@@ -1,13 +1,13 @@
-%\documentclass[manuscript]{aastex}  % one-column, double-spaced GENERATE BIB
+\documentclass[manuscript]{aastex}  % one-column, double-spaced GENERATE BIB
 %\documentclass[12pt,preprint]{aastex}  % one-column, single-spaced
 %\documentclass[iop, apj, numberedappendix, twocolappendix]{emulateapj}
-\documentclass[iop, apj, numberedappendix]{emulateapj}
+%\documentclass[iop, apj, numberedappendix]{emulateapj}
 
 % Customize figures/sizing for 2 column vs. manuscript printout
 \usepackage{etoolbox}
 \newtoggle{manuscript}
-%\toggletrue{manuscript}
-\togglefalse{manuscript}
+\toggletrue{manuscript}
+%\togglefalse{manuscript}
 
 \shorttitle{Tycho's Synchrotron Rims (\today)}  % <~ 44 char
 \shortauthors{XXX et al. (\today)}  % Max three
@@ -82,6 +82,8 @@ Stephen P. Reynolds\altaffilmark{3}
 \altaffiltext{4}{CRESST, University of Maryland, College Park, MD 20742}
 \altaffiltext{5}{NASA Postdoctoral Program Fellow}
 
+% TODO define loss-limited properly...
+% ~210 words -- a little too long
 \begin{abstract}
 Several young supernova remnants exhibit thin X-ray bright rims of synchrotron
 radiation at their forward shocks.  Thin rims have been taken to indicate that
@@ -96,12 +98,16 @@ Loss-limited fits require amplified magnetic fields of $\abt200$--$1000 \muG$
 and particle diffusion coefficients $\abt1$--$100\times$ Bohm values,
 consistent with prior work on Tycho's SNR, whereas magnetic damping permits
 magnetic fields of $\abt 10$--$300 \muG$ and comparatively smaller diffusion
-coefficients (typically $\abt 1$--$10$).  Diffusion coefficients, magnetic
+coefficients (typically $\abt 1$--$10$).
+Corresponding thin rim radio rims require magnetic damping, however.  We
+jointly model radio and X-ray profiles and estimate magnetic damping length of
+order $1$--$5$\% of remnant radius, with magnetic field strengths $\abt
+50$--$400 \muG$ assuming Bohm diffusion.  Diffusion coefficients, magnetic
 field strengths, and magnetic damping lengthscales are somewhat degenerate in
-setting observed rim widths and drop-offs.  Although we cannot discriminate
-from width measurements alone, a combined study of X-ray and radio profiles may
-break the observed degeneracies to confirm or rule out turbulent magnetic field
-damping downstream of supernova remnant shocks.
+setting observed rim widths and drop-offs.
+Although the energy dependence of synchrotron rims cannot discriminate magnetic
+field structure, joint radio and X-ray modeling favors magnetic damping in
+Tycho's SNR.
 \end{abstract}
 
 % Six keywords, alphabetical order
@@ -111,9 +117,6 @@ damping downstream of supernova remnant shocks.
     ISM: supernova remnants ---
     shock waves ---
     X-rays: ISM}
-
-% TODO GENERAL WARNING -- DATA MAY NOT ALL BE FULLY CONSISTENT AT THIS TIME.
-% (spectra/profiles/fwhms/fits).
 
 % ============
 % Introduction
@@ -233,25 +236,6 @@ and the implications for future studies of young supernova remnant shocks.
 % =============================
 \section{Nonthermal rim modeling}\label{sec:models}
 
-% Could just discuss one model...
-%We consider two particle transport models that we fit to measurements of
-%Tycho's thin rim widths.  We measure the rim full widths at half maximum
-%(FWHMs) (Section~\ref{sec:fwhms}) and compare our measurements to the transport
-%model predictions of rim FWHMs at multiple photon energies, for various input
-%parameters.  The models accept four free parameters: magnetic field strength
-%$B_0$, a scaled diffusion coefficient $\eta_2$, a diffusion-energy scaling
-%exponent $\mu$, and a magnetic damping lengthscale $a_b$ (an $e$-folding
-%length).
-
-% Twiddle-ables in our model (the most useful part, since just modeling
-% alone don't do much)
-%Our model fitting explores the space of varying diffusion (a bulk
-%representative of the underlying MHD turbulence and what have you)
-%and considers the two scenarios of constant magnetic field (resulting in
-%so-called loss-limited rims) and a damped field that falls off exponentially
-%behind the forward shock, as suggested by \citet{pohl2005}.
-% this might go at the front before we launch into model details.
-
 \subsection{Particle transport}\label{sec:transport}
 
 % Transport fundamentals
@@ -333,16 +317,6 @@ field.  Bohm-like diffusion encapsulates diffusion scalings of $D \propto E$,
 introducing a free prefactor $\eta$ such that $\lambda = \eta r_g$ allows for
 varying diffusion strength.  However, Bohm diffusion at $\eta = 1$ is commonly
 considered a lower limit on the diffusion coefficient at all energies.
-
-%Different types of MHD turbulence may give rise to a non-linear energy
-%scaling for diffusion coefficient instead \citep{giacalone1999, reynolds2004}.
-%Power-wavenumber spectra for Kolmogorov and Kraichnan turbulence, with a
-%quasi-linear approximation for particle motion,
-%\note[Aaron]{I don't really know what this means}
-%predict $D \propto E^{1/3}$ and $D \propto E^{1/2}$ respectively.
-%Particle gyroradii larger than field coherence length may also lead to
-%$D \propto E^{2}$ \note[Aaron]{Source?? Parizot mentions this in one sentence
-%and cites nothing.  I have no idea what this means.}
 
 % Define our diffusion coefficient, introduce fiducial energy
 We consider a generalized diffusion coefficient with arbitrary
@@ -546,9 +520,8 @@ has FWHM of $\abt 1\arcsec$ at $4\arcmin$ off-axis.
 \begin{figure}
     \centering
     \iftoggle{manuscript}{
-        %\includegraphics[width=0.5\textwidth]{figures/f0-snr-inv.png}
+        \includegraphics[width=0.2\textwidth]{figures/snr.pdf}
     }{
-        %\plotone{figures/f0-snr-inv.png}
         \plotone{figures/snr.pdf}
     }
     \caption{RGB image of Tycho with region selections overlaid.  Image bands
@@ -721,14 +694,11 @@ Figure~\ref{fig:profiles} illustrates the fit domain selection
 % NOTE keep blacklisted/excluded region count updated!
 From the fitted profiles we extracted a full width at half maximum (FWHM) for
 each region and each energy band after subtracting a constant background term
-$\min(C_u, C_d)$.  We could not resolve a FWHM in 4 of 20 regions at 0.7--1 keV
+$\min(C_u, C_d)$.  We could not resolve a FWHM in 8 of 20 regions at 0.7--1 keV
 (Table~\ref{tab:fwhms}); in these regions, either the downstream FWHM bound
 would extend outside the fit domain or we could not find an acceptable fit to
 equation~\eqref{eq:prof}.  We were able to resolve FWHMs for all regions at
 higher energy bands (1--7 keV).
-% NOTE review the FWHM rejection criterion, on the final set of regions
-% We will be blacklisting by hand, and we have to explain how we chose the
-% blacklisted ones.
 
 To estimate FWHM uncertainties, we horizontally stretched each best-fit
 profile by mapping radial coordinate $x$ to
@@ -764,9 +734,9 @@ of model parameters (primarily $\eta_2$ and $B_0$) and used best-fit grid as
 initial guesses for fitting.
 % TODO this may be obsoleted if we recompute stuff...  I only computed errors
 % on the loss-limited model, and those fits are now out of date too...
-Errors on best fit parameters were computed by varying each fit parameter and
-obtaining a new best fit model, with one less degree of freedom, to find the
-parameter limit such that $\Delta \chi^2 = 1$ for a roughly 1-$\sigma$ error.
+%Errors on best fit parameters were computed by varying each fit parameter and
+%obtaining a new best fit model, with one less degree of freedom, to find the
+%parameter limit such that $\Delta \chi^2 = 1$ for a roughly 1-$\sigma$ error.
 
 % How we twiddled model knobs
 We first considered a purely loss-limited model (constant downstream magnetic
@@ -1512,31 +1482,38 @@ downstream extraction regions would further favor magnetic field damping.
 % ----------------------------------------
 % Constraining rims via radio measurements
 % ----------------------------------------
-\subsection{Radio rims constrain damping scenarios}
+\subsection{Radio rims require magnetic damping}
 
-The presence of thin radio rims in Tycho may help constrain magnetic field
-damping.  Radio emission in Tycho arises from the same population of
-shock-accelerated electrons generating nonthermal X-ray rims.  But, $\abt$GeV
-electrons have cooling times of order $10^5$--$10^7 \unit{yr}$ in $10$--$100
-\muG$ magnetic fields.  Despite the extended population of radio synchrotron
-electrons, radio rims and decreases in emission intensity immediately behind
-the shock may be explained by magnetic damping.  If remnant-wide diffuse
-emission near the forward shock increases monotonically towards the center of
-the remnant, only magnetic field damping can cause emission to decrease.  A
-loss-limited field predicts monotonically increasing emission downstream of the
-forward shock in our steady-state transport model.
+% Introduction
+Thin radio rims spatially coincident with X-ray synchrotron rims may help
+constrain magnetic field damping.  Radio emission in Tycho arises from the same
+population of shock-accelerated electrons generating nonthermal X-ray rims.
+But, $\abt$GeV electrons have cooling times of order $10^5$--$10^7 \unit{yr}$
+in $10$--$100 \muG$ magnetic fields; synchrotron emission in the remnant
+interior may reflect the spatial structure of long-lived electrons interacting
+with a turbulent field rather than the advection of recently shock-accelerated
+electrons.
+Despite the extended population of radio synchrotron electrons, radio rims and
+decreases in emission intensity immediately behind the shock may be explained
+by magnetic damping.  If remnant-wide diffuse emission near the forward shock
+increases monotonically towards the center of the remnant, only magnetic field
+damping can cause emission to decrease.  A loss-limited field predicts
+monotonically increasing emission downstream of the forward shock in our
+steady-state transport model.
+% TODO Redundant
 
+% Procedure
 We extract radio profiles from a $1.375 \unit{GHz}$ image of Tycho taken
 with the VLA in A configuration in March 1994 (PI: D. Moffett); see
 \citet{reynoso1997} for a detailed presentation.
-\emph{Was data from all configurations merged?  Done by \citet{reynoso1997}.}
+\note[Aaron]{Was data from all configurations merged?  Done by \citet{reynoso1997}.}
 The half-power beam width of $\abt 1.5\arcsec$ just resolves thin radio rims
-and structure near the forward shock; the image is sampled at $0.5\arcsec$.  We
-shift radio profiles forward by $9\arcsec$ to correct for proper motion,
-assuming an $0.3\arcsec/\mt{yr}$ expansion rate \citep{katsuda2010-tycho}.
+and structure near the forward shock; the image is sampled at $0.5\arcsec$.
+%We shift radio profiles forward following X-ray proper motion measurements by
+%\citet{katsuda2010-tycho} over a 7 year baseline; the average shift is
+%$\abt4.5\arcsec$.
 Figure~\ref{fig:radio-snr} shows the extraction regions overlaying the radio
 image and the previous X-ray profile regions of Figure~\ref{fig:snr}.
-
 
 \begin{figure}
     \centering
@@ -1547,100 +1524,129 @@ image and the previous X-ray profile regions of Figure~\ref{fig:snr}.
     (Figure~\ref{fig:snr}). \label{fig:radio-snr}}
 \end{figure}
 
-\subsubsection{Combined radio and X-ray profile fitting}
+% Procedure: model computation
+To constrain magnetic field structure, we compare measured profiles to modeled
+profiles from the transport model of equation~\eqref{eq:model} for varying
+$B_0$ and $a_b$.  The parameters $B_{\mt{min}} = 5 \muG$, $\eta_2 = 1$, and
+$\mu = 1$ are held fixed.  Diffusion, in particular, is negligible for modeled
+radio emission as particle energies are 3 orders of magnitude lower than in
+X-ray.  Neglecting diffusion also circumvents the unphysical assumption that
+$D(x) B^2(x)$ is constant, which was invoked to obtain Green's function
+solutions to equation~\eqref{eq:model}.
 
-%% TODO Working at around here...  now pending some code work.
+% Procedure: chi-by-eye "fitting"
+We align model profiles to measurements by eye, varying relative amplitudes and
+translations in radio and X-ray independently to best match the measured
+profiles.  We manually vary $B_0$ and $a_b$ and attempt to reproduce both the
+radio and X-ray rims.  Although ``fitting'' by eye cannot strongly constrain
+model parameters, we can compute values of $B_0$ and $a_b$ consistent with the
+observed profiles and qualitatively constrain magnetic damping throughout the
+remnant.  Results from a more involved nonlinear fit may not be more reliable
+as we cannot constrain spatially heterogeneous radio emission within
+the remnant.  Moreover, our transport model neglects self-similar downstream
+evolution of shocked plasma (decaying velocity, density, and magnetic field)
+and is unreliable far downstream of the shock.
 
-% General todo -- note that we ignore actual profile shape in xray FWHMs
-% and, effects of multiple overlapping filaments, etc...
+% Procedure: compare to previous work
+The procedure we adopt for radio and X-ray modeling contrasts strongly with the
+X-ray FWHM-width fitting, which neglected profile shape in favor of more robust
+FWHM measurements.  Here, manually fitting profiles instead of FWHMs allows us
+to consider radio and X-ray filaments that do not have well-defined FWHMs.
+Radio rims consistently do not fall below 50\% of the peak emission.  We are
+also able to use profiles from regions not previously considered due to the
+lack of an X-ray FWHM, especially in softer ($0.7$--$4$) X-rays.
 
+% Results: morphology, individual regions, main figure
+We identify three classes of radio profiles: thin rims with downstream troughs,
+plateaus, and continuous rises.  Regions B, C, D (southern limb) show plateaus
+in radio emission.  Regions J, L, M (around NW) show continuous rises in
+emission.  All other regions have a radio rim within $15\arcsec$ of the forward
+shock, where the forward shock in radio is assumed at zero intensity.
 Figure~\ref{fig:radio-prfs} shows extracted radio and nonthermal X-ray
-($4$--$7\unit{keV}$) profiles from the plotted regions (Figure~\ref{fig:snr}),
-shown in Figure~\ref{fig:radio-prfs}.  The radio profiles show a range of
-morphology, including thin rims with a trough and either increasing or
-decreasing emission towards the remnant interior.
+($4$--$7\unit{keV}$) profiles for three well-fit regions with our best manually
+selected model profiles, illustrating each of the three radio profile types
+observed.
 
 \begin{figure}
     \centering
-    \plotone{figures/radio-prfs-subplot.pdf}
-    \caption{Radio (red) and nonthermal X-ray (blue) intensity profiles from
-    extraction regions shown in Figure~\ref{fig:radio-snr}.  Radio profiles are
-    shifted forward by $9\arcsec$ to correct for proper motion.  Both X-ray and
-    radio profiles are translated to place the $4$--$7 \unit{keV}$ rim $\abt
-    2\arcsec$ behind the forward shock radius $r_s = 240\arcsec$.  We emphasize
-    that the intensities and radial coordinate translations are chosen strictly
-    to aid visual comparison and are otherwise arbitrary.
+    % Slightly larger figures than given by \plotone
+    \includegraphics[width=0.46\textwidth]{figures/radio-fits-B.pdf} \\
+    \includegraphics[width=0.46\textwidth]{figures/radio-fits-K.pdf} \\
+    \includegraphics[width=0.46\textwidth]{figures/radio-fits-M.pdf}
+    \caption{Measured radio and X-ray profiles plotted with model profiles for
+    varying $a_b$ and $B_0$ in each region, showing typical parameters (and
+    ranges) required to reproduce radio and X-ray rims simultaneously in our
+    model.  Black solid curves in all regions plot our manually chosen best
+    model profiles.  Profiles are chosen to show varying radio rim morphology,
+    including plateaus (B), thin rims with troughs (K), and continuous rises
+    (M); these profiles show some of the best agreement of our selected
+    regions, but cf. Figure~\ref{fig:radio-prfs-meh}.  Profile radial
+    coordinates are shifted arbitrarily to aid visual comparison (following
+    proper motions of \citet{katsuda2010-tycho} where possible) but may not be
+    physically meaningful.  Negative radio intensity is associated with
+    deconvolution of raw VLA visibilities.
     \label{fig:radio-prfs}}
 \end{figure}
 
-Our model profiles are fully characterized by $B_0$, $a_b$, and $B_{\mt{min}}$,
-with $B_{\mt{min}} = 5 \muG$ fixed as before.  We neglect diffusion in modeling
-radio emission as particle energies are 3 orders of magnitude lower than in
-X-ray.  This also circumvents the unphysical assumption that $D(x) B^2(x)$ is
-constant, which was accepted in order to obtain Green's function solutions for
-our transport model, equation~\eqref{eq:model}.  But, as we previously assumed
-Bohm-like diffusion, another model for particle diffusion may be necessary at
-radio wavelengths.
+% Results: linchpin for damping model here
+A loss-limited rim model (constant magnetic field $B_0$) cannot produce thin
+radio rims.  Our model requires damping length $a_b \lesssim 0.1$ to produce a
+plateau or thin rim in radio emission.  For regions with thin radio rims, the
+best manually selected profiles have $B_0$ between $50$--$400 \muG$, neglecting
+only Region N which could not be modeled simultaneously in both X-ray and radio
+(Figure~\ref{fig:radio-prfs-meh}).  The damping length $a_b$ ranges between
+$0.01$--$0.03$, or $2$--$7\arcsec$.  The radio plateaus in regions B, C, D are
+compatible with damping lengths between $0.01$--$0.05$.  Continuous rises in
+radio emission are best modeled with $a_b \gtrsim 0.1$ and $B_0 \abt 200$--$300
+\muG$.  Although damping lengths $a_b \gtrsim 0.1$ may not be physically
+meaningful, such large values of $a_b$ yield practically constant magnetic
+field behind the shock regardless.
 
-Radio emission profiles in Tycho have been modeled by \citet{cassam-chenai2007}
-and \citet{morlino2012} as part of broader hydrodynamic modeling studies,
-which permits modeling of emission throughout the remnant rather than just
-behind the shock.  Although a full time-dependent model may better capture all
-radio emission and nonthermal X-ray emission simultaneously, our simplified
-model should capture the essential physics for a very young remnant such as
-Tycho, for which the forward shock should be adiabatic.
+% TODO what happens if \Bmin = 2 \muG?!
 
-
-We extracted hard X-ray pro
-
-The distinct profile shapes of radio thin rims and rising or falling emission
-behind the thin rims, if rims are present, may be more sensitive discriminants
-of loss-limited and damping models.
-
-In particular, our best fits to data with moderate $\mE$ generally require
-small magnetic field $B_0$ and comparatively strong emission downstream of the
-thin rim, just below the rim half-maximum.  Although the FWHMs accorded with
-those of the loss-limited, the profiles were quite different
-(Figure~\ref{fig:rims}).
-
-\subsubsection{Radio rim shape analysis}
-
-Although radio and X-ray rim profiles are difficult to jointly model, we can
-use observed decreases in emission just behind the shock to constrain allowable
-model parameters.  Where a decrease in radio emission occurs behind the peak
-emission, the steepest decrease in emission allows us to bound the minimum
-magnetic field and the maximum allowable damping length -- i.e., we require a
-fast magnetic field drop-off with distance (for the assumed $B_{\mt{min}} = 5
-\muG$).
-
-Conversely, a continuous increase in emission requires a minimum damping
-length, as too small a damping length and moderate field strength will give
-rise to a radio rim.  However, diffuse remnant-wide radio emission may obscure
-a radio rim associated with the forward shock.  Thus, although a continuous
-rise in emission is consistent with weak damping (and loss-limited X-ray rims),
-we cannot rule out the possibility of magnetic damping.
-
-Table~\ref{tab:???} lists intensity drop-offs for radio and X-ray profiles in
-each region at various distances behind the peak (rim) emission, favoring the
-shortest possible distance to obtain a steep drop-off and better constrain
-$B_0$ and $a_b$.  Assuming $B_0 < 500 \muG$ in a damped model, we can also
-constrain the minimum
-
-Generate a slew of profile shapes, and ask that emission over XXX distance
-behind the shock NOT rise above the peak/rim distance.  This rules out the
-smallest damping lengths and fields (i.e., no trough at XXX distance...)
-
-Finally, if a trough is present in the radio rim, we may further
-
-In Figure~\ref{fig:radio-bound} we illustrate schematically
+% Results: downstream emission should bound damping for an idealized,
+% spherically symmetric remnant
+The slope and depth of the radio emission decrease behind a thin rim also
+gives a soft bound on the minimum magnetic field and maximum allowable damping
+length, if other sources of radio emission increase monotonically downstream of
+the shock and thus do not give rise to radio rims.  The maximum plausible $a_b$
+is $\abt 0.01$--$0.05$ (1--5\% of shock radius, or $2$--$12\arcsec$); the
+minimum magnetic field is $\abt 20 \muG$ assuming $\Bmin = 5 \muG$, at least
+consistent with the expectation for a strong adiabatic shock.
 
 \begin{figure}
     \centering
-    \plotone{figures/radio-min-bound-6arcsec.pdf}
-    \caption{Maximum intensity drop-off within 6 arcsec of forward shock for
-        modeled 1.375 GHz radio profile.
-    \label{fig:radio-bound}}
+    \includegraphics[width=0.47\textwidth]{figures/radio-fits-I.pdf} \\
+    \includegraphics[width=0.47\textwidth]{figures/radio-fits-N.pdf}
+    \caption{Measured profiles that are less well-described by our model
+    profiles, compared to Figure~\ref{fig:radio-prfs}.  Region I shows
+    irregularly shaped radio rim.  Region N is a superposition of two filaments
+    that cannot be simultaneously well-modeled in both X-ray and radio,
+    requiring unrealistic magnetic fields or atypically small damping length to
+    reproduce the emission plateau behind the radio thin rim.
+    \label{fig:radio-prfs-meh}}
 \end{figure}
+
+% Discussion: confounding effects (and figure)
+Tycho's shock structure is more complex than assumed by our transport model.
+Moreover, emission in the remnant interior clearly shows spatial structure
+(Figure~\ref{fig:radio-snr}).  Figure \ref{fig:radio-prfs-meh} shows two
+regions that were poorly described by our model.  A majority of our regions
+have irregular rims; in at least 2--3 regions, this may be attributed to
+projection of multiple distinct filaments.  Others (e.g., Region K) show rims
+with slopes that cannot be matched by our models, whether too steep or
+shallow.  Shape mismatch may be attributed in part to point-spread mismatch,
+diffusion (e.g., $\eta_2 \neq 1$), shock precursors, or other effects.
+
+Nevertheless, our conclusion that thin radio rims require magnetic damping
+should be robust and independent of model assumptions.
+\citet{cassam-chenai2007}, for example, observed the same dichotomy in radio
+emission for constant and damped magnetic fields in modeled profiles of Tycho's
+shock from a self-similar hydrodynamic model with diffusive shock acceleration.
+Our model captures the essential physics for a very young remnant such as
+Tycho, for which the forward shock should be adiabatic.
+
+% TODO We have NOT considered the relative intensities of X-ray / radio rims!
 
 % -------------------------------------------
 % Model correctness - are our results valid?!
@@ -1659,10 +1665,9 @@ The exponential variation in $D(x)$ (equation~\eqref{eq:ddamp}) may not be
 physically reasonable; as we have noted above, the assumption $D(x)
 \propto 1 / B^2(x)$ gives rise to sharp gradients in diffusion coefficient and
 even inverts the effect of $\eta_2$ on our model profiles (where larger
-$\eta_2$ can cause rim widths to narrow).
-
-However, the radio modeling assumes \emph{no diffusion} and should not be
-impacted by this potentially incorrect assumption.
+$\eta_2$ can cause rim widths to narrow).  Nevertheless, the modeled behavior
+is physically reasonable.  And, only X-ray profiles are impacted by the
+assumption on $D(x)$ as radio profiles assume no diffusion.
 
 % TODO question: we have been ignoring intensity.  What if, e.g.,
 % with strong diffusion particles get out of the damping zone faster and don't
@@ -1685,38 +1690,44 @@ impacted by this potentially incorrect assumption.
 % ==========
 \section{Conclusion}
 
-We measured the widths of thin synchrotron filaments around Tycho's supernova
-remnant and confirmed that our measured filaments are dominated by nonthermal
-emission with clearly measurable full widths at half maximum in 4--5 energy
-bands.  We find moderate narrowing of rim widths across the remnant,
-corroborating rim narrowing observed by \citet{ressler2014} in the remnant of
-SN 1006.  Our multiple measurements give loss-limited diffusion and magnetic fields
-broadly consistent with prior estimates from rim widths
-\citep[e.g.,][]{parizot2006, rettig2012} and radio and gamma ray measurements
-\citep{acciari2011, morlino2012}.  Loss-limited and magnetic damping models are
-equally capable of describing our observed data.  At small energy dependence
-the two models are indistinguishable and magnetic damping fits still favor
-moderately amplified magnetic fields.  At moderate energy dependence ($\mE \sim
--0.3$), the damping model favors weaker magnetic fields, but modeled FWHMs may
-not be truly representative of thin rim widths and profiles.
+We measured the widths of several thin synchrotron filaments around Tycho's
+supernova remnant and found moderate narrowing of rim widths throughout the
+remnant, corroborating rim narrowing observed by \citet{ressler2014} in the
+remnant of SN 1006.  We confirmed that selected filaments are dominated by
+nonthermal emission and have clearly measurable full widths at half maximum in
+4--5 energy bands.
 
-As our data are not count limited, we suggest that additional proxies for
-diffusion and magnetic field are needed to establish or rule out the presence
-of damping at the shocks of young supernova remnants.  More sophisticated
-modeling of shock physics \citep[e.g.,][]{zirakashvili2014} and shock/filament
-structure \citep[cf.][]{caprioli2013} may be necessary to improve modeling
-results.  Complete rim profile fitting and sub-arcsecond radio profiles (as may
-be enabled by EVLA and ALMA) may better discriminate between models.
+A steady-state particle transport model with constant magnetic field gives
+diffusion coefficients and magnetic field strengths broadly consistent with
+prior estimates from rim widths \citep[e.g.,][]{parizot2006, rettig2012} and
+radio and gamma ray measurements \citep{acciari2011, morlino2012}.  The same
+model with a damped magnetic field is equally capable of describing our
+measured data.  At weak energy dependence the two models are indistinguishable
+and magnetic damping fits still favor moderately amplified magnetic fields.  At
+moderate energy dependence ($\mE \sim -0.3$), the damping model favors weaker
+magnetic fields, but modeled FWHMs may not be truly representative of thin rim
+widths and profiles.
 
-% Further work -- radio
-%As has been noted by many workers, observations of radio synchrotron rims would
-%provide strong and immediate evidence for magnetic field damping (at the
-%lengthscales of said radio rims).  Previous workers have certainly tried
-%\citep{cassam-chenai2007, morlino2012} but it seems not easy.
-%A new epoch of VLA and \Chandra observations in this year (PIs: J. Hewitt, B.
-%Williams) will offer a rich dataset of sub-arcsecond observations that may
-%reveal more about rim morphology and perhaps even temporal variation over a 10+
-%year baseline (compare to \citet{katsuda2010-sn1006}).
+Thin radio synchrotron rims, however, can only be produced at the shock by
+magnetic damping.  Assuming shocked electrons account for most radio emission
+immediately downstream of Tycho's forward shock, we jointly model radio and
+X-ray profiles to measured profiles and find that damping lengths of $1$--$5$\%
+of the shock radius are required throughout most of the remnant; only a few
+(3/16) selected regions are plausibly consistent with a constant advected
+magnetic field.  Typical magnetic field strengths range between $50$--$400
+\muG$.  Although we cannot bound damping lengths and fields from our
+qualitative profile comparisons, our results are physically reasonable and are
+likely good to order-of-magnitude.
+
+%Additional proxies for diffusion and/or magnetic field are needed to better
+%constrain magnetic damping in the shocks of young supernova remnants.
+%
+%As our data are not count limited, we suggest that additional proxies for
+%diffusion and magnetic field are needed to establish or rule out the presence
+%of damping at the shocks of young supernova remnants.  More sophisticated
+%modeling of shock physics \citep[e.g.,][]{zirakashvili2014} and shock/filament
+%structure \citep[cf.][]{caprioli2013} may be necessary to improve modeling
+%results.
 
 % ================
 % Acknowledgements
@@ -1724,19 +1735,25 @@ be enabled by EVLA and ALMA) may better discriminate between models.
 \acknowledgments
 
 A.T. thanks CRESST for sponsorship/support at GSFC (any relevant grants?)
-B.J.W. NPP?
+We thank David Moffett for providing the VLA image used in this study.
 The scientific results reported in this article are based on data obtained from
 the \Chandra Data Archive.
 This research made extensive use of NASA's Astrophysics Data System.
-This research made use of APLpy, an open-source plotting package for Python
-hosted at \href{http://aplpy.github.com}{http://aplpy.github.com}.
+This research also made use of APLpy, an open-source plotting package for
+Python hosted at \href{http://aplpy.github.com}{http://aplpy.github.com}.
 
 {\it Facilities:} \facility{CXO (ACIS-I)}
+
+% ==========
+% References
+% ==========
+\bibliographystyle{apj}  % AASTeX journal macros are supplied in ADS entries
+\bibliography{refs-snr}
 
 % ========
 % Appendix
 % ========
-\clearpage
+%\clearpage
 \appendix
 
 \setcounter{table}{0}
@@ -1749,8 +1766,8 @@ hosted at \href{http://aplpy.github.com}{http://aplpy.github.com}.
 % ================================
 \section{Best fits, SN 1006}
 
-Here we supply detailed best loss-limited and damped fit results for averaged
-filament widths in SN 1006, from \citet{ressler2014}.
+Here we give best loss-limited and damped fit results for averaged filament
+widths in SN 1006, taken from \citet{ressler2014}.
 
 \begin{figure*}[h]
     \centering
@@ -1799,99 +1816,99 @@ filament widths in SN 1006, from \citet{ressler2014}.
 % Best Tycho fits with Bmin = 2 microGauss
 % ========================================
 
-\clearpage
-\section{Best fits, Tycho, with $\Bmin=2\muG$}
-
-\begin{table}[ht]
-    \scriptsize
-    \centering
-    \caption{Best model fits for all regions, $\mu = 1$, $\Bmin=2\muG$}
-    \input{suppl-fits-all-bmin2.tex}
-\end{table}
-
-% As above but with eta2=1 fixed!
-\begin{table}[ht]
-    \scriptsize
-    \centering
-    \caption{Best model fits for all regions, $\mu = \eta_2 = 1$,
-        $\Bmin=2\muG$}
-    \input{suppl-fits-all-bmin2-eta2one.tex}
-\end{table}
-
-% Only show these giant tables in 2col... no need to print these
-\iftoggle{manuscript}{
-}{
-    % ===============================
-    % Damping best fit sea of numbers
-    % ===============================
-    \clearpage
-    \section{Magnetic damping best fit tables}
-
-    \begin{table*}[ht]
-        \scriptsize
-        \centering
-        \caption{Damped fits to individual regions, Filament 1, $\mu = 1$}
-        \input{suppl-fits-damp-f1.tex}
-    \end{table*}
-
-    \begin{table*}[ht]
-        \scriptsize
-        \centering
-        \caption{Damped fits to individual regions, Filament 2, $\mu = 1$}
-        \input{suppl-fits-damp-f2.tex}
-    \end{table*}
-
-    \begin{table*}[ht]
-        \scriptsize
-        \centering
-        \caption{Damped fits to individual regions, Filament 2 (cont.), $\mu = 1$}
-        \input{suppl-fits-damp-f2-pt2.tex}
-    \end{table*}
-
-    \begin{table*}[ht]
-        \scriptsize
-        \centering
-        \caption{Damped fits to individual regions, Filament 3, $\mu = 1$}
-        \input{suppl-fits-damp-f3.tex}
-    \end{table*}
-
-    \begin{table*}[ht]
-        \scriptsize
-        \centering
-        \caption{Damped fits to individual regions, Filament 4, $\mu = 1$}
-        \input{suppl-fits-damp-f4.tex}
-    \end{table*}
-
-    \begin{table*}[ht]
-        \scriptsize
-        \centering
-        \caption{Damped fits to individual regions, Filament 5, $\mu = 1$}
-        \input{suppl-fits-damp-f5.tex}
-    \end{table*}
-
-    % ================================
-    % Damping best fit tables, SN 1006
-    % ================================
-    \clearpage
-    \section{Magnetic damping fit tables, SN 1006}
-
-    \begin{table*}[ht]
-        \scriptsize
-        \centering
-        \caption{Damped fits to SN1006 filaments, $\mu = 1$}
-        \input{suppl-fits-damp-sn1006.tex}
-    \end{table*}
-
-    \clearpage
-    \section{Magnetic damping fit tables, SN 1006, no e- cutoff}
-
-    \begin{table*}[ht]
-        \scriptsize
-        \centering
-        \caption{Damped fits to SN1006 filaments, $\mu = 1$, no e- cutoff}
-        \input{suppl-fits-damp-nocut-sn1006.tex}
-    \end{table*}
-}
+%\clearpage
+%\section{Best fits, Tycho, with $\Bmin=2\muG$}
+%
+%\begin{table}[ht]
+%    \scriptsize
+%    \centering
+%    \caption{Best model fits for all regions, $\mu = 1$, $\Bmin=2\muG$}
+%    \input{suppl-fits-all-bmin2.tex}
+%\end{table}
+%
+%% As above but with eta2=1 fixed!
+%\begin{table}[ht]
+%    \scriptsize
+%    \centering
+%    \caption{Best model fits for all regions, $\mu = \eta_2 = 1$,
+%        $\Bmin=2\muG$}
+%    \input{suppl-fits-all-bmin2-eta2one.tex}
+%\end{table}
+%
+%% Only show these giant tables in 2col... no need to print these
+%\iftoggle{manuscript}{
+%}{
+%    % ===============================
+%    % Damping best fit sea of numbers
+%    % ===============================
+%    \clearpage
+%    \section{Magnetic damping best fit tables}
+%
+%    \begin{table*}[ht]
+%        \scriptsize
+%        \centering
+%        \caption{Damped fits to individual regions, Filament 1, $\mu = 1$}
+%        \input{suppl-fits-damp-f1.tex}
+%    \end{table*}
+%
+%    \begin{table*}[ht]
+%        \scriptsize
+%        \centering
+%        \caption{Damped fits to individual regions, Filament 2, $\mu = 1$}
+%        \input{suppl-fits-damp-f2.tex}
+%    \end{table*}
+%
+%    \begin{table*}[ht]
+%        \scriptsize
+%        \centering
+%        \caption{Damped fits to individual regions, Filament 2 (cont.), $\mu = 1$}
+%        \input{suppl-fits-damp-f2-pt2.tex}
+%    \end{table*}
+%
+%    \begin{table*}[ht]
+%        \scriptsize
+%        \centering
+%        \caption{Damped fits to individual regions, Filament 3, $\mu = 1$}
+%        \input{suppl-fits-damp-f3.tex}
+%    \end{table*}
+%
+%    \begin{table*}[ht]
+%        \scriptsize
+%        \centering
+%        \caption{Damped fits to individual regions, Filament 4, $\mu = 1$}
+%        \input{suppl-fits-damp-f4.tex}
+%    \end{table*}
+%
+%    \begin{table*}[ht]
+%        \scriptsize
+%        \centering
+%        \caption{Damped fits to individual regions, Filament 5, $\mu = 1$}
+%        \input{suppl-fits-damp-f5.tex}
+%    \end{table*}
+%
+%    % ================================
+%    % Damping best fit tables, SN 1006
+%    % ================================
+%    \clearpage
+%    \section{Magnetic damping fit tables, SN 1006}
+%
+%    \begin{table*}[ht]
+%        \scriptsize
+%        \centering
+%        \caption{Damped fits to SN1006 filaments, $\mu = 1$}
+%        \input{suppl-fits-damp-sn1006.tex}
+%    \end{table*}
+%
+%    \clearpage
+%    \section{Magnetic damping fit tables, SN 1006, no e- cutoff}
+%
+%    \begin{table*}[ht]
+%        \scriptsize
+%        \centering
+%        \caption{Damped fits to SN1006 filaments, $\mu = 1$, no e- cutoff}
+%        \input{suppl-fits-damp-nocut-sn1006.tex}
+%    \end{table*}
+%}
 
 
 % =======================
@@ -1979,7 +1996,8 @@ $E_2 = \left( 0.2657 \unit{erg^2\;G} / B \right)^{1/2}$, we obtain:
         \left( \frac{v_s}{10^8 \unit{cm/s}} \right)^{\frac{4}{1+\mu}}
         \left( \eta_2 \right)^{-\frac{2}{1+\mu}}
 \]
-And, the magnetic field terms cancel!  Our final usable result is:
+And, the magnetic field terms cancel.  Our final result
+(equation~\eqref{eq:cutoff}) is:
 \begin{equation}
     \nu_{\mt{cut}} = c_m
         \left( 13.3 \unit{erg} \right)^{\frac{4}{1+\mu}}
@@ -1988,12 +2006,6 @@ And, the magnetic field terms cancel!  Our final usable result is:
         \left( \eta_2 \right)^{-\frac{2}{1+\mu}}
 \end{equation}
 which depends only upon $v_s$ and $\eta_2$.
-
-% ==========
-% References
-% ==========
-\bibliographystyle{apj}  % AASTeX journal macros are supplied in ADS entries
-\bibliography{refs-snr}
 
 %\end{CJK}
 \end{document}

@@ -414,6 +414,8 @@ def profile_fit(snr, kevs, prfs, epss, r_prfs, mu, eta2=None, B0=None,
         model_kws = {}
     model_kws['get_prfs'] = True
     model_kws['irad_adapt'] = False
+    model_kws['get_fwhms'] = False
+    model_kws['get_data'] = False
 
     # require rminarc > r_prfs at all energies, default safety factor 1.2
     rminarc = []
@@ -457,7 +459,9 @@ def prf_objective_func(pars, prfs, epss, r_prfs, multishift, *args, **kwargs):
        Please check that best fits lie within rminarc.
 
     2. for profile fitting to work correctly, you must supply the correct
-       **kwargs (require profiles and don't use adaptive rminarc)
+       **kwargs (require profiles, don't get FWHMs, don't use adaptive rminarc,
+       don't get useful "data". adaptive rminarc might work, but others are
+       enforced)
 
     Inputs:
         pars: lmfit.Parameters object with entries B0, eta2, mu, ab,
@@ -491,12 +495,16 @@ def prf_objective_func(pars, prfs, epss, r_prfs, multishift, *args, **kwargs):
         print '\tshifts (\") = {}'.format(r_trans)
         print '\tamps = {}'.format(amp)
 
+    assert not kwargs['get_fwhms']
+    assert 'get_data' not in kwargs or not kwargs['get_data']
+    assert kwargs['get_prfs']
+
     r_prfs = map(op_add, r_prfs, r_trans)
     prfs = map(op_mul, prfs, amp)
     epss = map(op_mul, epss, amp)
 
     # Compute model profiles.  Don't need FWHMS (_)
-    _, igrids, rgrids = width_cont(pars, *args, **kwargs)
+    igrids, rgrids = width_cont(pars, *args, **kwargs)
 
     # Combine all profiles' weighted residuals
     res_all = []
@@ -622,7 +630,8 @@ def simple_width(snr, kevs, mu, eta2, B0):
 def width_cont(params, kevs, snr, verbose=True, rminarc=None, icut=None,
     irmax=None, iradmax=None, ixmax=None, irad_adapt=True, irad_adapt_f=1.2,
     idamp=False, damp_ab=0.05, damp_bmin=5.0e-6, fgfname='fglists_mod.dat',
-    itmax=200, inmax=50, irhomax=2000, get_prfs=False, get_data=False):
+    itmax=200, inmax=50, irhomax=2000, get_prfs=False, get_data=False,
+    get_fwhms=True):
     """Width function, wrapper for Python port of full model (equation 12)
 
     All **kwargs not specified (excepting verbose) are taken from snr object
@@ -666,12 +675,21 @@ def width_cont(params, kevs, snr, verbose=True, rminarc=None, icut=None,
                   so, obviously, don't use if you are fitting stuff
         get_data: get useful information about profile shape (min/max pos,
             existence of a trough, % above/below rim max)
+        get_fwhms: True by default. Saves marginally on computation time if you
+            don't want FWHMs!
 
     Outputs:
         np.array of modeled FWHMs (arcsec) for each energy in 'kevs'
         if get_prfs, then also returns intensity profiles and r grid values
         as 3-tuple of fwhms, intensities, rgrids
     """
+    # ------------
+    # Sanity check
+    # ------------
+
+    assert get_prfs or get_data or get_fwhms
+    # You have to get SOMETHING out...
+
     # -----------------------
     # Load parameter/settings
     # -----------------------
@@ -714,7 +732,9 @@ def width_cont(params, kevs, snr, verbose=True, rminarc=None, icut=None,
         fwhms_prelim = fmp.fefflen(kevs, B0, eta2, mu, vs, v0, rs, rsarc, s,
                                    rminarc, icut, irmax, iradmax_prelim, ixmax,
                                    idamp, damp_ab, damp_bmin, fgfname,
-                                   itmax, inmax, irhomax, False, False)
+                                   itmax, inmax, irhomax,
+                                   False, False,  # get_prfs / get_data
+                                   True)  # get_fwhms
 
         # Replace error-code values
         res_msk, box_msk = _check_calc_errs(fwhms_prelim, rminarc)
@@ -755,20 +775,21 @@ def width_cont(params, kevs, snr, verbose=True, rminarc=None, icut=None,
     out = fmp.fefflen(kevs, B0, eta2, mu, vs, v0, rs, rsarc, s,
                       rminarc, icut, irmax, iradmax, ixmax,
                       idamp, damp_ab, damp_bmin, fgfname,
-                      itmax, inmax, irhomax, get_prfs, get_data)
+                      itmax, inmax, irhomax, get_prfs, get_data, get_fwhms)
 
-    if get_prfs or get_data:
+    if get_fwhms:
         fwhms = out[0]
-    else:
-        fwhms = out
+        res_msk, box_msk = _check_calc_errs(fwhms, rminarc)
+        if any(res_msk):
+            print '\t\tResolution error! at {}'.format(kevs[res_msk])
+        if any(box_msk):
+            print '\t\tBox error! at {}'.format(kevs[box_msk])
 
-    res_msk, box_msk = _check_calc_errs(fwhms, rminarc)
-    # Check for errors
-    if any(res_msk):
-        print '\t\tResolution error! at {}'.format(kevs[res_msk])
-    if any(box_msk):
-        print '\t\tBox error! at {}'.format(kevs[box_msk])
-
+    # Preserving old behavior for backwards compatability
+    # BUT should be updated throughout codebase if possible (TODO)
+    # to just accept out directly.
+    if get_fwhms and not (get_prfs or get_data):
+        return fwhms
     return out
 
 def _check_calc_errs(fwhms, rminarc):

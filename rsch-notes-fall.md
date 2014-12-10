@@ -57,7 +57,7 @@ Table of contents
 
 * Week 27 - (12/1)
             (out Friday)
-* Week 28 - (12/8)
+* Week 28 - (12/8) Finish eyeball fits
 * Week 29 - (12/15)
 * Week 30 - (12/22, 12/23 only)
 
@@ -6173,3 +6173,115 @@ I didn't fit all the profiles yet, but just by eye:
 
 Sent email with some example profiles.  Notebook littered w/ cells testing
 varied parameters.
+
+Friday 2014 December 5
+======================
+
+Out for day.  Minor twiddling of radio/X-ray processing notebook.
+
+Saturday 2014 December 6
+========================
+
+Settled on an approach to constraining `a_b` and `B_0` based on rim drop-off
+(and steepness of said drop-off).  We could do one
+Set up, I think, a working approach the simplesto generate
+
+Updated full model code error messages to be more customizable
+(and made some of them shut up).  Also allowed the FWHM calculation step to be
+skipped -- saves maybe 10% time.
+
+Set up the profile shape discrimination.  Realized it must be an apples to
+apples comparison (how steeply does it drop to _observed_ emission minimum, not
+the _modeled_ emission minimum).
+
+Next question: what should we do if a rim is NOT present?
+
+Monday 2014 December 8
+======================
+
+Meeting
+-------
+
+Show the plots w/ varying B field
+One paragraph on shape analysis.  State as a soft bound, language not so firm.
+We don't need to show all the regions.  Fits are not to be trusted.
+We cannot argue for good/bad data.
+
+What happens if the X-ray profiles are used to constrain shape as well?
+(in my maps of bounded parameter space) ... if not done don't worry about it.
+
+Rob out Thursday, Friday (one day meeting), back Monday.
+Needs airplane reading.
+
+
+Analysis, pipeline, eyeball fits
+
+Finished setting up soft "bounds" analysis for all rims, but I didn't
+incorporate X-ray bounds yet.  That's a small step but given that this shape
+analysis may not be useful, probably not worth going as far...
+It's been two weeks already too...
+
+A general observation -- IF the magnetic field is large, ramping the B field
+up/down and then rescaling the profile does not seem to do much, especially in
+radio.
+
+
+Tuesday 2014 December 9
+=======================
+
+Summary
+-------
+
+* Finished eyeball fits for all `regions-6-VLA` selections
+* Generate plots of multiple fits for manuscript
+* Throw figures into manuscript, update text for radio/X-ray fits
+* Sent new manuscript (finally!) to Rob/Brian
+
+A ton of parameter twiddling today, and finicky details on plots... time to
+finish writing and move on to other things.
+
+Eyeball fits
+------------
+
+I reproduce the numbers here without comments to be sure, but they are stored
+in `data-tycho/regions-6-VLA/fit-params.txt`.
+
+    Region  1 (A): B0 =  50, ab = 0.02               DECENT rim example
+    Region  5 (E): B0 = 120, ab = 0.03               bad, 2 flmt?
+    Region  6 (F): B0 = 300, ab = 0.025              bad, 2 flmt?
+    Region  7 (G): B0 = 250, ab = 0.02               DECENT
+    Region  8 (H): B0 = 300, ab = 0.02               DECENT
+    Region  9 (I): B0 = 250, ab = 0.02               bad radio rim
+    Region 11 (K): B0 = 400, ab = 0.01               GOOD
+    Region 14 (N): B0 =  23, ab = 0.004              bad, 2 flmt in NW
+                   B0 = 800, ab = 0.01               alternate fit #s
+    Region 15 (O): B0 = 200, ab = 0.005              bad
+    Region 16 (P): B0 = 150, ab = 0.012              bad, multiple flmts?
+
+    Region  2 (B): B0 = 200, ab = 0.05     (plateau) GOOD plateau example
+    Region  3 (C): B0 =  15, ab = 0.01     (plateau) bad, few x-ray counts
+    Region  4 (D): B0 = 100, ab = 0.05     (plateau) bad, same as above
+
+    Region 10 (J): B0 = 300, ab = 0.3      (rise)    bad rise, doesn't fit well
+    Region 12 (L): B0 = 250, ab = 0.2      (rise)    DECENT
+    Region 13 (M): B0 = 200, ab = loss-lim (rise)    GOOD
+
+So I think Region B (plateau), K (rim), M (rise) are the best examples.
+I is a nice example of where the radio rim does NOT work.
+
+Every region has a little tension, unsurprisingly.  But only Region N is
+especially bad.  The rest are slightly off in X-ray rim shape, or radio shape
+is funny/bumpy.
+
+Overhauled fitting notebook / cells to do what I need.  Now as compact as
+possible (I think), and generates manuscript ready plots w/ varying ab and B0.
+
+I reached 1789 cell evaluations before resetting for today (over Mon/Tues), and
+I think I got about 200+ more in after resetting the notebook.  Probably 2000+
+cell evaluations over two days.
+
+Manuscript
+----------
+
+New figures, new text.  Updated conclusions and abstract but it is pretty
+choppy right now.
