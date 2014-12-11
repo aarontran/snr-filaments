@@ -575,7 +575,7 @@ cf2py intent(out) disttab
             if (idamp.eq.0) then
                 efinv = a/v * B**2d0 * (rs-r*rs)
             else
-                efinv = b0/v*x
+                efinv = b0/v*x ! = a*B**2d0/v * x, same as above...
             endif
             ef =1d0/efinv
             en0 = E/(1d0-E/ef)
@@ -934,8 +934,6 @@ cf2py intent(out) disttab
 ! This subroutine also contains the machinery to calculate the flux in different 
 ! regions behind the shock, broken up by whether they are part of the peak intensity 
 ! region or not
-
-! TODO: turn this into a function?
 
       subroutine FWHM(intensitygraph,inumax,irmax,delr,nugraph,width)
           ! implicit none

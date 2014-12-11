@@ -6285,3 +6285,39 @@ Manuscript
 
 New figures, new text.  Updated conclusions and abstract but it is pretty
 choppy right now.
+
+Wednesday 2014 December 10
+==========================
+
+## Advection solution check
+Quick review of 1st order PDEs.  Linear non-const. coeff. PDEs are all just
+some twisted form of the advection equation, so transform accordingly and
+solve.  Confirmed Sean's solution (and, analysis is good for damped and
+undamped cases alike).
+
+To incorporate a self-similar velocity profile, we just incorporate it into the
+function `z(x)` as:
+\[
+    z(x) = \frac{1}{B_0^2} \int_0^x \frac{B^2(x')}{v_d(x')} dx'
+\]
+recalling that `B_0` is magnetic field at shock, `v_d` is downstream velocity,
+and `x` is downstream radial coordinate (i.e., sign opposite to `r`).
+Then we simply have a new parameterization of the characteristic.
+
+All verified and looks good to go!  The advection solution is very elegant.
+
+## Paper
+
+Reviewed paper again, making several minor edits to prose.  Throw out table of
+`srcutlog` fits as suggested by Brian.
+
+Generate diff as (after getting the 2014 Oct. 31 version of paper from git):
+
+    latexdiff paper-tycho-spr-sr-last.tex paper-tycho.tex --math-markup=3 > paper-tycho-diffed.tex
+
+
+Thursday 2014 December 11
+=========================
+
+Compute ton of profiles for radio + X-ray shape analysis. ...
+(continue this.. then address 2 muG eyeballed fits)
