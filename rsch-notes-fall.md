@@ -6319,5 +6319,94 @@ Generate diff as (after getting the 2014 Oct. 31 version of paper from git):
 Thursday 2014 December 11
 =========================
 
-Compute ton of profiles for radio + X-ray shape analysis. ...
+Mid-day snow flurries!
+
+Next steps?
+-----------
+
+Ran by Brian... spectral variation analysis is very iffy, honestly.  Probably
+not worth exploring further, maybe don't even need it in the paper.  Will
+discuss further next week.  Probably not worth exploring any more alleyways at
+this time, we have to cut it off somewhere.
+
+Radio data?  Don't worry about Panutti's observation (TDEM0200).  Probably not
+useful.  Proper motion needs A config and they already have a 30 year baseline.
+
+Draft AAS poster for Monday meeting would be ideal, print before leaving.
+
+Proofread the manuscript, refine prose / fix typos etc.
+
+Shape analysis, X-ray + radio
+-----------------------------
+
+Computed profiles for radio + X-ray shape analysis.  Similar to radio -- we get
+slightly better constraints, but again all this analysis is very wishy-washy.
+Can't really constrain fits, it's just one proxy for shape.
 (continue this.. then address 2 muG eyeballed fits)
+
+The plots (and code) are really ugly -- I can make nice contours (just need to
+convert from lists of tuples, to meshgrids / 2-d arrays and then assign values
+based on shape match or mismatch), but at this point it's probably not worth
+it.  So I'll leave it as is.
+
+Radio/x-ray fits with Bmin = 2 microGauss
+-----------------------------------------
+
+In short, there appears no obvious effect.
+
+Region C, with ab = 0.01 and B0 = 15 muG, would have to be updated to about 6-8
+muG instead.  But the other regions seem okay.  Taking B0 = 6 muG reproduces
+the profile almost exactly, unsurprisingly; the ratio B0/Bmin may well
+determine the shape here.  Smaller damping length will also have bigger effect,
+of course.
+
+It takes about 4 or so damping lengths (falloff about 90%) to get close to
+asymptotic value.  So before then it doesn't matter much at all.
+
+Actual data / manual "fits":
+
+Region A: ab = 0.02, B0 = 50 muG        far downstream (behind peak) emission
+                                        is visibly changed.  30 muG now fits
+                                        radio rim slightly better, but the
+                                        difference is pretty marginal
+Region B: ab = 0.05, B0 = 200 muG       Looks almost identical.
+                                        Damping length is large, magnetic field
+                                        is large, so not much effect.
+Region C: ab = 0.05, B0 = 60 muG        about the same
+          ab = 0.01, B0 = 15 muG        change to 6 muG
+          ab = 0.005, B0 = 15 muG       change to 6 muG
+
+Region D: ab = 0.05, B0 = 50/100/200 muG    Region is already ill-constrained
+                                            very marginal decrease in
+                                            downstream emission at 50 muG,
+                                            possibly extending plausible param
+                                            range to ~30 or 40 muG
+                                            But, 100 muG case looks fine.
+          ab = 0.02, B0 = 15 muG            Change to 6 muG and all is fine
+
+Region E: ab = 0.03, B0 = 120 muG           Can change to 80 muG, but worsens
+                                            X-ray rim.  I really can't tell
+                                            much difference.
+
+Region F: ab = 0.025, B0 = 300 muG          Bad fit already (2 filament)
+                                            w/ smaller Bmin, barely any
+                                            difference.
+
+In summary: don't need to worry about changing Bmin from 2e-6 to 5e-6
+Briefly explain in text, that qualitative fits at small damping length and
+magnetic field, will simply favor correspondingly smaller fields.  But compared
+to the uncertainty in our chi-by-eye this is nothing.
+
+Profiles from width-energy fits vs. data
+----------------------------------------
+
+The code I wrote for profile fitting/manipulation was really poorly designed.
+Oh well.
+
+Regenerated profiles, I was accidentally using an old version of `fglists.dat`.
+These should be updated in new manuscript (but, the difference is likely
+negligible).
+
+Verdict: I'm actually surprised, the profiles and data do not disagree too
+badly!  Generate new plots, just because it's a nice sanity check and the
+figures are pretty.
