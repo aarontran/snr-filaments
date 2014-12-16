@@ -1,5 +1,5 @@
-\documentclass[manuscript]{aastex}  % one-column, double-spaced GENERATE BIB
-%\documentclass[iop, apj, numberedappendix]{emulateapj}
+%\documentclass[manuscript]{aastex}  % one-column, double-spaced GENERATE BIB
+\documentclass[iop, apj, numberedappendix]{emulateapj}
 
 %\documentclass[12pt,preprint]{aastex}  % one-column, single-spaced
 %\documentclass[iop, apj, numberedappendix, twocolappendix]{emulateapj}
@@ -7,8 +7,8 @@
 % Customize figures/sizing for 2 column vs. manuscript printout
 \usepackage{etoolbox}
 \newtoggle{manuscript}
-\toggletrue{manuscript}
-%\togglefalse{manuscript}
+%\toggletrue{manuscript}
+\togglefalse{manuscript}
 
 \shorttitle{Tycho's Synchrotron Rims (\today)}  % <~ 44 char
 \shortauthors{XXX et al. (\today)}  % Max three
@@ -230,8 +230,9 @@ model for particle transport with an exponentially cut-off injected electron
 spectrum, we fit width measurements to model predictions in the loss-limited
 and magnetic damping scenarios to obtain estimates on magnetic field strength
 and diffusion coefficient magnitude.  We discuss degeneracy in our model fits
-and attempt to constrain damping through spectral variation downstream of the
-forward shock and considering both radio and X-ray rim morphology.
+and attempt to constrain damping by (1) measuring and modeling spectral variation
+downstream of the forward shock, and (2) jointly modeling both radio and X-ray
+rim morphology.
 %and the implications for future studies of young supernova remnant shocks.
 
 % =============================
@@ -1477,10 +1478,11 @@ the radio image and the previous X-ray profile regions of Figure~\ref{fig:snr}.
 
 \begin{figure}
     \centering
-    \iftoggle{manuscript}{ % TODO a temporary image
+    \iftoggle{manuscript}{
         \includegraphics[width=0.3\textwidth]{figures/radio-snr-inv.png}
     }{
         \plotone{figures/radio-snr-inv.png}
+        %\plotone{figures/radio-snr.eps}
     }
     \caption{Radio image of Tycho's SNR at $1.375 \unit{GHz}$ with linear
     scaling.  Extraction regions (green) for joint radio and X-ray profile
@@ -1572,8 +1574,11 @@ radio emission are best modeled with $a_b \gtrsim 0.1$ and $B_0 \abt 200$--$300
 \muG$.  Although damping lengths $a_b \gtrsim 0.1$ may not be physically
 meaningful, such large values of $a_b$ yield practically constant magnetic
 field behind the shock regardless.
-
-% TODO what happens if \Bmin = 2 \muG?!
+Our results are also insensitive to the assumed value of $\Bmin$; only model
+profiles with small magnetic fields ($B_0 \lesssim 100 \muG$) and/or small
+damping length ($a_b < 0.01$) are affected if we take $\Bmin = 2 \muG$ rather
+than $5 \muG$.
+% TODO rewrite for clarity (!)
 
 % Results: downstream emission should bound damping for an idealized,
 % spherically symmetric remnant

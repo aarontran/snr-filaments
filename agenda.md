@@ -30,8 +30,15 @@ submitted to ApJL: http://arxiv.org/abs/1412.2874
 Main TO-DOs
 -----------
 
+Topics for telecon:
+addressing SN 1006
+poster/paper organization
+questions listed below...
+run plots of FWHM fit profiles + data by Brian (+Rob) when there's time.
+
+* INTENSITY NORMALIZATION...
+
 * Set up extra fits for Tycho
-* AAS poster
 * Go through manuscript, hit the lingering TODOs and minor notes
 
 * check expressions for cut-off energy, diffusion terms in Sean's solution
@@ -41,7 +48,7 @@ Main TO-DOs
 * Figure out the Bmin thing in diffusion coefficient calculations
 
 * Eventually: review manuscript for tense, loss-limited/damping terminology /
-  definitions, etc...  Check all equations, resolution, etc.
+  definitions,s etc...  Check all equations, resolution, etc.
   Recompute all resolutions and update notebook
 
 * Test the strange D^2(x) B(x) assumption? How?  Tang/Chevalier?
@@ -116,6 +123,8 @@ May not necessarily be explored.
 * does the strength/intensity of radio emission from SNRs require any
   amplification, or is an ambient ISM field strength enough to produce the
   observed emission?
+
+* Check w/ steve about VLA A config (any merging of multiple configs / freqs?)
 
 ### Radio Qs for Jack
 

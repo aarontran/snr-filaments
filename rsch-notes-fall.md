@@ -57,11 +57,12 @@ Table of contents
 
 * Week 27 - (12/1)
             (out Friday)
-* Week 28 - (12/8) Finish eyeball fits
+* Week 28 - (12/8) Finish eyeball fits, send paper around
 * Week 29 - (12/15)
 * Week 30 - (12/22, 12/23 only)
 
-* Week 31 - (12/29) at home
+* Week 31 - (12/29)
+            (at home)
 * Week 32 - (1/5) AAS winter meeting
 
 (week 10 included for continuity)
@@ -6410,3 +6411,78 @@ negligible).
 Verdict: I'm actually surprised, the profiles and data do not disagree too
 badly!  Generate new plots, just because it's a nice sanity check and the
 figures are pretty.
+
+
+Friday 2014 December 12
+=======================
+
+Poster making, a lot of layout fiddling/experimentation.  Continued over
+weekend and settled on a nice layout on Sunday.
+
+
+Monday 2014 December 15
+=======================
+
+Summary
+-------
+* Resend new ver. of parameter grids around (in re Steve's email)
+* Final(?) poster figures + manuscript figure of radio regions
+
+
+Meeting notes
+-------------
+
+### Steve's email
+
+Counter-intuitive results = ?.  Parameter grids should cover response nicely,
+send today, then send poster before Weds so Sean/Steve can review too.
+
+Discussed / explained weird `eta_2` effect w/ Rob/Brian.
+
+### Miscellany
+
+SN 1006 section -- still kind of TBD.  Can bring up?  But Brian/Rob okay with
+it as is.  Setting Bmin = 2 microGauss has negligible effect (last Thurs
+result).  Just put a one-liner in paper (done).
+
+Rob/Brian out after this week.  Rob out until next year; not attending AAS
+(been too hectic).  Brian back week after Christmas, then out to Seattle.
+
+### Poster remarks
+
+* Play with colormaps for 4-7 keV image, maybe invert (suggested by Brian).
+* Several poster remarks that I implemented today.  Image scales should match;
+  colormaps on 4-7 keV and 1.375 GHz images should be the same.
+* Cartoon for B field is okay
+
+Send around to all when ready, looks almost good to go
+
+### AAS things
+
+AAS -- Brian arriving late Sunday night.
+
+Go to all the plenaries, that's probably the thing to do.  Except day of
+poster perhaps, that would be the day to skip.
+
+AAS probably has capped out around 3000 people (DC is one of the bigger
+meetings).  Quite large (although, not compared to AGU or soc. neuroscience or
+APS etc.).
+
+
+Poster design/layout
+--------------------
+
+Playing with a lot of layout details.  I can't get the whitespace distribution
+quite the way I like, but it's good enough I hope.
+
+A few remarks on poster design:
+Title and headers: Helvetica Neue Light
+Body text: Adobe Caslon Pro
+
+Circular images for SNRs inspired by posters of ML Wong (Caltech GPS),
+especially his July 2014 Mars poster.  Two large images of SNRs (RGB X-ray
+Tycho + monochrome radio Tycho) should be same size, ease comparison.  Needs
+scalebar.  Twiddle the colormap some...
+
+Spent a long time fiddling images to get things to work (and meddling with
+APLpy, with no luck).

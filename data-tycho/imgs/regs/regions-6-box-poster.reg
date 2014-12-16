@@ -1,0 +1,43 @@
+# Region file format: DS9 version 4.1
+global color=green dashlist=8 3 width=1 font="helvetica 10 normal roman" select=1 highlite=1 dash=0 fixed=0 edit=1 move=1 delete=1 include=1 source=1
+fk5
+box(0:24:49.098,+64:05:35.69,25.138",23.588",324.573) # width=4
+box(0:24:45.544,+64:06:03.76,18.1796",8.71686",326.325) # width=4
+box(0:24:44.862,+64:06:10.51,18.3203",7.16461",327.071) # width=4
+box(0:24:43.665,+64:06:44.05,26.6868",12.2726",340.495) # width=4
+box(0:24:42.877,+64:06:55.17,24.0576",11.8554",341.092) # width=4
+box(0:24:41.741,+64:07:05.92,16.5191",12.8185",343.128) # width=4
+box(0:24:41.355,+64:07:17.89,17.8585",11.1858",345.44) # width=4
+box(0:24:40.943,+64:07:39.45,21.9761",6.81869",355.68) # width=4
+box(0:24:41.370,+64:07:46.63,28.634",6.71224",355.46) # width=4
+box(0:24:41.270,+64:07:54.48,28.771",8.88404",355.763) # width=4
+box(0:24:40.605,+64:08:33.01,18.5155",6.09757",10.5321) # width=4
+box(0:24:40.785,+64:08:39.14,18.4507",5.86717",11.5486) # width=4
+box(0:24:41.649,+64:09:06.79,13.5771",13.3476",10.6925) # width=4
+box(0:24:51.548,+64:10:49.78,25.2701",5.78624",46.4985) # width=4
+box(0:24:52.193,+64:10:53.73,25.2112",5.76252",47.8729) # width=4
+box(0:24:52.760,+64:10:58.98,21.9334",6.23902",50.486) # width=4
+box(0:24:53.462,+64:11:03.75,20.1004",6.30007",51.8505) # width=4
+box(0:25:25.517,+64:12:29.05,23.9671",23.4545",114.733) # width=4
+box(0:25:27.845,+64:12:22.18,23.7458",9.38268",114.657) # width=4
+box(0:25:29.049,+64:12:19.58,21.6629",6.89594",114.314) # width=4
+# text(0:24:46.185,+64:05:12.69) width=4 font="times 28 bold roman" text={1}
+# text(0:24:51.082,+64:11:28.94) width=4 font="times 28 bold roman" text={16}
+# text(0:24:43.113,+64:05:38.76) width=4 font="times 28 bold roman" text={2}
+# text(0:24:41.203,+64:05:55.70) width=4 font="times 28 bold roman" text={3}
+# text(0:24:40.049,+64:06:17.43) width=4 font="times 28 bold roman" text={4}
+# text(0:24:37.709,+64:06:29.77) width=4 font="times 28 bold roman" text={5}
+# text(0:24:37.029,+64:06:51.78) width=4 font="times 28 bold roman" text={6}
+# text(0:24:37.236,+64:07:09.57) width=4 font="times 28 bold roman" text={7}
+# text(0:24:36.796,+64:07:30.72) width=4 font="times 28 bold roman" text={8}
+# text(0:24:34.423,+64:07:46.32) width=4 font="times 28 bold roman" text={9}
+# text(0:24:36.844,+64:08:06.23) width=4 font="times 28 bold roman" text={10}
+# text(0:24:36.030,+64:08:32.50) width=4 font="times 28 bold roman" text={11}
+# text(0:24:36.842,+64:08:54.58) width=4 font="times 28 bold roman" text={12}
+# text(0:24:38.061,+64:09:22.50) width=4 font="times 28 bold roman" text={13}
+# text(0:24:45.610,+64:10:50.17) width=4 font="times 28 bold roman" text={14}
+# text(0:24:47.407,+64:11:11.79) width=4 font="times 28 bold roman" text={15}
+# text(0:24:54.997,+64:11:33.38) width=4 font="times 28 bold roman" text={17}
+# text(0:25:25.061,+64:12:57.14) width=4 font="times 28 bold roman" text={18}
+# text(0:25:29.263,+64:12:48.81) width=4 font="times 28 bold roman" text={19}
+# text(0:25:33.105,+64:12:35.17) width=4 font="times 28 bold roman" text={20}
