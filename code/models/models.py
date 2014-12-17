@@ -729,12 +729,13 @@ def width_cont(params, kevs, snr, verbose=True, rminarc=None, icut=None,
     if irad_adapt:
         iradmax_prelim = int(iradmax / 2.)  # Just a rough calculation
 
-        fwhms_prelim = fmp.fefflen(kevs, B0, eta2, mu, vs, v0, rs, rsarc, s,
-                                   rminarc, icut, irmax, iradmax_prelim, ixmax,
-                                   idamp, damp_ab, damp_bmin, fgfname,
-                                   itmax, inmax, irhomax,
-                                   False, False,  # get_prfs / get_data
-                                   True)  # get_fwhms
+        out_prelim = fmp.fefflen(kevs, B0, eta2, mu, vs, v0, rs, rsarc, s,
+                                 rminarc, icut, irmax, iradmax_prelim, ixmax,
+                                 idamp, damp_ab, damp_bmin, fgfname,
+                                 itmax, inmax, irhomax,
+                                 False, False,  # get_prfs / get_data
+                                 True)  # get_fwhms
+        fwhms_prelim = out_prelim[0]
 
         # Replace error-code values
         res_msk, box_msk = _check_calc_errs(fwhms_prelim, rminarc)

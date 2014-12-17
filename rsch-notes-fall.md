@@ -57,8 +57,9 @@ Table of contents
 
 * Week 27 - (12/1)
             (out Friday)
-* Week 28 - (12/8) Finish eyeball fits, send paper around
-* Week 29 - (12/15)
+* Week 28 - (12/8) Finish eyeball fits, send paper around, ..., ..., poster
+                   minor loose ends
+* Week 29 - (12/15) Send poster around, ...
 * Week 30 - (12/22, 12/23 only)
 
 * Week 31 - (12/29)
@@ -6437,6 +6438,9 @@ Meeting notes
 Counter-intuitive results = ?.  Parameter grids should cover response nicely,
 send today, then send poster before Weds so Sean/Steve can review too.
 
+The grid of model parameters might be useful for paper, to give quick/easy
+intuition.
+
 Discussed / explained weird `eta_2` effect w/ Rob/Brian.
 
 ### Miscellany
@@ -6486,3 +6490,36 @@ scalebar.  Twiddle the colormap some...
 
 Spent a long time fiddling images to get things to work (and meddling with
 APLpy, with no luck).
+
+
+Tuesday 2014 December 16
+========================
+
+Sent poster around.  Some reading / review of papers.  Need to think about:
+* Kepler in radio?
+* Optical filaments?
+* CR literature / derivations (not up to speed here)
+* Shocks / blastwave derivations
+
+Extra model (FWHM-energy dep.) fits
+-----------------------------------
+
+Fixed bug in model code (because `Fullefflength_port.fefflen` output was
+updated, the adaptive 1st pass calculation needed to be fixed).
+
+Ran tycho loss-limited fits with eta2 = 1 fixed.  As expected, almost no
+difference.  B fields change by maybe ~1 microGauss, completely negligible.
+Well, it's done for completeness's sake and doesn't take very long.
+
+### Remnant distance and damping
+
+Effect of distance to remnant: fits were originally run with Tycho `regions-5`
+on October 3, using d = 4 kpc instead of 3 kpc.  Because `regions-5` is largely
+the same as `regions-6`, I let the stated results stand.
+
+The only question is damping, which I expect to be unchanged.  If, e.g., we fit
+with `eta_2 = 1` fixed, that will change to `eta_2 = 9/16` at 4 kpc.  But
+everything else will be the same since we've shown that B field doesn't change,
+and ab is distance independent.  Should be the same result when we fit/match
+radio profiles.  So no need to really dig this way, especially since our
+conclusions don't hinge much on the width-energy dependence fits anyways.

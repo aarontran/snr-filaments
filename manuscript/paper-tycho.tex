@@ -83,28 +83,23 @@ Stephen P. Reynolds\altaffilmark{3}
 \altaffiltext{4}{CRESST, University of Maryland, College Park, MD 20742}
 \altaffiltext{5}{NASA Postdoctoral Program Fellow}
 
-% TODO define loss-limited properly...
-% ~210 words -- a little too long
 \begin{abstract}
 Several young supernova remnants exhibit thin X-ray bright rims of synchrotron
-radiation at their forward shocks.  Thin rims have been taken to indicate that
-shock-accelerated electrons rapidly cool downstream of the shock, requiring
-strong magnetic field amplification.  But, magnetic field damping immediately
-behind the shock could produce similarly thin rims.  We measured rim widths
-around Tycho's supernova remnant in 5 energy bands using an archival $750
-\unit{ks}$ \Chandra observation.  Rims consistently narrow with increasing
-energy and are well-described by either loss-limited or magnetically damped
-scenarios, hence X-ray rim widths alone cannot discriminate between models.
-Loss-limited fits require amplified magnetic fields of $\abt200$--$1000 \muG$
-and particle diffusion coefficients $\abt1$--$100\times$ Bohm values, whereas
-magnetic damping permits magnetic fields of $\abt 10$--$300 \muG$ and
-comparatively smaller diffusion coefficients (typically $\abt 1$--$10$).
-Corresponding thin rim radio rims require magnetic damping, however.  We
-jointly model radio and X-ray profiles and estimate magnetic damping length of
-order $1$--$5$\% of remnant radius, with magnetic field strengths $\abt
-50$--$400 \muG$ assuming Bohm diffusion.  Diffusion coefficients, magnetic
-field strengths, and magnetic damping lengthscales are somewhat degenerate in
-setting observed rim widths and drop-offs.
+radiation at their forward shocks.  Thin rims require strong magnetic field
+amplification if rim widths are limited by shock-accelerated electron energy
+losses.  But, magnetic field damping immediately behind the shock could produce
+similarly thin rims.  We measured rim widths around Tycho's supernova remnant
+in 5 energy bands using an archival $750 \unit{ks}$ \Chandra observation.  Rims
+consistently narrow with increasing energy and are well-described by either
+loss-limited or magnetically damped scenarios, hence X-ray rim widths alone
+cannot discriminate between models.  Loss-limited rims require amplified
+magnetic fields of $\abt200$--$1000 \muG$ and particle diffusion coefficients
+$\abt1$--$100\times$ Bohm values, whereas magnetic damping permits magnetic
+fields of $\abt 10$--$300 \muG$ and comparatively smaller diffusion
+coefficients (typically $\abt 1$--$10$).  Corresponding thin rim radio rims
+require magnetic damping, however.  We jointly model radio and X-ray profiles
+and estimate magnetic damping length of order $1$--$5$\% of remnant radius,
+with magnetic field strengths $\abt 50$--$400 \muG$ assuming Bohm diffusion.
 Although the energy dependence of synchrotron rims cannot discriminate magnetic
 field structure, joint radio and X-ray modeling favors magnetic damping in
 Tycho's SNR.
@@ -480,7 +475,6 @@ the thin rim.
 \subsection{Data and region selections}
 \label{sec:regions}
 
-% NOTE go through and double check tenses.
 We measured synchrotron rim full widths at half maximum (FWHMs) from an
 archival \Chandra ACIS-I observation of Tycho
 (RA: 00\tsup{h}25\tsup{m}19\fs0, dec: +64\arcdeg08\arcmin10\farcs0; J2000)
@@ -847,16 +841,15 @@ manually stepped one or two parameters that were held constant in fitting.
 Modeled profiles with best fit FWHMs for Regions 1 and 16 are plotted in
 Figure~\ref{fig:rims}, and their derived best-fit FWHM-energy curves
 are plotted in Figure~\ref{fig:fits} alongside measured FWHMs.
-The best fit model profiles do not quite match our measured rim profiles
+The best fit model profiles do not quite match measured rim profiles
 (Figure~\ref{fig:profiles}).  Our transport equation does not account for
 diffusive transport upstream of the shock, projection effects from shock
 ripples or other structure, and thermal emission downstream of the thin rim.
-Hence, fitting to FWHM measurements should be less sensitive to these effects
-as compared to directly fitting entire rim profiles to model predictions.
-We also note that although Figure~\ref{fig:rims} plots model profiles for
-$\mu = 1$ only, the best-fit FWHM-energy curves show that model profiles for
-$\mu \neq 1$ give very similar FWHM-energy dependence.  This is borne out in
-our best fit parameters in Tables~\ref{tab:fits-loss} and \ref{tab:fits-damp}.
+Fitting to multiple FWHM measurements should be robust to these effects as
+compared to directly fitting entire rim profiles to model predictions.
+Although Figure~\ref{fig:rims} plots model profiles for $\mu = 1$ only, the
+best-fit FWHM-energy curves show that model profiles for $\mu \neq 1$ give very
+similar FWHM-energy dependence.
 
 \begin{figure}
     \centering
@@ -1151,18 +1144,13 @@ keeping with our previous discussion of the effects of $B_0$ and $\eta_2$ on
 rim width in both loss-limited and damped models.
 
 \subsubsection{Effect of Tycho distance estimates on model fits}
-% TODO need to update for damping results!!!!!
 
-In our modeling we adopted a distance $d$ to Tycho of $3 \unit{kpc}$, but
-various estimates for Tycho's distance range between $2.3$--$4 \unit{kpc}$
-\citep{hayato2010}.  A larger remnant distance would increase both physical
-filament widths and shock velocity estimates from proper motion (as used in our
-models).
-
-% lad/ldiff scalings give eta/B0 scalings
-In the loss-limited model, we find roughly that $\eta_2 \propto d^2$ with
-$B_0$ approximately constant.  The advective lengthscale,
-equation~\eqref{eq:lad}, may be rearranged to obtain:
+Our models adopted a distance $d$ to Tycho of $3 \unit{kpc}$, but estimates for
+Tycho's distance range between $2.3$--$4 \unit{kpc}$ \citep{hayato2010}.  A
+larger remnant distance would increase both physical filament widths and shock
+velocity estimates from proper motion; we may then derive expected scalings for
+modeled $\eta_2$ and $B_0$ as functions of assumed distance $d$.  The advective
+lengthscale, equation~\eqref{eq:lad}, may be rearranged to obtain:
 \begin{align}
     B_0 =\; &(317 \muG) \left(\frac{v_d}{10^8 \unit{cm/s}}\right)^{2/3}
                 \nonumber \\
@@ -1185,20 +1173,17 @@ Recall that $\eta \propto \eta_2$ since $E_h = E_2$ is constant for a given
 $B_0$, from equation~\eqref{eq:diffcoeff}.  Similar results, primarily for
 magnetic field $B_0$, were previously given by \citet{parizot2006}.
 
-In practice, both advection and diffusion are important to our filament widths,
-but both scalings $\eta_2 \propto d^2$ and $B_0$ constant occur in model fits
-with varying distance.  When comparing full model fits with remnant distances
-of $3 \unit{kpc}$ and $4 \unit{kpc}$, the deviation from the idealized scaling
-is $\lesssim 1 \%$ for $B_0$ and $\abt 1$--$5\%$ for $\eta_2$.  As varying
-remnant distance $d$ leaves width-energy scaling $\mE$ invariant, the relative
-contributions of $l_{\mt{ad}}$ and $l_{\mt{diff}}$ should also be invariant.
-Then both lengthscales should scale simultaneously with $d$, yielding the
-observed behavior.
-
-% Damping and remnant distance
-In the damped model, a larger distance $d$ will require larger damping lengths
-from magnetic turbulence.  But, fitted values of $a_b$ will remain unchanged as
-we report $a_b$ in units of shock radius $r_s$.
+In practice, model fits with varying distance obey both scalings $\eta_2
+\propto d^2$ and $B_0$ constant.  When comparing full model fits with remnant
+distances of $3 \unit{kpc}$ and $4 \unit{kpc}$, the deviation from the
+idealized scaling is $\lesssim 1 \%$ for $B_0$ and $\abt 1$--$5\%$ for
+$\eta_2$.  As varying remnant distance $d$ leaves width-energy scaling $\mE$
+invariant, the relative contributions of $l_{\mt{ad}}$ and $l_{\mt{diff}}$
+should also be invariant.  Then both lengthscales should scale simultaneously
+with $d$, yielding the observed behavior.  In the damped model, a larger
+distance $d$ will require larger physical damping lengths from magnetic
+turbulence.  But, fitted values of $a_b$ should remain unchanged as we report
+$a_b$ in units of shock radius $r_s$.
 
 % ----------------
 % Main null result
@@ -1622,13 +1607,15 @@ with slopes that cannot be matched by our models, whether too steep or
 shallow.  Shape mismatch may be attributed in part to point-spread mismatch,
 diffusion (e.g., $\eta_2 \neq 1$), shock precursors, or other effects.
 
-Nevertheless, our conclusion that thin radio rims require magnetic damping
-should be robust and independent of model assumptions.
-\citet{cassam-chenai2007}, for example, observed the same dichotomy in radio
-emission for constant and damped magnetic fields in modeled profiles of Tycho's
-shock from a self-similar hydrodynamic model with diffusive shock acceleration.
-Our model captures the essential physics for a very young remnant such as
-Tycho, for which the forward shock should be adiabatic.
+Nevertheless, our conclusion that thin radio rims require magnetic damping is
+supported by more sophisticated modeling.  Hydrodynamic models with diffusive
+shock acceleration \citep{cassam-chenai2007, slane2014} also cannot produce
+radio profiles with narrow rims in a purely advected magnetic field.
+\citet{cassam-chenai2007} produced radio rims using a damped magnetic field,
+though they could not simultaneously reconcile predicted X-ray and radio
+intensities to observations.  Our model captures the essential physics for a
+very young remnant such as Tycho, for which the forward shock should be
+adiabatic.
 
 % TODO We have NOT considered the relative intensities of X-ray / radio rims!
 
@@ -1646,16 +1633,16 @@ Tables~\ref{tab:fits-loss} that reflect relatively tight errors in our FWHM
 profile measurements (Table~\ref{tab:fwhms}).
 
 The exponential variation in $D(x)$ (equation~\eqref{eq:ddamp}) may not be
-physically reasonable; as we have noted above, the assumption $D(x)
+physically reasonable; as noted above, the assumption $D(x)
 \propto 1 / B^2(x)$ gives rise to sharp gradients in diffusion coefficient and
 even inverts the effect of $\eta_2$ on our model profiles (where larger
 $\eta_2$ can cause rim widths to narrow).  Nevertheless, the modeled behavior
 appears physically reasonable.  And, only X-ray profiles are impacted by the
 assumption on $D(x)$ as radio profiles assume no diffusion.
 
-% TODO question: we have been ignoring intensity.  What if, e.g.,
-% with strong diffusion particles get out of the damping zone faster and don't
-% even have a chance to radiate, or something like that?
+% TODO question: we have been ignoring intensity (absolute comparison).  What
+% if, e.g., with strong diffusion particles get out of the damping zone faster
+% and don't even have a chance to radiate?
 % I have no clue... check this, double check Sean's normalizations to be safe
 
 %Expressions for $D$ in terms of unit power per log bandwidth, which is energy
