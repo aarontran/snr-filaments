@@ -211,7 +211,7 @@ rims show very little thermal emission, consistent with expansion into a low
 density ISM \citep{williams2013}.  Tycho, being a nearby galactic SNR, is close
 enough that its rims are easily resolved by \textit{Chandra} spatial
 resolution. A deep $750 \unit{ks}$ exposure of the entire remnant from 2009
-(PI: J. Hughes) allows fine sampling of the remnant rims.  Furthermore, Tycho
+allows fine sampling of the remnant rims.  Furthermore, Tycho
 is a prime target of study to determine whether hadrons are being accelerated
 in historic SNRs \citep[and references therein]{morlino2012}; understanding the
 acceleration process for electrons will also bear upon our understanding of CR
@@ -273,11 +273,16 @@ diffusion coefficient, and $v_d$ is plasma velocity downstream of the shock.
 The constant $b = 1.57 \times 10^{-3}$ in CGS units arises from synchrotron
 power loss at electron energy $E$ (i.e., $\ptl E/\ptl t = b B^2 E^2$).
 We have assumed isotropic diffusion and consider only processes operating
-downstream of the shock.  More sophisticated treatments may explicitly treat
+downstream of the shock.  We also do not incorporate models for self-similar
+velocity and magnetic field evolution downstream of a spherical shock (e.g.,
+the well-known Sedov-Taylor solution).  A plane flow approximation should be
+reasonable as we only consider synchrotron emission within 10\% of the shock
+radius, $r_s$, from the forward shock.  % TODO CITATION AND REWORD.
+More sophisticated treatments may explicitly treat
 magnetic fields and diffusion across the shock, plasma streaming instabilities
-and particle losses, anisotropic diffusion, the DSA process and efficiency, and
-other details in great depth \citep[e.g.,][and references therein]{reville2013,
-bykov2014, ferrand2014}.
+and particle losses, anisotropic diffusion, injection/acceleration efficiency,
+and other details in great depth \citep[e.g.,][and references
+therein]{reville2013, bykov2014, ferrand2014}.
 
 To determine rim profiles and widths, we numerically solve for electron
 distribution $f(E,x)$ using Green's function solutions by \citet{lerche1980}
@@ -299,9 +304,9 @@ radial coordinate $r$:
     I_{\nu}(r) = 2 \int_0^{\sqrt{r_s^2 - r}}
                    j_{\nu} \left( r_s - \sqrt{s^2 + r^2} \right) ds
 \end{equation}
-where $s$ is the line-of-sight coordinate.  Finally, we compute the full width
-at half maximum (FWHM) of the resulting intensity profile to compare to our
-measurements of rim width.
+where $s$ is the line-of-sight coordinate and $r_s$ is shock radius.  Finally,
+we compute the full width at half maximum (FWHM) of the resulting intensity
+profile to compare to our measurements of rim width.
 
 % Diffusion
 \subsection{Diffusion energy-dependence} \label{sec:diffcoeff}
@@ -355,6 +360,8 @@ cut-off energy is given as:
         &\times \left(\frac{v_s}{10^8 \unit{cm\;s^{-1}}}\right)^{2/(1+\mu)}
         \eta^{-1 / (1+\mu)} .
 \end{align}
+Here $B_0$ is the magnetic field immediately downstream of the shock, i.e.
+$B_0 = B(x=0)$.
 This result is derived by \citet{parizot2006} for $\mu=1$ assuming a strong
 shock with compression ratio 4 and isotropic magnetic turbulence on both sides
 of the shock.
@@ -429,13 +436,18 @@ To better intuit the effects of advection and diffusion on rim widths, we
 consider advective and diffusive lengthscales for electron transport given as:
 \begin{equation} \label{eq:lad}
     l_{\mt{ad}} = v_d \tsynch \propto v_d B_0^{-3/2} \nu^{-1/2}
+% = \frac{v_d \sqrt{c_m}}{b} B_0^{-3/2} \nu^{-1/2}
 \end{equation}
 and
 \begin{equation} \label{eq:ldiff}
-    l_{\mt{diff}} = \sqrt{D \tsynch} \propto \eta^{1/2} B_0^{-3/2} \nu^{(\mu-1)/4}
+    l_{\mt{diff}} = \sqrt{D \tsynch}
+                  \propto \eta^{1/2} B_0^{-(\mu+5)/4} \nu^{(\mu-1)/4}
+% = (C_d/b)^{1/2} c_m^{-(\mu-1)/4} \eta^{1/2} B_0^{-(\mu+5)/4} \nu^{(\mu-1)/4}
 \end{equation}
 The characteristic time is the synchrotron cooling time
 $\tsynch = 1 / (b B^2 E)$ with $b = 1.57 \times 10^{-3}$.
+For $\mu = 1$, note that $l_{\mt{diff}}$ is independent of $\nu$ and
+$l_{\mt{diff}} \propto B_0^{-3/2}$ matches the scaling of $l_{\mt{ad}}$.
 If both diffusion and magnetic field damping are negligible (whether at a small
 range of, or all, electron energies) and electrons are only loss-limited as
 they advect downstream, $\mE$ attains a minimum value $\mE = -1/2$.  Diffusion
@@ -480,7 +492,8 @@ archival \Chandra ACIS-I observation of Tycho
 (RA: 00\tsup{h}25\tsup{m}19\fs0, dec: +64\arcdeg08\arcmin10\farcs0; J2000)
 between 2009 Apr 11 and 2009 May 5 (PI: J. Hughes;
 \dataset[ADS/Sa.CXO\#obs/10093--10097]{ObsIDs: 10093--10097},
-\dataset[ADS/Sa.CXO\#obs/10902--10906]{10902--10906}).
+\dataset[ADS/Sa.CXO\#obs/10902--10906]{10902--10906}); \citet{eriksen2011}
+present additional observation information.
 The total exposure time was $734 \unit{ks}$.
 Level 1 \Chandra data were reprocessed with CIAO 4.6 and CALDB 4.6.1.1 and kept
 unbinned with ACIS spatial resolution $0.492\arcsec$.
@@ -675,9 +688,11 @@ Figure~\ref{fig:profiles} illustrates the fit domain selection
     \plotone{figures/prfs_01.pdf}
     \plotone{figures/prfs_16.pdf}
     \caption{Best fit profiles with measured FWHMs demarcated for each energy
-        band in Region 1 (top) and Region 16 (bottom).  Energy bands increase
-        from left to right.  Data points in red were excluded from profile
-        fitting domains as described in text.}
+        band in Region 1 (top) and Region 16 (bottom).  Hereafter, we use
+        Regions 1 and 16 to illustrate results for profiles of differing
+        quality and absolute width.  We could not measure a $0.7$--$1
+        \unit{keV}$ FWHM in Region 1, reflected in Table~\ref{tab:fwhms}.  Data
+        in red were excluded from profile fit domains as described in text.}
     \label{fig:profiles}
 \end{figure*}
 
@@ -741,15 +756,15 @@ remaining parameters $\eta_2$ and $B_0$ varied freely.
 For damped magnetic field fits, we held the asymptotic field strength
 $\Bmin$ inside the remnant constant at $5 \muG$, slightly higher than
 typical intergalactic values of $\abt 2$--$3 \muG$ \citep{lyne1989, han2006}.
-We fixed $a_b$ at $14$ different values between $0.5$ and $0.002$ (sampling
+We stepped $a_b$ through $14$ different values between $0.5$ and $0.002$ (sampling
 most finely between $0.01$ and $0.002$) and ran fits with $\eta_2$ and $B_0$
-free.  Formally, we do not seek a best fit value of damping length $a_b$, so
-our ``best'' damping fits report the value of $a_b$ yielding the smallest
-$\chi^2$ value.  Finally, $\mu = 1$ was fixed for all damped fits.
+free.  For best fits, we report the value of $a_b$ yielding the smallest
+$\chi^2$ value, noting that our $a_b$ sampling is coarse.
 
 We required $\eta_2$ to be positive in all fits.  We also deemed
 best-fit and error bound values with $\eta_2 \geq 10^5$ and $B_0 \geq 10
 \unit{mG}$ to be effectively unconstrained. % Change this if needed.
+% TODO "best-fit" vs. "best fit"... argh
 
 % Tycho parameters
 A few remnant-specific parameters affect the model calculations.  We adopted
@@ -825,66 +840,51 @@ variation in Tycho's rim morphology (e.g., Figure~\ref{fig:profiles}).
 \subsection{Model fit results}
 \label{sec:fit-results}
 
+% TODO we must restructure this text, since we are now not emphasizing Regions
+% 1/16 alone quite as much.  Just synthesize all together, use fig:fits to
+% explain that mu dependence is very weak.
+
+% TODO we could rewrite this all to say up front -- we work with eta2=1 unless
+% otherwise stated.  But that should wait until I review the new chain of
+% tables / figures w/ Rob and Brian.
+
 % Explain our approach
 We tabulate and plot detailed results for Regions 1 and 16, the same regions
 shown in Figures~\ref{fig:spec} and \ref{fig:profiles}.  Although only a small
 subset of our regions, qualitative trends in fit parameters were comparable in
 most regions; our most salient observations, discussed below, are well
 exemplified by Regions 1 and 16.  Best fit results for all regions are
-summarized in Figure~\ref{fig:fits-all} and Tables~\ref{tab:fits-all},
-\ref{tab:fits-all-eta2one}.  In all tables, we report values of $\chi^2$ rather
+summarized in Figure~\ref{fig:fits-all} and Table~\ref{tab:fits-all-eta2one}.
+In all tables, we report values of $\chi^2$ rather
 than $\chi^2_\mt{red}$ to ease comparison of different fits, as we often
 manually stepped one or two parameters that were held constant in fitting.
 
 % Best fit model results and tables for Regions 1, 16.
 % Explain a bit about model shapes, and the relative similarity in shapes
-Modeled profiles with best fit FWHMs for Regions 1 and 16 are plotted in
-Figure~\ref{fig:rims}, and their derived best-fit FWHM-energy curves
-are plotted in Figure~\ref{fig:fits} alongside measured FWHMs.
-The best fit model profiles do not quite match measured rim profiles
-(Figure~\ref{fig:profiles}).  Our transport equation does not account for
+The best-fit FWHM-energy curves for Regions 1 and 16 are plotted in
+Figure~\ref{fig:fits} alongside measured FWHMs.
+Our transport equation does not account for
 diffusive transport upstream of the shock, projection effects from shock
 ripples or other structure, and thermal emission downstream of the thin rim.
 Fitting to multiple FWHM measurements should be robust to these effects as
 compared to directly fitting entire rim profiles to model predictions.
-Although Figure~\ref{fig:rims} plots model profiles for $\mu = 1$ only, the
-best-fit FWHM-energy curves show that model profiles for $\mu \neq 1$ give very
-similar FWHM-energy dependence.
-
-\begin{figure}
-    \centering
-    \iftoggle{manuscript}{
-        \epsscale{0.7}
-        \plotone{figures/prfs-fit-01.pdf} \\
-        \plotone{figures/prfs-fit-16.pdf}
-        \epsscale{1}
-    }{
-        \plotone{figures/prfs-fit-01.pdf} \\
-        \plotone{figures/prfs-fit-16.pdf}
-    }
-    \caption{Best fit full model rim profile width predictions for Regions 1
-        (top) and 16 (bottom) for loss-limited and damped scenarios with
-        $\mu = 1$ fixed; profiles are normalized to intensity $1$.  Model
-        parameters are given in Table~\ref{tab:fits-all}.  Shaded regions on
-        damped profiles indicate the magnetic field damping lengthscale $a_b$.
-        \label{fig:rims}}
-\end{figure}
 
 \begin{figure}
     \centering
     %\epsscale{0.45}  % For manuscript layout only!
     \iftoggle{manuscript}{
-        \includegraphics[width=0.46\textwidth]{figures/energywidth-01.pdf}
-        \includegraphics[width=0.46\textwidth]{figures/energywidth-16.pdf}
+        \includegraphics[width=0.46\textwidth]{figures/energywidth-eta2one-01.pdf}
+        \includegraphics[width=0.46\textwidth]{figures/energywidth-eta2one-16.pdf}
     }{
-        \includegraphics[width=0.23\textwidth]{figures/energywidth-01.pdf}
-        \includegraphics[width=0.23\textwidth]{figures/energywidth-16.pdf}
+        \includegraphics[width=0.23\textwidth]{figures/energywidth-eta2one-01.pdf}
+        \includegraphics[width=0.23\textwidth]{figures/energywidth-eta2one-16.pdf}
     }
-    \caption{Loss-limited rim width predictions as a function of energy for
+    \caption{Best fit rim width-energy predictions for
     Regions 1 (top) and 16 (bottom), with measured data.  Dotted/dashed curves
     plot pure loss-limited fits with varying $\mu$, solid curve plots estimated
-    best moderately damped fit ($a_b < 0.01$) with $\mu = 1$.  Relevant fit
-    parameters are given in Tables~\ref{tab:fits-loss} and \ref{tab:fits-damp}.
+    best moderately damped fit ($a_b < 0.01$) with $\mu = 1$.  All fits hold
+    $\eta_2 = 1$ fixed; model parameters are given in
+    Tables~\ref{tab:fits-all-eta2one}.
     Note that ordinate FWHM axes are not the same and are offset from the
     origin to better show model predictions and data variation.
     \label{fig:fits}}
@@ -898,12 +898,14 @@ similar FWHM-energy dependence.
         \plotone{figures/energywidth-subplot.pdf}
     }
     \caption{Rim width predictions for loss-limited and damped fits with
-    $\mu = 1$ fixed for all regions.  Neither loss-limited nor damped fits
+    $\mu = 1$ and $\eta_2=1$ fixed for all regions.  Neither loss-limited nor
+    damped fits
     are clearly favored in describing the data.  Some damped model predictions
     (e.g., Region 5) are not given at low energies if FWHMs cannot be
     calculated for model profiles (modeled intensity behind thin rim exceeds
     half-maximum of rim peak within model domain of $\abt 20\arcsec$).
-    Corresponding best fit parameters are given in Table~\ref{tab:fits-all}.
+    Corresponding best fit parameters are given in
+    Table~\ref{tab:fits-all-eta2one}.
     As in Figure~\ref{fig:fits}, $y$-axis limits vary and are offset from the
     origin to better show model predictions and data.
     \label{fig:fits-all}}
@@ -952,27 +954,27 @@ permit and favor smaller best fit values of $B_0$ and $\eta_2$ in all regions.
     Fit degrees of freedom are as in Table~\ref{tab:fits-loss}}
 \end{table}
 
-% Fit results for ALL regions, mu = 1, loss-limited and damped
+% Fit results for ALL regions, mu = 1, eta2 free, loss-limited and damped
 % NOTE keep # of dofs updated
-\begin{table}
-    \iftoggle{manuscript}{
-        \scriptsize
-    }{
-        \tiny
-    }
-    \centering
-    \caption{Best model fits for all regions, $\mu = 1$
-    \label{tab:fits-all}}
-    \input{tab-fits-all.tex}
-    \tablecomments{Loss-limited fits fix $\mu=1$ to match the damping model;
-    best damped fits select best $a_b$ value below $0.01$ from the range shown
-    in Table~\ref{tab:fits-damp}, enforcing moderate damping.  Fits for Regions
-    1, 2, 12, 18 have 2 dofs; all others have 3.  The manual selection of a
-    best $a_b$ value may be construed as removing one more dof.}
-    % NOTE UPDATE AS FWHMS UPDATED
-\end{table}
+%\begin{table}
+%    \iftoggle{manuscript}{
+%        \scriptsize
+%    }{
+%        \tiny
+%    }
+%    \centering
+%    \caption{Best model fits for all regions, $\mu = 1$
+%    \label{tab:fits-all}}
+%    \input{tab-fits-all.tex}
+%    \tablecomments{Loss-limited fits fix $\mu=1$ to match the damping model;
+%    best damped fits select best $a_b$ value below $0.01$ from the range shown
+%    in Table~\ref{tab:fits-damp}, enforcing moderate damping.  Fits for Regions
+%    1, 2, 12, 18 have 2 dofs; all others have 3.  The manual selection of a
+%    best $a_b$ value may be construed as removing one more dof.}
+%    % NOTE UPDATE AS FWHMS UPDATED
+%\end{table}
 
-In Table~\ref{tab:fits-all-eta2one} we also present best loss-limited and
+In Table~\ref{tab:fits-all-eta2one} we present best loss-limited and
 damped fits with $\eta_2 = 1$ fixed.  As before, both loss-limited and damped
 models are equally capable of fitting the observed data.
 
@@ -983,9 +985,62 @@ models are equally capable of fitting the observed data.
     \caption{Best model fits for all regions, $\mu = \eta_2 = 1$
     \label{tab:fits-all-eta2one}}
     \input{tab-fits-all-eta2one.tex}
-    \tablecomments{See comments on Table~\ref{tab:fits-all}.  Fits have
-    one additional dof as $\eta_2 = 1$ is fixed.}
+    \tablecomments{Best damped fits select best $a_b$ value below $0.01$ from
+    the range shown in Table~\ref{tab:fits-damp}, enforcing moderate damping.
+    Fits for Regions 1--3, 5, 11, 12, 18, and 19 have 3 degrees of freedom; all
+    others have 4.  The manual selection of a best $a_b$ value may be construed
+    as removing one additional dof.}
 \end{table}
+
+% TODO EXPLAIN/DISCUSS
+
+
+% As above but with eta2=1 fixed!
+\begin{table}
+    \scriptsize
+    \centering
+    \caption{Best model fits with $\Bmin = 0$ and $\mu = \eta_2 = 1$
+    \label{tab:fits-all-bminzero}}
+
+    \begin{tabular}{@{} l rr rrr @{}}
+    \toprule
+    {} & \multicolumn{2}{c}{Loss-limited}
+       & \multicolumn{3}{c}{Damped, $a_b \leq 0.01$} \\
+    \cmidrule(lr){2-3} \cmidrule(l){4-6}
+    Region & $B_0$ ($\mu$G) & $\chi^2$
+           & $B_0$ ($\mu$G) & $\chi^2$ & $a_b$ \\
+    \midrule
+    1 & 183 & 35.63 & 2.43 & 629.61 & 0.010 \\
+    2 & 313 & 80.81 & 239 & 100.66 & 0.010 \\
+    3 & 427 & 21.48 & 405 & 21.70 & 0.010 \\
+    \cmidrule{1-6}
+    4 & 285 & 51.30 & 174 & 43.82 & 0.010 \\
+    5 & 289 & 19.30 & 196 & 37.33 & 0.010 \\
+    6 & 411 & 174.32 & 90.2 & 61.50 & 0.005 \\
+    7 & 419 & 51.30 & 277 & 11.13 & 0.006 \\
+    8 & 388 & 48.06 & 205 & 9.92 & 0.006 \\
+    9 & 415 & 65.45 & 143 & 14.01 & 0.005 \\
+    10 & 466 & 17.28 & 307 & 1.60 & 0.005 \\
+    \cmidrule{1-6}
+    11 & 356 & 11.95 & 313 & 16.08 & 0.010 \\
+    12 & 318 & 9.60 & 258 & 15.45 & 0.010 \\
+    13 & 400 & 53.11 & 240 & 10.00 & 0.006 \\
+    \cmidrule{1-6}
+    14 & 384 & 103.43 & 52.3 & 9.90 & 0.005 \\
+    15 & 432 & 70.66 & 255 & 20.18 & 0.005 \\
+    16 & 493 & 15.13 & 430 & 3.88 & 0.006 \\
+    17 & 468 & 61.84 & 194 & 29.05 & 0.004 \\
+    \cmidrule{1-6}
+    18 & 283 & 27.87 & 206 & 71.82 & 0.010 \\
+    19 & 401 & 37.07 & 144 & 8.14 & 0.005 \\
+    20 & 464 & 122.00 & 140 & 94.37 & 0.004 \\
+    \bottomrule
+    \end{tabular}
+
+    \tablecomments{See comments for Table~\ref{tab:fits-all-eta2one}.}
+\end{table}
+
+
 
 
 % ==========
@@ -1006,7 +1061,8 @@ models are equally capable of fitting the observed data.
 We suggest that the observed decrease in $|\mE|$ with increasing energy
 (Table~\ref{tab:fwhms}) is caused by diffusion, which weakens width-energy
 dependence at higher energies.  The photon energy at which $l_{\mt{ad}} =
-l_{\mt{diff}}$ is exactly the DSA-predicted synchrotron cut-off energy.
+l_{\mt{diff}}$ is exactly the DSA-predicted synchrotron cut-off energy,
+$\abt0.3 \unit{keV}$ for Tycho \citep{hwang2002}.
 % TODO citation if you can find it...
 Diffusion should begin overtaking advection and push $\mE$ towards $0$ in soft
 X-rays, as opposed to $\mE \abt -0.5$ expected for strong advection
@@ -1055,11 +1111,13 @@ the conditions under which a model fit is ill-constrained.
 The degeneracy in $B_0$ and $\eta_2$ is modified by the presence of damping.
 For small values of $a_b$ (strong damping), increased diffusion $\eta_2$ can
 cause rim widths to narrow counterintuitively.  Speculatively, spatial
-variation of the diffusion coefficient, which gives rise to a
-term $(\ptl D(x) / \ptl x) (\ptl f/\ptl x)$ in equation~\eqref{eq:model}, may
-oppose downstream advection by decreasing an effective velocity $v_d - \ptl
-D(x) / \ptl x$ and thus require thinner rims as $\eta_2$ and $\ptl D(x) / \ptl
-x$ increase.
+variation of the diffusion coefficient, which gives rise to a term $(\ptl D(x)
+/ \ptl x) (\ptl f/\ptl x)$ in equation~\eqref{eq:model}, may oppose downstream
+advection by imposing an effective velocity:
+\begin{equation}
+    v_d - \frac{\ptl D(x)}{\ptl x}
+\end{equation}
+thus requiring thinner rims as $\eta_2$ and $\ptl D(x) / \ptl x$ increase.
 
 % B0 lower bounds in loss-limited model
 In loss-limited model fits, the minimum magnetic field strength throughout the
@@ -1201,6 +1259,12 @@ Only in cases where rim widths drop very sharply (data and best loss-limited
 fit $\mE \sim -0.5$) is damping significantly disfavored as a control on rim
 widths (e.g., Region 18).
 
+% TODO broadly, this section must be restructured to emphasize
+% that our division is VERY arbitrary.  I do NOT want the fit results to be
+% construed as physically meaningful.
+
+% The most useful result is just to explain -- damping plausibly works.
+
 % Explain the dichotomy in energy dependence
 When width-energy dependence is weak, both loss-limited and damped models give
 best fits with very similar profiles -- strong fields at the shock in both models
@@ -1209,47 +1273,58 @@ stronger, damping profiles can only yield energy dependent rims if magnetic
 fields are fairly small (say, $\lesssim 50 \muG$) and rims decline to half
 maximum at a distance larger than the damping lengthscale.  Away from the
 shock, the magnetic field asymptotically approaches $B_{\mt{min}} = 5 \muG$ and
-observed emission is controlled by synchrotron losses acting differentially on
+emission is controlled by synchrotron losses acting differentially on
 the range of electron energies we consider.  Synchrotron radiation sieves out
 higher energy electrons as in the loss-limited model for rim widths, giving
 rise to energy dependent emission.  Each case is shown in
-Figure~\ref{fig:rims}; in Region 1 the damping profiles are quite distinct from
-the loss-limited profiles, whereas in Region 16 they appear quite similar; note
-that emission downstream of the shock Region 1's best damped fit is quite close
-to the intensity half-maximum.
+Figure~\ref{fig:rims}; in Region 1 the damping profiles evolve noticeably as
+compared to Region 16, with decreasing energy.
+
 
 \begin{figure}
     \centering
     \iftoggle{manuscript}{
-        \includegraphics[width=0.48\textwidth]{figures/mE-damp.pdf}
+        \epsscale{0.7}
+        \plotone{figures/prfs-fit-damp-01.pdf} \\
+        \plotone{figures/prfs-fit-damp-16.pdf}
+        \epsscale{1}
     }{
-        \plotone{figures/mE-damp.pdf}
+        \plotone{figures/prfs-fit-damp-01.pdf} \\
+        \plotone{figures/prfs-fit-damp-16.pdf}
     }
-    \caption{Curves of $\mE$ values for best damping fits for all regions.
-        Note the sharp contrast between curves with roughly constant $\mE$ near
-        $0$ and curves with sharp drop-offs in $\mE$ (FWHMs increasing rapidly)
-        at low energies. Corresponding best fit parameters are given in
-        Table~\ref{tab:fits-all}. \label{fig:mE}}
+    \caption{Model predictions illustrate weak-field (Region 1) and
+        strong-field damping (Region 16) for damped best fit parameters with
+        $\mu=1$ and $\eta_2=1$ fixed.  In X-ray energies ($0.7$--$4.5
+        \unit{keV}$) model profiles are not strongly energy dependent, but
+        weak-field damping profiles evolve and do not show a measurable FWHM at
+        sufficiently low energies.
+        Profiles are normalized to peak thin rim intensity.  Model parameters
+        are given in Table~\ref{tab:fits-all-eta2one}.  Shaded regions on damped
+        profiles indicate damping lengthscale $a_b$.
+        \label{fig:rims}}
 \end{figure}
 
+% TODO discuss mE here for weak-field damping, even though we don't plot it
+% anymore.
+
 % Weak-field damping
-To further distinguish between these cases, Figure~\ref{fig:mE} plots predicted
-$\mE$ values from the best damped fits of Table~\ref{tab:fits-all},
-extrapolated to lower photon energies.  Several best fits predict increasingly
-large FWHMs at lower energies ($0.1$--$1 \unit{keV}$), cutting off at low
-energies when a FWHM is no longer measurable; this corresponds to a sharp
-drop in $\mE$ (already negative) at low energies These curves correspond to
-fits for Regions 1--5, 10--12, 15, and 18, which were all best fit by a
-damping model with fields $B_0 < 40 \muG$.  We refer to such model behavior as
+To discriminate, we observe that the best damped fit parameters for Regions
+1, 2, 4, 5, 10, 12, and 18 all predict a $1.375 \unit{GHz}$ radio emission
+profile with no measurable FWHM, whereas all other regions predict a measurable
+rim.  Moreover, these regions are all best fit with field $B_0 < 40 \muG$.
+We refer to this model behavior as
 ``weak-field'' damping, associated with weak magnetic fields and stronger
 emission intensity immediately downstream of the thin rim.
 
 % Strong-field damping
-The near constant curves in Figure~\ref{fig:mE} trend towards $\mE = 0$ at low
-energy, indicating that predicted rim widths are strongly energy independent.
-At higher energy, rims become energy dependent ($\mE \sim -0.2$) to match the
-observed width-energy dependence in X-rays.  The gradual increase in $|\mE|$
-with energy is expected in the damping model as advection and/or diffusion take
+All other regions predict consistently thin rims with measurable thin rims at
+decreasing energy.  The width-energy dependence parameterized by $\mE$ trends
+towards zero at low energy, indicating that rim widths are comparatively energy
+independent.
+At higher energy, rims become moderately energy dependent ($\mE \sim -0.2$) to
+match the observed width-energy dependence in X-rays.  The gradual increase in
+$|\mE|$ with energy is expected in the damping model as advection and/or
+diffusion take
 control of rim widths at increasing energy, as discussed in
 Section~\ref{sec:energydep},  The best damped fits for these regions all have
 larger $B_0$ values than in the ``weak-field'' damping case.  We refer to these
@@ -1260,8 +1335,8 @@ with measurable FWHMs at low photon energies (at and below soft X-ray).
 % Explanation and caveats
 The distinction between weak- and strong-field damping may not
 be physically meaningful given the large $\chi^2$ values on our model fits.
-Several regions are well-fit by ``weak-field'' and ``strong-field'' damping
-alike (e.g., Region 3 in Tables~\ref{tab:fits-all},\ref{tab:fits-all-eta2one}).
+Several regions may be well-fit by ``weak-field'' and ``strong-field'' damping
+alike.
 However, ``weak-field'' damping is often associated with data best fit with
 stronger energy dependence, as quantified by $\mE$ values of best loss-limited
 and damped fits.  The qualitative behavior of $B_0$ is suggestive; very strong
@@ -1288,12 +1363,22 @@ into the ``weak-field'' case.  The best fit $B_0$ values are less than $40
 \muG$ in the damped model, compared to $\abt 100$--$200 \muG$ in the
 loss-limited model.
 
-% -------------------------------
-% srcutlog and spectral variation
-% -------------------------------
-\subsection{Spectral constraints on model fits}
+% TODO Where does this go, where should we integrate this discussion about
+% profile shape w.r.t. width-energy dep. fitting?
 
-\subsubsection{Synchrotron cut-off measurements}
+% TODO WRITE THIS CAPTION
+
+\begin{figure*}%[ht]
+    \plotone{figures/pargrid-eta2_1-model.pdf}
+    \caption{A grid of best fit parameters, yay!  WRITE THIS CAPTION.}
+    \label{fig:pargrid}
+\end{figure*}
+
+
+% --------
+% srcutlog
+% --------
+\subsection{Synchrotron cut-off constrains diffusion}
 
 Our model fits have not incorporated the synchrotron cut-off energy, which
 permits an estimate of diffusion coefficient $\eta_2$ for a given value of
@@ -1306,26 +1391,42 @@ To measure synchrotron cut-offs in Tycho, we fitted ``rim'' spectra
 (Section~\ref{sec:spec}) to the XSPEC model \texttt{srcut}, modified to fit in
 log-frequency units; we fix the radio spectral index $\alpha = 0.58$
 \citep{sun2011} as done in our profile modeling and fit for column density
-$N_{\mt{H}}$ and cut-off frequency $\nu_{\mt{cut}}$ in each region.  The
-fitted cut-off frequency is typically $0.3 \unit{keV/h}$, consistent with fits
-by \citet{hwang2002}, but Regions 11, 12 have unusually high cut-off
-frequencies $0.55$, $0.88 \unit{keV/h}$ consistent with harder rim spectra
-(Table~\ref{tab:spec}).
+$N_{\mt{H}}$ and cut-off frequency $\nu_{\mt{cut}}$ in each region.
+Table~\ref{tab:fits-srcutlog} lists best spectrum fit parameters for each
+region.  The fitted cut-off frequency is typically $0.3 \unit{keV/h}$,
+consistent with fits by \citet{hwang2002}, but Regions 11, 12 have unusually
+high cut-off frequencies $0.55$, $0.88 \unit{keV/h}$ consistent with harder rim
+spectra (Table~\ref{tab:spec}).
 
 Using the derived values of $\nu_{\mt{cut}}$ ($0.19$--$0.88 \unit{keV/h}$) and
 hence $\eta_2$ ($4$--$15$), we computed new loss-limited fits for all regions
-with cut-off derived values of $\eta_2$ fixed.  Fitted $B_0$ values span
-$250$--$700 \muG$.  Variation in $\mu$ has a smaller effect on best fits as we
-are able to derive different $\eta_2$ values as a function of $\mu$; Regions 1
-and 16 have best fit values of $B_0$ increasing over $252$--$266 \muG$ and
-$660$--$700 \muG$ respectively as $\mu$ ranges between $0$--$2$.  Our fits with
-cut-off derived values of $\eta_2$ are comparable to fits with $\eta_2 = 1$
-fixed (Table~\ref{tab:fits-all-eta2one}).  We are unable to deduce any insights
-from requiring that $\eta_2$ reflects measurements of $\nu_{\mt{cut}}$.  But,
-diffusion coefficients computed in this manner may give more credible derived
-estimates of $B_0$ if the DSA assumptions invoked are relevant.
+with cut-off derived values of $\eta_2$ fixed (Table~\ref{tab:fits-srcutlog}).
+Fitted $B_0$ values span $250$--$700 \muG$.  Variation in $\mu$ has a smaller
+effect on best fits as we are able to derive different $\eta_2$ values as a
+function of $\mu$; Regions 1 and 16 have best fit values of $B_0$ increasing
+over $252$--$266 \muG$ and $660$--$700 \muG$ respectively as $\mu$ ranges
+between $0$--$2$.  Our fits with cut-off derived values of $\eta_2$ are
+comparable to fits with $\eta_2 = 1$ fixed (Table~\ref{tab:fits-all-eta2one}).
+We are unable to deduce any insights from requiring that $\eta_2$ reflects
+measurements of $\nu_{\mt{cut}}$.  But, diffusion coefficients computed in this
+manner may give more credible derived estimates of $B_0$ if the DSA assumptions
+invoked are relevant.
 
-\subsubsection{Spectral softening}
+\begin{table}
+    \scriptsize
+    \centering
+    \caption{Synchrotron roll-off, $\eta_2$, and fits for $\mu = 1$
+    \label{tab:fits-srcutlog}}
+    \input{tab-srcutlog.tex}
+    \tablecomments{\texttt{srcut} fits performed in log-frequency coordinates;
+        here $h$ is Planck's constant. $\eta_2$ values are computed from
+        equation~\eqref{eq:cutoff} and held fixed in model fits.}
+\end{table}
+
+% ---------------------------
+% Spectral variation analysis
+% ---------------------------
+\subsection{Spectral softening and model fits}
 % Wording of spectral index changes/variation is inconsistent and unwieldy
 
 Spectral variation may also discriminate between loss-limited and damping
@@ -1389,10 +1490,8 @@ indices for Regions 1 and 16 as a function of photon energy.
 Model parameters derived from FWHM width-energy fits are unable to reproduce
 the observed filament spectrum evolution.  The mean change $\Delta\Gamma$ was
 $0.05$ (stdev: $0.0005$) for loss-limited model profiles and $0.05$ (stdev:
-$0.02$) for damped model profiles.  For comparison, damped fits with varying
-$\eta_2$ (Table~\ref{tab:fits-all}) yield a mean $\Delta\Gamma$ of $0.07$
-(stdev: $0.03$).  Modeled spectral variation in all cases is inconsistent with
-the observed $\Delta\Gamma \sim 0.2$--$0.3$.
+$0.02$) for damped model profiles.  Modeled spectral variation in all cases is
+inconsistent with the observed $\Delta\Gamma \sim 0.2$--$0.3$.
 Our damped model results disagree with those of \citet[][Fig.~4]{rettig2012},
 who predict spectral index changes of up to $\sim 0.15$ for strong damping.  To
 check our results, we followed the procedure of \citet{rettig2012} and
@@ -1447,6 +1546,7 @@ steady-state transport model.
 We extract radio profiles from a $1.375 \unit{GHz}$ image of Tycho taken
 with the VLA in A configuration in March 1994 (PI: D. Moffett); see
 \citet{reynoso1997} for a detailed presentation.
+% TODO update
 \note[Aaron]{Q for Steve: Was data from all configurations merged?  Done by
 \citet{reynoso1997} it seems.  FITS header states A config. but would like to
 verify}
@@ -1498,6 +1598,7 @@ our transport model neglects self-similar downstream evolution of shocked
 plasma (decaying velocity, density, and magnetic field) and is unreliable far
 downstream of the shock.
 
+% Procedure: cont
 The radio and X-ray profile modeling here contrasts strongly with our previous
 width-energy fitting from X-ray measurements alone, which neglected profile
 shape in favor of more robust FWHM measurements.  Manually fitting profiles
@@ -1534,7 +1635,7 @@ observed.
     \caption{Measured radio and X-ray profiles plotted with model profiles for
     varying $a_b$ and $B_0$ in each region, showing typical parameters (and
     ranges) required to reproduce radio and X-ray rims simultaneously in our
-    model.  Black solid curves in all regions plot our manually chosen best
+    model.  \emph{Solid black curves} in all regions plot our manually chosen best
     model profiles.  Profiles are chosen to show varying radio rim morphology,
     including plateaus (B), thin rims with troughs (K), and continuous rises
     (M); these profiles show some of the best agreement of our selected
@@ -1553,12 +1654,15 @@ plateau or thin rim in radio emission.  For regions with thin radio rims, the
 best manually selected profiles have $B_0$ between $50$--$400 \muG$, neglecting
 only Region N which could not be modeled simultaneously in both X-ray and radio
 (Figure~\ref{fig:radio-prfs-meh}).  The damping length $a_b$ ranges between
-$0.01$--$0.03$, or $2$--$7\arcsec$.  The radio plateaus in regions B, C, D are
-compatible with damping lengths between $0.01$--$0.05$.  Continuous rises in
-radio emission are best modeled with $a_b \gtrsim 0.1$ and $B_0 \abt 200$--$300
-\muG$.  Although damping lengths $a_b \gtrsim 0.1$ may not be physically
-meaningful, such large values of $a_b$ yield practically constant magnetic
-field behind the shock regardless.
+$0.01$--$0.03$, or $2$--$7\arcsec$.
+
+% TODO discuss how changing a_b / B_0 affect radio/X-ray rims, qualitatively
+
+The radio plateaus in regions B, C, D are compatible with damping lengths
+between $0.01$--$0.05$.  Continuous rises in radio emission are best modeled
+with $a_b \gtrsim 0.1$ and $B_0 \abt 200$--$300 \muG$.  Although damping
+lengths $a_b \gtrsim 0.1$ may not be physically meaningful, such large values
+of $a_b$ yield practically constant magnetic field behind the shock regardless.
 Our results are also insensitive to the assumed value of $\Bmin$; only model
 profiles with small magnetic fields ($B_0 \lesssim 100 \muG$) and/or small
 damping length ($a_b < 0.01$) are affected if we take $\Bmin = 2 \muG$ rather

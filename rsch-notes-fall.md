@@ -6523,3 +6523,595 @@ everything else will be the same since we've shown that B field doesn't change,
 and ab is distance independent.  Should be the same result when we fit/match
 radio profiles.  So no need to really dig this way, especially since our
 conclusions don't hinge much on the width-energy dependence fits anyways.
+
+Wednesday 2014 December 17
+==========================
+
+Hitting minor to-dos, reading.
+
+Telecon.  Slew of material in ~90-120 minutes.
+Adding notes today/tomorrow, my brain feels fried somehow..
+
+All notes added -- will annotate/mark up each item when done.
+
+Poster
+------
+
+Implemented all of Steve's suggestions for the poster (I'm not a big fan of
+poster refs but, they would be useful if poster is distributed digitally).
+Additional text + references required a good bit of layout juggling, threw out
+Region 1 plots for X-ray width-energy dependence.
+
+(Done Thursday) Generated "special edition" plots for poster (change `B_0` to
+`B`, show legend for Region 16's width-energy dep. plot, use eta2 = 1).
+
+
+Telecon to-dos, points of discussion
+------------------------------------
+
+Transcribed from my notes as best as possible.  I try to emphasize the
+deliverables, and what we wish to learn.
+
+All Figure/Table numbers refer to the Dec. 10, 2014 version of paper that was
+sent around.  Table 7 was excised from that one but contains loss-limited fits
+to width-energy dep. w/ `eta_2` fixed at srcutlog derived value.
+
+### Major points
+
+0. (DONE) Steve has only a few remarks on the poster, will send today.  Need to add
+   some references.
+
+1. Differentiate between damped/loss-limited behavior.  Behavior is obviously a
+   continuum.  Plots on top right w/ damping lengths `a_b = 0.05` are clearly
+   controlled by losses in X-ray, so we can't sensibly call that "damped".
+   The literature is a bit misleading in presenting them like dichotomous
+   models.
+
+Brian: large grid of width-energy dep. plots (full page thing) seems like one
+of the key figures in the paper.
+
+Compare FWHM to `a\_b` for each region to get at this.  Better, use max(l\_ad,
+l\_diff) / a\_b as the proxy.  Since l\_ad/l\_diff are just functions of the
+parameter space this draws a line through the space of B\_0/a\_b, delineating
+damped vs. not-damped in radio and X-ray separately.
+
+For each region, tabulate:
+- FWHM at 2 keV
+- a\_b from width-energy fit (mu=1, eta2=1)
+- a\_b from eyeball radio/x-ray fit
+- l\_ad, l\_diff for mu=1 (functions of eta/eta\_2, B\_0, v\_d, nu) in X-ray,
+  radio
+
+NEXT, to just explore/characterize parameter space, compute values over grid of
+B\_0 and a\_b values.  Obtain:
+- predicted FWHM at 2 keV for the parameters considered
+- max(l\_ad, l\_diff) for radio, X-ray
+- plot on grid.  We'd expect to see contours of constant max(l\_ad, l\_diff).
+  These should demarcate transition between damping and loss-limited behavior.
+
+2. (DONE) The plots of m\_E as a function of energy are confusing.  What are we
+   showing?  Steve as asking -- if we got the profiles at low energy then they
+   should show that behavior (or, I would rather say that the model predicts
+   that behavior, which would be affirmed or ruled out at low energies, 10s of
+   eV being in UV now).
+
+(DONE) Make a plot of these "weak-field damping" profiles for multiple energies.
+
+3. (DONE) Lower minimum B field to 0 microGauss.  Do this for:
+   - model profiles (giant 20 plot grids)
+   - width-energy best fits (eta2=1, mu=1)
+   - eyeball x-ray/radio fits
+
+Took notes on eyeball fits, made new tables for width-energy fits, made new
+parameter grid.
+
+4. (DONE) Sphericity?  Brian asked about the equations and assumed magnetic
+   field behind shock, etc.  All planar assumed.  Mention early in paper (model
+   exposition) that we are neglecting these effects.
+
+5. Discussed/explained the "effective velocity" explanation for D(x) behavior.
+   Wouldn't D(x) be very large far downstream?  Could explain by electrons
+   being diffused (large mean free path) so fast that they don't contribute
+   meaningfully to the rim, smeared out over huge lengthscale.
+
+Effect is still present without D(x)B^2(x) = const. assumption, just not as
+strong.  Should note that this is not super-exponential because (e^(-x))^2 !=
+e^(-x^2), big difference (!).
+
+As far as the velocity effect goes, the sharp change should only be relevant
+right at the shock -- downstream it should be as normal.  I think that's still
+okay -- we impede motion near the shock, where things are energetic + diffusion
+is weak, just reinforcing the effect.  Farther downstream, everything is back
+to normal and particles move rapidly away, reinforcing the thinning effect.
+
+One question: what would happen as B\_min -> 0?  D(x) will blow up towards
+infinity, rather than a finite downstream value!
+
+6. Veered back to discussing l\_ad / l\_diff.  See my notes on 1. above, which
+   combine everything together.
+
+7. Discussed reasonableness of extreme eta\_2 values.  Do we have a
+   consistency check on the eta2 values?  Steve getting flak at COSPAR about
+   eta2 < 1.  Answer: srcutlog table -- put that back for Steve and Sean who
+   want to see it.
+
+Discussion of how `E_cut`/`nu_cut` scale with `eta_2`: although they're assumed
+to scale inversely, Steve mentioned Jokipii (1987) suggested that with some
+effects, anisotropic diffusion etc stuff I didn't quite catch, it could scale
+together.
+
+Toss Table 5, eta2 is so jumpy that it's not helpful.  Brian asks: can we do
+fits with `eta_2`=10 fixed instead?  To be closer to the srcutlog derived
+values.  So do this for Table 6 (also, use `eta_2=10` or `eta2_srcutlog` for
+damped fits).
+
+8. Notation: we should call magnetic field B (or B\_1 or whatever), not B\_0.
+   As typically B\_0 is taken to indicate the upstream, ambient / galactic
+   magnetic field.  Inherited unfortunate notation from Rettig/Pohl whatever.
+
+9. Spectral variation discussion.  Ambivalent feelings, I think.  Steve is
+   interested in the discrepancy, why doesn't our model replicate the spectral
+   softening?  Try feeding in larger `eta_2`, use the values from srcutlog
+   (being physically motivated), see what comes out of the model spectra.
+
+Steve expects that larger `eta_2` will give larger `\Delta\Gamma`.  Aaron: I
+wonder if that just changes indices without affecting softening/hardening; if
+anything I'd think diffusion should make spectra more similar, unless strange
+dD/dX effect is at play!
+
+Separate the sections -- the organization is confusing.  This modeling was not
+related to the `srcutlog` fits.
+
+
+### Other remarks:
+
+* Sean: could bring out even more the result, that radio rims require damping!
+
+* Timeline of work: now -> hit TODOs -> send new draft -> discuss at AAS
+  (Steve, Brian, Aaron) -> Steve can go "wordsmithing".
+
+### SN 1006
+
+* Steve figuring out what to do (consult w/ ApJ) on Sean's paper.  The
+  interpretation of our results here bears on SN 1006 as well, of course.
+  Knox Long very concerned.
+
+* Radio rims in SN 1006?  Steve has been pointing out how radio rims require
+  damping for a while?  Looked at Steve's conf. proceeding (Roger and
+  Landecker, 1980-something) on SN 1006, cite this on why thin rims require
+  damping.Actually, see Reynolds and Gilmore (1986, AJ) which has a nice radio
+  image + rim profiles (http://adsabs.2harvard.edu/abs/1986AJ.....92.1138R).
+  Cite this in discussion of SN 1006, perhaps.
+
+### Misc.
+
+* Lock Dave Green in a room with no internet to get him to do the SN 1006
+  reduction, new EVLA data
+* Steve's turn to find another undergrad to keep working on this rim project
+
+
+Other paper/etc stuff w/ Brian
+------------------------------
+
+### Stuff on my agenda
+
+* Intensity comparison between radio / X-ray?  Absolute flux calibration is
+  hard, probably no better than 10-20%!  Radio is... turtles all the way down.
+  Flux based on previous telescope, previous telescope, all the way down to
+  Crab or something, who knows.  Similar issue with Chandra and other X-ray
+  telescopes.  This path is fraught with thorns.  Optical is definitely better,
+  but we can't use that for our work.
+
+  Also, radio/X-ray flux changes over 15 years!  And may not change
+  concomitantly.
+
+* Moving stuff off of ACES iMac?  Talk to IT folks.  Don't use a hard drive,
+  just use a thunderbolt/firewire/whatever.
+
+* Kepler radio image?  Bottom of the barrel in terms of priority, but Brian
+  will send image if he runs across one.
+
+### Paper comments
+
+* (DONE) Mention why we chose Regions 1, 16 to illustrate in figures (in caption),
+  explain that Region 1 is one of our bad ones.
+
+* (DONE) Figure 4 of paper -- what does this show?  The plots of width-energy fit
+  profiles w/ data are better, but not sure if that should be taking up a whole
+  half page...  Maybe we can just point to the grid of plots, w/ various
+  damping lengths.
+
+(DONE) To show the discrepant behavior, make the plots for weak/strong-field
+damping cases at multiple energies (see 2. above).  So that replaces the few
+references to Fig. 4 invoked in the discussion.
+
+* (DONE) Tables 3, 4, 5: cut these, accept that we'll just work in the `mu=1`,
+  `eta2=1` regime.  Modify text appropriately.
+  (slight change of plans -- I leave Tables 3, 4 in)
+
+* (DONE) Definition of `B_0` somewhere?
+
+* (DONE) Text on "Formally, we do not seek a best fit value..." but we are,
+  just with very coarse resolution.
+
+
+My own notes/remarks
+--------------------
+
+* (DONE) make everything (all plots) based on eta2=1 best fits, so we can point
+  to tables.  Throw out loss-lim / free eta2 fit tables, merge in
+  eta2=10/srcutlog tables w/ Table 6 somehow.
+
+* (DONE) Add one of the megagrid of plots (eta2=1) to show parameter space,
+  partially superseding Figure 4
+
+* (DONE) Cite Eriksen for the Tycho obs in paper, too! (following Steve's
+  poster comments)
+
+* Emphasize difference between fit results / parameter values from 1st/2nd
+  halves of paper.  What's the significance of these weak-field damping fits?
+  (addressing point 2. above)
+
+* My damping fits only consider `a_b` < 0.01 right now, but we've seen from
+  radio/X-ray eyeball fits that a\_b ~ 0.01 is actually ideal for Tycho.
+  Please increase that bound to allow more fits?  We might get interesting
+  results and see less of this weak-field behavior.
+
+It might be necessary to make tables w/ more `a_b` values?  We'll see...
+
+
+Thursday 2014 December 18
+=========================
+
+Summary
+-------
+* Slew of figure/table/paper updates
+
+Spent a nontrivial bit of time organizing all my notes from yesterday, ton of
+text just on _what needs to be done_.  Below I log and discuss the various
+changes/updates.
+
+All figure/table numbers refer to 2014 Dec. 10 version of paper.
+
+Notes/summary/etc
+-----------------
+
+Change of plans: I leave Tables 3/4 in, so we can discuss whether to explore
+eta2 / mu / ab dependence etc.  A few paragraphs of discussion center on these
+guys.
+
+Question: should we give the table of eyeballed fit numbers?  So people can, in
+principle, look at the models themselves and say, this is crap/okay/whatever.
+
+Currently using "best" damped fits with `a_b < 0.01` still, but I also consider
+`a_b <= 0.05` at some point and see how that compares.  If we use that, we
+should regenerate all tables and figures.
+
+Tinkered with adding damping lengthscales to radio/X-ray profile plots, but
+overlaying 3 shades + all the curves/data is starting to get confusing.
+
+### New fits / computationS
+
+* Run loss-limited fits with eta2=1 at multiple mu values, takes ~15 minutes.
+  Updated width-energy dep. plots to show eta2=1 fits with multiple mu values.
+
+* Run new damping fits with Bmin = 0 and Bmin = 2e-6.  Using Tycho regions-6,
+  damped tables from 2014 Oct. 23, with ab values: [0.5, 0.05, 0.04, 0.03,
+  0.02, 0.01, 0.009, 0.008, 0.007, 0.006, 0.005, 0.004, 0.003, 0.002]
+
+* New eyeball radio/x-ray fits at Bmin = 0.  Store this in the right directory.
+
+    Region A: B0 = 100, ab = 0.03       (larger ab and B0) B0 range: 50-200
+    Region B (pla): B0 = 200, ab = 0.05       Same as before
+    Region C (pla): B0 = 0-50, ab = 0.05      Small ab fails now, can't do plateau
+                                        But, ab=0.05/B0=60 case worked before too.
+                                        Just too ill-constrained
+    Region D (pla): ...
+    Region E: B0 = 120, ab = 0.04       ab marginally larger, but difference is
+                                        small.  B0 > 50 works.  Really iffy.
+    Region F: ...
+    Region G: B0 = 250, ab = 0.02       Looks the same
+    Region H:
+    Region I:
+    Region J (rise):
+    Region K: same
+    Region L (rise): same                      Looks the same.
+    Region M (rise):
+    Region P: almost the same           Could increase damping length from 0.012
+                                        to 0.014, but no one cares
+
+  Some notes on these eyeball fits specifically:
+  - Loss-limited cases: even if ab is finite, B0 is too large, so we don't see
+    any noticeable difference.
+  - Need larger ab for radio, because we need to replicate radio rims.  But, to
+  compensate we must also raise B0 in X-ray.
+  - Plateaus are harder to replicate now because we don't have troughs anymore.
+  The best we can do is use large damping length and get gentle rolloff.
+  - Weirdly, B0 ~ 0.01e-6 still gives a (fatter) thin rim, despite being absurdly
+  small.  As B0 gets small towards zero, the rim seems to approach an
+  asymptotic shape.
+  I suspect it's probably approaching a radio-like insensitivity to B0.
+  As B gets too small, the synchrotron cooling time ramps up
+  (yes, because t\_synch ~ 1/B^2).
+  Also, diffusion will be very large since D ~ 1/B, so e- distribution should
+  be smeared at all energies...
+
+### Remarks on effect of Bmin=0
+
+Drastically changes lower left, as predicted by Sean -- we recover thin rims
+for ALL parameter space, because no B field means no emission.
+
+(if shape roll-off occurs at B0 = B-no-rim = f(ab) * 4x Bmin, then as Bmin->0,
+shape roll-off boundary B-no-rim -> 0)
+
+### Weak/strong-field damping
+
+We can use a simple criterion to distinguish weak/strong field damping.  Does
+the radio rim have a FWHM?  If so, that's weak field.  Agrees w/ previous
+method (looking at `m_E` plot between 1 eV to 1 keV or whatever), though not
+guaranteed to agree.
+
+Looking at results w/ eta\_2 = 1 fixed:
+* weak-field damped fits, eta2=1:    Regions [1, 2, 4, 5, 10, 12, 18]
+* weak-field damped fits, eta2 free: Regions [1, 2, 3, 4, 5, 10, 11, 12, 15, 18]
+
+Okay, this changes our discussion.  Also a reminder that the division between
+these two scenarios is very arbitrary.
+
+### Calculating advection/diffusion lengthscales
+
+with aim of characterizing damping vs. loss-limited regimes/transition, roughly.
+
+Caught a subtle error in the `l_diff` scaling, neglecting variable mu.
+Doesn't really matter since mu=1 almost always, but should present equation in
+text properly.
+
+
+List of new content to integrate into manuscript
+------------------------------------------------
+
+* Plot of weak/strong field damping profiles for eta2=1, mu=1
+  Better Figure 4 (shows lower energies) that can also replace Figure 7.
+  More informative and intuitive than Fig. 7's plot of extrapolated `m_E`.
+
+  This is redundant -- same concept is conveyed by large grid of parameters,
+  this just focuses on one particular trend.  But, include for now, for
+  discussion.
+
+* Regenerate Figure 6 with eta2=1 fixed for both loss-lim. and damping.
+* Re-added Table 7 (srcutlog spectrum fits + loss-limited fits)
+* Added parameter grid with eta2=1 to show parameter space for `B_0` and
+  `a_b`; made minor tweaks for manuscript version.
+
+List of removed content
+-----------------------
+
+* Figure 4.  Shifted down to discussion, to show weak/strong-field damping
+  instead (not really removed, but rather repurposed/improved)
+* Figure 7.  Discussion modified to address new figure of damping profiles at
+  low energies, instead.
+* Table 5.  We now emphasize only fit results for all regions w/ eta2=1 fixed.
+
+List of updated content
+-----------------------
+
+* Figure 5 (width-energy dep for Regions 1,16; multiple mu) updated to show
+  eta2=1 results only.  Caption updated.
+* Figure 6 (grid of width-energy dep for all regions) updated to eta2=1 only.
+  Caption updated.
+
+Width-energy dep., damping fits, with a\_b > 0.01
+-------------------------------------------------
+
+For Tycho we have been using a\_b values: [0.05, 0.04, 0.03, 0.02, 0.01,
+0.009, 0.008, 0.007, 0.006, 0.005, 0.004, 0.003, 0.002].  Clearly, the range
+between 0.01 and 0.05 is not very well sampled.
+
+
+
+
+
+Friday 2014 December 19
+=======================
+
+Summary
+-------
+
+* Assembled some stuff on Bmin=0 etc for meeting
+
+
+Cleaning house
+--------------
+
+Scanned Pacholczyk Ch. 3 (up to polarization) + Ch. 4 to be sure, before
+returning to library next week.
+
+Cleaned ~/Desktop/ files lying around, threw away old fit tables (the
+pre-tabulated FWHMs), and discarded all raw Chandra ObsIDs (~80 GB in all).
+Discarded indiv spectra from specextract pipeline (files generated prior to
+merge) in Kepler and Tycho data folders.
+Discarded raw/repro'ed Chandra ObsIDs (~80 GB) and reprojected ObsIDs.
+Discarded energy band images extracted from Chandra (Cas A, Kepler), they are
+saved in the `data-*/` folders
+
+NOTE: if I have to calculate new spectra at home, I will have to redownload the
+ObsIDs (spectra must be extracted from each individually, then merged).
+I can't remember if just the reprojected mosaics were needed... but I think you
+need the full ObsID.
+
+This now drops my folder to 2.8 GB, a very manageable size.
+
+Meeting
+-------
+(last one w/Rob, Brian in person)
+
+### To-dos/disc. etc
+
+Brian: if [you] can't get the paper out until Tuesday, may as well wait until
+past the weekend, no one will read it until then anyways.
+
+Yes, just chuck Tables 3/4.  Fits w/ varying damping length are really similar
+anyways...
+
+Sanity check: eyeballed fits to radio/X-ray should give reasonable width-energy
+dependence (same idea as comparing width-energy fit params' model profiles to
+actual profiles).  Check this as well -- again strictly for sanity's sake.
+
+### Misc.
+
+Frank, Knox, Una at meeting -- Una coming at least one day.
+Knox: tends to be skeptical (concerned about SN 1006 to say the least)
+
+HST observations of Kepler (in works by Ravi Sankrit (SOFIA/NASA Ames), Brian,
+etc.).  Optical emission is mostly H alpha, maybe some radiative shock lines
+(north of Kepler, south is invisible).  Low ionization states, O III / Fe II
+ish or whatever.
+
+Exploring lengthscale effects on FWHMs
+--------------------------------------
+
+Following point 1. from Wednesday's telecon -- can we compute
+advection/diffusion lengths, compare to FWHMs.  Because, in X-ray, even if we
+have some damping, the X-ray rims are often so thin that they aren't really
+damped!
+
+See email to Steve/Sean et al.
+
+MAjor observation: our preferred parameter range (a\_b ~ 0.01 and B\_0 ~ 100
+microGauss) falls RIGHT where all the lengthscales are comparable!  All are
+important.
+
+Current setup
+
+TODO: on my plots, throw on the modeled FWHMs for a given `l_diff`, `l_ad`.
+I don't know if this will go anywhere though.
+(I.e., plot `l_diff` vs. B0 for 2 keV, eta2=1.  Plot `l_ad` for 2 keV, eta2=1.
+Then, plot FWHMs for 2 keV, eta2=1 as a function of B0.  In this way we see
+exactly how `l_diff` and `l_ad` contribute to the true FWHM)
+
+
+
+Synchrotron self-absorption
+---------------------------
+
+Stupid question: could synchrotron self-absorption be relevant to Tycho in
+radio?  This would terrifically mess up our results if so.
+
+__Idea:__ brightness temp. of source can't exceed effective temp. of electrons.
+Brightness temp: T of equivalent radiating blackbody w/ flux at said freq.
+Effective temp: T from kinetic E of particles
+If brightness temp. > effective temp., the photons would be absorbed by the
+thermal population to bring it into thermodynamic equilib with Teff = Tbright
+(I don't know if SNR shocks are thermally equilibrated or not. I'd guess not).
+Following NRAO (Condon/Ransom) ERA, I check this...
+
+### T\_eff
+
+For Tycho, consider min, max `T_eff` at B = 500e-6, 12e-6 Gauss:
+
+    T_eff = 1.18e6 * sqrt(1.375GHz / 1Hz) / sqrt(B/1G)
+          = 1.18e6 * sqrt(1.375e9 / 50e-6)
+          = 2e12 K -- 1e13 K
+
+Checking backwards, E = 3kT (relativistic) gives 0.5-2.6 GeV, so we're in the
+right ballpark.
+
+### T\_brightness - compute/check specific intensity
+
+What's the brightness temperature of Tycho, then?  Rayleigh-Jeans approx (fine
+for radio) gives us:
+
+    T_b(nu) = I_nu c^2 / (2 k nu^2)
+
+where `I_nu` is specific intensity.  In Tycho:
+* typical rim pixel: 0.02 Jy/beam, at a thin radio rim (see my paper figures)
+* Green's SNR catalog: total flux 56 Jy at 1 GHz
+
+Let's get the flux at 1.375 GHz from the NICMOS unit calculator thing.  Convert
+appropriately and use spectral index -0.58.
+
+    INPUT FROM THE FORM IS 
+    Input units = Jy             
+    Output units = Jy             
+    Input flux =    56.0000 Jy             
+    Index of the power-law spectrum as a function of frequency =  -0.580000
+    INPUT wavelength =     299792. micron
+    OUTPUT wavelength =     218030. micron
+    Flux= 47.     Jy
+
+Now convert to a remnant-averaged specific intensity.  How do we get the solid
+angle subtended by Tycho?  Two approximations:
+* pi * (4 arcmin)^2 = 4.253e-6 sr
+* 2 pi * (1 - cos(4 arcmin)) = 2 pi * 6.779e-7 = 4.253e-6 sr
+(so the flat sky approx. is fine)
+
+    47 Jy / (pi * (4 arcmin)^2) ~ 47 Jy / (4.25e-6 sr) ~ 1.106e7 Jy/sr
+
+Does this give reasonable Tycho pixel intensity?  Convert from sr to beam.
+
+    VLA FWHM = 45/(1.375 GHZ/1GHz) arcmin = 32.7 arcmin
+          = 0.0095 radians
+    VLA primary beam = pi * (0.0095)^2 / (4 * ln(2)) = 0.000102 sr
+
+    1.106e7 Jy/sr * 1.02e-4 sr/beam = 1128 Jy/beam.
+
+Woops, clearly primary beam __cannot be right.__
+
+    VLA synthesized theta_HPBW (A, 1.5 GHz) = 1.3 arcsec = 6.30e-6 radians
+    VLA synthesized beam = pi * (6.3e-6)^2 / (4 * ln(2)) = 4.50e-11 sr
+
+    1.106e7 Jy/sr * 4.5e-11 sr/beam = 0.0005 Jy/beam
+
+Looks more reasonable, within 1-2 orders of magnitude.  Now inspect our image:
+
+    Sum: 715.798 Jy/beam for all of Tycho.
+    Area: 210725 arcsec^2
+    Surf brightness: 0.0034 Jy/beam /arcsec^2
+
+But to get something meaningful we need to integrate, not just sum.
+Recalling that 1 beam = 4.50e-11 sr (VLA A config, 1.5 GHz):
+
+    715.798 Jy/beam * (0.5 arcsec)^2 = 715.798 * 5.86e-12 sr / 4.50e-11 sr
+    = 716 * 0.13 = 93 Jy
+
+CLOSE ENOUGH.  Note that 0.13 beam/px is a useful conversion too.
+
+### T\_brightness - estimate brightness of thin rim
+
+Recall that a thin rim pixel is ~0.02 Jy/beam.  If one pixel is a source, that
+source has total flux:
+
+    0.02 Jy/beam * (5.86e-12 sr) * 1 beam / 4.5e-11 sr = 0.0026 Jy
+
+Or, 0.0026 Jy/sr --> 2.6e-26 erg/cm^2/s/Hz/sr
+(recall 1 Jy = 1e-23 erg/cm^2/s/Hz = 1e-26 W/m^2/s/Hz)
+That's the specific intensity.  Then the brightness temperature is
+
+    T_b(nu) = I_nu c^2 / (2 k nu^2)
+            = 2.6e-26 erg/cm^2/s/Hz/sr * c^2 / (2 * k * (1.375 GHz)^2)
+            = 4.5e-8 K
+
+That's obscenely faint!  Is this right?
+A source needs ONLY be 4.5e-8 K to radiate 0.02 Jy/beam at radio.  Our source
+is "effectively" much more energetic, yet the synchrotron radiation that comes
+out is not very bright.  So synchrotron radiation is not even close to being
+self-absorbed in Tycho's SNR.
+
+Current ratio of Teff/Tb is 1e12/1e-8 ~ 1e20.  HUGE.
+`I_nu ~ nu^-0.58`, so `T_b ~ nu^-2.58` whereas `T_eff ~ sqrt(nu)`.  Thus,
+Teff/Tb ~ nu^-2.08.  If we drop by 10 orders of magnitude in frequency (to
+oscillations at Hz wavelengths... that's crazy low, ELF radio), we will hit
+self-absorption.  Thus it seems the rims simply aren't that bright in radio.
+
+
+Sanity check in re DSA
+----------------------
+
+D ~ E, so X-ray electrons diffuse more effectively than radio electrons.
+This hinders the DSA process -- more particles escape at higher energies
+(naturally gives rise to the decreasing power law spectrum)
+
+The diffusion lengthscale works out the same because radio electrons are longer
+lived, though.  DSA is most effective for short gyroradii -- which confines the
+electrons, w/ small D.
+

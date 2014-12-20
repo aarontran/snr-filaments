@@ -756,9 +756,10 @@ def width_cont(params, kevs, snr, verbose=True, rminarc=None, icut=None,
     # Print settings, set rminarc to new adaptive value
     if verbose:
         if idamp:
-            print ('\tFull model: B0 = {:0.3f} muG; eta2 = {:0.3f}; '
-                   'mu = {:0.3f}; ab = {:0.3f}').format(B0*1e6, eta2, mu,
-                                                        damp_ab)
+            parstr = ('\tFull model: B0 = {:0.3f} muG; eta2 = {:0.3f}; '
+                      'mu = {:0.3f}; ab = {:0.3f}, Bmin = {:0.3f} muG')
+            parstr = parstr.format(B0*1e6, eta2, mu, damp_ab, damp_bmin*1e6)
+            print parstr
         else:
             print ('\tFull model: B0 = {:0.3f} muG; eta2 = {:0.3f}; '
                    'mu = {:0.3f};').format(B0*1e6, eta2, mu)

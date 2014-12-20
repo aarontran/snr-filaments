@@ -206,6 +206,8 @@ def save_fits(p_list, fobj, mu_vals, outroot):
     Use the pkl though, seriously.
     The json is just a backup, for when Python/pickle/etc are obsolute
 
+    This DOES clobber any existing output!
+
     please see build_dataf for info on stored data!
 
     Input:
@@ -300,7 +302,6 @@ def load_fit_pkls_new(inroot):
         p_list, mu_vals, fobj = load_fit_pkl(inroot, n+1)
         yield p_list, mu_vals, fobj, n+1
 
-
 def load_fit_pkl(inroot, n):
     """Get best fit information/usables from specified fit pickle
 
@@ -329,8 +330,8 @@ def load_fit_pkl(inroot, n):
     fobj = mex.Fitter(p0.snr, fdict['kevs'], fdict['data'], fdict['eps'],
                       None,  # No table needed
                       inds=None, verbose=True)
+    fobj.title = fdict['title']
     return p_list, mu_vals, fobj
-
 
 def best_fit_fwhms(p_list, mu_vals, fobj, kevs_calc=None, mu_calc=None,
                    get_mask=False, verbose=True, **kwargs):

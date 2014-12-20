@@ -10,6 +10,10 @@ Current (ad hoc) naming convention is:
 snr name, grid resolution (3-tuple) of mu, eta2, B0 (in that order),
 date (yyyy-mm-dd).
 
+I delete old pkl tables when superseded by new ones for a given SNR.  But I
+have preserved the generating scripts and my notes.
+
+
 `sn1006_grid-3-40-15_2014-07-25.pkl`
 ------------------------------------
 
@@ -29,6 +33,8 @@ The data are good, but I did not sample widely enough in FWHM space
 
 I'm not certain of the value of `f_minarc` here, may have been 1.1 or 1.2.
 But, I think it was 1.2.
+
+(2014 Dec. 19 deleted)
 
 
 `sn1006_grid-6-100-20_2014-07-25.pkl`
@@ -59,6 +65,8 @@ This is important when best fit eta2 is not ~0.
 The code appears to go bonkers for very specific values of rminarc.
 Hence the use of scaling factor 1.51 to determine `data_min` and `data_max`.
 See my debugging notes on this matter...
+
+(2014 Dec. 19 deleted)
 
 `sn1006_grid-1-100-20_2014-07-28_mu=0.25_partest.pkl`
 ---------------------------------------------
@@ -96,6 +104,8 @@ next day (total = 17:30 + 1:09 = 18:09, means ~3 hrs / mu value).
 Here we finished at 19:08 on average --> 4:07 hrs / 4 mu values, or about 1 hr/
 mu value now.  So we cut the time expenditure by 1/3rd!
 
+(2014 Dec. 19 deleted)
+
 
 `Tycho_gen_2014-07-30_grid-6-100-20_vs-*.pkl`
 ---------------------------------------------
@@ -130,6 +140,15 @@ New Tycho tables, with different vs values (4.59e8, 4.76e8, 4.94e8, 5.11e8).
 These values are closer to our data values and should give better coverage
 (speed up fits).
 
+(2014 Dec. 19: deleted, superseded by 2014-10-23 tables)
+
+
+`sn1006_gen_2014-09-02_grid_6-110-20.pkl`
+-----------------------------------------
+
+I guess a new SN 1006 table to go with above, but seems I forgot to note it in
+here.
+
 
 `Tycho_gen_2014-10-1[1,2]_grid_1-151-30_ab-*.pkl`
 -------------------------------------------------
@@ -159,6 +178,9 @@ And, computed FWHMs for:
 are strongly undersampled due to the algorithm being dumb.  So do not assume
 these tables cover parameter space all that well...
 
+2014 Dec 19: these Tycho tables have been deleted, though I retain the
+generating scripts to be safe.
+
 `SN1006_gen_2014-10-1[3,4]_grid_1-151-50_ab-*.pkl`
 --------------------------------------------------
 
@@ -185,3 +207,9 @@ Now even finer gridding in eta2 values.
 Damped tables with ab down to 0.003, 0.002; Bmin = 5e-6; more B values sampled
 (to improve sampling at small ab where we're only getting ~10 values, even if
 30+ are requested).
+
+* `Kepler_gen_2014-10-31_grid_1-151-50_ab-*.pkl` (also 2014-11-0[1,2])
+  Damped fits for Kepler, following Tycho vein
+
+* `Kepler_gen_2014-10-31_grid_6-151-20_ab-*.pkl`
+  Loss-limited fits, single shock velocity
