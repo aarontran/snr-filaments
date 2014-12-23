@@ -23,12 +23,15 @@ Main TO-DOs
 
 ### Regular to-dos
 
-* Hit everything discussed in telecon, for tomorrow morning.
-  Bring a slew of tables and plots...
+* Copy off dot files, other useful things
 
-PLEASE copy off all your dot files, other useful things...
+* Should we re-do this analysis w/ X-ray exact matching regions? Instead of
+  separate X-ray/radio... it makes it a real pain to compare results.
+  Options: smaller radio regions, or larger X-ray regions.  Both not super
+  desirable, but perhaps larger X-ray regions is an okay tradeoff.
 
 * Comb through text logic, now, for all the new tables/figures!...
+  Broadly re-write and change emphasis of results
 
 * check expressions for cut-off energy, diffusion terms in model solutions
   (using Bmin vs. B0 in certain places).

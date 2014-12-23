@@ -60,7 +60,7 @@ Table of contents
 * Week 28 - (12/8) Finish eyeball fits, send paper around, ..., ..., poster
                    minor loose ends
 * Week 29 - (12/15) Send poster around, ...
-* Week 30 - (12/22, 12/23 only)
+* Week 30 - (12/22, 12/23 only) 
 
 * Week 31 - (12/29)
             (at home)
@@ -6561,7 +6561,7 @@ to width-energy dep. w/ `eta_2` fixed at srcutlog derived value.
 0. (DONE) Steve has only a few remarks on the poster, will send today.  Need to add
    some references.
 
-1. Differentiate between damped/loss-limited behavior.  Behavior is obviously a
+1. (DONE) Differentiate between damped/loss-limited behavior.  Behavior is obviously a
    continuum.  Plots on top right w/ damping lengths `a_b = 0.05` are clearly
    controlled by losses in X-ray, so we can't sensibly call that "damped".
    The literature is a bit misleading in presenting them like dichotomous
@@ -6570,19 +6570,19 @@ to width-energy dep. w/ `eta_2` fixed at srcutlog derived value.
 Brian: large grid of width-energy dep. plots (full page thing) seems like one
 of the key figures in the paper.
 
-Compare FWHM to `a\_b` for each region to get at this.  Better, use max(l\_ad,
+(DONE) Compare FWHM to `a\_b` for each region to get at this.  Better, use max(l\_ad,
 l\_diff) / a\_b as the proxy.  Since l\_ad/l\_diff are just functions of the
 parameter space this draws a line through the space of B\_0/a\_b, delineating
 damped vs. not-damped in radio and X-ray separately.
 
-For each region, tabulate:
+(DONE) For each region, tabulate:
 - FWHM at 2 keV
 - a\_b from width-energy fit (mu=1, eta2=1)
 - a\_b from eyeball radio/x-ray fit
 - l\_ad, l\_diff for mu=1 (functions of eta/eta\_2, B\_0, v\_d, nu) in X-ray,
   radio
 
-NEXT, to just explore/characterize parameter space, compute values over grid of
+(DONE) NEXT, to just explore/characterize parameter space, compute values over grid of
 B\_0 and a\_b values.  Obtain:
 - predicted FWHM at 2 keV for the parameters considered
 - max(l\_ad, l\_diff) for radio, X-ray
@@ -6609,7 +6609,7 @@ parameter grid.
    field behind shock, etc.  All planar assumed.  Mention early in paper (model
    exposition) that we are neglecting these effects.
 
-5. Discussed/explained the "effective velocity" explanation for D(x) behavior.
+5. (DONE) Discussed/explained the "effective velocity" explanation for D(x) behavior.
    Wouldn't D(x) be very large far downstream?  Could explain by electrons
    being diffused (large mean free path) so fast that they don't contribute
    meaningfully to the rim, smeared out over huge lengthscale.
@@ -6627,10 +6627,10 @@ to normal and particles move rapidly away, reinforcing the thinning effect.
 One question: what would happen as B\_min -> 0?  D(x) will blow up towards
 infinity, rather than a finite downstream value!
 
-6. Veered back to discussing l\_ad / l\_diff.  See my notes on 1. above, which
+6. (DONE) Veered back to discussing l\_ad / l\_diff.  See my notes on 1. above, which
    combine everything together.
 
-7. Discussed reasonableness of extreme eta\_2 values.  Do we have a
+7. (DONE) Discussed reasonableness of extreme eta\_2 values.  Do we have a
    consistency check on the eta2 values?  Steve getting flak at COSPAR about
    eta2 < 1.  Answer: srcutlog table -- put that back for Steve and Sean who
    want to see it.
@@ -6640,16 +6640,19 @@ to scale inversely, Steve mentioned Jokipii (1987) suggested that with some
 effects, anisotropic diffusion etc stuff I didn't quite catch, it could scale
 together.
 
-Toss Table 5, eta2 is so jumpy that it's not helpful.  Brian asks: can we do
+(DONE) Toss Table 5, eta2 is so jumpy that it's not helpful.  Brian asks: can we do
 fits with `eta_2`=10 fixed instead?  To be closer to the srcutlog derived
 values.  So do this for Table 6 (also, use `eta_2=10` or `eta2_srcutlog` for
 damped fits).
 
-8. Notation: we should call magnetic field B (or B\_1 or whatever), not B\_0.
+8. (DONE) Notation: we should call magnetic field B (or B\_1 or whatever), not B\_0.
    As typically B\_0 is taken to indicate the upstream, ambient / galactic
    magnetic field.  Inherited unfortunate notation from Rettig/Pohl whatever.
 
-9. Spectral variation discussion.  Ambivalent feelings, I think.  Steve is
+Add a note to clarify this -- "we adopt B\_0 to denote shock field, departing
+from typical usage blah blah blah..."
+
+9. (DONE) Spectral variation discussion.  Ambivalent feelings, I think.  Steve is
    interested in the discrepancy, why doesn't our model replicate the spectral
    softening?  Try feeding in larger `eta_2`, use the values from srcutlog
    (being physically motivated), see what comes out of the model spectra.
@@ -6659,8 +6662,8 @@ wonder if that just changes indices without affecting softening/hardening; if
 anything I'd think diffusion should make spectra more similar, unless strange
 dD/dX effect is at play!
 
-Separate the sections -- the organization is confusing.  This modeling was not
-related to the `srcutlog` fits.
+(DONE (nominally)) Separate the sections -- the organization is confusing.
+This modeling was not related to the `srcutlog` fits.
 
 
 ### Other remarks:
@@ -6752,12 +6755,12 @@ My own notes/remarks
   halves of paper.  What's the significance of these weak-field damping fits?
   (addressing point 2. above)
 
-* My damping fits only consider `a_b` < 0.01 right now, but we've seen from
+* (DONE) My damping fits only consider `a_b` < 0.01 right now, but we've seen from
   radio/X-ray eyeball fits that a\_b ~ 0.01 is actually ideal for Tycho.
   Please increase that bound to allow more fits?  We might get interesting
   results and see less of this weak-field behavior.
 
-It might be necessary to make tables w/ more `a_b` values?  We'll see...
+(DONE) It might be necessary to make tables w/ more `a_b` values?  We'll see...
 
 
 Thursday 2014 December 18
@@ -6909,16 +6912,16 @@ between 0.01 and 0.05 is not very well sampled.
 
 
 
-
-
 Friday 2014 December 19
 =======================
 
 Summary
 -------
 
-* Assembled some stuff on Bmin=0 etc for meeting
-
+* Assembled some stuff on Bmin=0, characteristic lengthscales for meeting
+* Last meeting w/ Rob+Brian, review plots/results-ish, AAS plan
+* Clean files / prep to depart
+* Some sanity checks / learning
 
 Cleaning house
 --------------
@@ -6977,18 +6980,15 @@ damped!
 
 See email to Steve/Sean et al.
 
-MAjor observation: our preferred parameter range (a\_b ~ 0.01 and B\_0 ~ 100
+Main observation: our preferred parameter range (a\_b ~ 0.01 and B\_0 ~ 100
 microGauss) falls RIGHT where all the lengthscales are comparable!  All are
 important.
 
-Current setup
-
-TODO: on my plots, throw on the modeled FWHMs for a given `l_diff`, `l_ad`.
+(DONE) TODO: on my plots, throw on the modeled FWHMs for a given `l_diff`, `l_ad`.
 I don't know if this will go anywhere though.
 (I.e., plot `l_diff` vs. B0 for 2 keV, eta2=1.  Plot `l_ad` for 2 keV, eta2=1.
 Then, plot FWHMs for 2 keV, eta2=1 as a function of B0.  In this way we see
 exactly how `l_diff` and `l_ad` contribute to the true FWHM)
-
 
 
 Synchrotron self-absorption
@@ -7115,3 +7115,274 @@ The diffusion lengthscale works out the same because radio electrons are longer
 lived, though.  DSA is most effective for short gyroradii -- which confines the
 electrons, w/ small D.
 
+
+(Week 30) Monday 2014 December 22
+=================================
+
+Summary
+-------
+* Further prep to leave
+* Run needed fits, spectral variation w/ different eta2 values etc
+* Wrap up all pending to-dos/calculations, make/add tables/figures to paper
+
+Holiday luncheon thing today
+
+Logistics, clean up, misc
+-------------------------
+
+Jay Friedlander is around tomorrow.  3rd floor printer has 42" paper!
+Returned GSFC library books.
+
+Plan:
+* Mon: wrap up telecon + other work/to-dos for paper
+* Tue: print poster, print color copies of poster (15x?),
+       transfer files off computer, turn in badge
+* Wds: clean, bike to UMD, relinquish bike, bus back, travel to IAD-LAX
+
+Default bibdesk settings from GSFC imac:
+
+* Application launch: open file ~/snr-research/manuscript/refs-snr.bib
+* Cite command style: \citep, prepend a tilde
+* Convert accented characters to TeX
+* Cite key autogeneration: custom format %a1%Y%u0
+* Auto file options: local file format string: %a1%Y%u0%e
+
+
+More fits (varied eta2 values)
+------------------------------
+
+Run damped fits w/ eta2 = srcutlog values, and loss-lim. fits with eta2 = 10
+fixed (already been done w/ damped fits, though not used).  This should cover
+all our bases.  Here's the current list of width-energy dep. fits for Tycho
+regions-6, loss-limited and damped:
+
+    full-man_err-{:02d}-fobj.pkl
+    full-std_err-srcutlog-{:02d}-fobj.pkl
+    full-std_err-eta2_one-{:02d}-fobj.pkl
+    full-std_err-eta2_1.00e+01-{:02d}-fobj.pkl
+
+    full-std_err-ab_{:0.2e}-eta2_free-{:02d}-fobj.pkl
+    full-std_err-ab_{:0.2e}-eta2_1.00e-02-{:02d}-fobj.pkl
+    full-std_err-ab_{:0.2e}-eta2_1.00e-01-{:02d}-fobj.pkl
+    full-std_err-ab_{:0.2e}-eta2_1.00e+00-{:02d}-fobj.pkl
+    full-std_err-ab_{:0.2e}-eta2_2.00e+00-{:02d}-fobj.pkl
+    full-std_err-ab_{:0.2e}-eta2_1.00e+01-{:02d}-fobj.pkl
+    full-std_err-mu_all-ab_{:0.2e}-eta2_1.00e+00-{:02d}-fobj.pkl
+    full-std_err-ab_{:0.2e}-eta2_1.00e+00-Bmin_0.00e+00-{:02d}-fobj.pkl
+    full-std_err-ab_{:0.2e}-eta2_1.00e+00-Bmin_2.00e-06-{:02d}-fobj.pkl
+    full-std_err-ab_{:0.2e}-eta2_srcutlog-{:02d}-fobj.pkl
+
+Or, in tabular form (as if it needs repeating...
+
+    Fit     Errs    eta2    mu      Bmin
+    ----    ----    -----   ---     ----
+    loss    man.    free    0-2     5
+    loss    std     1       0-2     5
+    loss    std     srcut   0-2     5
+    loss    std     10      0-2     5
+    damp    std     free    1       5
+    damp    std     0.01-10 1       5
+    damp    std     1       0-2     5
+    damp    std     1       1       0, 2
+    damp    std     srcut   1       5
+
+0.01-10 indicates eta2 values 0.01, 0.1, 1, 2, 10
+0-2 indicates mu values 0, 1/3, 1/2, 1, 1.5, 2
+Fits have B0 free in all cases.
+
+Lengthscale analysis
+--------------------
+
+Fiddling around with the plots and numbers for a while.  Further observations:
+
+Radio of lad/ldiff is same for both loss-lim/damped fits.  Why?  Ratio is
+independent of B0 (for mu=1); it depends only on eta2, vs, and our choice of
+fiducial energy 2 keV.  All scatter here, w.r.t. predicted line of `l_ad` vs.
+`B_0`, is due entirely to the variation in shock velocity.  So we needn't plot
+`l_ad` and `l_diff`.
+
+So, all we are varying is how much damping to throw into the picture; the
+relative strength of advection/diffusion is always the same.  They are both
+scaled proportionally to magnetic field `B_0`, which we may decrease if damping
+is added.
+
+I think the dimensionless approach is the right way to go,
+(thinking along the lines of Nguyen, Gonnermann, Chen, et al. (2013), G^3)
+but am unequipped to explore it further right now...  We have the issue of
+self-consistency (plots based on fits to FWHMs w/ assumptions on
+damping/loss-limited behavior) and simply, not much data.
+
+(we can make dimensionless plots using FWHMs at other energies too though)
+
+We can't take advantage of the eyeball fits because we don't have any FWHM with
+which to compare to.  But we can at least compare ab and lad to x-ray, in all
+cases.
+
+Anyways, generated figures + table to throw into draft for others to look at.
+
+Spectral variation redux
+------------------------
+
+Summary: changing eta2 has no effect.  Larger eta2 means smaller cutoff energy
+means steeper spectra.  But, the difference between rim/plateau spectra doesn't
+change much.
+
+I cleaned the code to produce plots/tables more systematically.  Somehow, the
+tables don't precisely match those from November 12 (damped best fit w/ eta2=1
+fixed, regions-6).  Results are same within error.  Table w/ eta2 free does
+match Dec. 2 result, so I guess I must have made some minor tweaks.  Can't diff
+because I didn't commit enough / I moved the code to a new file sometime in
+November...
+
+Damped best fit, w/ eta2=1
+
+    Region	rim	down	delta	ab	    B0	    eta2
+    1	-2.378	-2.446	0.068	0.008	27.7	1
+    2	-2.384	-2.463	0.078	0.003	25.4	1
+    3	-2.572	-2.623	0.051	0.020	429.7	1
+    4	-2.382	-2.450	0.068	0.004	27.7	1
+    5	-2.394	-2.477	0.083	0.003	24.5	1
+    6	-2.375	-2.410	0.035	0.004	68.0	1
+    7	-2.469	-2.509	0.04	0.006	290.9	1
+    8	-2.401	-2.433	0.032	0.005	137.8	1
+    9	-2.381	-2.414	0.033	0.004	78.3	1
+    10	-2.385	-2.449	0.064	0.002	29.1	1
+    11	-2.593	-2.642	0.049	0.050	358.9	1
+    12	-2.602	-2.649	0.047	0.500	318.0	1
+    13	-2.473	-2.511	0.038	0.006	257.7	1
+    14	-2.426	-2.461	0.036	0.004	59.8	1
+    15	-2.427	-2.467	0.04	0.003	47.8	1
+    16	-2.565	-2.612	0.048	0.006	434.1	1
+    17	-2.480	-2.514	0.034	0.004	232.1	1
+    18	-2.616	-2.665	0.049	0.050	285.6	1
+    19	-2.412	-2.445	0.033	0.004	77.6	1
+    20	-2.412	-2.448	0.037	0.003	57.5	1
+
+    Mean  0.048162441376
+    Stdev 0.0154958541602
+    Max   0.083208701139
+    Min   0.0320607462662
+
+Damped best fit w/ eta2 = srcutlog-derived value
+
+    Region	rim	down	delta	ab	    B0	    eta2
+    1	-3.064	-3.155	0.09	0.008	18.9	12
+    2	-3.073	-3.177	0.1	    0.003	17.9	11.8
+    3	-3.027	-3.119	0.092	0.002	19.1	10.6
+    4	-3.074	-3.166	0.092	0.004	18.8	12
+    5	-3.101	-3.193	0.092	0.004	18.8	12.9
+    6	-3.053	-3.086	0.034	0.006	146.7	11.9
+    7	-3.182	-3.224	0.042	0.010	507.0	15.3
+    8	-2.970	-3.007	0.037	0.008	333.0	8.38
+    9	-3.034	-3.070	0.036	0.005	65.9	11.2
+    10	-3.036	-3.080	0.044	0.010	571.9	9.45
+    11	-2.863	-2.942	0.078	0.003	21.4	6.08
+    12	-2.732	-2.815	0.083	0.003	21.1	3.74
+    13	-2.996	-3.035	0.038	0.008	367.9	8.43
+    14	-3.130	-3.164	0.035	0.006	119.9	11.9
+    15	-3.087	-3.126	0.039	0.007	425.7	9.54
+    16	-3.082	-3.125	0.043	0.020	666.2	8.44
+    17	-3.045	-3.095	0.05	0.003	31.9	8.97
+    18	-3.250	-3.366	0.12	0.003	16.7	14.6
+    19	-3.009	-3.043	0.034	0.006	208.8	8.86
+    20	-3.038	-3.092	0.054	0.003	29.1	9.6
+
+    Mean  0.061741418271
+    Stdev 0.0273531648586
+    Max   0.116226665437
+    Min   0.0336070532767
+
+The net result is 0.048 +/- 0.015 (eta2=1), 0.062 +/- 0.03 (eta2=srcutlog)
+
+Generated a plot of how `\Delta\Gamma` varies with `B_0` for the damped
+spectrum modeling.  Throw this in the appendix.
+
+
+Energy-width dep. from radio/X-ray fits
+---------------------------------------
+
+Following Brian's suggestion, added said plots to notebook of fits/tables.
+
+
+Manuscript updates
+------------------
+
+Officially no longer imposing ab < 0.01.  Updating all best fit tables to
+reflect this decision.  Recompute the "bad" / weak-damping cases as well,
+now, to reflect this.  And, recompute all relevant tables (in most cases
+unchanged).
+
+New "weak-field" damping region list: [1, 2, 4, 5, 10, 11, 12, 18]
+This _added_ Region 11 to the list, vs. before (when ab <= 0.01 was imposed).
+
+I am NOT really working on the paper, so it's becoming more discombobulated.
+But, with good figures + tables in hand I can reshape the text afterwards.
+
+### Tables
+
+Updated table w/ eta2=1 (tab:fits-all-eta2one)
+Added table w/ eta2=srcutlog values (tab:fits-all-srcutlog)
+Updated table w/ Bmin=0 (suppl-fits-all-bmin0-eta2one)
+Added table w/ eta2=10 (suppl-fits-all-eta2ten)
+
+Trimmed table w/ srcutlog to spec. fit params only (tab:spec-srcutlog)
+Moved old Tables 3/4 (loss-lim, damp fits w/eta2, mu, ab) to appendix
+Removed unused appendix Bmin = 2 muG tables (superseded by Bmin=0 tables, anyways)
+Removed unused "giant" damping tables, for Tycho and SN 1006
+
+Updated old Tables 3/4 (suppl-fits-damp, suppl-fits-loss) -- new numbers, more
+ab values for damped table.  But very minute changes.  Loss-limited fits are
+identical within error for sure.
+
+Added new table of lengthscales
+Added new table of eyeball fit + advective lengthscale vs.`a_b`
+
+### Figures
+
+Regenerated:
+
+    energywidth-subplot.pdf
+    energywidth-eta2one-{:02d}
+    energywidth-eta2one-16-poster
+    prfs-fit-{:02d}
+    prfs-fit-damp-{:02d}
+    prfs-fit-and-data-{:02d}
+
+!! Caught error in poster figure -- regenerate now w/ eta2=1 fixed correctly
+in code...  Difference is very subtle in plot, but good to be thorough.
+
+Also caught another error in plotting code for profiles from model params.
+ab being plotted was for fits w/ eta2 free, not w/ eta2=1...  Bad code design,
+too many variable names being changed by hand right now.
+
+Plots `prfs-fit-and-data-{:02d}` were regenerated w/ eta2=1 best fits.  And,
+consistent w/ all of above, uses best fits without old ab <= 0.01 restriction.
+
+Added plots w/ lengthscale analysis, spectral variation dependence on B field
+(in damped fits).
+
+
+Tuesday 2014 December 23
+========================
+
+Summary
+-------
+* Print poster + color copies of poster
+* Finish clean up, copy files to personal computer
+* Turn in badge...
+
+Poster tweaks
+-------------
+
+Caught one typo.  Made minor tweaks to layout, spacing/alignment, text
+wrapping.  Generated print and web versions, tested print CMYK and RGB
+versions.
+
+Final text is around 411 words, including all captions, excluding title /
+acknowledgments / refs.  This is a slight overestimate since we're counting
+equations, bullet pts, etc.
+
+File clean-up
+--------------
+Threw away all radio reduction / tutorial data (3c391, TDEM0020).  Kept logs,
+notes; threw notes into repo.

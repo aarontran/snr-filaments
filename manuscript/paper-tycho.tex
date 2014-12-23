@@ -361,7 +361,8 @@ cut-off energy is given as:
         \eta^{-1 / (1+\mu)} .
 \end{align}
 Here $B_0$ is the magnetic field immediately downstream of the shock, i.e.
-$B_0 = B(x=0)$.
+$B_0 = B(x=0)$; our notation departs somewhat from typical notation in denoting
+downstream field by $B_0$.
 This result is derived by \citet{parizot2006} for $\mu=1$ assuming a strong
 shock with compression ratio 4 and isotropic magnetic turbulence on both sides
 of the shock.
@@ -635,6 +636,18 @@ present beneath thermal line emission.
 %    (here characterized by equivalent width and line energy), or with lines
 %    manually excised.  See comments on Table~\ref{tab:spec}.}
 %\end{table*}
+
+% TODO discuss srcutlog fitting (move text up from below)
+\begin{table}
+    \scriptsize
+    \centering
+    \caption{Synchrotron roll-off, $\eta_2$, and fits for $\mu = 1$
+    \label{tab:spec-srcutlog}}
+    \input{tab-srcutlog.tex}
+    \tablecomments{\texttt{srcut} fits performed in log-frequency coordinates;
+        here $h$ is Planck's constant. $\eta_2$ values are computed from
+        equation~\eqref{eq:cutoff} and held fixed in model fits.}
+\end{table}
 
 % Takeaway -- we are good to go
 Our spectral fitting confirms that all selected region are practically free of
@@ -911,6 +924,10 @@ compared to directly fitting entire rim profiles to model predictions.
     \label{fig:fits-all}}
 \end{figure*}
 
+% TODO cull/rewrite all references to tab:fits-loss, tab:fits-damp
+% Since tables are removed, adjust discussion of eta2, mu effects on fits.
+% and effects of varying ab value?
+
 % Observations on qualitative trends in fit parameters
 % NOTE keep numbers updated.  # of regions "favoring" mu >= 1
 % KEEP B0 minimum number updated!!!!!
@@ -931,28 +948,28 @@ better-behaved than their loss-limited counterparts.  Smaller values of $a_b$
 permit and favor smaller best fit values of $B_0$ and $\eta_2$ in all regions.
 
 % Example loss-limited fits
-\begin{table}
-    \scriptsize
-    \centering
-    \caption{Loss-limited fits for Regions 1, 16
-    \label{tab:fits-loss}}
-    \input{tab-fits-loss.tex}
-    \tablecomments{Model fits computed at several fixed values of $\mu$ with
-    $\eta_2$, $B_0$ free and constant magnetic field $B(x) = B_0$.
-    Region 1 has 2 degrees of freedom (dofs); Region 16, 3.}
-\end{table}
-
-% Example damping fits
-\begin{table}
-    \scriptsize
-    \centering
-    \caption{Magnetic damping fits for Regions 1, 16
-    \label{tab:fits-damp}}
-    \input{tab-fits-damp.tex}
-    \tablecomments{Model fits computed at several fixed values of $a_b$ with
-    $\eta_2$, $B_0$ free and damped magnetic field (equation~\eqref{eq:bdamp}).
-    Fit degrees of freedom are as in Table~\ref{tab:fits-loss}}
-\end{table}
+%\begin{table}
+%    \scriptsize
+%    \centering
+%    \caption{Loss-limited fits for Regions 1, 16
+%    \label{tab:fits-loss}}
+%    \input{tab-fits-loss.tex}
+%    \tablecomments{Model fits computed at several fixed values of $\mu$ with
+%    $\eta_2$, $B_0$ free and constant magnetic field $B(x) = B_0$.
+%    Region 1 has 2 degrees of freedom (dofs); Region 16, 3.}
+%\end{table}
+%
+%% Example damping fits
+%\begin{table}
+%    \scriptsize
+%    \centering
+%    \caption{Magnetic damping fits for Regions 1, 16
+%    \label{tab:fits-damp}}
+%    \input{tab-fits-damp.tex}
+%    \tablecomments{Model fits computed at several fixed values of $a_b$ with
+%    $\eta_2$, $B_0$ free and damped magnetic field (equation~\eqref{eq:bdamp}).
+%    Fit degrees of freedom are as in Table~\ref{tab:fits-loss}}
+%\end{table}
 
 % Fit results for ALL regions, mu = 1, eta2 free, loss-limited and damped
 % NOTE keep # of dofs updated
@@ -978,68 +995,30 @@ In Table~\ref{tab:fits-all-eta2one} we present best loss-limited and
 damped fits with $\eta_2 = 1$ fixed.  As before, both loss-limited and damped
 models are equally capable of fitting the observed data.
 
-% As above but with eta2=1 fixed!
 \begin{table}
     \scriptsize
     \centering
     \caption{Best model fits for all regions, $\mu = \eta_2 = 1$
     \label{tab:fits-all-eta2one}}
     \input{tab-fits-all-eta2one.tex}
-    \tablecomments{Best damped fits select best $a_b$ value below $0.01$ from
-    the range shown in Table~\ref{tab:fits-damp}, enforcing moderate damping.
-    Fits for Regions 1--3, 5, 11, 12, 18, and 19 have 3 degrees of freedom; all
-    others have 4.  The manual selection of a best $a_b$ value may be construed
-    as removing one additional dof.}
+    \tablecomments{Fits for Regions 1--3, 5, 11, 12, 18, and 19 have 3 degrees
+    of freedom; all others have 4.  The choice of a best $a_b$ value may be
+    construed as removing one additional dof.}
 \end{table}
 
-% TODO EXPLAIN/DISCUSS
+% Integrate srcutlog into textual discussion (!)
 
-
-% As above but with eta2=1 fixed!
 \begin{table}
     \scriptsize
     \centering
-    \caption{Best model fits with $\Bmin = 0$ and $\mu = \eta_2 = 1$
-    \label{tab:fits-all-bminzero}}
-
-    \begin{tabular}{@{} l rr rrr @{}}
-    \toprule
-    {} & \multicolumn{2}{c}{Loss-limited}
-       & \multicolumn{3}{c}{Damped, $a_b \leq 0.01$} \\
-    \cmidrule(lr){2-3} \cmidrule(l){4-6}
-    Region & $B_0$ ($\mu$G) & $\chi^2$
-           & $B_0$ ($\mu$G) & $\chi^2$ & $a_b$ \\
-    \midrule
-    1 & 183 & 35.63 & 2.43 & 629.61 & 0.010 \\
-    2 & 313 & 80.81 & 239 & 100.66 & 0.010 \\
-    3 & 427 & 21.48 & 405 & 21.70 & 0.010 \\
-    \cmidrule{1-6}
-    4 & 285 & 51.30 & 174 & 43.82 & 0.010 \\
-    5 & 289 & 19.30 & 196 & 37.33 & 0.010 \\
-    6 & 411 & 174.32 & 90.2 & 61.50 & 0.005 \\
-    7 & 419 & 51.30 & 277 & 11.13 & 0.006 \\
-    8 & 388 & 48.06 & 205 & 9.92 & 0.006 \\
-    9 & 415 & 65.45 & 143 & 14.01 & 0.005 \\
-    10 & 466 & 17.28 & 307 & 1.60 & 0.005 \\
-    \cmidrule{1-6}
-    11 & 356 & 11.95 & 313 & 16.08 & 0.010 \\
-    12 & 318 & 9.60 & 258 & 15.45 & 0.010 \\
-    13 & 400 & 53.11 & 240 & 10.00 & 0.006 \\
-    \cmidrule{1-6}
-    14 & 384 & 103.43 & 52.3 & 9.90 & 0.005 \\
-    15 & 432 & 70.66 & 255 & 20.18 & 0.005 \\
-    16 & 493 & 15.13 & 430 & 3.88 & 0.006 \\
-    17 & 468 & 61.84 & 194 & 29.05 & 0.004 \\
-    \cmidrule{1-6}
-    18 & 283 & 27.87 & 206 & 71.82 & 0.010 \\
-    19 & 401 & 37.07 & 144 & 8.14 & 0.005 \\
-    20 & 464 & 122.00 & 140 & 94.37 & 0.004 \\
-    \bottomrule
-    \end{tabular}
-
-    \tablecomments{See comments for Table~\ref{tab:fits-all-eta2one}.}
+    \caption{Best model fits for all regions, $\eta_2$ derived from
+        \texttt{srcut} fits
+    \label{tab:fits-all-srcutlog}}
+    \input{tab-fits-all-srcutlog.tex}
+    \tablecomments{$\eta_2$ values are computed from equation~\eqref{eq:cutoff}
+    and held fixed in model fits.  See comments for
+    Table~\ref{tab:fits-all-eta2one} as well.}
 \end{table}
-
 
 
 
@@ -1118,6 +1097,10 @@ advection by imposing an effective velocity:
     v_d - \frac{\ptl D(x)}{\ptl x}
 \end{equation}
 thus requiring thinner rims as $\eta_2$ and $\ptl D(x) / \ptl x$ increase.
+
+% TODO discuss this a bit further.  Explain that it doesn't matter for us since
+% we are not exploring eta2 dependence of fits etc, but something useful to
+% note
 
 % B0 lower bounds in loss-limited model
 In loss-limited model fits, the minimum magnetic field strength throughout the
@@ -1242,6 +1225,39 @@ with $d$, yielding the observed behavior.  In the damped model, a larger
 distance $d$ will require larger physical damping lengths from magnetic
 turbulence.  But, fitted values of $a_b$ should remain unchanged as we report
 $a_b$ in units of shock radius $r_s$.
+
+\subsection{Lengthscale analysis}
+
+% TODO Short blurb
+
+\begin{figure}
+    \centering
+    \plotone{figures/lengthscales_fwhm.pdf} \\
+    \caption{Stuff
+        \label{fig:length}}
+\end{figure}
+
+\begin{figure}
+    \centering
+    \plotone{figures/lengthscales_fwhm_dimless.pdf} \\
+    \caption{Stuff.  Dashed line plots scaled FWHM = $4.6$, the projection
+        factor for a spherical shell (CITE)  % TODO
+        \label{fig:length-dimless}}
+\end{figure}
+
+\begin{table*}
+    \scriptsize
+    \centering
+    \caption{Lengthscale analysis
+        \label{tab:lengthscales}}
+    \input{tab-lengthscale.tex}
+    \tablecomments{All derived from fits with $\eta_2 = 1$ and such.  Ratio of
+        $l_{\mt{ad}}/l_{\mt{diff}}$ is same for loss-limited and damped fits
+    (see text).
+    All values computed at fiducial energy $2 \unit{keV}$.}
+\end{table*}
+
+
 
 % ----------------
 % Main null result
@@ -1380,6 +1396,8 @@ loss-limited model.
 % --------
 \subsection{Synchrotron cut-off constrains diffusion}
 
+% TODO move this up in discussion to EARLIER.
+
 Our model fits have not incorporated the synchrotron cut-off energy, which
 permits an estimate of diffusion coefficient $\eta_2$ for a given value of
 $\mu$ (equation~\eqref{eq:cutoff}) that is independent of magnetic field
@@ -1392,7 +1410,7 @@ To measure synchrotron cut-offs in Tycho, we fitted ``rim'' spectra
 log-frequency units; we fix the radio spectral index $\alpha = 0.58$
 \citep{sun2011} as done in our profile modeling and fit for column density
 $N_{\mt{H}}$ and cut-off frequency $\nu_{\mt{cut}}$ in each region.
-Table~\ref{tab:fits-srcutlog} lists best spectrum fit parameters for each
+Table~\ref{tab:fits-all-srcutlog} lists best spectrum fit parameters for each
 region.  The fitted cut-off frequency is typically $0.3 \unit{keV/h}$,
 consistent with fits by \citet{hwang2002}, but Regions 11, 12 have unusually
 high cut-off frequencies $0.55$, $0.88 \unit{keV/h}$ consistent with harder rim
@@ -1412,16 +1430,6 @@ measurements of $\nu_{\mt{cut}}$.  But, diffusion coefficients computed in this
 manner may give more credible derived estimates of $B_0$ if the DSA assumptions
 invoked are relevant.
 
-\begin{table}
-    \scriptsize
-    \centering
-    \caption{Synchrotron roll-off, $\eta_2$, and fits for $\mu = 1$
-    \label{tab:fits-srcutlog}}
-    \input{tab-srcutlog.tex}
-    \tablecomments{\texttt{srcut} fits performed in log-frequency coordinates;
-        here $h$ is Planck's constant. $\eta_2$ values are computed from
-        equation~\eqref{eq:cutoff} and held fixed in model fits.}
-\end{table}
 
 % ---------------------------
 % Spectral variation analysis
@@ -1721,7 +1729,17 @@ intensities to observations.  Our model captures the essential physics for a
 very young remnant such as Tycho, for which the forward shock should be
 adiabatic.
 
-% TODO We have NOT considered the relative intensities of X-ray / radio rims!
+
+\begin{table}
+    \scriptsize
+    \centering
+    \caption{Eyeballed fits
+        \label{tab:fits-eyeball}}
+    \input{tab-fits-eyeball.tex}
+    \tablecomments{$\infty$ indicates that we favor a loss-limited fit here
+    ($a_b > 10$\% of shock radius $r_s$)}
+\end{table}
+
 
 % -------------------------------------------
 % Model correctness - are our results valid?!
@@ -1828,7 +1846,7 @@ Python hosted at \href{http://aplpy.github.com}{http://aplpy.github.com}.
 % ========
 % Appendix
 % ========
-%\clearpage
+\clearpage
 \appendix
 
 \setcounter{table}{0}
@@ -1836,9 +1854,43 @@ Python hosted at \href{http://aplpy.github.com}{http://aplpy.github.com}.
 \setcounter{figure}{0}
 \renewcommand{\thefigure}{A\arabic{figure}}
 
+% ======================================
+% Extra tables/fit information for Tycho
+% ======================================
+\section{Extra Tycho results}
+
+% TODO EXPLAIN/DISCUSS BMIN=ZERO INLINE (not here obviously)
+\begin{table}
+    \scriptsize
+    \centering
+    \caption{Best model fits with $\Bmin = 0$ and $\mu = \eta_2 = 1$}
+    \input{suppl-fits-all-bmin0-eta2one.tex}
+    \tablecomments{See comments for Table~\ref{tab:fits-all-eta2one}.}
+\end{table}
+
+% TODO EXPLAIN/DISCUSS ETA2 INLINE
+\begin{table}
+    \scriptsize
+    \centering
+    \caption{Best model fits with $\eta_2 = 10$ fixed}
+    \input{suppl-fits-all-eta2ten.tex}
+    \tablecomments{See comments for Table~\ref{tab:fits-all-eta2one}.}
+\end{table}
+
+% TODO EXPLAIN
+\begin{figure*}
+    \centering
+    \includegraphics[width=0.5\textwidth]{figures/specvar-dgamma.pdf}
+    \caption{Spectral variation as a function of energy for damped best fit
+    parameters, w/ different choice of $\eta_2$.}
+\end{figure*}
+
+
+
 % ================================
 % Best fit information for SN 1006
 % ================================
+\clearpage
 \section{Best fits, SN 1006}
 
 Here we give best loss-limited and damped fit results for averaged filament
@@ -1864,18 +1916,6 @@ widths in SN 1006, taken from \citet{ressler2014}.
         of a best $a_b$ value may be construed as removing one more dof.}
 \end{table}
 
-\clearpage
-\begin{figure}
-    \centering
-    \iftoggle{manuscript}{
-        \includegraphics[width=0.48\textwidth]{figures/mE-damp-sn1006.pdf}
-    }{
-        \includegraphics[width=0.35\textwidth]{figures/mE-damp-sn1006.pdf}
-    }
-    \caption{Curves of $\mE$ values for best damping fits for all regions,
-        SN 1006}
-\end{figure}
-
 \begin{figure*}[h]
     \centering
     \includegraphics[width=0.48\textwidth]{figures/prfs-fit-sn1006-01.pdf}
@@ -1886,105 +1926,6 @@ widths in SN 1006, taken from \citet{ressler2014}.
     \caption{Rim width predictions for loss-limited and damped fits with
     $\mu = 1$ fixed for all regions, SN 1006.}
 \end{figure*}
-
-% ========================================
-% Best Tycho fits with Bmin = 2 microGauss
-% ========================================
-
-%\clearpage
-%\section{Best fits, Tycho, with $\Bmin=2\muG$}
-%
-%\begin{table}[ht]
-%    \scriptsize
-%    \centering
-%    \caption{Best model fits for all regions, $\mu = 1$, $\Bmin=2\muG$}
-%    \input{suppl-fits-all-bmin2.tex}
-%\end{table}
-%
-%% As above but with eta2=1 fixed!
-%\begin{table}[ht]
-%    \scriptsize
-%    \centering
-%    \caption{Best model fits for all regions, $\mu = \eta_2 = 1$,
-%        $\Bmin=2\muG$}
-%    \input{suppl-fits-all-bmin2-eta2one.tex}
-%\end{table}
-%
-%% Only show these giant tables in 2col... no need to print these
-%\iftoggle{manuscript}{
-%}{
-%    % ===============================
-%    % Damping best fit sea of numbers
-%    % ===============================
-%    \clearpage
-%    \section{Magnetic damping best fit tables}
-%
-%    \begin{table*}[ht]
-%        \scriptsize
-%        \centering
-%        \caption{Damped fits to individual regions, Filament 1, $\mu = 1$}
-%        \input{suppl-fits-damp-f1.tex}
-%    \end{table*}
-%
-%    \begin{table*}[ht]
-%        \scriptsize
-%        \centering
-%        \caption{Damped fits to individual regions, Filament 2, $\mu = 1$}
-%        \input{suppl-fits-damp-f2.tex}
-%    \end{table*}
-%
-%    \begin{table*}[ht]
-%        \scriptsize
-%        \centering
-%        \caption{Damped fits to individual regions, Filament 2 (cont.), $\mu = 1$}
-%        \input{suppl-fits-damp-f2-pt2.tex}
-%    \end{table*}
-%
-%    \begin{table*}[ht]
-%        \scriptsize
-%        \centering
-%        \caption{Damped fits to individual regions, Filament 3, $\mu = 1$}
-%        \input{suppl-fits-damp-f3.tex}
-%    \end{table*}
-%
-%    \begin{table*}[ht]
-%        \scriptsize
-%        \centering
-%        \caption{Damped fits to individual regions, Filament 4, $\mu = 1$}
-%        \input{suppl-fits-damp-f4.tex}
-%    \end{table*}
-%
-%    \begin{table*}[ht]
-%        \scriptsize
-%        \centering
-%        \caption{Damped fits to individual regions, Filament 5, $\mu = 1$}
-%        \input{suppl-fits-damp-f5.tex}
-%    \end{table*}
-%
-%    % ================================
-%    % Damping best fit tables, SN 1006
-%    % ================================
-%    \clearpage
-%    \section{Magnetic damping fit tables, SN 1006}
-%
-%    \begin{table*}[ht]
-%        \scriptsize
-%        \centering
-%        \caption{Damped fits to SN1006 filaments, $\mu = 1$}
-%        \input{suppl-fits-damp-sn1006.tex}
-%    \end{table*}
-%
-%    \clearpage
-%    \section{Magnetic damping fit tables, SN 1006, no e- cutoff}
-%
-%    \begin{table*}[ht]
-%        \scriptsize
-%        \centering
-%        \caption{Damped fits to SN1006 filaments, $\mu = 1$, no e- cutoff}
-%        \input{suppl-fits-damp-nocut-sn1006.tex}
-%    \end{table*}
-%}
-
 
 % =======================
 % Extra -- postage stamps

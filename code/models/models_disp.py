@@ -335,14 +335,13 @@ def load_fit_pkl(inroot, n):
 
 def best_fit_fwhms(p_list, mu_vals, fobj, kevs_calc=None, mu_calc=None,
                    get_mask=False, verbose=True, **kwargs):
-    """Compute model FWHMs from best fit pickle specified by inroot, n
-    n is indexed from 1 (!)
+    """Compute model FWHMs from parameter list, mu values, and Fitter() object
+    (obtained from best fit pickle methods)
 
     Input:
-        inroot (str): base file stem referring to files given by
-                          inroot + '-{:02d}-data.pkl'.format(n)
-                          inroot + '-{:02d}-fobj.pkl'.format(n)
-        n (int): region number for inroot
+        p_list: list of lmfit.Parameters() objects, one per mu in mu_vals
+        mu_vals: list of mu values fitted
+        fobj: models_exec.Fitter() object used for fits in p_list/mu_vals
         kevs_calc (list): energies (keV) at which to compute model FWHMs
                           if none specified, data keVs used
         mu_calc (list): mu values at which to get best fit parameters
